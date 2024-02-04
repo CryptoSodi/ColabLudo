@@ -6,10 +6,7 @@
              xmlns:local ="clr-namespace:LudoClient.ControlView"
              BackgroundImageSource="background_waitingroom.png"
              NavigationPage.HasNavigationBar="False">
-    <Grid
-    RowSpacing="20"
-    HorizontalOptions="FillAndExpand"
-    VerticalOptions="FillAndExpand">
+    <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Grid.RowDefinitions>
             <RowDefinition Height=".4*" />
             <RowDefinition Height="1.2*" />
@@ -23,51 +20,15 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-
-        <Image Grid.Row="1" x:Name="Bg_Share" Source="bg_share.png"  Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-
-        <Grid Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
-              HeightRequest="{Binding Source={x:Reference Bg_Share}, Path=Height}" WidthRequest="{Binding Source={x:Reference Bg_Share}, Path=Width}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1*" />
-            </Grid.ColumnDefinitions>
-            
-            <Grid Margin="5,4,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="40*"/>
-                    <ColumnDefinition Width="40*"/>
-                    <ColumnDefinition Width="20*"/>
-                </Grid.ColumnDefinitions>
-                
-                <Label Text="Room Code :" Margin="0,10,0,10" Grid.Column="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                <BoxView Grid.Column="1" Margin="0,10,0,10" CornerRadius="5" BackgroundColor="White"/>
-                <Label Text="25581070" Margin="0,10,0,10" Grid.Column="1" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                <Image Source="btn_share_link.png"  Margin="0,5,6,5" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
-            </Grid>
-            <Grid Margin="5,0,5,4" Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="80*"/>
-                    <ColumnDefinition Width="20*"/>
-                </Grid.ColumnDefinitions>
-
-                <BoxView Margin="10,-2,0,7" CornerRadius="5" BackgroundColor="DarkBlue"/>
-                <Label Text="Share this room code with friends and ask them to join" Margin="10,2,0,10" FontSize="Caption" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                <Image Source="btn_whatsapp.png" Margin="0,5,6,5" Grid.Column="1" Aspect="AspectFit" HorizontalOptions="End"/>
-            </Grid>
-        </Grid>
-
-        <local:PlayerBox Grid.Row="2" ></local:PlayerBox>
-
+        
+        <local:ShareBox Grid.Row="1" ></local:ShareBox>
+        <local:PlayerBox Grid.Row="2" PlayerName="Tassaduq" PlayerImage="player.png"></local:PlayerBox>
 
         <Image Grid.Row="3" Source="chips_entry_bg.png" Margin="0,10,0,10" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Label Grid.Row="3" Text="Classic > Entry Amount" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
 
-        <Image Source="vs_bg.png" Grid.Row="4"  Aspect="AspectFit" />
-        <Image Source="vs.png" Margin="15,15,15,15" Grid.Row="4" Aspect="AspectFit"/>
+        <Image Grid.Row="4" Source="vs_bg.png" Aspect="AspectFit" />
+        <Image Grid.Row="4" Source="vs.png" Margin="15,15,15,15" Aspect="AspectFit"/>
 
         <Grid Grid.Row="5" Margin="0,0,0,0" ColumnSpacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
             <Grid.ColumnDefinitions>
@@ -75,10 +36,9 @@
                 <ColumnDefinition Width="50*" />
                 <ColumnDefinition Width="50*" />
             </Grid.ColumnDefinitions>
-
-            <local:PlayerBox Grid.Column="0" ></local:PlayerBox>
-            <local:PlayerBox Grid.Column="1" ></local:PlayerBox>
-            <local:PlayerBox Grid.Column="2" ></local:PlayerBox>
+            <local:PlayerBox Grid.Column="0" PlayerName="Sodi" PlayerImage="player2.png"></local:PlayerBox>
+            <local:PlayerBox Grid.Column="1" PlayerName="Waiting" PlayerImage="invite_user.png"></local:PlayerBox>
+            <local:PlayerBox Grid.Column="2" PlayerName="Haris" PlayerImage="user.png"></local:PlayerBox>
         </Grid>
 
         <Image Grid.Row="6" Source="chips_entry_bg.png" Margin="0,10,0,10" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
