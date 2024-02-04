@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="LudoClient.DashboardPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:LudoClient"
+    BackgroundImageSource="background.png"
+    IconImageSource="ic_home.png"
+    NavigationPage.HasNavigationBar="False">
+    <Grid
+        RowSpacing="20"
+        HorizontalOptions="FillAndExpand"
+        VerticalOptions="FillAndExpand">
+        <Grid.RowDefinitions>
+            <RowDefinition Height=".8*" />
+            <RowDefinition Height="1.6*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height=".8*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <!-- Background Image -->
+        <local:HeaderCV Grid.Row="0"></local:HeaderCV>
+
+        <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        <ImageButton Grid.Row="2" Source="cashgame.png" Clicked="ImageButton_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        <Grid Grid.Row="3" Margin="40,0,40,0" BackgroundColor="Blue" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*" />
+                <ColumnDefinition Width="50*" />
+            </Grid.ColumnDefinitions>
+            <ImageButton Source="offline.png" Grid.Column="0" Aspect="AspectFit"/>
+            <ImageButton Source="playwithfriends.png" Margin="0,0,0,4" Grid.Column="1" Aspect="AspectFit"/>
+        </Grid>
+
+        <Grid Grid.Row="4" Margin="40,0,40,0" BackgroundColor="Blue" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50*" />
+                <ColumnDefinition Width="50*" />
+            </Grid.ColumnDefinitions>
+            <ImageButton Source="practice.png" Margin="0,4,0,0" Grid.Column="0" Aspect="AspectFit"/>
+            <ImageButton Source="tournament.png" Grid.Column="1" Aspect="AspectFit"/>
+        </Grid>
+
+        <ImageButton BackgroundColor="Blue" Source="daily_bonus.png" Grid.Row="5" Margin="75,0,75,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
+
+        <local:BottomCV Grid.Row="6" ></local:BottomCV>
+    </Grid>
+</ContentPage>
