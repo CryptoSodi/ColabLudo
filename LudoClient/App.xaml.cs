@@ -9,7 +9,7 @@ namespace LudoClient
             InitializeComponent();
 
             //MainPage = new AppShell();
-            MainPage = new WaitingRoom();
+            MainPage = new GameRoom();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS
