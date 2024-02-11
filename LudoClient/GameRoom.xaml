@@ -7,7 +7,7 @@
              BackgroundImageSource="background_waitingroom.png"
              NavigationPage.HasNavigationBar="False">
     <Grid x:Name="grid" RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-              <Grid.RowDefinitions>
+        <Grid.RowDefinitions>
             <RowDefinition Height=".6*" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="1*" />
