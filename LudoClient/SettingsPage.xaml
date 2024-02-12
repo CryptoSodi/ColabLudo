@@ -14,7 +14,6 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-
         <Image x:Name="grid_bg" Source="support_popup_bg.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
 
         <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center" 
@@ -32,11 +31,11 @@
                 <RowDefinition Height="1*" />
                 <RowDefinition Height=".6*" />
             </Grid.RowDefinitions>
-            
+
             <local:TitleBar Margin="0,-18,0,0" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"></local:TitleBar>
-            
+
             <Image x:Name="Settings_Foreground" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="5" Grid.RowSpan="4" Source="settings_forground.png" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-            
+
             <Grid Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" 
                   HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
                   HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}">

@@ -2,8 +2,8 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.ImageSwitch">
-    <Grid Margin="0,5,5,5" >
-        <Image x:Name="SwitchImage" Aspect="AspectFit" />
-        <ImageButton Clicked="SwitchImage_Clicked"  Aspect="AspectFit" />
+    <Grid>
+        <Image x:Name="SwitchImage" Aspect="AspectFit" Margin="0,8,5,8" />
+        <ImageButton Clicked="SwitchImage_Clicked" Aspect="AspectFit" />
     </Grid>
 </ContentView>
