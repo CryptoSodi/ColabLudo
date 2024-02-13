@@ -49,9 +49,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-
                 <local:PlayerBox Grid.Row="1" x:Name="player1" PlayerName="Player 1" PlayerImage="player.png" HorizontalOptions="Start"/>
-
                 <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="2" HorizontalOptions="FillAndExpand" >
                     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <BoxView CornerRadius="8" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
@@ -74,7 +72,22 @@
                     <Label Text="Karachi"/>
                 </HorizontalStackLayout>
             </Grid>
-            <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
+
+            <StackLayout Grid.Row="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="20*" />
+                        <ColumnDefinition Width="80*" />
+                    </Grid.ColumnDefinitions>
+                    <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start" Margin="0,10,0,10" />
+                    <Label Text="100000" Grid.Column="1" BackgroundColor="Blue" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="0,10,0,10" />
+                </Grid>
+            </StackLayout>
+
+            <Image Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5" Source="statistics_info.png" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+
+            <Grid Padding="20,5,20,5" Grid.Row="7" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
@@ -82,16 +95,26 @@
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-                <Image Source="help.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="terms.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="privacy.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+                <Image Source="played_bg.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
-            <Image Grid.Row="7" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <Label Grid.Row="7" Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-            <Label Grid.Row="8" Text="Version 0.01" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+
+            <Grid Padding="20,5,20,5" Grid.Row="8"  RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+
+                <Image Source="played_bg.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+            </Grid>
         </Grid>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="9"></local:BottomNavigation>
     </Grid>
