@@ -84,9 +84,7 @@
                 </Grid>
             </StackLayout>
 
-            <Image Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5" Source="statistics_info.png" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-
-
+            <Image Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5" Source="statistics_info.png" Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             <Grid Padding="20,5,20,5" Grid.Row="7" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*" />
@@ -97,11 +95,13 @@
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
 
-                <Image Source="played_bg.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="played_bg.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <local:StatisticCard></local:StatisticCard>
+                <local:StatisticCard Grid.Column="1"></local:StatisticCard>
+                <local:StatisticCard Grid.Column="2"></local:StatisticCard>
             </Grid>
-
             <Grid Padding="20,5,20,5" Grid.Row="8"  RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*" />
@@ -110,10 +110,10 @@
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
-
-                <Image Source="played_bg.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="played_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="played_bg.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <local:StatisticCard></local:StatisticCard>
+                <local:StatisticCard Grid.Column="1"></local:StatisticCard>
             </Grid>
         </Grid>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="9"></local:BottomNavigation>
