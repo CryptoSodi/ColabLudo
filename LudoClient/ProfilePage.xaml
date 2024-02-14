@@ -73,17 +73,15 @@
                 </HorizontalStackLayout>
             </Grid>
 
-            <StackLayout Grid.Row="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" >
+            <Grid Grid.Row="5" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="20*" />
                         <ColumnDefinition Width="80*" />
                     </Grid.ColumnDefinitions>
                     <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start" Margin="0,10,0,10" />
                     <Label Text="100000" Grid.Column="1" BackgroundColor="Blue" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="0,10,0,10" />
-                </Grid>
-            </StackLayout>
-
+            </Grid>
+            
             <Image Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5" Source="statistics_info.png" Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             <Grid Padding="20,5,20,5" Grid.Row="7" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
                 <Grid.RowDefinitions>
@@ -94,10 +92,6 @@
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
                 </Grid.ColumnDefinitions>
-
-                <Image Source="played_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="played_bg.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <local:StatisticCard></local:StatisticCard>
                 <local:StatisticCard Grid.Column="1"></local:StatisticCard>
                 <local:StatisticCard Grid.Column="2"></local:StatisticCard>
@@ -110,8 +104,6 @@
                     <ColumnDefinition Width="1*" />
                     <ColumnDefinition Width="1*" />
                     </Grid.ColumnDefinitions>
-                <Image Source="played_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="played_bg.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <local:StatisticCard></local:StatisticCard>
                 <local:StatisticCard Grid.Column="1"></local:StatisticCard>
             </Grid>

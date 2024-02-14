@@ -3,11 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.StatisticCard">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="1.4*" />
-            <RowDefinition Height="2*" />
-        </Grid.RowDefinitions>
-        <Label Text="GAMES PLAYED" TextColor="Black" FontSize="9" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
-        <Label Grid.Row="1" Text="6" TextColor="Red" FontSize="18" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
+    <Image Source="played_bg.png" Aspect="AspectFit" />
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.4*" />
+                <RowDefinition Height="2*" />
+            </Grid.RowDefinitions>
+            <Label Text="GAMES PLAYED" TextColor="Black" FontSize="9" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
+            <Label Grid.Row="1" Text="6" TextColor="Red" FontSize="18" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
+        </Grid>
     </Grid>
 </ContentView>
