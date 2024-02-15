@@ -5,32 +5,15 @@
              x:Class="LudoClient.SettingsPage"
              Title="SettingsPage"
              BackgroundImageSource="background.png">
-    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <Grid.RowDefinitions>
-            <RowDefinition Height=".1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height=".1*" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*" />
-        </Grid.ColumnDefinitions>
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+          RowDefinitions=".1*,1*,.1*" ColumnDefinitions="1*">
+        
         <Image x:Name="grid_bg" Source="support_popup_bg.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
 
         <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center" 
               WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
-              HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}" >
-            <Grid.RowDefinitions>
-                <RowDefinition Height=".8*" />
-                <RowDefinition Height=".2*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
-                <RowDefinition Height=".6*" />
-            </Grid.RowDefinitions>
+              HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}" 
+              RowDefinitions =".8*,.2*,1*,1*,1*,1*,1*,1*,1*,.6*">
 
             <local:TitleBar Margin="0,-18,0,0" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"></local:TitleBar>
 
@@ -56,7 +39,6 @@
                 <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
             
-            //Convert this into a green button
             <Image Grid.Row="7" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             <Label Grid.Row="7" Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
             <Label Grid.Row="8" Text="Version 0.01" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
