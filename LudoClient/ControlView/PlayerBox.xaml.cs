@@ -22,6 +22,7 @@ public partial class PlayerBox : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
+
     public PlayerBox()
     {
         InitializeComponent();

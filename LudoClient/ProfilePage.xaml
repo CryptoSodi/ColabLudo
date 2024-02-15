@@ -16,7 +16,7 @@
         </Grid.ColumnDefinitions>
         <Image x:Name="grid_bg" Source="support_popup_bg.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
 
-        <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center" 
+        <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center"  
           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
           HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}" >
             <Grid.RowDefinitions>
@@ -25,7 +25,7 @@
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
-                <RowDefinition Height="1*" />
+                <RowDefinition Height=".5*" />
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
                 <RowDefinition Height="1*" />
@@ -49,63 +49,61 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <local:PlayerBox Grid.Row="1" x:Name="player1" PlayerName="Player 1" PlayerImage="player.png" HorizontalOptions="Start"/>
+
+                <local:PlayerBoxLong Grid.Row="1" x:Name="player1" PlayerName="Player 2" PlayerImage="player.png" HorizontalOptions="FillAndExpand"/>
+
                 <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="2" HorizontalOptions="FillAndExpand" >
                     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <BoxView CornerRadius="8" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <HorizontalStackLayout Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                            <Image Source="ic_email.png" Aspect="AspectFit" Margin="8,5,0,5"></Image>
-                            <Label Text="youraddress@gmail.com" FontSize="9" VerticalTextAlignment="Center"/>
-                        </HorizontalStackLayout>
+                        <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                            <Image Source="ic_email.png" Aspect="AspectFit" Margin="8,5,0,5"/>
+                            <Label Text="youraddress@gmail.com" FontSize="9" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                        </StackLayout>
                     </Grid>
                     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <BoxView CornerRadius="8" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <HorizontalStackLayout Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                            <Image Source="ic_call.png" Aspect="AspectFit" Margin="8,5,0,5"></Image>
-                            <Label Text="+923074000106" FontSize="9" VerticalTextAlignment="Center"/>
-                        </HorizontalStackLayout>
+                        <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                            <Image Source="ic_call.png" Aspect="AspectFit" Margin="8,5,0,5"/>
+                            <Label Text="+923074000106" FontSize="9" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                        </StackLayout>
                     </Grid>
                 </StackLayout>
-                
+
                 <HorizontalStackLayout Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
                     <Image Source="ic_address.png" Aspect="AspectFit" Margin="0,3,0,3"></Image>
                     <Label Text="Karachi"/>
                 </HorizontalStackLayout>
             </Grid>
 
-            <Grid Grid.Row="5" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" >
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="20*" />
-                        <ColumnDefinition Width="80*" />
-                    </Grid.ColumnDefinitions>
-                    <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start" Margin="0,10,0,10" />
-                    <Label Text="100000" Grid.Column="1" BackgroundColor="Blue" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" Margin="0,10,0,10" />
-            </Grid>
+            <StackLayout Grid.Row="5" Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}">
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <BoxView CornerRadius="8" BackgroundColor="DarkBlue" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                        <Image Source="ic_coin.png" Margin="0,5,0,5" Aspect="AspectFit"/>
+                        <Label Text="100asdasdasd" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                        <Image Source="btn_plus.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Grid>
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <BoxView CornerRadius="8" BackgroundColor="DarkBlue" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                        <Image Source="ic_coin.png" Margin="0,5,0,5" Aspect="AspectFit"/>
+                        <Label Text="100asdasdasd" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                        <Image Source="btn_addcash.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Grid>
+            </StackLayout>
             
-            <Image Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="5" Source="statistics_info.png" Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <Grid Padding="20,5,20,5" Grid.Row="7" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
+            <Image Grid.Row="6" Source="statistics_info.png" Margin="50,20,50,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}"/>
+
+            <Grid Padding="20,5,20,5" Grid.Row="7" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" ColumnDefinitions="1*,1*,1*">
                 <local:StatisticCard></local:StatisticCard>
-                <local:StatisticCard Grid.Column="1"></local:StatisticCard>
-                <local:StatisticCard Grid.Column="2"></local:StatisticCard>
+                <local:StatisticCard Grid.Column="1"/>
+                <local:StatisticCard Grid.Column="2"/>
             </Grid>
-            <Grid Padding="20,5,20,5" Grid.Row="8"  RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
+            <Grid Padding="20,5,20,5" Grid.Row="8"  RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" ColumnDefinitions="1*,1*">
                 <local:StatisticCard></local:StatisticCard>
-                <local:StatisticCard Grid.Column="1"></local:StatisticCard>
+                <local:StatisticCard Grid.Column="1"/>
             </Grid>
         </Grid>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="9"></local:BottomNavigation>

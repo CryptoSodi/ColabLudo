@@ -36,38 +36,27 @@
 
             <Image x:Name="Settings_Foreground" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="5" Grid.RowSpan="4" Source="settings_forground.png" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
 
-            <Grid Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" 
-                  HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
-                  HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="0.08*" />
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="1*" />
-                    <RowDefinition Height="0.08*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <local:SettingsSwitch SettingText="SOUNDS" Grid.Row="1"></local:SettingsSwitch>
-                <local:SettingsSwitch SettingText="MUSIC" Grid.Row="2"></local:SettingsSwitch>
-                <local:SettingsSwitch SettingText="NOTIFICATION" Grid.Row="3"></local:SettingsSwitch>
+            <Grid Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
+                  WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
+                  HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}"
+                  RowDefinitions=".08*,1*,1*,1*,0.08*" ColumnDefinitions="*">
+                
+                <local:SettingsSwitch SettingText="SOUNDS" Grid.Row="1"/>
+                <local:SettingsSwitch SettingText="MUSIC" Grid.Row="2"/>
+                <local:SettingsSwitch SettingText="NOTIFICATION" Grid.Row="3"/>
             </Grid>
-            <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" >
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="1*" />
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
+            
+            <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
+                  WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
+                  RowDefinitions="1*" ColumnDefinitions="1*,1*,1*,1*">
+                
                 <Image Source="help.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="terms.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="privacy.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
+            
+            //Convert this into a green button
             <Image Grid.Row="7" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             <Label Grid.Row="7" Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
             <Label Grid.Row="8" Text="Version 0.01" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
