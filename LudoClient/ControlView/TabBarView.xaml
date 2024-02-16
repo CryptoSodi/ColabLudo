@@ -39,22 +39,22 @@
             <simpleCore:ContentButton
             Grid.Column="0" Clicked="ButtonTapped"
             SemanticProperties.Description="Ribbon page">
-                    <c:TabBarIconView Source="icon_house.png" Page="HomePage"/>
+                    <c:TabBarIconView Source="icon_house.png" Page="HomePage" WidthRequest="48" HeightRequest="48"/>
             </simpleCore:ContentButton>
             <simpleCore:ContentButton
             Grid.Column="1" Clicked="ButtonTapped"
             SemanticProperties.Description="Folder page">
-                <c:TabBarIconView Source="icon_friends.png" Page="FriendsPage"/>
+                <c:TabBarIconView Source="icon_friends.png" Page="FriendsPage" WidthRequest="48" HeightRequest="48"/>
             </simpleCore:ContentButton>
             <simpleCore:ContentButton
             Grid.Column="2" Clicked="ButtonTapped"
             SemanticProperties.Description="Home page">
-                <c:TabBarIconView Source="icon_settings.png" Page="SettingsPage"/>
+                <c:TabBarIconView Source="icon_ranking.png" Page="RankingPage" WidthRequest="48" HeightRequest="48"/>
             </simpleCore:ContentButton>
             <simpleCore:ContentButton
             Grid.Column="3" Clicked="ButtonTapped"
             SemanticProperties.Description="Pin page">
-                <c:TabBarIconView Source="icon_wallet.png" Page="WalletPage"/>
+                <c:TabBarIconView Source="icon_wallet.png" Page="WalletPage" WidthRequest="48" HeightRequest="48"/>
             </simpleCore:ContentButton>
         </Grid>
     </Grid>

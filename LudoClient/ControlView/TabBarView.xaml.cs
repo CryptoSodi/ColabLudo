@@ -8,7 +8,7 @@ public partial class TabBarView : ContentView
     bool initialChange = true;
     float innerRadius => (float)backGraphicsView.Height / (11f / 4f);
     float outerRadius => innerRadius + ((float)backGraphicsView.Height / 12f);
-    double iconHeight => 20;
+    double iconHeight => 48;
     double selectedIconTranslation => ((innerRadius * 2) - iconHeight) / 2;
     double defaultIconTranslation => ((backGraphicsView.Height - innerRadius - iconHeight) / 2) + innerRadius;
 
