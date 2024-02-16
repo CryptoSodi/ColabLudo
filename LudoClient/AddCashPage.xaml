@@ -13,40 +13,51 @@
         <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center"
        WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}"
        HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
-       RowDefinitions=".8*,.2*,1*,4*,1*,.6*">
+       RowDefinitions=".8*,.2*,1*,.1*,4*,1*,.5*">
+            
             <local:TitleBar Title="ADD CASH" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
 
-            <Grid Grid.Row="2" Margin="40,0,40,0">
+            <Grid Grid.Row="2" Margin="20,0,20,0">
                 <Image Source="line_bg.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
                 <Label Text="TOTAL BALANCE AVAILABLE" Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                 <local:ImageSwitch VerticalOptions="Center" HorizontalOptions="End" />
             </Grid>
 
-            <Image x:Name="add_cash_Foreground" Source="add_cash_popup_inner_bg.png" Grid.Row="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center" Margin="40,0,40,0"/>
+            <Image x:Name="add_cash_Foreground" Source="add_cash_popup_inner_bg.png" Grid.Row="4" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center" Margin="20,0,20,0"/>
 
-            <Image Source="btn_addcash_bk.png" Grid.Row="3" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center" Margin="40,0,40,0"/>
+            <Image Source="btn_addcash_bk.png" Grid.Row="4" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,0"/>
             
             <Grid Grid.Row="3" VerticalOptions="Start"
                HeightRequest="{Binding Source={x:Reference add_cash_Foreground}, Path=Height}"
                WidthRequest="{Binding Source={x:Reference add_cash_Foreground}, Path=Width}"
                RowDefinitions=".08*,1*,.04*,1*,.08*">
-                <Grid Grid.Row="1" HorizontalOptions="Center" ColumnSpacing="4"
-                   ColumnDefinitions="1*,1*,1*,1*">
-                    <local:DailyBonusCard/>
-                    <local:DailyBonusCard Grid.Column="1"/>
-                    <local:DailyBonusCard Grid.Column="2"/>
-                    <local:DailyBonusCard Grid.Column="3"/>
+                <Grid Grid.Row="1" HorizontalOptions="FillAndExpand" 
+                   ColumnDefinitions=".08*,1*,1*,1*,.08*">
+                    <StackLayout Grid.Column="1" Grid.ColumnSpan="3" Spacing="15" HorizontalOptions="FillAndExpand" >
+                        <Label Text="ADD CASH" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        <Grid ColumnDefinitions=".28*,1*" HorizontalOptions="FillAndExpand" Margin="30,0,30,0" >
+                            <Image Source="ic_rs_input.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Entry Grid.Column="1" Placeholder="ENTER CASH" x:Name="EnterCashEntry" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" BackgroundColor="White"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions=".28*,1*" HorizontalOptions="FillAndExpand" Margin="30,0,30,0" >
+                            <Image Source="ic_rs_input.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
+                            <Entry Grid.Column="1" Placeholder="ENTER CASH" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" BackgroundColor="White"/>
+                        </Grid>
+
+                    </StackLayout>
                 </Grid>
+
                 <Grid Grid.Row="3" HorizontalOptions="Center" ColumnSpacing="4"
-                   ColumnDefinitions="1*,1*,1*">
+                      ColumnDefinitions="1*,1*,1*">
                     <local:DailyBonusCard/>
                     <local:DailyBonusCard Grid.Column="1"/>
                     <local:DailyBonusCard Grid.Column="2"/>
                 </Grid>
             </Grid>
             <!-- Convert this into a button -->
-            <Image Grid.Row="4" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
-            <Label Grid.Row="4" Text="CLAIM !" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+            <Image Grid.Row="5" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
+            <Label Grid.Row="5" Text="CLAIM !" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
         <local:BottomNavigation Grid.Row="7"/>
     </Grid>
