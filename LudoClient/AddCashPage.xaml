@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.AddCashPage"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             Title="AddCashPage"
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+   RowDefinitions=".1*,1*,.1*" ColumnDefinitions="1*">
+
+        <Image x:Name="grid_bg" Source="support_popup_bg.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+        <Grid Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center"
+       WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}"
+       HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+       RowDefinitions=".8*,.2*,1*,4*,1*,.6*">
+            <local:TitleBar Title="ADD CASH" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+            <Grid Grid.Row="2" Margin="40,0,40,0">
+                <Image Source="line_bg.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <Label Text="TOTAL BALANCE AVAILABLE" Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                <local:ImageSwitch VerticalOptions="Center" HorizontalOptions="End" />
+            </Grid>
+
+            <Image x:Name="add_cash_Foreground" Source="add_cash_popup_inner_bg.png" Grid.Row="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center" Margin="40,0,40,0"/>
+
+            <Image Source="btn_addcash_bk.png" Grid.Row="3" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center" Margin="40,0,40,0"/>
+            
+            <Grid Grid.Row="3" VerticalOptions="Start"
+               HeightRequest="{Binding Source={x:Reference add_cash_Foreground}, Path=Height}"
+               WidthRequest="{Binding Source={x:Reference add_cash_Foreground}, Path=Width}"
+               RowDefinitions=".08*,1*,.04*,1*,.08*">
+                <Grid Grid.Row="1" HorizontalOptions="Center" ColumnSpacing="4"
+                   ColumnDefinitions="1*,1*,1*,1*">
+                    <local:DailyBonusCard/>
+                    <local:DailyBonusCard Grid.Column="1"/>
+                    <local:DailyBonusCard Grid.Column="2"/>
+                    <local:DailyBonusCard Grid.Column="3"/>
+                </Grid>
+                <Grid Grid.Row="3" HorizontalOptions="Center" ColumnSpacing="4"
+                   ColumnDefinitions="1*,1*,1*">
+                    <local:DailyBonusCard/>
+                    <local:DailyBonusCard Grid.Column="1"/>
+                    <local:DailyBonusCard Grid.Column="2"/>
+                </Grid>
+            </Grid>
+            <!-- Convert this into a button -->
+            <Image Grid.Row="4" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
+            <Label Grid.Row="4" Text="CLAIM !" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+        </Grid>
+        <local:BottomNavigation Grid.Row="7"/>
+    </Grid>
+</ContentPage>
