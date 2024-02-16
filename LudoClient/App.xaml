@@ -2,6 +2,7 @@
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient"
+             xmlns:simpleCore="clr-namespace:SimpleToolkit.Core.MarkupExtensions;assembly=SimpleToolkit.Core"
              x:Class="LudoClient.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -9,6 +10,17 @@
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
             </ResourceDictionary.MergedDictionaries>
+
+            <x:String x:Key="HomePath">m 46.766321,6.7280927 0,0.4890197 m -0.409258,0.6619097 v 0.872802 l 0.401942,-0.2320618 0.430869,0.2487607 -0.0063,-0.9333499 M 45.86846,7.3904201 c 0.09513,-0.4068789 0.09265,-0.4104874 0,-0.8185129 0.373913,-0.1806492 0.37656,-0.1794681 0.522012,-0.522011 0.358063,0.1801273 0.361429,0.1758554 0.743345,0 0.189975,0.3586256 0.188103,0.3619756 0.536625,0.5366271 -0.126901,0.4226984 -0.130829,0.4214347 0,0.8164251 -0.321698,0.2097587 -0.319857,0.2196931 -0.558551,0.5585515 -0.207373,-0.1956806 -0.206635,-0.1946236 -0.337098,-0.1946235 -0.130463,1e-7 -0.128195,0.00636 -0.340807,0.1967656 C 46.192141,7.5881918 46.194599,7.5865041 45.86846,7.3904201 Z</x:String>
+            <x:String x:Key="ChatPath">m 55.618098,3.1374975 v 1.5635813 c 0,0.1278576 0.1108,0.2450938 0.245094,0.2450938 h 1.975517 c 0.172603,0 0.279053,-0.1126954 0.279053,-0.2790526 V 3.4667504 c 0,-0.1458028 -0.130216,-0.2783146 -0.278315,-0.2783146 h -0.826721 c -0.129813,0 -0.307445,-0.3037835 -0.428647,-0.3037835 h -0.72384 C 55.715717,2.8842282 55.618098,3.008361 55.618098,3.1374975 Z</x:String>
+            <x:String x:Key="AboutPath">m 66.027715,6.7386067 v 1.5532459 c 0,0.1380531 0.101992,0.2155646 0.215564,0.2155646 h 0.593542 V 7.8792806 c 0,-0.4981924 0.87407,-0.5051784 0.87407,0 v 0.6133717 h 0.668839 c 0.128617,0 0.219994,-0.1068711 0.219994,-0.236235 V 6.8094772 L 67.273555,6.0438135 Z</x:String>
+            <x:String x:Key="SettingsPath">m 77.700261,8.5943857 c 0,0 0,-1.1550619 0,-1.4407499 -0.226478,0 -0.582563,-0.076135 -0.582563,-0.5825641 0,-0.4015997 0.25443,-0.5763 0.5763,-0.5762998 0.326792,2e-7 0.586759,0.183578 0.593003,0.5930043 0.0067,0.4408217 -0.366804,0.5658596 -0.58674,0.5658596</x:String>
+
+            <simpleCore:PathGeometryExtension x:Key="RibbonPathGeometry" Path="{StaticResource HomePath}"/>
+            <simpleCore:PathGeometryExtension x:Key="FolderPathGeometry" Path="{StaticResource ChatPath}"/>
+            <simpleCore:PathGeometryExtension x:Key="HomePathGeometry" Path="{StaticResource AboutPath}"/>
+            <simpleCore:PathGeometryExtension x:Key="PinPathGeometry" Path="{StaticResource SettingsPath}"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
+    

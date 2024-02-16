@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
+using SimpleToolkit.Core;
+using SimpleToolkit.SimpleShell;
 
 namespace LudoClient
 {
@@ -13,10 +15,16 @@ namespace LudoClient
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+                    fonts.AddFont("Comfortaa-Regular.ttf", "RegularFont");
+                    fonts.AddFont("Comfortaa-Bold.ttf", "BoldFont");
+                    fonts.AddFont("Comfortaa-Medium.ttf", "MediumFont");
+                    fonts.AddFont("Comfortaa-SemiBold.ttf", "SemiBoldFont");
+                })
+                .UseSimpleToolkit()
+                .UseSimpleShell();
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

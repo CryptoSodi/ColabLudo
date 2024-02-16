@@ -9,16 +9,18 @@ namespace LudoClient
             InitializeComponent();
 
             //MainPage = new AppShell();
-            MainPage = new SettingsPage();
+            //MainPage = new SettingsPage();
             //MainPage = new TabHandeler();
+            //MainPage = new DashboardPage();
+            MainPage = new AppShell();
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
         {
             var window = base.CreateWindow(activationState);
 
-            const int newWidth = 400;
-            const int newHeight = 800;
+            const int newWidth = 360;
+            const int newHeight = 700;
 
             window.Width = newWidth;
             window.Height = newHeight;
