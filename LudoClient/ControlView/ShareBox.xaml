@@ -4,6 +4,7 @@
              x:Class="LudoClient.ControlView.ShareBox">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Image x:Name="Bg_Share" Source="bg_share.png"  Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+        <!-- Add better option to manage width and height -->
         <StackLayout Orientation="Vertical" Spacing="1" Padding="10,5,10,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" 
                          HeightRequest="{Binding Source={x:Reference Bg_Share}, Path=Height}" 
                          WidthRequest="{Binding Source={x:Reference Bg_Share}, Path=Width}">
@@ -13,6 +14,7 @@
                     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                         <BoxView  Margin="0,5,0,5" CornerRadius="5" BackgroundColor="White" HorizontalOptions="FillAndExpand"/>
                         <Label Text="25581070" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        <!-- Add Copy image icon here -->
                     </Grid>
                     <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
                 </StackLayout>

@@ -15,7 +15,7 @@
               HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}" 
               RowDefinitions =".8*,.2*,1*,1*,1*,1*,1*,1*,1*,.6*">
 
-            <local:TitleBar Margin="0,-18,0,0" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <local:TitleBar Title="Settings"  Margin="0,-18,0,0" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"/>
 
             <Image x:Name="Settings_Foreground" Source="settings_forground.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="5" Grid.RowSpan="4" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
 
