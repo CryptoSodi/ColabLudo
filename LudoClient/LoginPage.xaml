@@ -4,13 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              BackgroundColor="{DynamicResource PageBackgroundColor}"
-             x:Class="LudoClient.LoginPage">
-
-    <!-- Grid layout for layering content over the background image -->
-    <Grid>
-        <!-- Background image -->
-        <Image Source="background.png" Aspect="AspectFill" />
-
+             x:Class="LudoClient.LoginPage"
+             BackgroundImageSource="background.png">
         <!-- StackLayout for the content -->
         <StackLayout VerticalOptions="CenterAndExpand">
             <!-- Your content here -->
@@ -48,6 +43,4 @@
                 </Grid>
             </StackLayout>
         </StackLayout>
-    </Grid>
-
 </ContentPage>

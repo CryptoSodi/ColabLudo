@@ -8,9 +8,9 @@ namespace LudoClient
         {
             InitializeComponent();
 
-            //
-              MainPage = new AppShell();
-           // MainPage = new AddCashPage();
+            //MainPage = new AppShell();
+            //MainPage = new DailyBonusPage();
+            MainPage = new AddCashPage();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS

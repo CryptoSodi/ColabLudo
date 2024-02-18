@@ -5,6 +5,7 @@
              x:Class="LudoClient.DailyBonusPage"
              Title="DailyBonusPage"
              BackgroundImageSource="background.png">
+    
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
       RowDefinitions=".1*,1*,.1*" ColumnDefinitions="1*">
         

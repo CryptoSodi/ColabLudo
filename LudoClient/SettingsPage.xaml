@@ -22,7 +22,7 @@
             <Grid Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
                   WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
                   HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}"
-                  RowDefinitions=".08*,1*,1*,1*,0.08*" ColumnDefinitions="*">
+                  RowDefinitions=".08*,1*,1*,1*,.08*" ColumnDefinitions="*">
                 
                 <local:SettingsSwitch SettingText="SOUNDS" Grid.Row="1"/>
                 <local:SettingsSwitch SettingText="MUSIC" Grid.Row="2"/>
