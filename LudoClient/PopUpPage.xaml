@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.PopUpPage"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             Title="PopUpPage"         
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+      RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="signin_inner_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+       WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+       HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+       RowDefinitions=".8*,5*,1*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
+
+            <StackLayout Grid.Row="1" Grid.Column="1" >
+                <!--Convert these into components-->
+                <Label Text="Redeem your Coupon Code" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                <Image Source="input_addcash.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            </StackLayout>
+            <!--Convert these into components-->
+            <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        </Grid>
+    </Grid>
+</ContentPage>
