@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.EditInfoPage"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             Title="EditInfoPage"
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+          RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="popup_bg_long.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+           HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+           RowDefinitions=".8*,5.7*,.3*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
+
+            <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <StackLayout Grid.Row="1" Grid.Column="1" >
+                <!--Convert these into components-->
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            </StackLayout>
+            <!--Convert these into components-->
+            <Image Grid.Row="3" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        </Grid>
+    </Grid>
+</ContentPage>

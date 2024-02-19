@@ -10,7 +10,7 @@ namespace LudoClient
 
             //MainPage = new AppShell();
             //MainPage = new DailyBonusPage();
-            MainPage = new MessageBox();
+            MainPage = new EditInfoPage();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS

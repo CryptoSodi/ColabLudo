@@ -15,10 +15,11 @@
             <local:TitleBar Grid.Column="1" Title="SPIN BONUS" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
 
             <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            <Label Grid.Row="2" Grid.Column="1" Margin="10,0,10,0" Text="You have successfully claimed your Spin Bonus. Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-
+            <StackLayout Grid.Row="2" Grid.Column="1" Margin="10,0,10,0" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label Text="You have successfully claimed your Spin Bonus." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                <Label Text="Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+            </StackLayout>
             <Image Grid.Row="3" Grid.Column="1" Margin="0,16,0,16" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-
         </Grid>
     </Grid>
 </ContentPage>
