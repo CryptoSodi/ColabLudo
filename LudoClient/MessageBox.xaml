@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.MessageBox"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             Title="AddCashPage"
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+       RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Column="1" x:Name="grid_bg" Source="popup_bg0.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+              WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+              HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+              RowDefinitions=".8*,.2*,4.5*,1.5*,.7*" ColumnDefinitions=".1*,1*,.1*">
+            <local:TitleBar Grid.Column="1" Title="SPIN BONUS" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+            <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <Label Grid.Row="2" Grid.Column="1" Margin="10,0,10,0" Text="You have successfully claimed your Spin Bonus. Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+
+            <Image Grid.Row="3" Grid.Column="1" Margin="0,16,0,16" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        </Grid>
+    </Grid>
+</ContentPage>

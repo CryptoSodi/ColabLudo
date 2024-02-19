@@ -39,7 +39,6 @@
                 </Grid>
                 <Image Grid.Row="3" Margin="0,5,0,5" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
             </Grid>
-            <!-- Convert this into a button -->
             <BoxView Grid.Row="5" Margin="30,0,30,0" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
 
             <Grid Grid.Row="5" Margin="30,10,30,10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
