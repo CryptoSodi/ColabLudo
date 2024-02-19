@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.HelpDeskPage"
+             Title="HelpDeskPage"         
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+  RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="signin_inner_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+              WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}"
+              HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+              RowDefinitions=".8*,8*,.8*" ColumnDefinitions=".1*,1*,.1*">
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <StackLayout Margin="5,10,5,0" Grid.Row="1" Grid.Column="1" >
+                <Label Margin="0,10,0,0" Text="Hello How Can We Help You Today?" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                <Label Margin="0,10,0,0" Text="Help Desk is available for you 24/7." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                <BoxView Margin="5,10,5,0" BackgroundColor="Black" HorizontalOptions="FillAndExpand" HeightRequest="2"/>
+                <Grid Margin="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+                      RowDefinitions="1*,1*" ColumnDefinitions="1*,1*" ColumnSpacing="15" RowSpacing="20">
+                    <Grid>
+                        <BoxView BackgroundColor="White" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Image Margin="5,10,0,10" Source="ic_callnow.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Margin="0,10,0,0" Text="+923074000106" TextColor="Green" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>
+                        <Label Margin="0,10,0,0" Text="Call Now" TextColor="Black" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="End"/>
+                    </Grid>
+                    <!--Convert these into components-->
+                    <Grid Grid.Column="1">
+                        <BoxView BackgroundColor="White" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Image Margin="5,10,0,10" Source="ic_livechat.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Margin="0,10,0,0" Text="LIVE CHAT" TextColor="Green" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>
+                        <Label Margin="0,10,0,0" Text="Live Chat" TextColor="Black" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="End"/>
+                    </Grid>
+                    <Grid Grid.Row="1" >
+                        <BoxView BackgroundColor="White" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Image Margin="5,10,0,10" Source="ic_supportmail.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Margin="0,10,0,0" Text="support@LudoNft.com" TextColor="Green" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>
+                        <Label Margin="0,10,0,0" Text="Email Us" TextColor="Black" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="End"/>
+                    </Grid>
+                    <Grid Grid.Row="1" Grid.Column="1">
+                        <BoxView BackgroundColor="White" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Image Margin="5,10,0,10" Source="ic_faq.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Margin="0,10,0,0" Text="Evething is here" TextColor="Green" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>
+                        <Label Margin="0,10,0,0" Text="FAQ" TextColor="Black" FontSize="8" HorizontalTextAlignment="End" VerticalTextAlignment="End"/>
+                    </Grid>
+                </Grid>
+            </StackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>
