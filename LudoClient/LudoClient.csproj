@@ -165,6 +165,9 @@
 	  <MauiXaml Update="TabHandeler.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="VerificationPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="WaitingRoom.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
