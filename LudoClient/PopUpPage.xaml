@@ -14,9 +14,8 @@
        RowDefinitions=".8*,5*,1*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
 
             <StackLayout Grid.Row="1" Grid.Column="1" >
-                <!--Convert these into components-->
                 <Label Text="Redeem your Coupon Code" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                <Image Source="input_addcash.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <local:EditField Title="Redeem your Coupon Code" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
             </StackLayout>
             <!--Convert these into components-->
             <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>

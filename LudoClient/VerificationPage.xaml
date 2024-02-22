@@ -27,13 +27,13 @@
         <Grid Grid.Row="2" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
               WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
               HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
-              RowDefinitions=".8*,11*,.4*" ColumnDefinitions=".02*,1*,.02*">
-            <StackLayout Grid.Row="1" Grid.Column="1" >
+              RowDefinitions=".1*,8*,.1*" ColumnDefinitions=".06*,1*,.06*">
+            <StackLayout Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <!--Convert these into components-->
-                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="input_addcash.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <local:EditField Title="MOBILE NUMBER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="PAN CARD" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="BANK ACCOUNT" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
             </StackLayout>
         </Grid>
     </Grid>

@@ -10,7 +10,7 @@ namespace LudoClient
 
             //MainPage = new AppShell();
             //MainPage = new DailyBonusPage();
-            MainPage = new PanCardVerficationPage();
+            MainPage = new PopUpPage();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS

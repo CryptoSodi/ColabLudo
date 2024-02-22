@@ -6,20 +6,26 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              BackgroundImageSource="background.png">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
-          RowDefinitions=".1*,5*,.8*,.1*" ColumnDefinitions=".01*,1*,.01*">
+          RowDefinitions=".1*,5*,.3*,.1*" ColumnDefinitions=".01*,1*,.01*">
         <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="verification_status_main_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
         <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="CenterAndExpand"
               WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
               HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
-              RowDefinitions=".2*,1.7*,0.1*,1*,0.1*,1*,0.1*,1*,.2*" ColumnDefinitions=".12*,1*,1*,.12*">
+              RowDefinitions=".2*,1.7*,3.3*,.3*" ColumnDefinitions=".10*,1*,.10*">
 
-            <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="10" Color="White" Background="Transparent"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-            <Image Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="3" Source="input_inner_pancard.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Color="White" Background="Transparent"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            <Image Grid.Row="1" Grid.Column="1" Margin="3" Source="input_inner_pancard.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
 
-            <local:EditField Title="PAN CARD HOLDER NAME" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" />
-            <local:EditField Title="PAN NUMBER" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" />
-            <local:EditField Title="DATE OF BIRTH" Margin="0,0,10,0" Grid.Row="7" Grid.Column="1" />
-            <local:EditField Title="STATE" Margin="10,0,0,0" Grid.Row="7" Grid.Column="2"/>
+            <StackLayout Grid.Row="2" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <!--Convert these into components-->
+                <local:EditField Title="PAN CARD HOLDER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="PAN NUMBER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+            </StackLayout>
         </Grid>
+        <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Margin="10,0,10,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
     </Grid>
 </ContentPage>
