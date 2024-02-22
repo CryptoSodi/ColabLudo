@@ -24,23 +24,19 @@
             
             <BoxView Grid.Row="4" Margin="30,10,30,0" CornerRadius="10,10,0,0" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
 
-            <Grid Grid.Row="4" Margin="30,15,30,0" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" 
-               RowDefinitions=".3*,4*,2*,2*,.5*">
-                <Grid Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-                    <Label Text="ADD CASH" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Start" />
-                    <Image Source="input_addcash.png" Margin="40,0,40,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Image Source="after_add_cash_bg.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+            <StackLayout Spacing="10" Grid.Row="4" Margin="30,15,30,0" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >
+                <local:EditField Title="ADD CASH" Margin="30,5,30,0" HorizontalOptions="FillAndExpand" VerticalOptions="Start"/>
+                <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                    <Image Source="after_add_cash_bg.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="Center"/>
                 </Grid>
-                <Grid Grid.Row="2" Margin="20,0,20,0" ColumnSpacing="15" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" 
-                      ColumnDefinitions="1*,1*,1*">
-                    <Image                 Source="btn_orange.png" Aspect="AspectFit"/>
-                    <Image Grid.Column="1" Source="btn_blue.png" Aspect="AspectFit"/>
-                    <Image Grid.Column="2" Source="btn_pink.png" Aspect="AspectFit"/>
-                </Grid>
-                <Image Grid.Row="3" Margin="0,5,0,5" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
-            </Grid>
+                <StackLayout Orientation="Horizontal" Grid.Row="2" Margin="20,0,20,0" Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <Image                 Source="btn_orange.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand"/>
+                    <Image Grid.Column="1" Source="btn_blue.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand"/>
+                    <Image Grid.Column="2" Source="btn_pink.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand"/>
+                </StackLayout>
+                <Image Grid.Row="3" Margin="0,0,0,2" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            </StackLayout>
             <BoxView Grid.Row="5" Margin="30,0,30,0" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-
             <Grid Grid.Row="5" Margin="30,10,30,10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
                   ColumnDefinitions="1*,1*">
                 <BoxView Margin="10,0,5,0" CornerRadius="5" BackgroundColor="#3F55C4" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
@@ -56,8 +52,6 @@
                     <Label Grid.Row="1" Text="REDEEM COUPNS" FontSize="12" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                 </Grid>
             </Grid>
-            
-
         </Grid>
         <local:BottomNavigation Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="3" />
     </Grid>
