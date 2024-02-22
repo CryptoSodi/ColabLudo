@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Runtime;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 namespace LudoClient
 {
@@ -10,7 +11,20 @@ namespace LudoClient
             : base(handle, ownership)
         {
         }
+        //Old code
+        //protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+        //This code will remove the underline from the Entery Field in Android version
+        protected override MauiApp CreateMauiApp()
+        {
+            // Remove Entry control underline
+            Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
+            {
+                h.PlatformView.BackgroundTintList =
+                    Android.Content.Res.ColorStateList.ValueOf(Colors.Transparent.ToAndroid());
+            });
 
-        protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+            return MauiProgram.CreateMauiApp();
+        }
+
     }
 }

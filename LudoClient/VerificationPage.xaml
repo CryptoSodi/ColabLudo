@@ -9,7 +9,7 @@
           RowDefinitions=".1*,.8*,5*,.1*" ColumnDefinitions=".01*,1*,.01*">
 
         <Image Grid.Row="1" Grid.Column="1" x:Name="verify_bg" Source="verify_info_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-        <StackLayout Grid.Row="1" Grid.Column="1" Padding="10,0,10,0" Orientation="Horizontal" 
+        <StackLayout Grid.Row="1" Grid.Column="1" Padding="15,0,15,0" Orientation="Horizontal" 
               WidthRequest="{Binding Source={x:Reference verify_bg}, Path=Width}" 
               HeightRequest="{Binding Source={x:Reference verify_bg}, Path=Height}">
             <Image Source="ic_verify_account.png" Margin="0,0,-5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>

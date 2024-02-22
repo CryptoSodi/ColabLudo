@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.PanCardVerficationPage"
+             Title="PanCardVerficationPage"             
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             BackgroundImageSource="background.png">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+          RowDefinitions=".1*,5*,.8*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="verification_status_main_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="CenterAndExpand"
+              WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+              HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+              RowDefinitions=".2*,1.7*,0.1*,1*,0.1*,1*,0.1*,1*,.2*" ColumnDefinitions=".12*,1*,1*,.12*">
+
+            <BoxView Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="10" Color="White" Background="Transparent"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            <Image Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="3" Source="input_inner_pancard.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+
+            <local:EditField Title="PAN CARD HOLDER NAME" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" />
+            <local:EditField Title="PAN NUMBER" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="2" />
+            <local:EditField Title="DATE OF BIRTH" Margin="0,0,10,0" Grid.Row="7" Grid.Column="1" />
+            <local:EditField Title="STATE" Margin="10,0,0,0" Grid.Row="7" Grid.Column="2"/>
+        </Grid>
+    </Grid>
+</ContentPage>
