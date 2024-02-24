@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.ResultCardLong">
+    <Grid Margin="25,0,25,0">
+        <Image x:Name="BgImage" Aspect="AspectFit" Source="user_main_bg_gold.png" />
+        <Grid HeightRequest="{Binding Source={x:Reference BgImage}, Path=Height}"
+               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,2.2*,.2*">
+            <Image Grid.Row="1" Grid.Column="1" Source="star_gold.png" />
+            <Image Margin="0,-4,0,-4" Grid.Column="2" Grid.RowSpan="3" Source="gold_border.png"/>
+            <Label Text="Tassaduq" FontSize="20" Grid.Row="1" Grid.Column="3" VerticalOptions="Center"/>
+            <BoxView CornerRadius="5" Grid.Row="1" Grid.Column="4" BackgroundColor="Purple" HorizontalOptions="FillAndExpand"/>
+        </Grid>
+    </Grid>
+</ContentView>

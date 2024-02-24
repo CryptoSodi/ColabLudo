@@ -69,10 +69,37 @@
 	  <None Remove="Resources\Images\Player.png" />
 	  <None Remove="Resources\Images\playwithfriends.png" />
 	  <None Remove="Resources\Images\practice.png" />
+	  <None Remove="Resources\Images\results\btn_exit.png" />
+	  <None Remove="Resources\Images\results\btn_playagain.png" />
+	  <None Remove="Resources\Images\results\gold_border.png" />
+	  <None Remove="Resources\Images\results\ic_chips.png" />
+	  <None Remove="Resources\Images\results\ic_chips_spades.png" />
+	  <None Remove="Resources\Images\results\spinner_bk_red_glow.png" />
+	  <None Remove="Resources\Images\results\star_gold.png" />
+	  <None Remove="Resources\Images\results\star_silver.png" />
+	  <None Remove="Resources\Images\results\strips_big.png" />
+	  <None Remove="Resources\Images\results\ttl_results.png" />
+	  <None Remove="Resources\Images\results\user_main_bg.png" />
+	  <None Remove="Resources\Images\results\user_main_bg_gold.png" />
 	  <None Remove="Resources\Images\tournament.png" />
 	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\vs_bgsharedassets2.assets.png" />
 	  <None Remove="Resources\Images\vs_sharedassets2.assets.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiImage Include="Resources\Images\results\btn_exit.png" />
+	  <MauiImage Include="Resources\Images\results\btn_playagain.png" />
+	  <MauiImage Include="Resources\Images\results\gold_border.png" />
+	  <MauiImage Include="Resources\Images\results\ic_chips.png" />
+	  <MauiImage Include="Resources\Images\results\ic_chips_spades.png" />
+	  <MauiImage Include="Resources\Images\results\spinner_bk_red_glow.png" />
+	  <MauiImage Include="Resources\Images\results\star_gold.png" />
+	  <MauiImage Include="Resources\Images\results\star_silver.png" />
+	  <MauiImage Include="Resources\Images\results\strips_big.png" />
+	  <MauiImage Include="Resources\Images\results\ttl_results.png" />
+	  <MauiImage Include="Resources\Images\results\user_main_bg.png" />
+	  <MauiImage Include="Resources\Images\results\user_main_bg_gold.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -106,6 +133,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\PlayerBoxLong.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\ResultCardLong.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\SettingsSwitch.xaml">
