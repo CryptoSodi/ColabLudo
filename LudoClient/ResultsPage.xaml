@@ -12,11 +12,18 @@
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"
               RowDefinitions=".1*,.8*,2.4*,.2*,1*,4*,.4*,.8*" ColumnDefinitions=".01*,1*,.01*">
             <Image Grid.Row="2" Grid.Column="1" Grid.RowSpan="3" Source="ttl_results.png" VerticalOptions="End"/>
-            <StackLayout Grid.Row="3" Grid.RowSpan="3" Grid.Column="1" Spacing="10" VerticalOptions="Start">
-                <local:ResultCardLong Margin="0,2,0,0"/>
-                <local:ResultCardLong />
-                <local:ResultCardLong />
-                <local:ResultCardLong />
+            <StackLayout Grid.Row="3" Grid.RowSpan="3" Grid.Column="1" Spacing="6" VerticalOptions="Start">
+                <local:ResultCardLong Margin="0,2,0,0"
+                    BackGroundImage="user_main_bg_gold.png" 
+                    BorderImage="gold_border.png" 
+                    StarImage="star_gold.png"
+                    PlayerName="Tassaduq"/>
+                <local:ResultCardLong 
+                    PlayerName="Haris"/>
+                <local:ResultCardLong 
+                    PlayerName="Eliya"/>
+                <local:ResultCardLong 
+                    PlayerName="Mazhar"/>
             </StackLayout>
             <StackLayout Grid.Row="6" Grid.Column="1" Spacing="10" 
                 Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Center" >

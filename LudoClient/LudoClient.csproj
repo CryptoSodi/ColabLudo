@@ -74,6 +74,7 @@
 	  <None Remove="Resources\Images\results\gold_border.png" />
 	  <None Remove="Resources\Images\results\ic_chips.png" />
 	  <None Remove="Resources\Images\results\ic_chips_spades.png" />
+	  <None Remove="Resources\Images\results\silver_border.png" />
 	  <None Remove="Resources\Images\results\spinner_bk_red_glow.png" />
 	  <None Remove="Resources\Images\results\star_gold.png" />
 	  <None Remove="Resources\Images\results\star_silver.png" />
@@ -108,6 +109,10 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="SimpleToolkit.Core" Version="4.0.0" />
 		<PackageReference Include="SimpleToolkit.SimpleShell" Version="4.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiImage Include="Resources\Images\results\silver_border.png" />
 	</ItemGroup>
 
 	<ItemGroup>
