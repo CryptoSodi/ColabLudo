@@ -5,7 +5,7 @@
     <Grid Margin="25,0,25,0">
         <Image x:Name="BgImageItem" Aspect="AspectFit" Source="user_main_bg.png" />
         <Grid HeightRequest="{Binding Source={x:Reference BgImageItem}, Path=Height}"
-               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,2.2*,.2*">
+               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,2.2*,.2*" >
             <Grid Grid.Row="1" Grid.Column="1">
                 <Image x:Name="StarTypeItem" Source="star_silver.png" />
                 <Label x:Name="StarNumberItem" Text="1" FontSize="14" TextColor="Black" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
@@ -23,9 +23,9 @@
                 </Frame>
                 <Image x:Name="BorderImageItem" Source="silver_border.png" Aspect="AspectFit"/>
             </Grid>
-            <Label x:Name="PlayerNameItem" Text="Tassaduq" TextColor="Black" FontSize="20" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center"/>
+            <Label x:Name="PlayerNameItem" Text="Player" TextColor="Black" FontSize="20" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center"/>
             <Grid Grid.Row="1" Grid.Column="4" HorizontalOptions="FillAndExpand">
-                <BoxView CornerRadius="5" Color="Purple" />
+                <BoxView x:Name="WinAmountColorItem" CornerRadius="5" Color="Purple" />
                 <StackLayout Margin="5" Spacing="5" Orientation="Horizontal">
                     <Image Source="ic_chips_spades.png" Aspect="AspectFit" />
                     <Label x:Name="ChipCountItem" Text="+1" FontSize="14" FontAttributes="Bold" VerticalTextAlignment="Center"/>
