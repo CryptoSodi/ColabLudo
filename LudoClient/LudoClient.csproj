@@ -57,12 +57,26 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\Images\AddCash\addcash_popup_bg.png" />
+	  <None Remove="Resources\Images\AddCash\addmoney_bg.png" />
+	  <None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
+	  <None Remove="Resources\Images\AddCash\after_add_cash_bg.png" />
+	  <None Remove="Resources\Images\AddCash\btn_blue.png" />
+	  <None Remove="Resources\Images\AddCash\btn_orange.png" />
+	  <None Remove="Resources\Images\AddCash\btn_pink.png" />
+	  <None Remove="Resources\Images\AddCash\ic_coupon.png" />
+	  <None Remove="Resources\Images\AddCash\ic_redeem.png" />
+	  <None Remove="Resources\Images\AddCash\ic_rs_input.png" />
 	  <None Remove="Resources\Images\background.png" />
 	  <None Remove="Resources\Images\bg_sharesharedassets2.assets.png" />
 	  <None Remove="Resources\Images\btn_sharesharedassets2.assets.png" />
 	  <None Remove="Resources\Images\btn_whatsappsharedassets2.assets.png" />
 	  <None Remove="Resources\Images\cashgame.png" />
 	  <None Remove="Resources\Images\coin.png" />
+	  <None Remove="Resources\Images\Common\btn_green.png" />
+	  <None Remove="Resources\Images\Common\popup_bg.png" />
+	  <None Remove="Resources\Images\Components\ImageSwitch\line_bg.png" />
+	  <None Remove="Resources\Images\Components\Title\popup_title.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
 	  <None Remove="Resources\Images\invite_user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\offline.png" />
@@ -89,6 +103,20 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\Images\AddCash\addcash_popup_bg.png" />
+	  <MauiImage Include="Resources\Images\AddCash\addmoney_bg.png" />
+	  <MauiImage Include="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
+	  <MauiImage Include="Resources\Images\AddCash\after_add_cash_bg.png" />
+	  <MauiImage Include="Resources\Images\AddCash\btn_blue.png" />
+	  <MauiImage Include="Resources\Images\AddCash\btn_orange.png" />
+	  <MauiImage Include="Resources\Images\AddCash\btn_pink.png" />
+	  <MauiImage Include="Resources\Images\AddCash\ic_coupon.png" />
+	  <MauiImage Include="Resources\Images\AddCash\ic_redeem.png" />
+	  <MauiImage Include="Resources\Images\AddCash\ic_rs_input.png" />
+	  <MauiImage Include="Resources\Images\Common\btn_green.png" />
+	  <MauiImage Include="Resources\Images\Common\popup_bg.png" />
+	  <MauiImage Include="Resources\Images\Components\ImageSwitch\line_bg.png" />
+	  <MauiImage Include="Resources\Images\Components\Title\popup_title.png" />
 	  <MauiImage Include="Resources\Images\results\btn_exit.png" />
 	  <MauiImage Include="Resources\Images\results\btn_playagain.png" />
 	  <MauiImage Include="Resources\Images\results\gold_border.png" />
