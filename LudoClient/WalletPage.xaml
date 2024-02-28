@@ -3,11 +3,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.WalletPage"
              BackgroundImageSource="background.png"
-             IconImageSource="ic_wallet.png">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+    
+    <Grid HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+          RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
+
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="wallet_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+           HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+           RowDefinitions=".8*,1.3*,6*" ColumnDefinitions=".1*,1*,.1*">
+            <local:TitleBar Grid.Column="1" TitleImage="title_wallet.png" Title="" Margin="0,-28,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            
+            <BoxView Grid.Row="1" Grid.ColumnSpan="3" BackgroundColor="White" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+
+            <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+
+            <StackLayout Grid.Row="2" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <!--Convert these into components-->
+                <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            </StackLayout>
+
+        </Grid>
+    </Grid>
 </ContentPage>

@@ -7,10 +7,8 @@
     xmlns:controls="clr-namespace:LudoClient.ControlView"
     xmlns:simpleShell="clr-namespace:SimpleToolkit.SimpleShell;assembly=SimpleToolkit.SimpleShell"
     Background="{AppThemeBinding Default=White, Dark=Black}">
-
     <TabBar x:Name="tabBar">
     </TabBar>
-
     <simpleShell:SimpleShell.RootPageContainer>
         <Grid IgnoreSafeArea="True">
             <simpleShell:SimpleNavigationHost

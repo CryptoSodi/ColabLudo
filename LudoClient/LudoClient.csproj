@@ -189,6 +189,8 @@
 	  <None Remove="Resources\Images\WaitingRoom\player2_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player3_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player4_00.png" />
+	  <None Remove="Resources\Images\Wallet\title_wallet.png" />
+	  <None Remove="Resources\Images\Wallet\wallet_bg.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -294,6 +296,8 @@
 	  <MauiImage Include="Resources\Images\WaitingRoom\player2_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player3_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player4_00.png" />
+	  <MauiImage Include="Resources\Images\Wallet\title_wallet.png" />
+	  <MauiImage Include="Resources\Images\Wallet\wallet_bg.png" />
 	</ItemGroup>
 
 	<ItemGroup>

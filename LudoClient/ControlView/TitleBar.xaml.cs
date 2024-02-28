@@ -12,7 +12,17 @@ public partial class TitleBar : ContentView
         get => GetValue(TitleBarProperty) as string;
         set => SetValue(TitleBarProperty, value);
     }
-    
+    public BindableProperty TitleBarImageProperty = BindableProperty.Create(nameof(TitleImage), typeof(string), typeof(TitleBar), propertyChanged: (bindable, oldValue, newValue) =>
+    {
+        var control = (TitleBar)bindable;
+        control.TitleBarImage.Source = (string)newValue;
+    });
+    public string TitleImage
+    {
+        get => GetValue(TitleBarImageProperty) as string;
+        set => SetValue(TitleBarImageProperty, value);
+    }
+
     public TitleBar()
 	{
 		InitializeComponent();

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.TitleBar">
     <Grid>
-        <Image Source="popup_title.png" Aspect="AspectFit" />
+        <Image x:Name="TitleBarImage" Source="popup_title.png" Aspect="AspectFit" />
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="1.5*"/>
