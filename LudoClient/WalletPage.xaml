@@ -4,7 +4,6 @@
              x:Class="LudoClient.WalletPage"
              BackgroundImageSource="background.png"
              xmlns:local="clr-namespace:LudoClient.ControlView">
-    
     <Grid HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
           RowDefinitions=".01*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
         <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="wallet_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
@@ -66,7 +65,6 @@
                     </Grid>
                 </Grid>
             </local:Capsule>
-
             <local:Capsule ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" Padding="0,0,0,-20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
                     <Image Source="ic_addmoney.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
