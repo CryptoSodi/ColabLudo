@@ -9,7 +9,7 @@
                 <RowDefinition Height="1.5*"/>
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
-            <Label x:Name="TitleBarText" Text="Settings" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"></Label>
+            <Label x:Name="TitleBarText" Text="Settings" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
     </Grid>
 </ContentView>

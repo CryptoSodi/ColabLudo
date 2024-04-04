@@ -189,7 +189,23 @@
 	  <None Remove="Resources\Images\WaitingRoom\player2_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player3_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player4_00.png" />
+	  <None Remove="Resources\Images\Wallet\btn_outer.png" />
+	  <None Remove="Resources\Images\Wallet\btn_verify_account.png" />
+	  <None Remove="Resources\Images\Wallet\ic_total_wallet.png" />
+	  <None Remove="Resources\Images\Wallet\ic_yourwinnings.png" />
+	  <None Remove="Resources\Images\Wallet\info_1.png" />
+	  <None Remove="Resources\Images\Wallet\info_2.png" />
+	  <None Remove="Resources\Images\Wallet\info_3.png" />
+	  <None Remove="Resources\Images\Wallet\info_4.png" />
+	  <None Remove="Resources\Images\Wallet\line_bg_orange.png" />
+	  <None Remove="Resources\Images\Wallet\reffer_earn.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_1.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_2.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_3.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_4.png" />
 	  <None Remove="Resources\Images\Wallet\title_wallet.png" />
+	  <None Remove="Resources\Images\Wallet\total_ava_bal_bg.png" />
+	  <None Remove="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <None Remove="Resources\Images\Wallet\wallet_bg.png" />
 	</ItemGroup>
 
@@ -296,7 +312,23 @@
 	  <MauiImage Include="Resources\Images\WaitingRoom\player2_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player3_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player4_00.png" />
+	  <MauiImage Include="Resources\Images\Wallet\btn_outer.png" />
+	  <MauiImage Include="Resources\Images\Wallet\btn_verify_account.png" />
+	  <MauiImage Include="Resources\Images\Wallet\ic_total_wallet.png" />
+	  <MauiImage Include="Resources\Images\Wallet\ic_yourwinnings.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_1.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_2.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_3.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_4.png" />
+	  <MauiImage Include="Resources\Images\Wallet\line_bg_orange.png" />
+	  <MauiImage Include="Resources\Images\Wallet\reffer_earn.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_1.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_2.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_3.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_4.png" />
 	  <MauiImage Include="Resources\Images\Wallet\title_wallet.png" />
+	  <MauiImage Include="Resources\Images\Wallet\total_ava_bal_bg.png" />
+	  <MauiImage Include="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <MauiImage Include="Resources\Images\Wallet\wallet_bg.png" />
 	</ItemGroup>
 
@@ -322,6 +354,9 @@
 	  <MauiXaml Update="ControlView\BottomNavigation.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="ControlView\Capsule.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="ControlView\DailyBonusCard.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -344,6 +379,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\ShareBox.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\StaticImage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\StatisticCard.xaml">

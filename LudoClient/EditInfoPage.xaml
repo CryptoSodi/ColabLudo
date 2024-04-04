@@ -7,28 +7,24 @@
              BackgroundImageSource="background.png">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
           RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
-        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="popup_bg_long.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
-           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
-           HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
-           RowDefinitions=".8*,5.7*,.3*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
-
-            <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            <StackLayout Margin="10,-5,10,5" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <!--Convert these into components-->
-                <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+        <local:Capsule ImageSource="popup_bg_long.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".8*,5.7*,.3*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
+                <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Margin="10,-5,10,5" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <!--Convert these into components-->
+                    <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    </StackLayout>
+                    <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
-                <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            </StackLayout>
-            <!--Convert these into components-->
-            <Image Grid.Row="3" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-
-        </Grid>
+                <!--Convert these into components-->
+                <Image Grid.Row="3" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+            </Grid>
+        </local:Capsule>
     </Grid>
 </ContentPage>

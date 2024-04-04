@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.Capsule">
+    <ContentView.Content>
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="popup_bg_long.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+           HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+           RowDefinitions=".8*,5.7*,.3*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
+            <ContentPresenter Grid.Row="1" Grid.Column="1"
+                           VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+        </Grid>
+    </ContentView.Content>
+</ContentView>
+
+
+            <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <StackLayout Margin="10,-5,10,5" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <!--Convert these into components-->
+                <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            </StackLayout>
+            <!--Convert these into components-->
+            <Image Grid.Row="3" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+
+
+ <Grid Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <Image Source="total_ava_bal_bg.png" Aspect="AspectFit" VerticalOptions="Start"/>
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+                    RowDefinitions=".2*,.5*,1*,1*,.5*,.2*" ColumnDefinitions=".1*,.3*,1.5*,.5*,.2*">
+                    <Image Grid.Row="2" Grid.Column="1" Grid.RowSpan="2" Source="ic_total_wallet.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Label Grid.Row="2" Grid.Column="2" Text="TOTAL BALANCE AVILABLE" TextColor="Black"/>
+                    <Label Grid.Row="3" Grid.Column="2" Text="Winnings" TextColor="Black"/>
+                    <BoxView Grid.Row="2" Grid.RowSpan="2" Grid.Column="3" Margin="0,5,0,5" CornerRadius="5" Color="Gray"/>
+                    <StackLayout Margin="0,5,0,5" Grid.Row="2" Grid.RowSpan="2" Grid.Column="3" Orientation="Horizontal" Spacing="2" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
+                        <Image Margin="3,20,0,20" Source="ic_total_wallet.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                        <Label Text="186" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                    </StackLayout>
+                </Grid>
+            </Grid>
+
+
+
+            <?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.WalletPage"
+             BackgroundImageSource="background.png"
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+
+    <Grid BackgroundColor="Red" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+          RowDefinitions=".01*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="wallet_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+        <Grid Grid.Row="1" Grid.Column="1" BackgroundColor="Green"  VerticalOptions="Start" HorizontalOptions="Center"
+           RowDefinitions=".8*,.9*,1*,5*" ColumnDefinitions=".1*,1*,.1*" >
+            <local:TitleBar Grid.Column="1" TitleImage="title_wallet.png" Title="" Margin="0,-28,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+            <Grid Grid.Row="1"  Grid.ColumnSpan="3" BackgroundColor="Purple"  Margin="0,0,0,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                <BoxView CornerRadius="5" Color="White" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                <Image Source="total_ava_bal_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="FillAndExpand"/>
+                <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <Image Source="ic_total_wallet.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                   
+                </StackLayout>
+            </Grid>
+
+            <Grid Grid.Row="2" Grid.Column="1"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                <BoxView CornerRadius="5" Color="White" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
+                    <Image Source="reffer_earn.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <StackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
+                        <Label Text="Reffer and Earn" TextColor="Black" Margin="0,-4,0,-4" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Text="Reffer Friends and Win Cash" Margin="0,-4,0,0" TextColor="Black" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <StackLayout Spacing="5" Orientation="Horizontal" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" >
+                            <Image Source="btn_whatsapp.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="Start"/>
+                            <Image Source="btn_share_link.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="StartAndExpand"/>
+                            <Image Source="btn_info.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="End"/>
+                        </StackLayout>
+                    </StackLayout>
+                </StackLayout>
+            </Grid>
+
+            <StackLayout Spacing="20" Grid.Row="3" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <!--Convert these into components-->
+                <Image Source="btn_outer.png" Aspect="AspectFit" VerticalOptions="Start"/>
+                <Image Source="verify_acc_bg.png" Margin="10,-30,10,0" Aspect="AspectFit" VerticalOptions="Start"/>
+                <Image Source="line_bg_orange.png" Margin="10,0,10,0" Aspect="AspectFit" VerticalOptions="Start"/>
+
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:EditField Title="SIGNUP BONUS" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+            </StackLayout>
+        </Grid>
+    </Grid>
+</ContentPage>
