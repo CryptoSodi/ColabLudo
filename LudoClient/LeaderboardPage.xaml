@@ -11,8 +11,10 @@
             <Grid Margin="0,20,0,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
                     <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" ColumnDefinitions=".1*,.1*">
-                        <local:ImageSwitch SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" />
-                        <local:ImageSwitch Grid.Column="1" SwitchOn="tab_normal.png" SwitchOff="tab_active.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" />
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+
+                        <local:ImageSwitch x:Name="Tab2" SwitchText="Global" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        
                     </Grid>
                     <local:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
@@ -22,7 +24,7 @@
                         </Grid>
                     </local:Capsule>
                 </Grid>
-                <ScrollView Margin="0,5,0,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <ScrollView Margin="2,5,2,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <VerticalStackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <local:Capsule ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
                             <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">

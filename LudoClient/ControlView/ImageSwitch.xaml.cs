@@ -2,50 +2,54 @@ namespace LudoClient.ControlView;
 
 public partial class ImageSwitch : ContentView
 {
-    public static readonly BindableProperty SwitchSourceProperty = BindableProperty.Create(
-        nameof(SwitchSource),
-        typeof(string),
-        typeof(ImageSwitch),
-        propertyChanged: OnSwitchSourceChanged);
+    // Event to notify when the switch wants to be activated (for tab functionality)
+    public event EventHandler<EventArgs> RequestActivate;
+    public static readonly BindableProperty SwitchSourceProperty = BindableProperty.Create(nameof(SwitchSource),typeof(string),typeof(ImageSwitch),propertyChanged: OnSwitchSourceChanged);
+    public static readonly BindableProperty SwitchOnProperty = BindableProperty.Create(nameof(SwitchOn),typeof(string),typeof(ImageSwitch),default(string));
+    public static readonly BindableProperty SwitchOffProperty = BindableProperty.Create(nameof(SwitchOff),typeof(string),typeof(ImageSwitch),default(string));
+    public static readonly BindableProperty IsIndependentProperty = BindableProperty.Create(nameof(IsIndependent), typeof(bool), typeof(ImageSwitch), defaultValue: true);
+    public BindableProperty SwitchTextProperty = BindableProperty.Create(nameof(SwitchText), typeof(string), typeof(ImageSwitch), propertyChanged: (bindable, oldValue, newValue) =>
+    {
+        var control = (ImageSwitch)bindable;
+        control.DisplayText.Text = (string)newValue;
+    });
+    public string SwitchText
+    {
+        get => GetValue(SwitchTextProperty) as string;
+        set => SetValue(SwitchTextProperty, value);
+    }
 
-    public static readonly BindableProperty SwitchOnProperty = BindableProperty.Create(
-        nameof(SwitchOn),
-        typeof(string),
-        typeof(ImageSwitch),
-        default(string));
-
-    public static readonly BindableProperty SwitchOffProperty = BindableProperty.Create(
-        nameof(SwitchOff),
-        typeof(string),
-        typeof(ImageSwitch),
-        default(string));
-
+    public bool IsIndependent
+    {
+        get => (bool)GetValue(IsIndependentProperty);
+        set => SetValue(IsIndependentProperty, value);
+    }
     public string SwitchSource
     {
         get => (string)GetValue(SwitchSourceProperty);
         set => SetValue(SwitchSourceProperty, value);
     }
-
     public string SwitchOn
     {
         get => (string)GetValue(SwitchOnProperty);
         set => SetValue(SwitchOnProperty, value);
     }
-
     public string SwitchOff
     {
         get => (string)GetValue(SwitchOffProperty);
         set => SetValue(SwitchOffProperty, value);
     }
-
     public bool SwitchState { get; set; } = true;
 
     public ImageSwitch()
     {
         InitializeComponent();
-        SwitchSource = SwitchOn;
+        UpdateSwitchSource();
     }
-
+    private void UpdateSwitchSource()
+    {
+        SwitchSource = SwitchState ? SwitchOn : SwitchOff;
+    }
     protected override void OnPropertyChanged([System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
@@ -68,7 +72,16 @@ public partial class ImageSwitch : ContentView
 
     private void SwitchImage_Clicked(object sender, EventArgs e)
     {
-        SwitchState = !SwitchState;
-        SwitchSource = SwitchState ? SwitchOn : SwitchOff;
+        if (IsIndependent)
+        {
+            // Toggle own state
+            SwitchState = !SwitchState;
+            UpdateSwitchSource();
+        }
+        else
+        {
+            // Notify parent container (for tab functionality)
+            RequestActivate?.Invoke(this, EventArgs.Empty);
+        }
     }
 }
