@@ -4,6 +4,6 @@
              x:Class="LudoClient.ControlView.ImageSwitch">
     <Grid>
         <Image x:Name="SwitchImage" Aspect="AspectFit" Margin="0,8,5,8" />
-        <ImageButton Clicked="SwitchImage_Clicked" Aspect="AspectFit" />
+        <ImageButton Clicked="SwitchImage_Clicked" Aspect="AspectFit" Opacity=".1"/>
     </Grid>
 </ContentView>

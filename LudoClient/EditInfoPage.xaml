@@ -20,8 +20,8 @@
                 <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                    <local:EditField Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <local:EditField Title="GANDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:DatePickerControl Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:DropDown Title="GENDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
                 <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>

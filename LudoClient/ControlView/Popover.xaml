@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             xmlns:simpleCore="clr-namespace:SimpleToolkit.Core;assembly=SimpleToolkit.Core"
+             xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
+             x:Class="LudoClient.ControlView.Popover">
+    <VerticalStackLayout
+    VerticalOptions="Center" HorizontalOptions="Center"
+    Spacing="30">
+
+        <ImageButton Clicked="ButtonClicked" Source="popover.png" WidthRequest="20" HeightRequest="20">
+            <simpleCore:Popover.AttachedPopover>
+                <simpleCore:Popover>
+                    <Border Stroke="Transparent" StrokeThickness="0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="4"/>
+                        </Border.StrokeShape>
+                        <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                            <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
+                                <Grid WidthRequest="180" HeightRequest="35">
+                                    <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                    <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                        <Image x:Name="SwitchImage" Source="btn_exit_to_lobby.png" Aspect="AspectFit" Margin="0,8,5,8" />
+                                        <ImageButton Clicked="BtnExitToLobby" Aspect="AspectFit" Opacity=".1"/>
+                                    </Grid>
+                                </Grid>
+                                <local:VolumeSwitch SettingText="Music" WidthRequest="180" HeightRequest="35"/>
+                                <local:VolumeSwitch SettingText="Sound" WidthRequest="180" HeightRequest="35"/>
+                            </VerticalStackLayout>
+                        </acrylic:AcrylicView>
+                    </Border>
+                </simpleCore:Popover>
+            </simpleCore:Popover.AttachedPopover>
+        </ImageButton>
+        <Grid>
+            <local:MessageBoxConfirm x:Name="messageBoxCcnfirm" SettingTitle="Exit" SettingText="Are you sure you want to exit? You will lose your bet amount." IsVisible="False" />
+        </Grid>
+    </VerticalStackLayout>
+</ContentView>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.MessageBoxConfirm"
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
+   RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        <Image Grid.Column="1" x:Name="grid_bg" Source="popup_bg0.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
+          WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
+          HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
+          RowDefinitions=".8*,.2*,4.5*,1.5*,.7*" ColumnDefinitions=".1*,1*,.1*">
+            <local:TitleBar Grid.Column="1" x:Name="SettingTitleView" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+            <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <StackLayout Grid.Row="2" Grid.Column="1" Margin="10,0,10,0" VerticalOptions="Center" HorizontalOptions="Center">
+                <Label x:Name="SettingTextView" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+            </StackLayout>
+            <Grid Grid.Row="3" Grid.Column="1" Margin="0,16,0,16">
+                <!-- Image -->
+                <Image Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+                <!-- Text -->
+                <Label Text="Yes" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"  FontSize="Small" TextColor="White"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</ContentView>
