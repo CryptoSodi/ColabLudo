@@ -17,7 +17,7 @@
                         
                     </Grid>
                     <local:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
-                        <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
+                        <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
                             <Label Text="RANK" TextColor="White" HorizontalOptions="CenterAndExpand"/>
                             <Label Grid.Column="1" Text="PLAYERS" TextColor="White" HorizontalOptions="StartAndExpand"/>
                             <Label Grid.Column="2" Text="GAME WINS" TextColor="White" HorizontalOptions="CenterAndExpand"/>
