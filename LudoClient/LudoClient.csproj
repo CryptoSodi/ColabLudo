@@ -142,6 +142,7 @@
 	  <None Remove="Resources\Images\HelpDeskPage\signin_inner_bg.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\verification_status_main_bg.png" />
 	  <None Remove="Resources\Images\invite_user_sharedassets2.assets.png" />
+	  <None Remove="Resources\Images\Leaderboard\title_leaderboard.png" />
 	  <None Remove="Resources\Images\offline.png" />
 	  <None Remove="Resources\Images\Player.png" />
 	  <None Remove="Resources\Images\playwithfriends.png" />
@@ -175,6 +176,9 @@
 	  <None Remove="Resources\Images\Support\privacy.png" />
 	  <None Remove="Resources\Images\Support\support.png" />
 	  <None Remove="Resources\Images\Support\terms.png" />
+	  <None Remove="Resources\Images\Tabs\tab_active.png" />
+	  <None Remove="Resources\Images\Tabs\tab_border.png" />
+	  <None Remove="Resources\Images\Tabs\tab_normal.png" />
 	  <None Remove="Resources\Images\tournament.png" />
 	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\Verification\ic_right_arr.png" />
@@ -189,8 +193,28 @@
 	  <None Remove="Resources\Images\WaitingRoom\player2_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player3_00.png" />
 	  <None Remove="Resources\Images\WaitingRoom\player4_00.png" />
+	  <None Remove="Resources\Images\Wallet\btn_outer.png" />
+	  <None Remove="Resources\Images\Wallet\btn_verify_account.png" />
+	  <None Remove="Resources\Images\Wallet\ic_total_wallet.png" />
+	  <None Remove="Resources\Images\Wallet\ic_yourwinnings.png" />
+	  <None Remove="Resources\Images\Wallet\info_1.png" />
+	  <None Remove="Resources\Images\Wallet\info_2.png" />
+	  <None Remove="Resources\Images\Wallet\info_3.png" />
+	  <None Remove="Resources\Images\Wallet\info_4.png" />
+	  <None Remove="Resources\Images\Wallet\line_bg_orange.png" />
+	  <None Remove="Resources\Images\Wallet\reffer_earn.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_1.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_2.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_3.png" />
+	  <None Remove="Resources\Images\Wallet\subinfo_4.png" />
 	  <None Remove="Resources\Images\Wallet\title_wallet.png" />
+	  <None Remove="Resources\Images\Wallet\total_ava_bal_bg.png" />
+	  <None Remove="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <None Remove="Resources\Images\Wallet\wallet_bg.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -286,6 +310,9 @@
 	  <MauiImage Include="Resources\Images\Support\privacy.png" />
 	  <MauiImage Include="Resources\Images\Support\support.png" />
 	  <MauiImage Include="Resources\Images\Support\terms.png" />
+	  <MauiImage Include="Resources\Images\Tabs\tab_active.png" />
+	  <MauiImage Include="Resources\Images\Tabs\tab_border.png" />
+	  <MauiImage Include="Resources\Images\Tabs\tab_normal.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_right_arr.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_account.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_bank.png" />
@@ -296,7 +323,23 @@
 	  <MauiImage Include="Resources\Images\WaitingRoom\player2_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player3_00.png" />
 	  <MauiImage Include="Resources\Images\WaitingRoom\player4_00.png" />
+	  <MauiImage Include="Resources\Images\Wallet\btn_outer.png" />
+	  <MauiImage Include="Resources\Images\Wallet\btn_verify_account.png" />
+	  <MauiImage Include="Resources\Images\Wallet\ic_total_wallet.png" />
+	  <MauiImage Include="Resources\Images\Wallet\ic_yourwinnings.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_1.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_2.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_3.png" />
+	  <MauiImage Include="Resources\Images\Wallet\info_4.png" />
+	  <MauiImage Include="Resources\Images\Wallet\line_bg_orange.png" />
+	  <MauiImage Include="Resources\Images\Wallet\reffer_earn.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_1.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_2.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_3.png" />
+	  <MauiImage Include="Resources\Images\Wallet\subinfo_4.png" />
 	  <MauiImage Include="Resources\Images\Wallet\title_wallet.png" />
+	  <MauiImage Include="Resources\Images\Wallet\total_ava_bal_bg.png" />
+	  <MauiImage Include="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <MauiImage Include="Resources\Images\Wallet\wallet_bg.png" />
 	</ItemGroup>
 
@@ -320,6 +363,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\BottomNavigation.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\Capsule.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\DailyBonusCard.xaml">
@@ -386,6 +432,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="HelpDeskPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="LeaderboardPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="LoginPage.xaml">

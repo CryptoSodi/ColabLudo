@@ -11,7 +11,7 @@ namespace LudoClient
             //MainPage = new AppShell();
             //MainPage = new DailyBonusPage();
             
-            MainPage = new WalletPage();
+            MainPage = new LeaderboardPage();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS
@@ -24,19 +24,18 @@ namespace LudoClient
 
             window.Width = newWidth;
             window.Height = newHeight;
-            window.X = -10;
-            window.Y = -10;
+            window.X = 2590;
+            window.Y = 40;
             window.Destroying += Window_Destroying;
             return window;
         }
 
         private void Window_Destroying(object sender, EventArgs e)
         {
-            Window window = sender as Window;
+            Window? window = sender as Window;
             try
             {
-                System.Diagnostics.Debug.WriteLine(window.X+"Destroying");
-              
+                System.Diagnostics.Debug.WriteLine(window.X+"Destroying"+ window.Y);
             }
             catch (Exception)
             {
