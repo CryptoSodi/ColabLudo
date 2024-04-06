@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SimpleToolkit.Core;
 using SimpleToolkit.SimpleShell;
-
+using Xe.AcrylicView;
 namespace LudoClient
 {
     public static class MauiProgram
@@ -11,6 +11,7 @@ namespace LudoClient
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseAcrylicView()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
