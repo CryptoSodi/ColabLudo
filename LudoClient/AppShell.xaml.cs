@@ -26,7 +26,7 @@ namespace LudoClient
             AddTab(typeof(DashboardPage), PageType.HomePage);
             AddTab(typeof(FriendsPage), PageType.FriendsPage);
             AddTab(typeof(WalletPage), PageType.WalletPage);
-            AddTab(typeof(RankingPage), PageType.RankingPage);
+            AddTab(typeof(LeaderboardPage), PageType.LeaderboardPage);
 
             Loaded += AppShellLoaded;
         }
@@ -60,6 +60,6 @@ namespace LudoClient
 
     public enum PageType
     {
-        HomePage, FriendsPage, WalletPage, RankingPage
+        HomePage, FriendsPage, WalletPage, LeaderboardPage
     }
 }

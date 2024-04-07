@@ -49,7 +49,7 @@
             <simpleCore:ContentButton
             Grid.Column="2" Clicked="ButtonTapped"
             SemanticProperties.Description="Home page">
-                <c:TabBarIconView Source="icon_ranking.png" Page="RankingPage" WidthRequest="48" HeightRequest="48"/>
+                <c:TabBarIconView Source="icon_ranking.png" Page="LeaderboardPage" WidthRequest="48" HeightRequest="48"/>
             </simpleCore:ContentButton>
             <simpleCore:ContentButton
             Grid.Column="3" Clicked="ButtonTapped"
