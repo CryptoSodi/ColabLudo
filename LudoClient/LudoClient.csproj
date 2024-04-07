@@ -115,6 +115,12 @@
 	  <None Remove="Resources\Images\Components\ShareBox\btn_share_link.png" />
 	  <None Remove="Resources\Images\Components\ShareBox\btn_whatsapp.png" />
 	  <None Remove="Resources\Images\Components\StatisticCard\played_bg.png" />
+	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.png" />
+	  <None Remove="Resources\Images\Components\Tablets\number_1.png" />
+	  <None Remove="Resources\Images\Components\Tablets\number_2.png" />
+	  <None Remove="Resources\Images\Components\Tablets\number_3.png" />
+	  <None Remove="Resources\Images\Components\Tablets\tra_green.png" />
+	  <None Remove="Resources\Images\Components\Tablets\tra_red.png" />
 	  <None Remove="Resources\Images\Components\Title\popup_title.png" />
 	  <None Remove="Resources\Images\Components\Toggle\switch_btn_off.png" />
 	  <None Remove="Resources\Images\Components\Toggle\switch_btn_on.png" />
@@ -214,12 +220,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\Images\Components\Tablets\line_bg_orange.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\number_1.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\number_2.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\number_3.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\tra_green.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\tra_red.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <MauiImage Include="Resources\Images\AddCash\addcash_popup_bg.png" />
-	  <MauiImage Include="Resources\Images\AddCash\addmoney_bg.png" />
 	  <MauiImage Include="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
 	  <MauiImage Include="Resources\Images\AddCash\after_add_cash_bg.png" />
 	  <MauiImage Include="Resources\Images\AddCash\btn_blue.png" />
@@ -245,7 +256,7 @@
 	  <MauiImage Include="Resources\Images\Components\Bottom\btn_sound.png" />
 	  <MauiImage Include="Resources\Images\Components\Bottom\btn_sound_off.png" />
 	  <MauiImage Include="Resources\Images\Components\Bottom\footer.png" />
-	  <MauiImage Include="Resources\Images\Components\contain_gray_bg.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\contain_gray_bg.png" />
 	  <MauiImage Include="Resources\Images\Components\DailyBonusCard\days_current_bg.png" />
 	  <MauiImage Include="Resources\Images\Components\DailyBonusCard\days_gray_bg.png" />
 	  <MauiImage Include="Resources\Images\Components\DailyBonusCard\days_transparent_bg.png" />
@@ -331,7 +342,6 @@
 	  <MauiImage Include="Resources\Images\Wallet\info_2.png" />
 	  <MauiImage Include="Resources\Images\Wallet\info_3.png" />
 	  <MauiImage Include="Resources\Images\Wallet\info_4.png" />
-	  <MauiImage Include="Resources\Images\Wallet\line_bg_orange.png" />
 	  <MauiImage Include="Resources\Images\Wallet\reffer_earn.png" />
 	  <MauiImage Include="Resources\Images\Wallet\subinfo_1.png" />
 	  <MauiImage Include="Resources\Images\Wallet\subinfo_2.png" />
@@ -384,7 +394,13 @@
 	  <MauiXaml Update="ControlView\ImageSwitch.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="ControlView\LeaderboardLongDetailList.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="ControlView\MessageBoxConfirm.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\Player.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\PlayerBox.xaml">
