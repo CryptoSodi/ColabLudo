@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.TransactionPage"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             Title="TransactionPage">
+
+    <Grid HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" RowDefinitions=".01*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
+        <local:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid Margin="0,20,0,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".23*,1*" >
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".4*,.6*" >
+                    <Grid Grid.Column="1" Padding="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" ColumnDefinitions=".1*,.1*,.1*,.1*,.1*">
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="JOINED" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" SwitchText="BONUS" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" SwitchText="ADD CASH" Grid.Column="2" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab4" SwitchText="WITHDRAW" Grid.Column="3" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab5" SwitchText="WIN" Grid.Column="4" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
+                    <local:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                        <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
+                            <Label Text="TYPE" TextColor="White" HorizontalOptions="CenterAndExpand"/>
+                            <Label Grid.Column="1" Text="AMOUNT" TextColor="White" HorizontalOptions="EndAndExpand"/>
+                        </Grid>
+                    </local:Capsule>
+                </Grid>
+                <ScrollView Margin="20,5,20,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <VerticalStackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <Grid>
+                            <Grid x:Name="ExpandSheet" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <local:Capsule ImageSource="expand_card.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                                    <StackLayout Spacing="1" Margin="22,10,0,10" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand">
+                                        <Label Text="You Got Spinner Bonus" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                        <Label Text="TRANSACTION ID : TE123123123123" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                        <Label Text="STATUS : SUCCESS" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                    </StackLayout>
+                                </local:Capsule>
+                            </Grid>
+                            <local:Capsule x:Name="SubSheet" ImageSource="total_available_bal_bg.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".3*,.1*,.04*" Padding="2,0,10,0">
+                                <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                                    <Label Text="SPINNER BONUS" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                    <Label Text="06/02/2020 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                </StackLayout>
+                                <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                                    <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                                    <Label x:Name="PlayerNameText" Text="23" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                                </Grid>
+                                    <Image Source="tra_red.png" Grid.Column="2" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                                </Grid>
+                        </local:Capsule>
+                            <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        </Grid>
+                        
+                        <local:Capsule ImageSource="total_available_bal_bg.png" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".3*,.1*,.04*" Padding="2,0,10,0">
+                                <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                                    <Label Text="SPINNER BONUS" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                    <Label Text="06/02/2020 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                                </StackLayout>
+                                <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                                    <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                                    <Label  Text="23" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                                </Grid>
+                                <Image Source="tra_red.png" Grid.Column="2" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                            </Grid>
+                        </local:Capsule>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </local:Capsule>
+        <local:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+    </Grid>
+</ContentPage>

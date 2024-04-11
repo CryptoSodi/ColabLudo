@@ -11,7 +11,7 @@ namespace LudoClient
             //MainPage = new AppShell();
             //MainPage = new DailyBonusPage();
             
-            MainPage = new LeaderboardPage();
+            MainPage = new TransactionPage();
             //MainPage = new TabHandeler();
         }
 #if WINDOWS
@@ -24,7 +24,7 @@ namespace LudoClient
 
             window.Width = newWidth;
             window.Height = newHeight;
-            window.X = 2590;
+            window.X = 0;
             window.Y = 40;
             window.Destroying += Window_Destroying;
             return window;

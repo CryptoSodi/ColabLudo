@@ -115,10 +115,12 @@
 	  <None Remove="Resources\Images\Components\ShareBox\btn_share_link.png" />
 	  <None Remove="Resources\Images\Components\ShareBox\btn_whatsapp.png" />
 	  <None Remove="Resources\Images\Components\StatisticCard\played_bg.png" />
+	  <None Remove="Resources\Images\Components\Tablets\expand_card.png" />
 	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_1.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_2.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_3.png" />
+	  <None Remove="Resources\Images\Components\Tablets\total_available_bal_bg.png" />
 	  <None Remove="Resources\Images\Components\Tablets\tra_green.png" />
 	  <None Remove="Resources\Images\Components\Tablets\tra_red.png" />
 	  <None Remove="Resources\Images\Components\Title\popup_title.png" />
@@ -220,10 +222,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\Images\Components\Tablets\expand_card.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\line_bg_orange.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\number_1.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\number_2.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\number_3.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\total_available_bal_bg.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_green.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_red.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
@@ -479,6 +483,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="TabHandeler.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="TransactionPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="VerificationPage.xaml">
