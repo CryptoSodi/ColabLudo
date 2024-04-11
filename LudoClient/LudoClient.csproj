@@ -115,6 +115,8 @@
 	  <None Remove="Resources\Images\Components\ShareBox\btn_share_link.png" />
 	  <None Remove="Resources\Images\Components\ShareBox\btn_whatsapp.png" />
 	  <None Remove="Resources\Images\Components\StatisticCard\played_bg.png" />
+	  <None Remove="Resources\Images\Components\Tablets\arr_down.png" />
+	  <None Remove="Resources\Images\Components\Tablets\arr_up.png" />
 	  <None Remove="Resources\Images\Components\Tablets\expand_card.png" />
 	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_1.png" />
@@ -222,6 +224,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\Images\Components\Tablets\arr_down.png" />
+	  <MauiImage Include="Resources\Images\Components\Tablets\arr_up.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\expand_card.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\line_bg_orange.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\number_1.png" />
@@ -432,6 +436,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\TitleBar.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DailyBonusPage.xaml">
