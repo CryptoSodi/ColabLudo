@@ -6,9 +6,8 @@
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <local:Capsule x:Name="SwitchImage" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid>
-                <!--Format the text label-->
                 <Label x:Name="DisplayText" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Margin="0,5,0,0"/>
-                <ImageButton Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="End"/>
+                <ImageButton BackgroundColor="Transparent" Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="End"/>
             </Grid>
         </local:Capsule>
     </Grid>

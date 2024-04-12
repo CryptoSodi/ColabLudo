@@ -19,7 +19,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <local:HeaderCV/>
+        
         
         <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         

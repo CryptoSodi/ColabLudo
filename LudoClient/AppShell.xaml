@@ -13,9 +13,11 @@
     </TabBar>
     <simpleShell:SimpleShell.RootPageContainer>
         <Grid BackgroundColor="DarkBlue" IgnoreSafeArea="True">
-            <simpleShell:SimpleNavigationHost x:Name="pageContainer"/>
-            <controls:TabBarView x:Name="tabBarView" VerticalOptions="End" HorizontalOptions="Fill" CurrentPageSelectionChanged="TabBarViewCurrentPageChanged"/>
+            <simpleShell:SimpleNavigationHost x:Name="pageContainer" />
+            <controls:TabBarView x:Name="tabBarView" VerticalOptions="End" HorizontalOptions="Fill" CurrentPageSelectionChanged="TabBarViewCurrentPageChanged" />
             <Rectangle x:Name="bottomBackgroundRectangle" Background="{StaticResource Primary}" VerticalOptions="End"/>
+
+            <local:HeaderCV/>
         </Grid>
     </simpleShell:SimpleShell.RootPageContainer>
 </simpleShell:SimpleShell>    

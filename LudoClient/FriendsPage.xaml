@@ -5,9 +5,8 @@
              xmlns:simpleShell="clr-namespace:SimpleToolkit.SimpleShell;assembly=SimpleToolkit.SimpleShell"
              xmlns:local="clr-namespace:LudoClient"
              x:Class="LudoClient.FriendsPage" >
-    
+
     <Grid IgnoreSafeArea="True">
-        <local:HeaderCV/>
         <controls:Popover
             x:Name="popover"
             VerticalOptions="Start" HorizontalOptions="Start"/>
