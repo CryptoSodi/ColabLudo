@@ -3,38 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.LeaderboardPage"
              Title="LeaderboardPage"
+             xmlns:local="clr-namespace:LudoClient"
              BackgroundImageSource="background_waitingroom.png"
-             xmlns:local="clr-namespace:LudoClient.ControlView">
+             xmlns:controlview="clr-namespace:LudoClient.ControlView">
 
-    <Grid HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" RowDefinitions=".01*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
-        <local:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+    <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".2*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
+        <local:HeaderCV Grid.ColumnSpan="3"/>
+        <controlview:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid Margin="0,20,0,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
                     <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" ColumnDefinitions=".1*,.1*">
-                        <local:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab2" SwitchText="Global" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Global" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
-                    <local:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                    <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
                             <Label Text="RANK" TextColor="White" HorizontalOptions="CenterAndExpand"/>
                             <Label Grid.Column="1" Text="PLAYERS" TextColor="White" HorizontalOptions="StartAndExpand"/>
                             <Label Grid.Column="2" Text="GAME WINS" TextColor="White" HorizontalOptions="CenterAndExpand"/>
                         </Grid>
-                    </local:Capsule>
+                    </controlview:Capsule>
                 </Grid>
                 <ScrollView Margin="20,5,20,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <VerticalStackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
-                        <local:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
+                        <controlview:LeaderboardLongDetailList/>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>
-        </local:Capsule>
-        <local:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+        </controlview:Capsule>
+        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
     </Grid>
 </ContentPage>
