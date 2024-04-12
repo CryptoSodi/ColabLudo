@@ -18,7 +18,7 @@ namespace LudoClient
             }
             else
             {
-                // If user is already logged in, navigate to MainPage
+                // If user is already logged in, navigate to DashboardPage
                 Routing.RegisterRoute(nameof(DashboardPage), typeof(DashboardPage));
                 GoToAsync($"//{nameof(DashboardPage)}");
             }

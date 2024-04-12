@@ -12,8 +12,7 @@
             <Image
                 Source="logo.png"
                 HeightRequest="185"
-                Aspect="AspectFit"
-                SemanticProperties.Description="dot net bot in a race car number eight" />
+                Aspect="AspectFit" />
 
             <StackLayout Padding="10" x:Name="LoginPanel" IsVisible="True">
                 <Entry Placeholder="Enter Phone Number" x:Name="PhoneNumberEntry" Margin="0,0,0,10" />
