@@ -2,7 +2,7 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
-    int GameType = 2;
+    int GameType = 4;
     public GameRoom()
 	{
 		InitializeComponent();

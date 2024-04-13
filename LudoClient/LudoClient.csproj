@@ -149,7 +149,9 @@
 	  <None Remove="Resources\Images\GameRoom\player4_00.png" />
 	  <None Remove="Resources\Images\GameRoom\thunder_2.gif" />
 	  <None Remove="Resources\Images\GameRoom\thunder_2.png" />
+	  <None Remove="Resources\Images\GameRoom\thunder_3.gif" />
 	  <None Remove="Resources\Images\GameRoom\thunder_3.png" />
+	  <None Remove="Resources\Images\GameRoom\thunder_4.gif" />
 	  <None Remove="Resources\Images\GameRoom\thunder_4.png" />
 	  <None Remove="Resources\Images\GameRoom\vs.png" />
 	  <None Remove="Resources\Images\GameRoom\vs_bg.png" />
@@ -246,8 +248,8 @@
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_green.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_red.png" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
-	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.png" />
-	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.png" />
+	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
+	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 
