@@ -8,8 +8,8 @@ namespace LudoClient
         {
             InitializeComponent();
 
-            MainPage = new AppShell();
-            //MainPage = new DailyBonusPage();
+           // MainPage = new AppShell();
+            MainPage = new GameSettings();
             
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
@@ -24,7 +24,7 @@ namespace LudoClient
 
             window.Width = newWidth;
             window.Height = newHeight;
-            window.X = 0;
+            window.X = 2660;
             window.Y = 40;
             window.Destroying += Window_Destroying;
             return window;

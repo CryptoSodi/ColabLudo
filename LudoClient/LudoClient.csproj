@@ -155,6 +155,21 @@
 	  <None Remove="Resources\Images\GameRoom\thunder_4.png" />
 	  <None Remove="Resources\Images\GameRoom\vs.png" />
 	  <None Remove="Resources\Images\GameRoom\vs_bg.png" />
+	  <None Remove="Resources\Images\GameSettings\btn_minus-large.png" />
+	  <None Remove="Resources\Images\GameSettings\btn_players_green.png" />
+	  <None Remove="Resources\Images\GameSettings\btn_players_orange.png" />
+	  <None Remove="Resources\Images\GameSettings\btn_plus_large.png" />
+	  <None Remove="Resources\Images\GameSettings\dash_choose_bet.png" />
+	  <None Remove="Resources\Images\GameSettings\dash_players.png" />
+	  <None Remove="Resources\Images\GameSettings\dash_select_color.png" />
+	  <None Remove="Resources\Images\GameSettings\dash_select_players.png" />
+	  <None Remove="Resources\Images\GameSettings\dash_select_room.png" />
+	  <None Remove="Resources\Images\GameSettings\game_setting_bg.png" />
+	  <None Remove="Resources\Images\GameSettings\round_cashgames.png" />
+	  <None Remove="Resources\Images\GameSettings\round_friends.png" />
+	  <None Remove="Resources\Images\GameSettings\round_offline.png" />
+	  <None Remove="Resources\Images\GameSettings\round_practice.png" />
+	  <None Remove="Resources\Images\GameSettings\round_tournaments.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow_disable.png" />
@@ -234,6 +249,24 @@
 	  <None Remove="Resources\Images\Wallet\total_ava_bal_bg.png" />
 	  <None Remove="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <None Remove="Resources\Images\Wallet\wallet_bg.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiAsset Include="Resources\Images\GameSettings\btn_minus-large.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\btn_players_green.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\btn_players_orange.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\btn_plus_large.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\dash_choose_bet.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\dash_players.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\dash_select_color.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\dash_select_players.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\dash_select_room.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\game_setting_bg.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\round_cashgames.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\round_friends.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\round_offline.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\round_practice.png" />
+	  <MauiAsset Include="Resources\Images\GameSettings\round_tournaments.png" />
 	</ItemGroup>
 
 	<ItemGroup>
