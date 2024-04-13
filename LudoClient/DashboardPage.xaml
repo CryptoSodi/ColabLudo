@@ -20,7 +20,6 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         
-        
         <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         
         <ImageButton Grid.Row="2" Source="cashgame.png" BackgroundColor="Transparent" Clicked="ImageButton_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>

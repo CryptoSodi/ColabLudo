@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local ="clr-namespace:LudoClient.ControlView"
+             x:Class="LudoClient.GameSettings"
+             BackgroundImageSource="background.png"
+             Title="GameSettings">
+    <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+       RowDefinitions=".6*,1*,1*,1*,1*,1*,1*,.6*" ColumnDefinitions=".4*,1*,1*,1*,.4*">
+        
+        <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"></local:BottomNavigation>
+    </Grid >
+</ContentPage>

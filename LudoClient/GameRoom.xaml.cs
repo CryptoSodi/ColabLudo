@@ -11,9 +11,9 @@ public partial class GameRoom : ContentPage
         {
             case 2:
                 Grid.SetRow(player1, 3);
-                Grid.SetColumn(player1, 2);
+                Grid.SetColumn(player1, 1);
                 Grid.SetRow(player2, 5);
-                Grid.SetColumn(player2, 2);
+                Grid.SetColumn(player2, 3);
                 grid.Children.Remove(player3);
                 grid.Children.Remove(player4);
                 break;
@@ -37,6 +37,7 @@ public partial class GameRoom : ContentPage
                 Grid.SetColumn(player4, 2);
                 break;
         }
+        thunder.Source = "thunder_" + GameType + ".gif";
     }
     protected override bool OnBackButtonPressed()
     {

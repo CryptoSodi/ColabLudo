@@ -58,12 +58,19 @@
 
 	<ItemGroup>
 	  <AndroidResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <AndroidResource Remove="Resources\Images\WaitingRoom\**" />
 	  <Compile Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <Compile Remove="Resources\Images\WaitingRoom\**" />
 	  <EmbeddedResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <EmbeddedResource Remove="Resources\Images\WaitingRoom\**" />
 	  <MauiCss Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <MauiCss Remove="Resources\Images\WaitingRoom\**" />
 	  <MauiImage Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <MauiImage Remove="Resources\Images\WaitingRoom\**" />
 	  <MauiXaml Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <MauiXaml Remove="Resources\Images\WaitingRoom\**" />
 	  <None Remove="Resources\Images\Components\PlayerBoxLong\**" />
+	  <None Remove="Resources\Images\WaitingRoom\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -137,6 +144,13 @@
 	  <None Remove="Resources\Images\DashBoard\practice.png" />
 	  <None Remove="Resources\Images\DashBoard\tournament.png" />
 	  <None Remove="Resources\Images\GameRoom\chips_entry_bg.png" />
+	  <None Remove="Resources\Images\GameRoom\player2_00.png" />
+	  <None Remove="Resources\Images\GameRoom\player3_00.png" />
+	  <None Remove="Resources\Images\GameRoom\player4_00.png" />
+	  <None Remove="Resources\Images\GameRoom\thunder_2.gif" />
+	  <None Remove="Resources\Images\GameRoom\thunder_2.png" />
+	  <None Remove="Resources\Images\GameRoom\thunder_3.png" />
+	  <None Remove="Resources\Images\GameRoom\thunder_4.png" />
 	  <None Remove="Resources\Images\GameRoom\vs.png" />
 	  <None Remove="Resources\Images\GameRoom\vs_bg.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
@@ -200,9 +214,6 @@
 	  <None Remove="Resources\Images\Verification\verify_info_bg.png" />
 	  <None Remove="Resources\Images\vs_bgsharedassets2.assets.png" />
 	  <None Remove="Resources\Images\vs_sharedassets2.assets.png" />
-	  <None Remove="Resources\Images\WaitingRoom\player2_00.png" />
-	  <None Remove="Resources\Images\WaitingRoom\player3_00.png" />
-	  <None Remove="Resources\Images\WaitingRoom\player4_00.png" />
 	  <None Remove="Resources\Images\Wallet\btn_outer.png" />
 	  <None Remove="Resources\Images\Wallet\btn_verify_account.png" />
 	  <None Remove="Resources\Images\Wallet\ic_total_wallet.png" />
@@ -234,6 +245,9 @@
 	  <MauiImage Include="Resources\Images\Components\Tablets\total_available_bal_bg.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_green.png" />
 	  <MauiImage Include="Resources\Images\Components\Tablets\tra_red.png" />
+	  <MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
+	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.png" />
+	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 
@@ -339,9 +353,6 @@
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_mob.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_pancard.png" />
 	  <MauiImage Include="Resources\Images\Verification\verify_info_bg.png" />
-	  <MauiImage Include="Resources\Images\WaitingRoom\player2_00.png" />
-	  <MauiImage Include="Resources\Images\WaitingRoom\player3_00.png" />
-	  <MauiImage Include="Resources\Images\WaitingRoom\player4_00.png" />
 	  <MauiImage Include="Resources\Images\Wallet\btn_outer.png" />
 	  <MauiImage Include="Resources\Images\Wallet\btn_verify_account.png" />
 	  <MauiImage Include="Resources\Images\Wallet\ic_total_wallet.png" />
@@ -457,6 +468,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\HeaderCV.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="GameSettings.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="HelpDeskPage.xaml">
