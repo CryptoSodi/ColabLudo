@@ -6,10 +6,53 @@
              BackgroundImageSource="background_waitingroom.png"
              Title="GameSettings">
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
-       RowDefinitions=".6*,1*,1*,1*,1*,1*,1*,.6*" ColumnDefinitions=".4*,1*,1*,1*,.4*">
-        <local:Capsule>
-            <Grid>
-                <local:TitleBar TitleImage=""></local:TitleBar>
+       RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
+        <local:Capsule ImageSource="game_setting_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
+                <StackLayout Grid.Column="1" Spacing="10">
+                    <local:TitleBar Grid.Column="1" TitleImage="round_cashgames.png" Title="" Margin="35,-100,35,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+                    <Image Source="dash_select_players.png"  HorizontalOptions="CenterAndExpand"/>
+                    <Grid ColumnSpacing="10" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".1*,.1*,.1*,.1*">
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
+                    <Image Source="dash_choose_bet.png"  HorizontalOptions="CenterAndExpand" VerticalOptions="Start"/>
+                    <local:Capsule BackgroundColor="Red" ImageSource="controlbox.png" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
+                        <StackLayout Orientation="Horizontal" Margin="20,10,20,20">
+                            <Image Source="btn_minus_large.png" VerticalOptions="Center" HorizontalOptions="Start"></Image>
+                            <Grid Margin="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <Grid >
+                                    
+                                    <StackLayout HorizontalOptions="FillAndExpand">
+                                        <Grid HorizontalOptions="FillAndExpand">
+                                            <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand">
+                                                <Label Text="Win :" HorizontalOptions="FillAndExpand"/>
+                                                <Image Source="ic_coin.png" HorizontalOptions="FillAndExpand"/>
+                                                <Label Text="20" HorizontalOptions="FillAndExpand"/>
+                                            </StackLayout>
+                                        </Grid>
+                                        <Grid HorizontalOptions="FillAndExpand">
+                                            <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
+                                                <Label Text="Win :" HorizontalOptions="CenterAndExpand"/>
+                                                <Image Source="ic_coin.png" Margin="4,4,4,4" HorizontalOptions="CenterAndExpand"/>
+                                                <Label Text="30" HorizontalOptions="CenterAndExpand"/>
+                                            </StackLayout>
+                                        </Grid>
+                                        
+                                    </StackLayout>
+                                    
+                                    
+                                    
+                                </Grid>
+                            </Grid>
+                            <Image Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"></Image>
+                            
+                        </StackLayout>
+                    </local:Capsule>
+                </StackLayout>
+
             </Grid>
         </local:Capsule>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"></local:BottomNavigation>
