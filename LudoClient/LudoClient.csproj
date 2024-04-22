@@ -156,11 +156,20 @@
 	  <None Remove="Resources\Images\GameRoom\vs.png" />
 	  <None Remove="Resources\Images\GameRoom\vs_bg.png" />
 	  <None Remove="Resources\Images\GameSettings\bet_prize_bg.png" />
+	  <None Remove="Resources\Images\GameSettings\blue_token.png" />
 	  <None Remove="Resources\Images\GameSettings\btn_minus-large.png" />
 	  <None Remove="Resources\Images\GameSettings\btn_minus_large.png" />
 	  <None Remove="Resources\Images\GameSettings\btn_players_green.png" />
 	  <None Remove="Resources\Images\GameSettings\btn_players_orange.png" />
 	  <None Remove="Resources\Images\GameSettings\btn_plus_large.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_blue.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_blue_select.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_green.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_green_select.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_red.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_red_select.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_yellow.png" />
+	  <None Remove="Resources\Images\GameSettings\checkbox_yellow_select.png" />
 	  <None Remove="Resources\Images\GameSettings\controlbox.png" />
 	  <None Remove="Resources\Images\GameSettings\dash_choose_bet.png" />
 	  <None Remove="Resources\Images\GameSettings\dash_players.png" />
@@ -168,11 +177,14 @@
 	  <None Remove="Resources\Images\GameSettings\dash_select_players.png" />
 	  <None Remove="Resources\Images\GameSettings\dash_select_room.png" />
 	  <None Remove="Resources\Images\GameSettings\game_setting_bg.png" />
+	  <None Remove="Resources\Images\GameSettings\green_token.png" />
+	  <None Remove="Resources\Images\GameSettings\red_token.png" />
 	  <None Remove="Resources\Images\GameSettings\round_cashgames.png" />
 	  <None Remove="Resources\Images\GameSettings\round_friends.png" />
 	  <None Remove="Resources\Images\GameSettings\round_offline.png" />
 	  <None Remove="Resources\Images\GameSettings\round_practice.png" />
 	  <None Remove="Resources\Images\GameSettings\round_tournaments.png" />
+	  <None Remove="Resources\Images\GameSettings\yellow_token.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow_disable.png" />
@@ -221,8 +233,10 @@
 	  <None Remove="Resources\Images\Support\support.png" />
 	  <None Remove="Resources\Images\Support\terms.png" />
 	  <None Remove="Resources\Images\Tabs\tab_active.png" />
+	  <None Remove="Resources\Images\Tabs\tab_active_curve.png" />
 	  <None Remove="Resources\Images\Tabs\tab_border.png" />
 	  <None Remove="Resources\Images\Tabs\tab_normal.png" />
+	  <None Remove="Resources\Images\Tabs\tab_normal_curve.png" />
 	  <None Remove="Resources\Images\tournament.png" />
 	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\Verification\ic_right_arr.png" />
@@ -256,10 +270,19 @@
 
 	<ItemGroup>
 	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\blue_token.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_minus_large.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_players_green.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_players_orange.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_plus_large.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_blue.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_blue_select.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_green.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_green_select.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_red.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_red_select.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_yellow.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\checkbox_yellow_select.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\controlbox.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\dash_choose_bet.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\dash_players.png" />
@@ -267,6 +290,8 @@
 	  <MauiImage Include="Resources\Images\GameSettings\dash_select_players.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\dash_select_room.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\game_setting_bg.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\green_token.png" />
+	  <MauiImage Include="Resources\Images\GameSettings\red_token.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\round_cashgames.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\round_friends.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\round_offline.png" />
@@ -288,6 +313,7 @@
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
+	  <MauiImage Include="Resources\Images\GameSettings\yellow_token.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 
@@ -384,8 +410,10 @@
 	  <MauiImage Include="Resources\Images\Support\support.png" />
 	  <MauiImage Include="Resources\Images\Support\terms.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_active.png" />
+	  <MauiImage Include="Resources\Images\Tabs\tab_active_curve.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_border.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_normal.png" />
+	  <MauiImage Include="Resources\Images\Tabs\tab_normal_curve.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_right_arr.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_account.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_bank.png" />
@@ -511,6 +539,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettings.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="GameSettingsLarge.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="HelpDeskPage.xaml">

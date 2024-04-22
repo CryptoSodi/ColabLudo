@@ -35,15 +35,15 @@
                                     <BoxView CornerRadius="4" BackgroundColor="#572BD5"></BoxView>
                                     <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Win" Padding="4,0,0,0" HorizontalOptions="FillAndExpand"/>
-                                        <Image Source="ic_coin.png" Margin="5,0,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand"/>
+                                        <Image Source="ic_coin.png" Margin="5,0,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
                                         <Label Text="30" HorizontalOptions="FillAndExpand"/>
                                         </StackLayout>
                                  </Grid>
                             </Grid>
-                            <Image Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"/>
+                            <Image Grid.Column="2" Margin="15,0,0,0"  Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"></Image>
                         </Grid>
                     </local:Capsule>
-                    <Image Source="btn_green.png" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    <Image Source="btn_green.png" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
             </Grid>
         </local:Capsule>
