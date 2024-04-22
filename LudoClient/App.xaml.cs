@@ -9,7 +9,7 @@ namespace LudoClient
             InitializeComponent();
 
            // MainPage = new AppShell();
-            MainPage = new GameSettingsLarge();
+            MainPage = new Game();
             
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();

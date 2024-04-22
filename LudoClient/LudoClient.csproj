@@ -532,6 +532,9 @@
 	  <MauiXaml Update="FriendsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Game.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="GameRoom.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
