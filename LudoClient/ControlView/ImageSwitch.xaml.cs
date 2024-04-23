@@ -13,6 +13,7 @@ public partial class ImageSwitch : ContentView
         var control = (ImageSwitch)bindable;
         control.DisplayText.Text = (string)newValue;
     });
+    public static readonly BindableProperty IsActiveProperty = BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(ImageSwitch), defaultValue: false);
     public string SwitchText
     {
         get => GetValue(SwitchTextProperty) as string;
@@ -40,6 +41,7 @@ public partial class ImageSwitch : ContentView
         set => SetValue(SwitchOffProperty, value);
     }
     public bool SwitchState { get; set; } = true;
+    public bool IsActive { get; set; } = false;
 
     public ImageSwitch()
     {

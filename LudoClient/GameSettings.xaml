@@ -21,14 +21,14 @@
                     <Image Source="dash_choose_bet.png"  HorizontalOptions="CenterAndExpand" VerticalOptions="Start"/>
                     <local:Capsule ImageSource="controlbox.png" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
                         <Grid Margin="20,10,20,15" ColumnDefinitions=".1*,.2*,.1*">
-                            <Image Source="btn_minus_large.png" Margin="0,0,15,0" VerticalOptions="Center" HorizontalOptions="Start"></Image>
+                            <ImageButton Source="btn_minus_large.png" Clicked="BtnMinus" Aspect="AspectFit" Margin="0,0,15,0" BackgroundColor="Transparent"  VerticalOptions="Center" HorizontalOptions="Start"/>
                             <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".1*,.2*">
                                 <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"></BoxView>
                                 <Grid Margin="5,0,5,5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                                     <StackLayout  Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Entry :" HorizontalOptions="FillAndExpand"/>
                                         <Image Source="ic_coin.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
-                                        <Label Text="30" />
+                                        <Label x:Name="EntryLabel" />
                                     </StackLayout>
                                 </Grid>
                                 <Grid Grid.Row="1" Margin="5,0,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
@@ -36,11 +36,11 @@
                                     <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Win" Padding="4,0,0,0" HorizontalOptions="FillAndExpand"/>
                                         <Image Source="ic_coin.png" Margin="5,0,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
-                                        <Label Text="30" HorizontalOptions="FillAndExpand"/>
+                                        <Label x:Name="WinLabel" HorizontalOptions="FillAndExpand"/>
                                         </StackLayout>
                                  </Grid>
                             </Grid>
-                            <Image Grid.Column="2" Margin="15,0,0,0"  Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"></Image>
+                            <ImageButton Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" Clicked="BtnPlus" Aspect="AspectFit" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                     <Image Source="btn_green.png" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
