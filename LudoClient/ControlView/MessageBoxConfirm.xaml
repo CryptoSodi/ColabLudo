@@ -4,7 +4,7 @@
              x:Class="LudoClient.ControlView.MessageBoxConfirm"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
-   RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
+        RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
         <Image Grid.Column="1" x:Name="grid_bg" Source="popup_bg0.png" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
         <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
           WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 

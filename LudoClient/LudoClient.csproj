@@ -111,6 +111,7 @@
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_current_bg.png" />
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_gray_bg.png" />
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_transparent_bg.png" />
+	  <None Remove="Resources\Images\Components\Header\btn_help.png" />
 	  <None Remove="Resources\Images\Components\Header\hdrbgsharedassets.png" />
 	  <None Remove="Resources\Images\Components\Header\ic_settings.png" />
 	  <None Remove="Resources\Images\Components\ImageSwitch\line_bg.png" />
@@ -185,6 +186,24 @@
 	  <None Remove="Resources\Images\GameSettings\round_practice.png" />
 	  <None Remove="Resources\Images\GameSettings\round_tournaments.png" />
 	  <None Remove="Resources\Images\GameSettings\yellow_token.png" />
+	  <None Remove="Resources\Images\Game\blue_container.png" />
+	  <None Remove="Resources\Images\Game\blue_token.png" />
+	  <None Remove="Resources\Images\Game\blue_token_large.png" />
+	  <None Remove="Resources\Images\Game\blue_user.png" />
+	  <None Remove="Resources\Images\Game\board_game.png" />
+	  <None Remove="Resources\Images\Game\green_container.png" />
+	  <None Remove="Resources\Images\Game\green_token.png" />
+	  <None Remove="Resources\Images\Game\green_token_large.png" />
+	  <None Remove="Resources\Images\Game\green_user.png" />
+	  <None Remove="Resources\Images\Game\red_container.png" />
+	  <None Remove="Resources\Images\Game\red_token.png" />
+	  <None Remove="Resources\Images\Game\red_token_large.png" />
+	  <None Remove="Resources\Images\Game\red_user.png" />
+	  <None Remove="Resources\Images\Game\yellow_container.png" />
+	  <None Remove="Resources\Images\Game\yellow_token.png" />
+	  <None Remove="Resources\Images\Game\yellow_token_large.png" />
+	  <None Remove="Resources\Images\Game\yellow_user.png" />
+	  <None Remove="Resources\Images\Game\yelow_container.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow.png" />
 	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow_disable.png" />
@@ -269,6 +288,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Include="Resources\Images\Components\Header\btn_help.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\blue_token.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_minus_large.png" />
@@ -314,6 +334,19 @@
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
 	  <MauiImage Include="Resources\Images\GameSettings\yellow_token.png" />
+	  <MauiImage Include="Resources\Images\Game\blue_container.png" />
+	  <MauiImage Include="Resources\Images\Game\blue_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\blue_user.png" />
+	  <MauiImage Include="Resources\Images\Game\board_game.png" />
+	  <MauiImage Include="Resources\Images\Game\green_container.png" />
+	  <MauiImage Include="Resources\Images\Game\green_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\green_user.png" />
+	  <MauiImage Include="Resources\Images\Game\red_container.png" />
+	  <MauiImage Include="Resources\Images\Game\red_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\red_user.png" />
+	  <MauiImage Include="Resources\Images\Game\yellow_container.png" />
+	  <MauiImage Include="Resources\Images\Game\yellow_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\yellow_user.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
 

@@ -5,14 +5,11 @@
              xmlns:simpleCore="clr-namespace:SimpleToolkit.Core;assembly=SimpleToolkit.Core"
              xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
              x:Class="LudoClient.ControlView.Popover">
-    <VerticalStackLayout
-    VerticalOptions="Center" HorizontalOptions="Center"
-    Spacing="30">
-
+    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="30">
         <ImageButton Clicked="ButtonClicked" Source="popover.png" WidthRequest="20" HeightRequest="20">
             <simpleCore:Popover.AttachedPopover>
                 <simpleCore:Popover>
-                    <Border Stroke="Transparent" StrokeThickness="0">
+                    <Border Stroke="red" StrokeThickness="3">
                         <Border.StrokeShape>
                             <RoundRectangle CornerRadius="4"/>
                         </Border.StrokeShape>
