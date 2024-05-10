@@ -20,6 +20,7 @@ public partial class GameSettings : ContentPage
     public int entry = GlobalConstants.initialEntry;
     public int win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
+    public bool defaultTabSelection = true;
 
     private void TabRequestedActivate(object sender, EventArgs e)
     {
@@ -40,6 +41,7 @@ public partial class GameSettings : ContentPage
         Tab4.SwitchSource = configTab4.Source;
         Tab4.IsActive = configTab4.Active;
         // Add logic here to change the content based on the active tab
+        defaultTabSelection = false;
         CalculateWin();
     }
     private void BtnPlus(object sender, EventArgs e)
@@ -60,7 +62,7 @@ public partial class GameSettings : ContentPage
 
     private void CalculateWin()
     {
-        if (Tab1.IsActive || Tab4.IsActive)
+        if (Tab1.IsActive || Tab4.IsActive || defaultTabSelection)
         {
             win = entry * 2;
         }
