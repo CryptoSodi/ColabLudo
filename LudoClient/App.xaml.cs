@@ -24,7 +24,7 @@ namespace LudoClient
 
             window.Width = newWidth;
             window.Height = newHeight;
-            window.X = 2660;
+            window.X = 0;//2660
             window.Y = 40;
             window.Destroying += Window_Destroying;
             return window;
