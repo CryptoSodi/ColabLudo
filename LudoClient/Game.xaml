@@ -14,10 +14,10 @@
             <local:Capsule Grid.Row="2" ImageSource="board_game_2.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
                       RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
-                    <Image Source="red_token_large.png" Aspect="AspectFit"/>
-                    <Image Grid.Row="1" Source="red_token_large.png" Aspect="AspectFit" />
-                    <Image Grid.Column="1" Source="red_token_large.png" Aspect="AspectFit" />
-                    <Image Grid.Column="1" Grid.Row="1" Source="red_token_large.png" Aspect="AspectFit" />
+                    <local:Token x:Name="red1"/>
+                    <local:Token x:Name="red2"/>
+                    <local:Token x:Name="red3"/>
+                    <local:Token x:Name="red4"/>
                 </Grid>
             </local:Capsule>
             <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="End">

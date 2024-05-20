@@ -555,6 +555,9 @@
 	  <MauiXaml Update="ControlView\TitleBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="ControlView\Token.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
