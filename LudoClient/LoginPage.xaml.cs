@@ -1,3 +1,4 @@
+using LudoClient.Utilities;
 using Microsoft.Maui.Controls;
 
 namespace LudoClient
@@ -6,6 +7,7 @@ namespace LudoClient
     {
         private string phoneNumber;
         private string expectedOTP;
+        private AuthenticationService _authService;
 
         public LoginPage()
         {
@@ -13,8 +15,7 @@ namespace LudoClient
             OTPPanel.IsVisible = true;
             LoginPanel.IsVisible = false;
             var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
-
-      
+            _authService = new AuthenticationService();
         }
         protected override void OnAppearing()
         {
@@ -24,6 +25,21 @@ namespace LudoClient
             // For example:
             // MyFunction();
         }
+
+        private async void GooleSignup_Clicked(object sender, EventArgs e)
+        {
+            try
+            {
+                await _authService.AuthenticateAsync();
+                // Optionally handle post-sign-in logic here, such as navigating to a new page
+            }
+            catch (Exception ex)
+            {
+                // Handle or log the error
+                await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
+            }
+        }
+
         private void SendOTP_Clicked(object sender, EventArgs e)
         {
             // Get the entered phone number

@@ -19,7 +19,7 @@
                 <!-- Add margin to create spacing between Entry and button -->
                 <Button Text="Send OTP" Clicked="SendOTP_Clicked" 
                         BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
-                        BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>
+                        BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>                
                 <!-- Blue color, White text, 1px border, 5px corner radius -->
             </StackLayout>
             <!-- OTP-related components initially hidden -->
@@ -41,5 +41,12 @@
                     <!-- Red color, White text, 1px border, 5px corner radius -->
                 </Grid>
             </StackLayout>
-        </StackLayout>
+            <StackLayout>
+            <Grid>
+                <Button Text="Google Signup" Clicked="GooleSignup_Clicked" 
+                        BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
+                        BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>
+            </Grid>
+            </StackLayout>
+    </StackLayout>
 </ContentPage>
