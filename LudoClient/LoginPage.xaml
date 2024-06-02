@@ -43,7 +43,8 @@
             </StackLayout>
             <StackLayout>
             <Grid>
-                <Button Text="Google Signup" Clicked="GooleSignup_Clicked" 
+                <Button 
+                        x:Name="CounterBtn" Text="Google Signup" Clicked="GooleSignup_Clicked" 
                         BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
                         BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>
             </Grid>
