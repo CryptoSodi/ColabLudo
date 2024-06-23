@@ -1,3 +1,4 @@
+using LudoClient.ControlView;
 using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
 using Xe.AcrylicView;
@@ -6,12 +7,13 @@ namespace LudoClient;
 
 public partial class Game : ContentPage
 {
-    Engine Engine = new Engine();
+    Engine Engine;
+    
     public Game()
 	{
 		InitializeComponent();
-        red1.location = 1;
-        Grid.SetRow(red1, 10);
+        Gui gui = new Gui(red1,red2,red3,red4);
+        Engine = new Engine(gui);
     }
     private void PopOverClicked(object sender, EventArgs e)
     {
@@ -25,5 +27,4 @@ public partial class Game : ContentPage
         messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
     
     }
-    
 }
