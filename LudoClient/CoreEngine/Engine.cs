@@ -9,6 +9,7 @@ namespace LudoClient.CoreEngine
 {
     public class Engine
     {
+        Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         public class Piece
         {
             public string Color { get; private set; }
@@ -35,7 +36,7 @@ namespace LudoClient.CoreEngine
                 new Piece(color),
                 new Piece(color)
             };
-            StartPosition = new Dictionary<string, int>
+                StartPosition = new Dictionary<string, int>
             {
                 { "red", 0 },
                 { "green", 13 },
@@ -49,15 +50,54 @@ namespace LudoClient.CoreEngine
                 }
             }
         }
-        
+
         private List<Player> players;
         private int currentPlayerIndex;
         private Piece[] board;
+        public void pupulate(Gui gui)
+        {
+            Grid.SetRow(gui.red1, originalPath["hr0"][0]);
+            Grid.SetColumn(gui.red1, originalPath["hr0"][1]);
+            Grid.SetRow(gui.red2, originalPath["hr1"][0]);
+            Grid.SetColumn(gui.red2, originalPath["hr1"][1]);
+            Grid.SetRow(gui.red3, originalPath["hr2"][0]);
+            Grid.SetColumn(gui.red3, originalPath["hr2"][1]);
+            Grid.SetRow(gui.red4, originalPath["hr3"][0]);
+            Grid.SetColumn(gui.red4, originalPath["hr3"][1]);
+
+            Grid.SetRow(gui.gre1, originalPath["hg0"][0]);
+            Grid.SetColumn(gui.gre1, originalPath["hg0"][1]);
+            Grid.SetRow(gui.gre2, originalPath["hg1"][0]);
+            Grid.SetColumn(gui.gre2, originalPath["hg1"][1]);
+            Grid.SetRow(gui.gre3, originalPath["hg2"][0]);
+            Grid.SetColumn(gui.gre3, originalPath["hg2"][1]);
+            Grid.SetRow(gui.gre4, originalPath["hg3"][0]);
+            Grid.SetColumn(gui.gre4, originalPath["hg3"][1]);
+
+            Grid.SetRow(gui.blu1, originalPath["hb0"][0]);
+            Grid.SetColumn(gui.blu1, originalPath["hb0"][1]);
+            Grid.SetRow(gui.blu2, originalPath["hb1"][0]);
+            Grid.SetColumn(gui.blu2, originalPath["hb1"][1]);
+            Grid.SetRow(gui.blu3, originalPath["hb2"][0]);
+            Grid.SetColumn(gui.blu3, originalPath["hb2"][1]);
+            Grid.SetRow(gui.blu4, originalPath["hb3"][0]);
+            Grid.SetColumn(gui.blu4, originalPath["hb3"][1]);
+
+            Grid.SetRow(gui.yel1, originalPath["hy0"][0]);
+            Grid.SetColumn(gui.yel1, originalPath["hy0"][1]);
+            Grid.SetRow(gui.yel2, originalPath["hy1"][0]);
+            Grid.SetColumn(gui.yel2, originalPath["hy1"][1]);
+            Grid.SetRow(gui.yel3, originalPath["hy2"][0]);
+            Grid.SetColumn(gui.yel3, originalPath["hy2"][1]);
+            Grid.SetRow(gui.yel4, originalPath["hy3"][0]);
+            Grid.SetColumn(gui.yel4, originalPath["hy3"][1]);
+        }
         public Engine(Gui gui)
         {
-
-            gui.red1.location = 1;
-            Grid.SetRow(gui.red1, 10);
+            gui.red1.location = -1;
+            gui.red2.location = -1;
+            gui.red3.location = -1;
+            gui.red4.location = -1;
 
             players = new List<Player>
             {
@@ -67,9 +107,9 @@ namespace LudoClient.CoreEngine
                 new Player("yellow")
             };
             currentPlayerIndex = 0;
-            Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+
             board = new Piece[52];
-            
+
             originalPath["p0"] = new int[] { 13, 6 };
             originalPath["p1"] = new int[] { 12, 6 };
             originalPath["p2"] = new int[] { 11, 6 };
@@ -170,6 +210,8 @@ namespace LudoClient.CoreEngine
             originalPath["hb1"] = new int[] { 11, 12 };
             originalPath["hb2"] = new int[] { 12, 11 };
             originalPath["hb3"] = new int[] { 12, 12 };
+
+            pupulate(gui);
         }
         private int RollDice()
         {
@@ -262,8 +304,9 @@ namespace LudoClient.CoreEngine
                 PlayTurn();
             }
         }
-        public void CalculateLocation() { 
-            
+        public void CalculateLocation()
+        {
+
         }
     }
 }

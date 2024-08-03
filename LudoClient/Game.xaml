@@ -14,19 +14,32 @@
             <local:Capsule Grid.Row="2" ImageSource="board_game_2.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
                       RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
-                    <local:Token x:Name="red1"/>
-                    <local:Token x:Name="red2"/>
-                    <local:Token x:Name="red3"/>
-                    <local:Token x:Name="red4"/>
+                    <local:Token x:Name="red1" piece="red_token_large.png" />
+                    
+                    <local:Token x:Name="red2" piece="red_token_large.png"/>
+                    <local:Token x:Name="red3" piece="red_token_large.png"/>
+                    <local:Token x:Name="red4" piece="red_token_large.png"/>
+                    <local:Token x:Name="gre1" piece="green_token_large.png"/>
+                    <local:Token x:Name="gre2" piece="green_token_large.png"/>
+                    <local:Token x:Name="gre3" piece="green_token_large.png"/>
+                    <local:Token x:Name="gre4" piece="green_token_large.png"/>
+                    <local:Token x:Name="yel1" piece="yellow_token_large.png"/>
+                    <local:Token x:Name="yel2" piece="yellow_token_large.png"/>
+                    <local:Token x:Name="yel3" piece="yellow_token_large.png"/>
+                    <local:Token x:Name="yel4" piece="yellow_token_large.png"/>
+                    <local:Token x:Name="blu1" piece="blue_token_large.png"/>
+                    <local:Token x:Name="blu2" piece="blue_token_large.png"/>
+                    <local:Token x:Name="blu3" piece="blue_token_large.png"/>
+                    <local:Token x:Name="blu4" piece="blue_token_large.png"/>
                 </Grid>
             </local:Capsule>
             <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="End">
-                <local:PlayerSeat PlayerBG="green_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
-                <local:PlayerSeat PlayerBG="yellow_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                <local:PlayerSeat x:Name="GreenPlayerSeat" PlayerBG="green_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                <local:PlayerSeat x:Name="YellowPlayerSeat" PlayerBG="yellow_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
             </StackLayout>
             <StackLayout Grid.Row="3" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <local:PlayerSeat PlayerBG="red_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
-                <local:PlayerSeat PlayerBG="green_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                <local:PlayerSeat x:Name="RedPlayerSeat" PlayerBG="red_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+                <local:PlayerSeat x:Name="BluePlayerSeat" PlayerBG="blue_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
             </StackLayout>
         </Grid>
         <local:Capsule ImageSource="footer.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">

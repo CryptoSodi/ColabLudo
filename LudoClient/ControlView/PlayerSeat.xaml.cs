@@ -2,6 +2,9 @@ namespace LudoClient.ControlView;
 
 public partial class PlayerSeat : ContentView
 {
+    public delegate void DiceClickedHandler(string SeatName);
+    public event DiceClickedHandler OnDiceClicked;
+
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
     {
         var control = (PlayerSeat)bindable;
@@ -16,4 +19,9 @@ public partial class PlayerSeat : ContentView
 	{
 		InitializeComponent();
 	}
+    public String name = "";
+    private void Dice_Clicked(object sender, EventArgs e)
+    {
+        OnDiceClicked?.Invoke(name);
+    }
 }
