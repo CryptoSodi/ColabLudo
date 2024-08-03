@@ -24,12 +24,13 @@ public partial class Game : ContentPage
     private void PlayerPieceClicked(String PieceName)
     {
         // Handle the dice click for the green player
+        Engine.MovePiece(PieceName);
     }
 
     private void PlayerDiceClicked(String SeatName)
     {
         // Handle the dice click for the green player
-         Engine.RollDice();
+         Engine.SeatTurn(SeatName);
     }
 
     private void PopOverClicked(object sender, EventArgs e)

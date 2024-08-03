@@ -12,10 +12,13 @@ namespace LudoClient.CoreEngine
         Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         public class Piece
         {
+            public string name = "";
+            public bool moveable = false;
             public string Color { get; private set; }
             public int Position { get; set; }
-            public Piece(string color)
+            public Piece(string color, string name)
             {
+                this.name = name;
                 Color = color;
                 Position = -1; // -1 indicates the piece is in the base
             }
@@ -31,10 +34,10 @@ namespace LudoClient.CoreEngine
                 Color = color;
                 Pieces = new List<Piece>
             {
-                new Piece(color),
-                new Piece(color),
-                new Piece(color),
-                new Piece(color)
+                new Piece(color,color+"1"),
+                new Piece(color,color+"2"),
+                new Piece(color,color+"3"),
+                new Piece(color,color+"4")
             };
                 StartPosition = new Dictionary<string, int>
             {
@@ -216,22 +219,36 @@ namespace LudoClient.CoreEngine
         private int RollDice()
         {
             Random rnd = new Random();
-            return rnd.Next(1, 7);
+            return 6;// rnd.Next(1, 7);
         }
-        private void MovePiece(Player player, int pieceIndex, int steps)
+        private Piece getPiece(List<Piece> pieces,string name)
         {
-            Piece piece = player.Pieces[pieceIndex];
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                if(pieces[i].moveable && pieces[i].name == name)
+                {
+                    return pieces[i];
+                }
+            }
+            return null;
+        }
+        public void MovePiece(String Piece)
+        {
+            Player player = players[currentPlayerIndex];
+            Piece piece = getPiece(player.Pieces, Piece);
+
             if (piece.Position == -1)
             {
-                if (steps == 6)
+                if (diceValue == 6)
                 {
                     piece.Position = player.StartPosition;
                     board[player.StartPosition] = piece;
+                    //perform the animation of the piece moving from base to the start position
                 }
             }
             else
             {
-                int newPosition = (piece.Position + steps) % 52;
+                int newPosition = (piece.Position + diceValue) % 52;
                 if (board[newPosition] != null && board[newPosition].Color != player.Color)
                 {
                     SendPieceHome(board[newPosition]);
@@ -255,33 +272,49 @@ namespace LudoClient.CoreEngine
         {
             return player.HomePositions.Contains(piece.Position);
         }
-
-        private void PlayTurn()
+        public void SeatTurn(String SeatName)
         {
             Player player = players[currentPlayerIndex];
-            int diceRoll = RollDice();
-            Console.WriteLine($"{player.Color} rolled a {diceRoll}");
-
-            bool moveMade = false;
+            diceValue = RollDice();
+            Console.WriteLine($"{player.Color} rolled a {diceValue}");
+            int moveablePieces = 0;
             for (int i = 0; i < player.Pieces.Count; i++)
             {
-                if (player.Pieces[i].Position != -1 || diceRoll == 6)
+                if (player.Pieces[i].Position == -1 && diceValue == 6)
                 {
-                    MovePiece(player, i, diceRoll);
-                    moveMade = true;
-                    break;
+                    //open the token
+                    player.Pieces[i].moveable = true;
+                    moveablePieces++;
+                }
+                else if (player.Pieces[i].Position + diceValue <= 57)
+                {
+                    player.Pieces[i].moveable = true;
+                    moveablePieces++;
                 }
             }
-
-            if (!moveMade)
+            Console.WriteLine($"{player.Color} could can move " + moveablePieces + " pieces.");
+            if (moveablePieces == 1)
+            {
+                //If Auto Play Enabled Auto Move the piece
+                //After Movement is completed change the turn
+            }
+            else
+            if (moveablePieces > 0)
+            {
+                Console.WriteLine("Turn Animation of the moveable pieces;");
+                //Turn Animation of the moveable pieces;
+                //Start the timer for the auto play of 10 seconds. at the end of the timer auto perform the action of move on a random piece or drop the turn.
+            }
+            else
             {
                 Console.WriteLine($"{player.Color} could not move any piece.");
+                ChangeTurn();
             }
+        }
 
-            if (diceRoll != 6)
-            {
-                currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-            }
+        private void ChangeTurn()
+        {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
         }
 
         private bool IsGameOver()
@@ -301,12 +334,13 @@ namespace LudoClient.CoreEngine
         {
             while (!IsGameOver())
             {
-                PlayTurn();
+                SeatTurn(players[currentPlayerIndex].Color);
             }
         }
         public void CalculateLocation()
         {
 
         }
+        int diceValue = 0;
     }
 }
