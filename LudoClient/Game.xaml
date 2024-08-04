@@ -15,7 +15,6 @@
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
                       RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
                     <local:Token x:Name="red1" piece="red_token_large.png" />
-                    
                     <local:Token x:Name="red2" piece="red_token_large.png"/>
                     <local:Token x:Name="red3" piece="red_token_large.png"/>
                     <local:Token x:Name="red4" piece="red_token_large.png"/>

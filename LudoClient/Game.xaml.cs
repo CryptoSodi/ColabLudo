@@ -19,7 +19,23 @@ public partial class Game : ContentPage
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         RedPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         BluePlayerSeat.OnDiceClicked += PlayerDiceClicked;
+        
         red1.OnPieceClicked += PlayerPieceClicked;
+        red2.OnPieceClicked += PlayerPieceClicked;
+        red3.OnPieceClicked += PlayerPieceClicked;
+        red4.OnPieceClicked += PlayerPieceClicked;
+        gre1.OnPieceClicked += PlayerPieceClicked;
+        gre2.OnPieceClicked += PlayerPieceClicked;
+        gre3.OnPieceClicked += PlayerPieceClicked;
+        gre4.OnPieceClicked += PlayerPieceClicked;
+        yel1.OnPieceClicked += PlayerPieceClicked;
+        yel2.OnPieceClicked += PlayerPieceClicked;
+        yel3.OnPieceClicked += PlayerPieceClicked;
+        yel4.OnPieceClicked += PlayerPieceClicked;
+        blu1.OnPieceClicked += PlayerPieceClicked;
+        blu2.OnPieceClicked += PlayerPieceClicked;
+        blu3.OnPieceClicked += PlayerPieceClicked;
+        blu4.OnPieceClicked += PlayerPieceClicked;
     }
     private void PlayerPieceClicked(String PieceName)
     {
