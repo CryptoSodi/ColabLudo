@@ -295,7 +295,10 @@ namespace LudoClient.CoreEngine
         {
             Player player = players[currentPlayerIndex];
             Piece piece = getPiece(player.Pieces, Piece);
-
+            if (gameState != "MovePiece")
+                return;//Exit not the Current player Piece
+            if (piece == null || diceValue==0)
+                return;//Exit not the Current player Piece
             if (piece.Position == -1)
             {
                 if (diceValue == 6)
@@ -304,6 +307,7 @@ namespace LudoClient.CoreEngine
                     board[player.StartPosition] = piece;
                     //perform the animation of the piece moving from base to the start position
                     Relocate(piece);
+                    diceValue = 0;
                 }
             }
             else
@@ -354,41 +358,51 @@ namespace LudoClient.CoreEngine
         public void SeatTurn(String SeatName)
         {
             Player player = players[currentPlayerIndex];
-            diceValue = RollDice();
-            Console.WriteLine($"{player.Color} rolled a {diceValue}");
-            int moveablePieces = 0;
-            for (int i = 0; i < player.Pieces.Count; i++)
+            if (player.Color == SeatName && gameState == "RollDice")
             {
-                if (player.Pieces[i].Position == -1 && diceValue == 6)
+                diceValue = RollDice();
+                Console.WriteLine($"{player.Color} rolled a {diceValue}");
+                int moveablePieces = 0;
+                for (int i = 0; i < player.Pieces.Count; i++)
                 {
-                    //open the token
-                    player.Pieces[i].moveable = true;
-                    moveablePieces++;
+                    if (player.Pieces[i].Position == -1 && diceValue == 6)
+                    {
+                        //open the token
+                        player.Pieces[i].moveable = true;
+                        moveablePieces++;
+                    }
+                    else if (player.Pieces[i].Position + diceValue <= 57 && player.Pieces[i].Position != -1)
+                    {
+                        player.Pieces[i].moveable = true;
+                        moveablePieces++;
+                    }
                 }
-                else if (player.Pieces[i].Position + diceValue <= 57 && player.Pieces[i].Position != -1)
+                Console.WriteLine($"{player.Color} could can move " + moveablePieces + " pieces.");
+                if (moveablePieces == 1)
                 {
-                    player.Pieces[i].moveable = true;
-                    moveablePieces++;
+                    Console.WriteLine("Turn Animation of the moveable piece;");
+                    //If Auto Play Enabled Auto Move the piece
+                    //After Movement is completed change the turn
+                    gameState = "MovePiece";
                 }
-            }
-            Console.WriteLine($"{player.Color} could can move " + moveablePieces + " pieces.");
-            if (moveablePieces == 1)
-            {
-                Console.WriteLine("Turn Animation of the moveable piece;");
-                //If Auto Play Enabled Auto Move the piece
-                //After Movement is completed change the turn
+                else
+                if (moveablePieces > 0)
+                {
+                    Console.WriteLine("Turn Animation of the moveable pieces;");
+                    //Turn Animation of the moveable pieces;
+                    //Start the timer for the auto play of 10 seconds. at the end of the timer auto perform the action of move on a random piece or drop the turn.
+                    gameState = "MovePiece";
+                }
+                else
+                {
+                    Console.WriteLine($"{player.Color} could not move any piece.");
+                    ChangeTurn();
+                    gameState = "RollDice";
+                }
             }
             else
-            if (moveablePieces > 0)
             {
-                Console.WriteLine("Turn Animation of the moveable pieces;");
-                //Turn Animation of the moveable pieces;
-                //Start the timer for the auto play of 10 seconds. at the end of the timer auto perform the action of move on a random piece or drop the turn.
-            }
-            else
-            {
-                Console.WriteLine($"{player.Color} could not move any piece.");
-                ChangeTurn();
+                Console.WriteLine("Not the turn of the player");
             }
         }
 
@@ -424,5 +438,6 @@ namespace LudoClient.CoreEngine
             Grid.SetColumn(piece.piece, originalPath["p" + piece.Position][1]);
         }
         int diceValue = 0;
+        String gameState = "RollDice";
     }
 }
