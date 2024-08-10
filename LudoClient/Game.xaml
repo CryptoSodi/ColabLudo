@@ -11,7 +11,7 @@
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill"
                RowDefinitions=".4*,.3*,1.6*,.3*,.4*" >
-            <local:Capsule Grid.Row="2" ImageSource="board_game_2.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+            <local:Capsule Grid.Row="2" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
                       RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
                     <local:Token x:Name="red1" piece="red_token_large.png" />
