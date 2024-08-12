@@ -27,13 +27,13 @@ namespace LudoClient.CoreEngine
                 this.piece = piece;
                 this.name = name;
                 Color = color;
-                if(name=="red1")
+                if (name == "red1")
                 {
                     Position = 50; Position = -1;
                 }
                 else
                     Position = -1; // -1 indicates the piece is in the base
-                
+
             }
         }
         public class Player
@@ -41,7 +41,7 @@ namespace LudoClient.CoreEngine
             public string Color { get; private set; }
             public List<Piece> Pieces { get; private set; }
             public int StartPosition { get; private set; }
-           public Player(string color, Gui gui)
+            public Player(string color, Gui gui)
             {
                 Color = color;
                 if (color == "red")
@@ -102,66 +102,32 @@ namespace LudoClient.CoreEngine
         private Piece[] board;
         public void pupulate(Gui gui)
         {
-            Grid.SetRow(gui.red1, originalPath["hr0"][0]);
-            Grid.SetColumn(gui.red1, originalPath["hr0"][1]);
-            Grid.SetRow(gui.red2, originalPath["hr1"][0]);
-            Grid.SetColumn(gui.red2, originalPath["hr1"][1]);
-            Grid.SetRow(gui.red3, originalPath["hr2"][0]);
-            Grid.SetColumn(gui.red3, originalPath["hr2"][1]);
-            Grid.SetRow(gui.red4, originalPath["hr3"][0]);
-            Grid.SetColumn(gui.red4, originalPath["hr3"][1]);
-
-            Grid.SetRow(gui.gre1, originalPath["hg0"][0]);
-            Grid.SetColumn(gui.gre1, originalPath["hg0"][1]);
-            Grid.SetRow(gui.gre2, originalPath["hg1"][0]);
-            Grid.SetColumn(gui.gre2, originalPath["hg1"][1]);
-            Grid.SetRow(gui.gre3, originalPath["hg2"][0]);
-            Grid.SetColumn(gui.gre3, originalPath["hg2"][1]);
-            Grid.SetRow(gui.gre4, originalPath["hg3"][0]);
-            Grid.SetColumn(gui.gre4, originalPath["hg3"][1]);
-
-            Grid.SetRow(gui.blu1, originalPath["hb0"][0]);
-            Grid.SetColumn(gui.blu1, originalPath["hb0"][1]);
-            Grid.SetRow(gui.blu2, originalPath["hb1"][0]);
-            Grid.SetColumn(gui.blu2, originalPath["hb1"][1]);
-            Grid.SetRow(gui.blu3, originalPath["hb2"][0]);
-            Grid.SetColumn(gui.blu3, originalPath["hb2"][1]);
-            Grid.SetRow(gui.blu4, originalPath["hb3"][0]);
-            Grid.SetColumn(gui.blu4, originalPath["hb3"][1]);
-
-            Grid.SetRow(gui.yel1, originalPath["hy0"][0]);
-            Grid.SetColumn(gui.yel1, originalPath["hy0"][1]);
-            Grid.SetRow(gui.yel2, originalPath["hy1"][0]);
-            Grid.SetColumn(gui.yel2, originalPath["hy1"][1]);
-            Grid.SetRow(gui.yel3, originalPath["hy2"][0]);
-            Grid.SetColumn(gui.yel3, originalPath["hy2"][1]);
-            Grid.SetRow(gui.yel4, originalPath["hy3"][0]);
-            Grid.SetColumn(gui.yel4, originalPath["hy3"][1]);
-
+            //players[0].Pieces[0].location = 50;
+            //players[0].Pieces[0].Position = 49;
             Relocate(players[0], players[0].Pieces[0]);
+            Relocate(players[0], players[0].Pieces[1]);
+            Relocate(players[0], players[0].Pieces[2]);
+            Relocate(players[0], players[0].Pieces[3]);
+
+            Relocate(players[1], players[1].Pieces[0]);
+            Relocate(players[1], players[1].Pieces[1]);
+            Relocate(players[1], players[1].Pieces[2]);
+            Relocate(players[1], players[1].Pieces[3]);
+
+            Relocate(players[2], players[2].Pieces[0]);
+            Relocate(players[2], players[2].Pieces[1]);
+            Relocate(players[2], players[2].Pieces[2]);
+            Relocate(players[2], players[2].Pieces[3]);
+
+            Relocate(players[3], players[3].Pieces[0]);
+            Relocate(players[3], players[3].Pieces[1]);
+            Relocate(players[3], players[3].Pieces[2]);
+            Relocate(players[3], players[3].Pieces[3]);
         }
         public Engine(Gui gui)
         {
             this.gui = gui;
-            gui.red1.location = -1;
-            gui.red2.location = -1;
-            gui.red3.location = -1;
-            gui.red4.location = -1;
-
-            gui.gre1.location = -1;
-            gui.gre2.location = -1;
-            gui.gre3.location = -1;
-            gui.gre4.location = -1;
-
-            gui.blu1.location = -1;
-            gui.blu2.location = -1;
-            gui.blu3.location = -1;
-            gui.blu4.location = -1;
-
-            gui.yel1.location = -1;
-            gui.yel2.location = -1;
-            gui.yel3.location = -1;
-            gui.yel4.location = -1;
+            gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
 
             players = new List<Player>
             {
@@ -276,44 +242,53 @@ namespace LudoClient.CoreEngine
             originalPath["hb3"] = new int[] { 12, 12 };
 
             pupulate(gui);
-            rolls.Add(1);
+
             rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(6);
-            rolls.Add(2);
+            rolls.Add(1); rolls.Add(6);
+            rolls.Add(1); rolls.Add(6);
+            rolls.Add(1); rolls.Add(6);
             rolls.Add(1);
             rolls.Add(1);
             rolls.Add(1);
             rolls.Add(1);
-            rolls.Add(4);
             rolls.Add(1);
-            rolls.Add(6);
             rolls.Add(1);
-            rolls.Add(4);
             rolls.Add(1);
-            rolls.Add(6);
             rolls.Add(1);
-            rolls.Add(4);
             rolls.Add(1);
-            rolls.Add(6);
             rolls.Add(1);
-            rolls.Add(4);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
+            rolls.Add(1);
             rolls.Add(1);
         }
+        Random rnd = new Random();
         List<int> rolls = new List<int>();
         int index = 0;
         private int RollDice()
         {
-            Random rnd = new Random();
-            //perform the animation of the dice rolling
 
-            return  rnd.Next(1, 7);//rolls[index++];
+            //perform the animation of the dice rolling
+            //
+            try
+            {
+                return rnd.Next(1, 7);//rolls[index++];
+            }
+            catch (Exception)
+            {
+                return 1;
+            }
         }
         private Piece getPiece(List<Piece> pieces, string name)
         {
@@ -321,7 +296,7 @@ namespace LudoClient.CoreEngine
             {
                 if (pieces[i].moveable && pieces[i].name == name)
                 {
-                    if(pieces[i].Position == -1 && diceValue != 6)
+                    if (pieces[i].Position == -1 && diceValue != 6)
                     {
                         return null;
                     }
@@ -330,80 +305,30 @@ namespace LudoClient.CoreEngine
             }
             return null;
         }
-        public void MovePiece(String Piece)
-        {
-            Player player = players[currentPlayerIndex];
-            Piece piece = getPiece(player.Pieces, Piece);
-             if (piece == null || diceValue == 0)
-                    return;//Exit not the Current player Piece
-            if (gameState == "MovePiece" && piece.moveable)
-            {  bool killed = false;
-                  
-                if (piece.Position == -1)
-                {
-                    if (diceValue == 6)
-                    {
-                        piece.Position = player.StartPosition;
-                        piece.location = 1;
-                        board[player.StartPosition] = piece;
-                        //perform the animation of the piece moving from base to the start position
-                        Relocate(player, piece);
-                    }
-                }
-                else
-                {
-                    if((piece.Position + diceValue ) <= 57){
-
-                        int newPosition = ((piece.Position + diceValue ) % 52);
-
-                        if (board[newPosition] != null && board[newPosition].Color != player.Color)
-                        {
-                            killed = true;
-                            board[newPosition].Position = -1;
-                            Relocate(player, board[newPosition]);
-                        }
-                        board[piece.Position] = null;
-
-                        piece.Position = newPosition;
-                        piece.location = ((piece.location + diceValue) );
-                        board[newPosition] = piece;
-                        if (piece.Position == 57)
-                        {
-                            player.Pieces.Remove(piece);
-                            Console.WriteLine($"{player.Color} piece has reached home!");
-                        }
-                        Relocate(player, piece);
-                    }
-                }
-           //     checkKills(player,piece);
-                performTurnChecks(killed);
-                //perform turn turn check
-            }
-        }
-
+     
         private void performTurnChecks(bool killed)
         {
             gameState = "RollDice";
-            if(!killed)
-            if (diceValue != 6)
-            {
-               
-                ChangeTurn();
-            }
-            else
-            {
-                //If Auto Play Enabled Auto Move the piece
-                //After Movement is completed change the turn
-            }
+            if (!killed)
+                if (diceValue != 6)
+                {
+
+                    ChangeTurn();
+                }
+                else
+                {
+                    //If Auto Play Enabled Auto Move the piece
+                    //After Movement is completed change the turn
+                }
             diceValue = 0;
         }
 
-        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47,52,53,54,55,56,57,-1];
+        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
         private bool IsPieceSafe(Player player, Piece piece)
         {
-           return safeZone.Contains(piece.Position);
+            return safeZone.Contains(piece.Position);
         }
-        List<int> home = [52, 11,24,37];
+        List<int> home = [52, 11, 24, 37];
         public void SeatTurn(String SeatName)
         {
             Player player = players[currentPlayerIndex];
@@ -411,28 +336,46 @@ namespace LudoClient.CoreEngine
             {
                 diceValue = RollDice();
                 int moveablePieces = 0;
+                int closedPieces = 0;
                 for (int i = 0; i < player.Pieces.Count; i++)
                 {
-                    if (player.Pieces[i].Position == -1 && diceValue == 6)
+                    if(player.Pieces[i].location == 0 && diceValue == 6)
                     {
                         //open the token
                         player.Pieces[i].moveable = true;
                         moveablePieces++;
+                        closedPieces++;
                     }
-                    else if (player.Pieces[i].Position + diceValue <= 57 && player.Pieces[i].Position != -1)
+                    else if ((player.Pieces[i].location + diceValue <= 57) && player.Pieces[i].location != 0)
                     {
                         player.Pieces[i].moveable = true;
                         moveablePieces++;
                     }
                     else player.Pieces[i].moveable = false;
                 }
-                Console.WriteLine($"{player.Color} rolled a {diceValue} "+$"can move " + moveablePieces + " pieces.");
+
+                Console.WriteLine($"{player.Color} rolled a {diceValue} " + $"can move " + moveablePieces + " pieces.");
+                encoder($"{player.Color}");
                 if (moveablePieces == 1)
                 {
                     Console.WriteLine("Turn Animation of the moveable piece;");
                     //If Auto Play Enabled Auto Move the piece
                     //After Movement is completed change the turn
                     gameState = "MovePiece";
+                    for (int i = 0; i < player.Pieces.Count; i++)
+                    {
+                        if (player.Pieces[i].moveable)
+                        {
+                            MovePiece(player.Pieces[i].name);
+                            break;
+                        }
+                    }
+                }
+                else
+                if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
+                {
+                    gameState = "MovePiece";
+                    MovePiece(player.Pieces[rnd.Next(0, player.Pieces.Count)].name);
                 }
                 else
                 if (moveablePieces > 0)
@@ -454,12 +397,64 @@ namespace LudoClient.CoreEngine
                 Console.WriteLine("Not the turn of the player");
             }
         }
+        public void MovePiece(String Piece)
+        {
+            Player player = players[currentPlayerIndex];
+            Piece piece = getPiece(player.Pieces, Piece);
+            if (piece == null || diceValue == 0)
+                return;//Exit not the Current player Piece
+            if (gameState == "MovePiece" && piece.moveable)
+            {
+                bool killed = false;
+                if (piece.Position == -1 && diceValue == 6)
+                {
+                    piece.Position = player.StartPosition;
+                    piece.location = 1;
+                    board[player.StartPosition] = piece;
+                    //perform the animation of the piece moving from base to the start position
+                    encoder(piece.name);
+                    Relocate(player, piece);
+                }
+                else
+                {
+                    if ((piece.location + diceValue) <= 57)
+                    {
+                        int newPosition = ((piece.Position + diceValue) % 52);
 
+                        if (board[newPosition] != null && board[newPosition].Color != player.Color)
+                        {
+                            killed = true;
+                            board[newPosition].Position = -1;
+                            board[newPosition].location = 0;
+
+                            Relocate(player, board[newPosition]);
+                        }
+                        board[piece.Position] = null;
+
+                        piece.Position = newPosition;
+                        piece.location = ((piece.location + diceValue));
+                        board[newPosition] = piece;
+                        
+                        encoder(piece.name);
+                        Relocate(player, piece);
+                        if (piece.location == 57)
+                        {
+                            player.Pieces.Remove(piece);
+                            Console.WriteLine($"{player.Color} piece has reached home!");
+                        }
+                        if(player.Pieces.Count==0)
+                            Console.WriteLine($"{player.Color} has won the game!");
+                    }
+                }
+                //     checkKills(player,piece);
+                performTurnChecks(killed);
+                //perform turn turn check
+            }
+        }
         private void ChangeTurn()
         {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
         }
-
         private bool IsGameOver()
         {
             foreach (Player player in players)
@@ -472,75 +467,76 @@ namespace LudoClient.CoreEngine
             }
             return false;
         }
-
         public void PlayGame()
         {
-            while (!IsGameOver())
-            {
-                SeatTurn(players[currentPlayerIndex].Color);
-            }
+            SeatTurn(players[currentPlayerIndex].Color);
         }
         public void Relocate(Player player, Piece piece)
         {
-//piece.Position
-//player.StartPosition
+            //piece.Position
+            //player.StartPosition
             String pj = "p" + (piece.Position);
             if (piece.Position == -1)
             {
-                if (piece.name == "red1")
-                    pj = "hr0";
-                if (piece.name == "red2")
-                    pj = "hr1";
-                if (piece.name == "red3")
-                    pj = "hr2";
-                if (piece.name == "red4")
-                    pj = "hr3";
-                if (piece.name == "gre1")
-                    pj = "hg0";
-                if (piece.name == "gre2")
-                    pj = "hg1";
-                if (piece.name == "gre3")
-                    pj = "hg2";
-                if (piece.name == "gre4")
-                    pj = "hg3";
-                if(piece.name == "yel1")
-                    pj = "hy0";
-                if (piece.name == "yel2")
-                    pj = "hy1";
-                if (piece.name == "yel3")
-                    pj = "hy2";
-                if (piece.name == "yel4")
-                    pj = "hy3";
-                if (piece.name == "blu1")
-                    pj = "hb0";
-                if (piece.name == "blu2")
-                    pj = "hb1";
-                if (piece.name == "blu3")
-                    pj = "hb2";
-                if (piece.name == "blu4")
-                    pj = "hb3";
+                pj = "h" +piece.name.Substring(0, 1)+(Int32.Parse(piece.name.Substring(3, 1))-1);
             }
             else
-            if(piece.location > 51)
+            if (piece.location > 51 && piece.location < 58)
             {
-                if (piece.name.Contains("red"))
-                    pj = "r"+( piece.location-1);
-                if (piece.name.Contains("gre"))
-                {
-                    pj = "g" + (piece.location - 1);
-                }
-                if (piece.name.Contains("yel"))
-                    pj = "y" + (piece.location - 1);
-                if (piece.name.Contains("blu"))
-                    pj = "b" + (piece.location - 1);
+                pj = piece.name.Substring(0, 1) + (piece.location -1);
             }
-            else
+
+            if (piece.location > 57)
             {
 
             }
+            else
+            {
                 Grid.SetRow(piece.piece, originalPath[pj][0]);
                 Grid.SetColumn(piece.piece, originalPath[pj][1]);
-            Console.WriteLine($"{piece.name} is at {pj}");
+                Console.WriteLine($"{piece.name} is at {pj}");
+            }
+        }
+        public int chainIndex = 0;
+        public string chain = "";
+        public void encoder(String command) { //encode the game state
+            chain += chainIndex+","+command+ "+";
+            chainIndex++;
+            //Console.WriteLine(chain);
+        }
+        public void decoder()
+        {
+            string[] chainArray = chain.Split('+');
+            foreach (string item in chainArray)
+            {
+                string[] parts = item.Split(',');
+                int index = int.Parse(parts[0]);
+                string command = parts[1];
+
+                // Perform actions based on the decoded command
+                switch (command)
+                {
+                    case "red":
+                        // Handle red player command
+                        break;
+                    case "green":
+                        // Handle green player command
+                        break;
+                    case "yellow":
+                        // Handle yellow player command
+                        break;
+                    case "blue":
+                        // Handle blue player command
+                        break;
+                    default:
+                        // Handle unknown command
+                        break;
+                }
+            }
+        }
+        public void chaser()
+        {
+
         }
         int diceValue = 0;
         String gameState = "RollDice";

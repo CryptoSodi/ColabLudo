@@ -39,14 +39,17 @@ public partial class Game : ContentPage
     }
     private void PlayerPieceClicked(String PieceName)
     {
+        //start animation
         // Handle the dice click for the green player
         Engine.MovePiece(PieceName);
+        //stop animmation
     }
 
     private void PlayerDiceClicked(String SeatName)
     {
         // Handle the dice click for the green player
-         Engine.SeatTurn(SeatName);
+        Engine.PlayGame();
+         //Engine.SeatTurn(SeatName);
     }
 
     private void PopOverClicked(object sender, EventArgs e)
