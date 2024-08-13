@@ -24,4 +24,22 @@ public partial class PlayerSeat : ContentView
     {
         OnDiceClicked?.Invoke(name);
     }
+
+    internal void AnimateDice()
+    {
+        DiceLayer.Source = "dice_a.gif";
+        DiceLayer.IsAnimationPlaying = true;
+    }
+
+    internal void StopDice(int DiceValue)
+    {
+        DiceLayer.Source = "dice_"+ DiceValue + ".png";
+        DiceLayer.IsAnimationPlaying = false;
+    }
+
+    internal void reset()
+    {//HARIS FIX THIS THE SOURCE FILE NEEDS TO BE MATCHED WITH dice_0.png only then we have to reset //0001
+        if(DiceLayer.Source+"" != "dice_0.png")
+            DiceLayer.Source = "dice_0.png";
+    }
 }

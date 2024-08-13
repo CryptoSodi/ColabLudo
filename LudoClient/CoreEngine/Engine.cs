@@ -283,7 +283,8 @@ namespace LudoClient.CoreEngine
             //
             try
             {
-                return rnd.Next(1, 7);//rolls[index++];
+                //return rnd.Next(1, 7);
+                return rolls[index++];
             }
             catch (Exception)
             {
@@ -329,12 +330,22 @@ namespace LudoClient.CoreEngine
             return safeZone.Contains(piece.Position);
         }
         List<int> home = [52, 11, 24, 37];
-        public void SeatTurn(String SeatName)
+        public bool checkTurn(String SeatName,String GameState)
         {
+            Player player = players[currentPlayerIndex];
+            if (player.Color == SeatName && gameState == GameState)
+            { 
+                return true;
+            }else return false;
+        }
+        public async void SeatTurn(String SeatName)
+        {
+            int d2 = -1;
             Player player = players[currentPlayerIndex];
             if (player.Color == SeatName && gameState == "RollDice")
             {
                 diceValue = RollDice();
+                d2= diceValue;
                 int moveablePieces = 0;
                 int closedPieces = 0;
                 for (int i = 0; i < player.Pieces.Count; i++)
@@ -395,7 +406,14 @@ namespace LudoClient.CoreEngine
             else
             {
                 Console.WriteLine("Not the turn of the player");
+
             }
+            await Sleep(rnd.Next(1, 500));
+            StopDice(SeatName,d2);
+        }
+        async Task Sleep(int delay)
+        {
+            await Task.Delay(delay);
         }
         public void MovePiece(String Piece)
         {
@@ -538,6 +556,9 @@ namespace LudoClient.CoreEngine
         {
 
         }
+        public delegate void CallbackEventHandler(string SeatName,int diceValue);
+        public event CallbackEventHandler StopDice;
+
         int diceValue = 0;
         String gameState = "RollDice";
     }

@@ -1,3 +1,4 @@
+
 using LudoClient.ControlView;
 using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
@@ -36,6 +37,11 @@ public partial class Game : ContentPage
         blu2.OnPieceClicked += PlayerPieceClicked;
         blu3.OnPieceClicked += PlayerPieceClicked;
         blu4.OnPieceClicked += PlayerPieceClicked;
+        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+        RedPlayerSeat.reset();
+        GreenPlayerSeat.reset();
+        YellowPlayerSeat.reset(); 
+        BluePlayerSeat.reset();
     }
     private void PlayerPieceClicked(String PieceName)
     {
@@ -44,14 +50,52 @@ public partial class Game : ContentPage
         Engine.MovePiece(PieceName);
         //stop animmation
     }
-
+    
     private void PlayerDiceClicked(String SeatName)
     {
-        // Handle the dice click for the green player
-        Engine.PlayGame();
-         //Engine.SeatTurn(SeatName);
-    }
+       if(Engine.checkTurn(SeatName, "RollDice"))
+       {    
+            RedPlayerSeat.reset();
+            GreenPlayerSeat.reset();
+            YellowPlayerSeat.reset();
+            BluePlayerSeat.reset();
 
+            // Handle the dice click for the green player
+            //check turn
+            var seat = RedPlayerSeat;
+            if (SeatName == "red")
+                seat = RedPlayerSeat;
+            if (SeatName == "green")
+                seat = GreenPlayerSeat;
+            if (SeatName == "yellow")
+                seat = YellowPlayerSeat;
+            if (SeatName == "blue")
+                seat = BluePlayerSeat;
+            seat.AnimateDice();
+            Engine.SeatTurn(SeatName);
+       }
+        //Engine.PlayGame();
+    }
+    public void StopDice(string SeatName,int dicevalue)
+    {
+        var seat = GreenPlayerSeat;
+        if (SeatName=="red")
+            seat = RedPlayerSeat;
+        if (SeatName == "green")
+            seat = GreenPlayerSeat;
+        if (SeatName == "yellow")
+            seat = YellowPlayerSeat;
+        if (SeatName == "blue")
+            seat = BluePlayerSeat;
+
+
+        if (dicevalue==0)
+        {
+            seat.StopDice(6);
+            return;
+        }
+        seat.StopDice(dicevalue);
+    }
     private void PopOverClicked(object sender, EventArgs e)
     {
         PopoverButton.ShowAttachedPopover();
