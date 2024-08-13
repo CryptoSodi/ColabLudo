@@ -104,25 +104,13 @@ namespace LudoClient.CoreEngine
         {
             //players[0].Pieces[0].location = 50;
             //players[0].Pieces[0].Position = 49;
-            Relocate(players[0], players[0].Pieces[0]);
-            Relocate(players[0], players[0].Pieces[1]);
-            Relocate(players[0], players[0].Pieces[2]);
-            Relocate(players[0], players[0].Pieces[3]);
-
-            Relocate(players[1], players[1].Pieces[0]);
-            Relocate(players[1], players[1].Pieces[1]);
-            Relocate(players[1], players[1].Pieces[2]);
-            Relocate(players[1], players[1].Pieces[3]);
-
-            Relocate(players[2], players[2].Pieces[0]);
-            Relocate(players[2], players[2].Pieces[1]);
-            Relocate(players[2], players[2].Pieces[2]);
-            Relocate(players[2], players[2].Pieces[3]);
-
-            Relocate(players[3], players[3].Pieces[0]);
-            Relocate(players[3], players[3].Pieces[1]);
-            Relocate(players[3], players[3].Pieces[2]);
-            Relocate(players[3], players[3].Pieces[3]);
+            for (int i = 0; i < players.Count; i++)
+            {
+                for (int j = 0; j < players[i].Pieces.Count; j++)
+                {
+                    Relocate(players[i], players[i].Pieces[j]);
+                }
+            }
         }
         public Engine(Gui gui)
         {
@@ -336,16 +324,17 @@ namespace LudoClient.CoreEngine
             if (player.Color == SeatName && gameState == GameState)
             { 
                 return true;
-            }else return false;
+            }else 
+                return false;
         }
         public async void SeatTurn(String SeatName)
         {
-            int d2 = -1;
+            int tempDice = -1;
             Player player = players[currentPlayerIndex];
             if (player.Color == SeatName && gameState == "RollDice")
             {
                 diceValue = RollDice();
-                d2= diceValue;
+                tempDice = diceValue;
                 int moveablePieces = 0;
                 int closedPieces = 0;
                 for (int i = 0; i < player.Pieces.Count; i++)
@@ -408,8 +397,8 @@ namespace LudoClient.CoreEngine
                 Console.WriteLine("Not the turn of the player");
 
             }
-            await Sleep(rnd.Next(1, 500));
-            StopDice(SeatName,d2);
+            await Sleep(rnd.Next(1, 500));//simulating the server delay
+            StopDice(SeatName, tempDice);
         }
         async Task Sleep(int delay)
         {
@@ -510,6 +499,10 @@ namespace LudoClient.CoreEngine
             }
             else
             {
+                
+              //  piece.piece.TranslateTo(originalPath[pj][1] * 50, originalPath[pj][0] * 50, 1000, Easing.Linear);   
+
+
                 Grid.SetRow(piece.piece, originalPath[pj][0]);
                 Grid.SetColumn(piece.piece, originalPath[pj][1]);
                 Console.WriteLine($"{piece.name} is at {pj}");
