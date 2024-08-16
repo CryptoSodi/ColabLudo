@@ -12,26 +12,26 @@
         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill"
                RowDefinitions=".4*,.3*,1.6*,.3*,.4*" >
             <local:Capsule Grid.Row="2" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
+                <Grid x:Name="Glayout" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
                       RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
-                    
-                        <local:Token x:Name="red1" piece="red_token_large.png" />
-                    
-                    <local:Token x:Name="red2" piece="red_token_large.png"/>
-                    <local:Token x:Name="red3" piece="red_token_large.png"/>
-                    <local:Token x:Name="red4" piece="red_token_large.png"/>
-                    <local:Token x:Name="gre1" piece="green_token_large.png"/>
-                    <local:Token x:Name="gre2" piece="green_token_large.png"/>
-                    <local:Token x:Name="gre3" piece="green_token_large.png"/>
-                    <local:Token x:Name="gre4" piece="green_token_large.png"/>
-                    <local:Token x:Name="yel1" piece="yellow_token_large.png"/>
-                    <local:Token x:Name="yel2" piece="yellow_token_large.png"/>
-                    <local:Token x:Name="yel3" piece="yellow_token_large.png"/>
-                    <local:Token x:Name="yel4" piece="yellow_token_large.png"/>
-                    <local:Token x:Name="blu1" piece="blue_token_large.png"/>
-                    <local:Token x:Name="blu2" piece="blue_token_large.png"/>
-                    <local:Token x:Name="blu3" piece="blue_token_large.png"/>
-                    <local:Token x:Name="blu4" piece="blue_token_large.png"/>
+                    <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15" >
+                        <local:Token x:Name="red1" piece="red_token_large.png"/>
+                        <local:Token x:Name="red2" piece="red_token_large.png"/>
+                        <local:Token x:Name="red3" piece="red_token_large.png"/>
+                        <local:Token x:Name="red4" piece="red_token_large.png"/>
+                        <local:Token x:Name="gre1" piece="green_token_large.png"/>
+                        <local:Token x:Name="gre2" piece="green_token_large.png"/>
+                        <local:Token x:Name="gre3" piece="green_token_large.png"/>
+                        <local:Token x:Name="gre4" piece="green_token_large.png"/>
+                        <local:Token x:Name="yel1" piece="yellow_token_large.png"/>
+                        <local:Token x:Name="yel2" piece="yellow_token_large.png"/>
+                        <local:Token x:Name="yel3" piece="yellow_token_large.png"/>
+                        <local:Token x:Name="yel4" piece="yellow_token_large.png"/>
+                        <local:Token x:Name="blu1" piece="blue_token_large.png"/>
+                        <local:Token x:Name="blu2" piece="blue_token_large.png"/>
+                        <local:Token x:Name="blu3" piece="blue_token_large.png"/>
+                        <local:Token x:Name="blu4" piece="blue_token_large.png"/>
+                    </AbsoluteLayout>
                 </Grid>
             </local:Capsule>
             <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="End">

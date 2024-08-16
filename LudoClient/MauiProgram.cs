@@ -21,6 +21,7 @@ namespace LudoClient
                     fonts.AddFont("Comfortaa-Medium.ttf", "MediumFont");
                     fonts.AddFont("Comfortaa-SemiBold.ttf", "SemiBoldFont");
                 })
+                .UseMauiApp<App>()
                 .UseSimpleToolkit()
                 .UseSimpleShell();
 

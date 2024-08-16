@@ -1,4 +1,5 @@
 
+
 using LudoClient.ControlView;
 using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
@@ -9,12 +10,14 @@ namespace LudoClient;
 public partial class Game : ContentPage
 {
     Engine Engine;
-
     public Game()
     {
         InitializeComponent();
+        //   Grid.SetRow(GameView, 0);
+        //   Grid.SetColumn(GameView, 0);
+
         Gui gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
-        Engine = new Engine(gui);
+        Engine = new Engine(gui, Glayout, Alayout);
         //Event Handelers
         GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
@@ -43,6 +46,17 @@ public partial class Game : ContentPage
         YellowPlayerSeat.reset(); 
         BluePlayerSeat.reset();
     }
+
+    void OnGameViewEndInteraction(object sender, TouchEventArgs e)
+    {
+      //  userInputManager.FinishTouch();   
+    }
+
+    void OnGameViewStartInteraction(object sender, TouchEventArgs e)
+    {
+      //  userInputManager.HandleTouch(e.Touches.First().X, GameView.Width);
+    }
+
     private void PlayerPieceClicked(String PieceName)
     {
         //start animation
