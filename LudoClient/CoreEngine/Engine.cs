@@ -1,4 +1,6 @@
-﻿using LudoClient.ControlView;
+﻿
+using LudoClient.ControlView;
+using LudoClient.Network;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,7 +21,6 @@ namespace LudoClient.CoreEngine
             public string name = "";
             public bool moveable = false;
             internal int location;
-
             public string Color { get; private set; }
             public int Position { get; set; }
             public Piece(string color, string name, Token piece)
@@ -27,12 +28,7 @@ namespace LudoClient.CoreEngine
                 this.piece = piece;
                 this.name = name;
                 Color = color;
-                if (name == "red1")
-                {
-                    Position = 50; Position = -1;
-                }
-                else
-                    Position = -1; // -1 indicates the piece is in the base
+                Position = -1; // -1 indicates the piece is in the base
 
             }
         }
@@ -108,7 +104,7 @@ namespace LudoClient.CoreEngine
             {
                 for (int j = 0; j < players[i].Pieces.Count; j++)
                 {
-                    Relocate(players[i], players[i].Pieces[j],true);
+                    Relocate(players[i], players[i].Pieces[j], true);
                 }
             }
         }
@@ -116,6 +112,9 @@ namespace LudoClient.CoreEngine
         Grid Glayout;
         public Engine(Gui gui, Grid Glayout, AbsoluteLayout Alayout)
         {
+            Client client = new Client();
+          //  client.SendRequest += new Client.CallbackEventHandler(SendRequest);
+
             this.gui = gui;
             gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
             this.Glayout = Glayout;
@@ -241,34 +240,12 @@ namespace LudoClient.CoreEngine
             originalPath["hb2"] = new int[] { 12, 11 };
             originalPath["hb3"] = new int[] { 12, 12 };
 
-            
+
 
             rolls.Add(6);
             rolls.Add(1); rolls.Add(6);
             rolls.Add(1); rolls.Add(6);
             rolls.Add(1); rolls.Add(6);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
             rolls.Add(1);
             rolls.Add(1);
             rolls.Add(1);
@@ -278,13 +255,12 @@ namespace LudoClient.CoreEngine
         int index = 0;
         private int RollDice()
         {
-
             //perform the animation of the dice rolling
             //
             try
             {
                 return rnd.Next(1, 7);
-               // return rolls[index++];
+                // return rolls[index++];
             }
             catch (Exception)
             {
@@ -306,7 +282,6 @@ namespace LudoClient.CoreEngine
             }
             return null;
         }
-
         private void performTurnChecks(bool killed)
         {
             gameState = "RollDice";
@@ -433,7 +408,7 @@ namespace LudoClient.CoreEngine
                     board[player.StartPosition] = piece;
                     //perform the animation of the piece moving from base to the start position
                     encoder(piece.name);
-                    Relocate(player, piece,false);
+                    Relocate(player, piece, false);
                 }
                 else
                 {
@@ -491,7 +466,7 @@ namespace LudoClient.CoreEngine
         {
             SeatTurn(players[currentPlayerIndex].Color);
         }
-        public void Relocate(Player player, Piece piece,bool baseflag)
+        public void Relocate(Player player, Piece piece, bool baseflag)
         {
             //piece.Position
             //player.StartPosition
@@ -517,72 +492,67 @@ namespace LudoClient.CoreEngine
                 double y = originalPath[pj][0] * width;
                 double x = originalPath[pj][1] * height;
 
-
-
-
                 if (baseflag)
-                     AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(0, 0, width, height));
-                
+                    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(0, 0, width, height));
+
                 //    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
-               
-               // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
+
+                // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
 
                 piece.piece.TranslateTo(x, y, 200, Easing.CubicIn);
                 // Grid.SetRow(piece.piece, originalPath[pj][0]);
                 //    Grid.SetRow(piece.piece, originalPath[pj][0]);
                 //    Grid.SetColumn(piece.piece, originalPath[pj][1]);
-                Console.WriteLine($"{piece.name} is at {pj} "+x+":"+y+":"+width+":"+ height);
+                Console.WriteLine($"{piece.name} is at {pj} " + x + ":" + y + ":" + width + ":" + height);
             }
         }
-
-
-
-    public int chainIndex = 0;
-    public string chain = "";
-    public void encoder(String command)
-    { //encode the game state
-        chain += chainIndex + "," + command + "+";
-        chainIndex++;
-        //Console.WriteLine(chain);
-    }
-    public void decoder()
-    {
-        string[] chainArray = chain.Split('+');
-        foreach (string item in chainArray)
+        public int chainIndex = 0;
+        public string chain = "";
+        public void encoder(String command)
+        { //encode the game state
+            chain += chainIndex + "," + command + "+";
+            chainIndex++;
+            //Console.WriteLine(chain);
+        }
+        public void decoder()
         {
-            string[] parts = item.Split(',');
-            int index = int.Parse(parts[0]);
-            string command = parts[1];
-
-            // Perform actions based on the decoded command
-            switch (command)
+            string[] chainArray = chain.Split('+');
+            foreach (string item in chainArray)
             {
-                case "red":
-                    // Handle red player command
-                    break;
-                case "green":
-                    // Handle green player command
-                    break;
-                case "yellow":
-                    // Handle yellow player command
-                    break;
-                case "blue":
-                    // Handle blue player command
-                    break;
-                default:
-                    // Handle unknown command
-                    break;
+                string[] parts = item.Split(',');
+                int index = int.Parse(parts[0]);
+                string command = parts[1];
+
+                // Perform actions based on the decoded command
+                switch (command)
+                {
+                    case "red":
+                        // Handle red player command
+                        break;
+                    case "green":
+                        // Handle green player command
+                        break;
+                    case "yellow":
+                        // Handle yellow player command
+                        break;
+                    case "blue":
+                        // Handle blue player command
+                        break;
+                    default:
+                        // Handle unknown command
+                        break;
+                }
             }
         }
-    }
-    public void chaser()
-    {
+        public void chaser()
+        {
 
-    }
-    public delegate void CallbackEventHandler(string SeatName, int diceValue);
-    public event CallbackEventHandler StopDice;
+        }
 
-    int diceValue = 0;
-    String gameState = "RollDice";
-}
+        public delegate void CallbackEventHandler(string SeatName, int diceValue);
+        public event CallbackEventHandler StopDice;
+
+        int diceValue = 0;
+        String gameState = "RollDice";
+    }
 }

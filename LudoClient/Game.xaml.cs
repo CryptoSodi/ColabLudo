@@ -43,20 +43,9 @@ public partial class Game : ContentPage
         Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
         RedPlayerSeat.reset();
         GreenPlayerSeat.reset();
-        YellowPlayerSeat.reset(); 
+        YellowPlayerSeat.reset();
         BluePlayerSeat.reset();
     }
-
-    void OnGameViewEndInteraction(object sender, TouchEventArgs e)
-    {
-      //  userInputManager.FinishTouch();   
-    }
-
-    void OnGameViewStartInteraction(object sender, TouchEventArgs e)
-    {
-      //  userInputManager.HandleTouch(e.Touches.First().X, GameView.Width);
-    }
-
     private void PlayerPieceClicked(String PieceName)
     {
         //start animation
@@ -101,7 +90,6 @@ public partial class Game : ContentPage
             seat = YellowPlayerSeat;
         if (SeatName == "blue")
             seat = BluePlayerSeat;
-
 
         if (dicevalue==0)
         {
