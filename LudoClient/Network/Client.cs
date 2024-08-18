@@ -24,11 +24,12 @@ namespace LudoClient.Network
             _hub.On<string, string>("ReceiveMessage", (sender, message) =>
             {
                 Console.WriteLine($"{sender}: {message}");
+                RecievedRequest("",2);
             });
         }
         
-        public delegate void CallbackEventHandler(string SeatName, int diceValue);
-        public event CallbackEventHandler SendRequest;
+        public delegate void CallbackRecievedRequest(string SeatName, int diceValue);
+        public event CallbackRecievedRequest RecievedRequest;
 
         public void SendMessage(string line)
         {

@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static LudoClient.CoreEngine.Engine;
 
 namespace LudoClient.CoreEngine
 {
@@ -110,10 +109,14 @@ namespace LudoClient.CoreEngine
         }
         AbsoluteLayout Alayout;
         Grid Glayout;
+        public void RecievedRequest(String name,int val) 
+        {
+        
+        }
         public Engine(Gui gui, Grid Glayout, AbsoluteLayout Alayout)
         {
             Client client = new Client();
-          //  client.SendRequest += new Client.CallbackEventHandler(SendRequest);
+            client.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
             this.gui = gui;
             gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
@@ -298,7 +301,6 @@ namespace LudoClient.CoreEngine
                 }
             diceValue = 0;
         }
-
         List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
         private bool IsPieceSafe(Player player, Piece piece)
         {
