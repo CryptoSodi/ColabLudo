@@ -1,8 +1,4 @@
 ﻿
-using LudoClient.ControlView;
-using LudoClient.Network;
-using Microsoft.AspNet.SignalR.Client;
-using Microsoft.Maui.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -32,6 +28,7 @@ namespace LudoClient.CoreEngine
                 Position = -1; // -1 indicates the piece is in the base
 
             }
+
         }
         public class Player
         {
@@ -109,30 +106,18 @@ namespace LudoClient.CoreEngine
                 }
             }
         }
-        AbsoluteLayout Alayout;
-        Grid Glayout;
-        public void RecievedRequest(String name,int val) 
+
+        public void RecievedRequest(String name, int val)
         {
 
         }
-        Client client = new Client();
-        public Engine(Gui gui, Grid Glayout, AbsoluteLayout Alayout)
+        List<int> home = new List<int> { 52, 11, 24, 37 };
+        List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
+        public Engine(Gui gui)
         {
-            client.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
-
             this.gui = gui;
             gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
-            this.Glayout = Glayout;
-            this.Alayout = Alayout;
-
-
-            Alayout.SizeChanged += (sender, e) =>
-            {
-                // This code will run when the layout is rendered or resized
-                // You can perform your actions here
-                Console.WriteLine("The layout has been loaded and rendered.");
-                pupulate(gui);
-            };
+           
             players = new List<Player>
             {
                 new Player("red",gui),
@@ -143,6 +128,8 @@ namespace LudoClient.CoreEngine
             currentPlayerIndex = 0;
 
             board = new Piece[57];
+          
+
 
             originalPath["p0"] = new int[] { 13, 6 };
             originalPath["p1"] = new int[] { 12, 6 };
@@ -303,12 +290,11 @@ namespace LudoClient.CoreEngine
                 }
             diceValue = 0;
         }
-        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
         private bool IsPieceSafe(Player player, Piece piece)
         {
             return safeZone.Contains(piece.Position);
         }
-        List<int> home = [52, 11, 24, 37];
+       
         public bool checkTurn(String SeatName, String GameState)
         {
             Player player = players[currentPlayerIndex];
@@ -329,7 +315,6 @@ namespace LudoClient.CoreEngine
                 tempDice = diceValue;
                 int moveablePieces = 0;
                 int closedPieces = 0;
-                client.SendMessage(SeatName);
                 for (int i = 0; i < player.Pieces.Count; i++)
                 {
                     if (player.Pieces[i].location == 0 && diceValue == 6)
@@ -405,8 +390,6 @@ namespace LudoClient.CoreEngine
                 return;//Exit not the Current player Piece
             if (gameState == "MovePiece" && piece.moveable)
             {
-
-                client.SendMessage(Piece);
                 bool killed = false;
                 if (piece.Position == -1 && diceValue == 6)
                 {
@@ -494,19 +477,16 @@ namespace LudoClient.CoreEngine
             }
             else
             {
-                double width = Alayout.Width / 15;
-                double height = Alayout.Height / 15;
+                double width = 2000 / 15;
+                double height = 2000 / 15;
                 double y = originalPath[pj][0] * width;
                 double x = originalPath[pj][1] * height;
 
-                if (baseflag)
-                    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(0, 0, width, height));
-
+                
                 //    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
 
                 // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
 
-                piece.piece.TranslateTo(x, y, 200, Easing.CubicIn);
                 // Grid.SetRow(piece.piece, originalPath[pj][0]);
                 //    Grid.SetRow(piece.piece, originalPath[pj][0]);
                 //    Grid.SetColumn(piece.piece, originalPath[pj][1]);
