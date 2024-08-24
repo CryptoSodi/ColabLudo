@@ -1,21 +1,25 @@
-using LudoClient.Utilities;
-using Microsoft.Maui.Controls;
+using LudoClient.Dictionary;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace LudoClient
 {
     public partial class LoginPage : ContentPage
     {
-        private string phoneNumber;
-        private string expectedOTP;
+        private readonly HttpClient _httpClient;
+        private string fullPhoneNumber;
 
         public LoginPage()
         {
             InitializeComponent();
-            OTPPanel.IsVisible = true;
-            LoginPanel.IsVisible = false;
+            OTPPanel.IsVisible = false;
+            LoginPanel.IsVisible = true;
             var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
+            PopulateCountryCodePicker();
+            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
         }
         protected override void OnAppearing()
         {
@@ -24,6 +28,21 @@ namespace LudoClient
             // Execute your function when the page is loaded
             // For example:
             // MyFunction();
+        }
+
+        private void PopulateCountryCodePicker()
+        {
+            foreach (var countryCode in CountryCode.countryCodes.Keys)
+            {
+                CountryCodePicker.Items.Add(countryCode);
+            }
+        }
+
+        private bool IsValidPhoneNumber(string phoneNumber)
+        {
+            // A simple validation regex for phone numbers. This can be improved based on requirements.
+            //return Regex.IsMatch(phoneNumber, @"^\+[1-9]\d{1,14}$");
+            return Regex.IsMatch(phoneNumber, @"^[0-9]{7,15}$");
         }
 
         private async void GooleSignup_Clicked(object sender, EventArgs e)
@@ -129,16 +148,22 @@ namespace LudoClient
 
         private void SendOTP_Clicked(object sender, EventArgs e)
         {
-            // Get the entered phone number
-            phoneNumber = PhoneNumberEntry.Text;
-            // Generate and send OTP (You would use a service for this in a real application)
-            // For now, you might simulate it or display a message.
-            expectedOTP = GenerateOTP(); // You need to implement this method
-            // Hide the login panel
-            HideLoginPanel();
-            // Show OTP-related components
-            OTPPanel.IsVisible = true;
-            LoginPanel.IsVisible = false;
+            string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
+            string phoneNumber = PhoneNumberEntry.Text.TrimStart('0');
+            fullPhoneNumber = selectedCountryCode + phoneNumber;
+
+            if (IsValidPhoneNumber(phoneNumber))
+            {
+                // Add the phone number to the queue
+                AddPhoneNumberToQueue(fullPhoneNumber);
+                HideLoginPanel();
+                OTPPanel.IsVisible = true;
+                LoginPanel.IsVisible = false;
+            }
+            else
+            {
+                DisplayAlert("Error", "Please enter a valid phone number.", "OK");
+            }
         }
 
         private void HideLoginPanel()
@@ -148,24 +173,20 @@ namespace LudoClient
             OTPPanel.IsVisible = false;
         }
 
-        private void VerifyOTP_Clicked(object sender, EventArgs e)
+        private async void VerifyOTP_Clicked(object sender, EventArgs e)
         {
+            
+            // Get the entered OTP
             string enteredOTP = OTPEnter.Text;
 
-            if (enteredOTP == expectedOTP)
+            if (string.IsNullOrEmpty(enteredOTP))
             {
-                LoginPanel.IsVisible = true;
-
-                DisplayAlert("Success", "OTP Verified", "OK");
-                // TODO: Perform further actions after successful OTP verification
-                Preferences.Set("UserAlreadyloggedIn", true);
-
-                Shell.Current.GoToAsync(state: "//MainPage");
+                await DisplayAlert("Error", "Please enter OTP.", "OK");
+                return;
             }
-            else
-            {
-                DisplayAlert("Error", "Invalid OTP", "OK");
-            }
+
+            // Call the API to verify OTP
+            await VerifyOtpAsync(fullPhoneNumber, enteredOTP);
         }
 
         private void Cancel_Clicked(object sender, EventArgs e)
@@ -183,14 +204,52 @@ namespace LudoClient
         {
             // Show the login panel
             OTPPanel.IsVisible = false;
-        
-        
+
+
         }
 
-        // Simulate OTP generation (replace with a proper implementation)
-        private string GenerateOTP()
+        private async Task AddPhoneNumberToQueue(string phoneNumber)
         {
-            return "123456"; // Example OTP
+            var httpClient = new HttpClient();
+            var url = "http://localhost:5000/addPhoneNumbers";
+            var phoneNumbers = new List<string> { phoneNumber };
+            var jsonContent = JsonSerializer.Serialize(phoneNumbers);
+            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            var response = await httpClient.PostAsync(url, content);
+            response.EnsureSuccessStatusCode();
+
+            var responseBody = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+            await DisplayAlert("Info", result["Message"], "OK");
+        }
+
+        private async Task VerifyOtpAsync(string phoneNumber, string otp)
+        {
+            try
+            {
+                string encodedPhoneNumber = Uri.EscapeDataString(phoneNumber);
+
+                var response = await _httpClient.GetAsync($"api/otp?phoneNumber={encodedPhoneNumber}&otp={otp}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                    // Navigate to Dashboard.xaml
+                    await Navigation.PushAsync(new DashboardPage());
+                    //await DisplayAlert("Success", result["message"], "OK");
+                }
+                else
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                    await DisplayAlert("Error", result["message"], "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
+            }
         }
     }
 }
