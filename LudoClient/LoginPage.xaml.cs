@@ -1,4 +1,5 @@
 using LudoClient.Dictionary;
+using LudoClient.Models;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -234,9 +235,21 @@ namespace LudoClient
                 if (response.IsSuccessStatusCode)
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                    
+                    if (responseBody != null)
+                    {
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+
+                        var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
+                        string message = result.Message;
+                        int playerId = result.PlayerId;
+                    }
+                    
                     // Navigate to Dashboard.xaml
-                    await Navigation.PushAsync(new DashboardPage());
+                    await Navigation.PushAsync(new AppShell());
                     //await DisplayAlert("Success", result["message"], "OK");
                 }
                 else
