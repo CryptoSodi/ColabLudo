@@ -33,9 +33,18 @@ namespace LudoClient
        
            #endif
             InitializeComponent();
+            var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
+            // Register routes for pages
 
-            // MainPage = new AppShell();
-            MainPage = new NavigationPage(new LoginPage());
+            if (!isUserLoggedIn)
+            {
+                MainPage = new LoginPage();
+            }
+            else
+            {
+                MainPage = new AppShell();
+            }
+            //MainPage =new LoginPage();
             //MainPage = new Game();
 
             //MainPage = new DashboardPage();

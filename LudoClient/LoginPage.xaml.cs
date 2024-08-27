@@ -149,22 +149,22 @@ namespace LudoClient
 
         private void SendOTP_Clicked(object sender, EventArgs e)
         {
-            string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
-            string phoneNumber = PhoneNumberEntry.Text.TrimStart('0');
-            fullPhoneNumber = selectedCountryCode + phoneNumber;
+               string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
+               string phoneNumber = PhoneNumberEntry.Text.TrimStart('0');
+               fullPhoneNumber = selectedCountryCode + phoneNumber;
 
-            if (IsValidPhoneNumber(phoneNumber))
-            {
-                // Add the phone number to the queue
-                AddPhoneNumberToQueue(fullPhoneNumber);
-                HideLoginPanel();
-                OTPPanel.IsVisible = true;
-                LoginPanel.IsVisible = false;
-            }
-            else
-            {
-                DisplayAlert("Error", "Please enter a valid phone number.", "OK");
-            }
+               if (IsValidPhoneNumber(phoneNumber))
+               {
+                   // Add the phone number to the queue
+                   AddPhoneNumberToQueue(fullPhoneNumber);
+                   HideLoginPanel();
+                   OTPPanel.IsVisible = true;
+                   LoginPanel.IsVisible = false;
+               }
+               else
+               {
+                   DisplayAlert("Error", "Please enter a valid phone number.", "OK");
+               }
         }
 
         private void HideLoginPanel()
@@ -247,9 +247,12 @@ namespace LudoClient
                         string message = result.Message;
                         int playerId = result.PlayerId;
                     }
-                    
+                    //Save the user's login state
+                    //@Haris pleaase save users other details and tokken too think of a better implementation
+                    Preferences.Set("IsUserLoggedIn", true);
                     // Navigate to Dashboard.xaml
-                    await Navigation.PushAsync(new AppShell());
+                    //Fixed the navigation error on dashboard after login success
+                    Application.Current.MainPage = new AppShell();
                     //await DisplayAlert("Success", result["message"], "OK");
                 }
                 else
