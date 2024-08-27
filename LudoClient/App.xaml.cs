@@ -34,8 +34,9 @@ namespace LudoClient
            #endif
             InitializeComponent();
 
-           // MainPage = new AppShell();
-            MainPage = new LoginPage();
+            // MainPage = new AppShell();
+            MainPage = new NavigationPage(new LoginPage());
+            //MainPage = new Game();
 
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
