@@ -26,7 +26,6 @@ namespace LudoClient
         public PlayerSeat green;
         public PlayerSeat yellow;
         public PlayerSeat blue;
-
         public Gui(Token red1, Token red2, Token red3, Token red4, Token gre1, Token gre2, Token gre3, Token gre4, Token blu1, Token blu2, Token blu3, Token blu4, Token yel1, Token yel2, Token yel3, Token yel4,PlayerSeat red,PlayerSeat green,PlayerSeat yellow, PlayerSeat blue)
         {
             this.red = red;

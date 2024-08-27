@@ -50,7 +50,7 @@ public partial class Game : ContentPage
     {
         //start animation
         // Handle the dice click for the green player
-        Engine.MovePiece(PieceName);
+        Engine.MovePieceAsync(PieceName);
         //stop animmation
     }
     

@@ -14,6 +14,9 @@ namespace LudoClient.CoreEngine
 {
     public class Engine
     {
+        List<int> home = [52, 11, 24, 37];
+        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
+        string gameType = "Online";
         Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         public Gui gui;
         public class Piece
@@ -93,7 +96,6 @@ namespace LudoClient.CoreEngine
                 }[color];
             }
         }
-
         private List<Player> players;
         private int currentPlayerIndex;
         private Piece[] board;
@@ -293,7 +295,6 @@ namespace LudoClient.CoreEngine
             if (!killed)
                 if (diceValue != 6)
                 {
-
                     ChangeTurn();
                 }
                 else
@@ -303,12 +304,10 @@ namespace LudoClient.CoreEngine
                 }
             diceValue = 0;
         }
-        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
         private bool IsPieceSafe(Player player, Piece piece)
         {
             return safeZone.Contains(piece.Position);
         }
-        List<int> home = [52, 11, 24, 37];
         public bool checkTurn(String SeatName, String GameState)
         {
             Player player = players[currentPlayerIndex];
@@ -325,11 +324,17 @@ namespace LudoClient.CoreEngine
             Player player = players[currentPlayerIndex];
             if (player.Color == SeatName && gameState == "RollDice")
             {
-                diceValue = RollDice();
+                if (gameType != "Online")
+                {
+                    diceValue = RollDice();
+                }
+                else
+                {
+                    diceValue = Int32.Parse(await client.SendMessageAsync(SeatName, "Seat"));
+                }
                 tempDice = diceValue;
                 int moveablePieces = 0;
                 int closedPieces = 0;
-                client.SendMessage(SeatName);
                 for (int i = 0; i < player.Pieces.Count; i++)
                 {
                     if (player.Pieces[i].location == 0 && diceValue == 6)
@@ -340,13 +345,12 @@ namespace LudoClient.CoreEngine
                         closedPieces++;
                     }
                     else if ((player.Pieces[i].location + diceValue <= 57) && player.Pieces[i].location != 0)
-                    {
+                    { 
                         player.Pieces[i].moveable = true;
                         moveablePieces++;
                     }
                     else player.Pieces[i].moveable = false;
                 }
-
                 Console.WriteLine($"{player.Color} rolled a {diceValue} " + $"can move " + moveablePieces + " pieces.");
                 encoder($"{player.Color}");
                 if (moveablePieces == 1)
@@ -359,7 +363,7 @@ namespace LudoClient.CoreEngine
                     {
                         if (player.Pieces[i].moveable)
                         {
-                            MovePiece(player.Pieces[i].name);
+                            MovePieceAsync(player.Pieces[i].name);
                             break;
                         }
                     }
@@ -368,7 +372,7 @@ namespace LudoClient.CoreEngine
                 if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
                 {
                     gameState = "MovePiece";
-                    MovePiece(player.Pieces[rnd.Next(0, player.Pieces.Count)].name);
+                    MovePieceAsync(player.Pieces[rnd.Next(0, player.Pieces.Count)].name);
                 }
                 else
                 if (moveablePieces > 0)
@@ -397,7 +401,16 @@ namespace LudoClient.CoreEngine
         {
             await Task.Delay(delay);
         }
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
         public void MovePiece(String Piece)
+        {
+After:
+        public void MovePieceAsync(String Piece)
+        {
+*/
+        public async Task MovePieceAsync(String Piece)
         {
             Player player = players[currentPlayerIndex];
             Piece piece = getPiece(player.Pieces, Piece);
@@ -405,8 +418,7 @@ namespace LudoClient.CoreEngine
                 return;//Exit not the Current player Piece
             if (gameState == "MovePiece" && piece.moveable)
             {
-
-                client.SendMessage(Piece);
+                Piece = await client.SendMessageAsync(Piece, "Piece");
                 bool killed = false;
                 if (piece.Position == -1 && diceValue == 6)
                 {
@@ -422,21 +434,17 @@ namespace LudoClient.CoreEngine
                     if ((piece.location + diceValue) <= 57)
                     {
                         int newPosition = ((piece.Position + diceValue) % 52);
-
                         if (board[newPosition] != null && board[newPosition].Color != player.Color)
                         {
                             killed = true;
                             board[newPosition].Position = -1;
                             board[newPosition].location = 0;
-
                             Relocate(player, board[newPosition], false);
                         }
                         board[piece.Position] = null;
-
                         piece.Position = newPosition;
                         piece.location = ((piece.location + diceValue));
                         board[newPosition] = piece;
-
                         encoder(piece.name);
                         Relocate(player, piece, false);
                         if (piece.location == 57)
@@ -529,7 +537,6 @@ namespace LudoClient.CoreEngine
                 string[] parts = item.Split(',');
                 int index = int.Parse(parts[0]);
                 string command = parts[1];
-
                 // Perform actions based on the decoded command
                 switch (command)
                 {
@@ -555,10 +562,8 @@ namespace LudoClient.CoreEngine
         {
 
         }
-
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
-
         int diceValue = 0;
         String gameState = "RollDice";
     }

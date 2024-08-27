@@ -5,7 +5,8 @@ using Owin;
 using Microsoft.Owin.Cors;
 using Microsoft.AspNet.SignalR.Hubs;
 using System.Threading;
-
+using LudoClient.CoreEngine;
+using LudoClient;
 namespace CommonCode
 {
     public class Program
@@ -31,7 +32,6 @@ namespace CommonCode
                     // Optionally, send a request to the server to get a server-generated message
                 }
             }
-
             // Keep the server running until someone hits 'x'
             while (true)
             {
@@ -42,16 +42,25 @@ namespace CommonCode
                 }
             }
         }
-
+        public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
         [HubName("LudoHub")]
         public class MyHub : Hub
         {
-
+         
             // This method is called by clients to send a message to all clients
-            public void Send(string name, string message)
+            public string Send(string name, string message,string commandtype)
             {
-                Console.WriteLine($"{name}: {message}");
+                Console.WriteLine($"{name}: {message}:{commandtype}");
                 Clients.All.addMessage(name, GameID);
+                if(commandtype == "MovePiece")
+                { 
+                    //eng.MovePiece();
+                }
+                else
+                {
+                  return  eng.SeatTurn(message);
+                }
+                return "0";
             }
 
             // Example method to send a message from the server to a specific client
