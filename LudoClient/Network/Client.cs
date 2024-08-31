@@ -1,41 +1,80 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 
 namespace LudoClient.Network
 {
-    internal class Client
+    public class Client
     {
+        private readonly HubConnection _hubConnection;
+
+        string Name;
+
+        string Messages;
+
+
+        bool IsConnected;
+
         public delegate void CallbackRecievedRequest(string SeatName, int diceValue);
         public event CallbackRecievedRequest RecievedRequest;
-        IHubProxy _hub;
+        
         string url = @"http://localhost:8084";
         public Client()
         {
-            var connection = new HubConnection(url);
-            _hub = connection.CreateHubProxy("LudoHub");
-            // Start the connection
-            connection.Start();
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl($"http://localhost:8084/advanced")
+                .Build();
+             _hubConnection.StartAsync();
+
+            IsConnected = true;
+
             Console.WriteLine("Connection started. Waiting for messages from the server...");
             // Listen for messages from the server
-            _hub.On<string, string>("ReceiveMessage", (sender, message) =>
+            _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
-                Console.WriteLine($"{sender}: {message}");
-                RecievedRequest(sender, 2);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Messages = ($"{user} says {message}");
+                });
             });
         }
         public async Task<string> SendMessageAsync(string line, string commmand)
         {
-            string result = await _hub.Invoke<string>("Send", "client", line, commmand);
+            await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
+            await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
+          //  string result = await _hubConnection.Invoke<string>("Send", "client", line, commmand);
             // _hub.Invoke("Send", "client", line, commmand);
-            return result;
+            return "2";
         }
+
+        async Task Connect()
+        {
+            if (_hubConnection.State == HubConnectionState.Connecting ||
+                _hubConnection.State == HubConnectionState.Connected) return;
+
+            await _hubConnection.StartAsync();
+
+            IsConnected = true;
+        }
+
+        async Task Disconnect()
+        {
+
+            if (_hubConnection.State == HubConnectionState.Disconnected) return;
+
+            await _hubConnection.StopAsync();
+
+            IsConnected = false;
+        }
+
+     
     }
 }

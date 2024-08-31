@@ -1,11 +1,16 @@
 using LudoClient.ControlView;
 using LudoClient.Constants;
 using System.Reflection.PortableExecutable;
+using System.Security.AccessControl;
 
 namespace LudoClient;
 
 public partial class GameSettings : ContentPage
 {
+    public int entry = GlobalConstants.initialEntry;
+    public int win = GlobalConstants.initialEntry * 2;
+    public string activeTab = string.Empty;
+    public bool defaultTabSelection = true;
 	public GameSettings()
     {
 		InitializeComponent();
@@ -16,12 +21,6 @@ public partial class GameSettings : ContentPage
         EntryLabel.Text = GlobalConstants.initialEntry.ToString();
         WinLabel.Text = (GlobalConstants.initialEntry * 2).ToString();
     }
-
-    public int entry = GlobalConstants.initialEntry;
-    public int win = GlobalConstants.initialEntry * 2;
-    public string activeTab = string.Empty;
-    public bool defaultTabSelection = true;
-
     private void TabRequestedActivate(object sender, EventArgs e)
     {
         ActivateTab(sender as ImageSwitch);
@@ -59,7 +58,6 @@ public partial class GameSettings : ContentPage
             CalculateWin();
         }
     }
-
     private void CalculateWin()
     {
         if (Tab1.IsActive || Tab4.IsActive || defaultTabSelection)
@@ -74,7 +72,19 @@ public partial class GameSettings : ContentPage
         {
             win = entry * 4;
         }
-
         WinLabel.Text = win.ToString();
+    }
+    private void BtnAccept_Clicked(object sender, EventArgs e)
+    {
+        int gameType = 2;
+        if (Tab1.IsActive)
+            gameType = 2;
+        if (Tab2.IsActive)
+            gameType = 3;
+        if (Tab3.IsActive)
+            gameType = 4;
+        if (Tab4.IsActive)
+            gameType = 22;
+        Navigation.PushAsync(new GameRoom(gameType));
     }
 }

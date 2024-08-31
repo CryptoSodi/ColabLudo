@@ -43,7 +43,7 @@
                             <ImageButton Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" Clicked="BtnPlus" Aspect="AspectFit" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
-                    <Image Source="btn_green.png" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    <ImageButton Source="btn_green.png" Clicked="BtnAccept_Clicked" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
             </Grid>
         </local:Capsule>

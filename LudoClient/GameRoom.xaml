@@ -6,12 +6,11 @@
              xmlns:local ="clr-namespace:LudoClient.ControlView"
              BackgroundImageSource="background_waitingroom.png"
              NavigationPage.HasNavigationBar="False">
-
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
           RowDefinitions=".6*,1*,1*,1*,1*,1*,1*,.6*" ColumnDefinitions=".4*,1*,1*,1*,.4*">
-        
+
         <local:ShareBox Grid.Row="1" Grid.ColumnSpan="5"/>
-        
+
         <Image Grid.Row="2" Grid.ColumnSpan="5" Source="chips_entry_bg.png" Margin="0,10,0,10" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Label Grid.Row="2" Grid.ColumnSpan="5" Text="Classic > Entry Amount" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
 
@@ -19,12 +18,10 @@
         <Image Grid.Row="4" Grid.ColumnSpan="5" Source="vs_bg.png" Aspect="AspectFit" />
         <Image Grid.Row="4" Grid.ColumnSpan="5" Source="vs.png" Margin="15,15,15,15" Aspect="AspectFit"/>
 
-        
-
-        <local:PlayerBox x:Name="player1" Grid.Row="3" Grid.Column="2" PlayerName="Tassaduq" PlayerImage="player.png" />
-        <local:PlayerBox x:Name="player2" Grid.Row="5" Grid.Column="1" PlayerName="Sodi" PlayerImage="player2.png"/>
+        <local:PlayerBox x:Name="player1" Grid.Row="3" Grid.Column="2" PlayerName="Waiting" PlayerImage="user.png" />
+        <local:PlayerBox x:Name="player2" Grid.Row="5" Grid.Column="1" PlayerName="Waiting" PlayerImage="user.png"/>
         <local:PlayerBox x:Name="player3" Grid.Row="5" Grid.Column="2" PlayerName="Waiting" PlayerImage="invite_user.png"/>
-        <local:PlayerBox x:Name="player4" Grid.Row="5" Grid.Column="3" PlayerName="Haris" PlayerImage="user.png"/>
+        <local:PlayerBox x:Name="player4" Grid.Row="5" Grid.Column="3" PlayerName="Waiting" PlayerImage="user.png"/>
 
         <Image Grid.Row="6" Grid.ColumnSpan="5" Source="chips_entry_bg.png" Margin="0,10,0,10" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Label Grid.Row="6" Grid.ColumnSpan="5" Text="You will start the game" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>

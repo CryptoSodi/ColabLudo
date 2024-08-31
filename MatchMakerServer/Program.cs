@@ -1,15 +1,18 @@
-﻿using System;
-using Microsoft.AspNet.SignalR;
+﻿using Microsoft.AspNet.SignalR;
+using Microsoft.AspNet.SignalR.Hubs;
+using Microsoft.Owin.Cors;
 using Microsoft.Owin.Hosting;
 using Owin;
-using Microsoft.Owin.Cors;
-using Microsoft.AspNet.SignalR.Hubs;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
-using LudoClient.CoreEngine;
-using LudoClient;
-namespace CommonCode
+using System.Threading.Tasks;
+
+namespace MatchMakerServer
 {
-    public class Program
+    internal class Program
     {
         public static String GameID = "12";
         static void Main(string[] args)
@@ -42,22 +45,22 @@ namespace CommonCode
                 }
             }
         }
-        public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
-        [HubName("LudoHub")]
+     
+        [HubName("MatchMaker")]
         public class MyHub : Hub
         {
             // This method is called by clients to send a message to all clients
-            public string Send(string name, string message,string commandtype)
+            public string Send(string name, string message, string commandtype)
             {
                 Console.WriteLine($"{name}: {message}:{commandtype}");
                 Clients.All.addMessage(name, GameID);
-                if(commandtype == "MovePiece")
-                { 
+                if (commandtype == "MovePiece")
+                {
                     //eng.MovePiece();
                 }
                 else
                 {
-                  return  eng.SeatTurn(message);
+                    
                 }
                 return "0";
             }
