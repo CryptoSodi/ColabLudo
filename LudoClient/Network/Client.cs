@@ -48,33 +48,19 @@ namespace LudoClient.Network
         }
         public async Task<string> SendMessageAsync(string line, string commmand)
         {
-            await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
-            await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
-          //  string result = await _hubConnection.Invoke<string>("Send", "client", line, commmand);
+           // await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
+           // await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
+            string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, commmand);
             // _hub.Invoke("Send", "client", line, commmand);
             return "2";
         }
-
-        async Task Connect()
-        {
-            if (_hubConnection.State == HubConnectionState.Connecting ||
-                _hubConnection.State == HubConnectionState.Connected) return;
-
-            await _hubConnection.StartAsync();
-
-            IsConnected = true;
-        }
-
         async Task Disconnect()
         {
-
             if (_hubConnection.State == HubConnectionState.Disconnected) return;
 
             await _hubConnection.StopAsync();
 
             IsConnected = false;
         }
-
-     
     }
 }
