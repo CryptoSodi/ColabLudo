@@ -4,6 +4,7 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
+    Client MatchMaker = new Client();
     int GameType = 4;
     public GameRoom(int GameType)
 	{
@@ -54,10 +55,12 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        Client MatchMaker = new Client();
+        MatchMaker.CreateJoinRoom("userName", "", shareBox);
+        
     }
     protected override bool OnBackButtonPressed()
     {
+        MatchMaker.Disconnect();
         // Prevent back navigation
         return true;
     }

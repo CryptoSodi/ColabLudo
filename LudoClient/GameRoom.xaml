@@ -9,7 +9,7 @@
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
           RowDefinitions=".6*,1*,1*,1*,1*,1*,1*,.6*" ColumnDefinitions=".4*,1*,1*,1*,.4*">
 
-        <local:ShareBox Grid.Row="1" Grid.ColumnSpan="5"/>
+        <local:ShareBox x:Name="shareBox" Grid.Row="1" Grid.ColumnSpan="5"/>
 
         <Image Grid.Row="2" Grid.ColumnSpan="5" Source="chips_entry_bg.png" Margin="0,10,0,10" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Label Grid.Row="2" Grid.ColumnSpan="5" Text="Classic > Entry Amount" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>

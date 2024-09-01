@@ -13,7 +13,7 @@
                     <Label Text="Room Code :" Margin="10,0,0,0" Grid.Column="0" HorizontalOptions="Start" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                         <BoxView  Margin="0,5,0,5" CornerRadius="5" BackgroundColor="White" HorizontalOptions="FillAndExpand"/>
-                        <Label Text="25581070" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        <Label x:Name="shareCode" Text="25581070" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                         <!-- Add Copy image icon here -->
                     </Grid>
                     <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
