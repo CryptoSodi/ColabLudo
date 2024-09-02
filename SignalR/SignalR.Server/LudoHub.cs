@@ -3,6 +3,7 @@ using LudoClient.CoreEngine;
 using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Security.AccessControl;
 using System.Xml.Linq;
 
 namespace SignalR.Server
@@ -14,7 +15,8 @@ namespace SignalR.Server
         public static String GameID = "12";
         public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
         private static ConcurrentDictionary<string, User> _users = new();
-        private static ConcurrentDictionary<string, Games> games = new();
+
+        private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         public string Send(string name, string message, string commandtype)
         {
             Console.WriteLine($"{name}: {message}:{commandtype}");
@@ -29,7 +31,6 @@ namespace SignalR.Server
             }
             return "0";
         }
-
         // Example method to send a message from the server to a specific client
         public void SendServerMessage(string message)
         {
@@ -42,34 +43,42 @@ namespace SignalR.Server
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
-        }
-        public string CreateJoinRoom(string userName, string roomName)
+        } 
+        public string CreateJoinRoom(string userName, int gameType, int gameCost, string roomCode)
         {
-            // Generate a new room name if roomName is empty
-            if (string.IsNullOrWhiteSpace(roomName))
+            //@Haris ADD this to the database
+            //Generate a new room name if roomName is empty
+            if (string.IsNullOrWhiteSpace(roomCode))
             {
-                roomName = GenerateUniqueRoomId(); // Generates a unique room name
+                roomCode = GenerateUniqueRoomId(gameType, gameCost); // Generates a unique room name
             }
+            // Create or retrieve the room
+            var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(roomCode, gameCost, gameType));
             // Add the user to the users dictionary
-            _users.TryAdd(Context.ConnectionId, new User(userName, roomName));
+            var user = new User(userName, roomCode);
+            _users.TryAdd(Context.ConnectionId, user);
+            // Add the user to the room's user list
+            room.Users.Add(user);
             // Add the user to the specified group (room)
-            Groups.AddToGroupAsync(Context.ConnectionId, roomName);
+            Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
             // Notify others in the room that a new user has joined
-            Clients.Group(roomName).SendAsync("UserJoined", userName);
-            return roomName; // Return the room name to the client
+            Clients.Group(roomCode).SendAsync("UserJoined", userName);
+            return roomCode; // Return the room name to the client
         }
         // Generate a unique 10-digit room ID
-        private string GenerateUniqueRoomId()
+        private string GenerateUniqueRoomId(int gameType, int gameCost)
         {
             string roomId;
             do
             {
-                                // Generate a random 10000000-digit number
+                // Generate a random 10-digit number
                 roomId = new Random().Next(10000000, 99999999).ToString();
             }
-            while (games.ContainsKey(roomId)); // Ensure the ID is unique
-            // Store the generated room ID in the games dictionary to avoid repetition
-            games.TryAdd(roomId, new Games());
+            while (_rooms.ContainsKey(roomId)); // Ensure the ID is unique
+
+            // Store the generated room ID with the game type in the games dictionary
+            _rooms.TryAdd(roomId, new GameRoom(roomId, gameType, gameCost));
+            //"@Haris ADD this to the database games table"
             return roomId;
         }
         public async Task JoinRoom(string userName, string roomName)

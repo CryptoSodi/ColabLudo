@@ -85,6 +85,6 @@ public partial class GameSettings : ContentPage
             gameType = 4;
         if (Tab4.IsActive)
             gameType = 22;
-        Navigation.PushAsync(new GameRoom(gameType));
+        Navigation.PushAsync(new GameRoom(gameType, entry));
     }
 }

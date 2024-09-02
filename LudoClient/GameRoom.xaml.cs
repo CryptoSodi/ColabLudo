@@ -6,7 +6,7 @@ public partial class GameRoom : ContentPage
 {
     Client MatchMaker = new Client();
     int GameType = 4;
-    public GameRoom(int GameType)
+    public GameRoom(int GameType, int GameCost)
 	{
         this.GameType = GameType;
         InitializeComponent();
@@ -55,11 +55,11 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        MatchMaker.CreateJoinRoom("userName", "", shareBox);
+        MatchMaker.CreateJoinRoom("userName", GameType, GameCost, "", shareBox);
         
     }
     protected override bool OnBackButtonPressed()
-    {
+    {     
         MatchMaker.Disconnect();
         // Prevent back navigation
         return true;
