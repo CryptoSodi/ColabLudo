@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace LudoClient
@@ -38,6 +39,7 @@ namespace LudoClient
             //MainPage = new Game();
             if (!isUserLoggedIn)
             {
+                UserInfo.LoadState();
                 MainPage = new LoginPage();
             }
             else

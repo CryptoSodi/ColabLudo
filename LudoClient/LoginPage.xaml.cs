@@ -1,4 +1,3 @@
-
 using LudoClient.Dictionary;
 using LudoClient.Models;
 using Newtonsoft.Json.Linq;
@@ -130,13 +129,15 @@ namespace LudoClient
             var response = await client.GetAsync(userInfoUrl);
             var responseString = await response.Content.ReadAsStringAsync();
             JObject v = JObject.Parse(responseString);
-            UserInfo userInfo = new UserInfo
-            {
-                Id = (string)v["id"],
-                Email = (string)v["email"],
-                Name = (string)v["name"],
-                PictureUrl = (string)v["picture"]
-            };
+
+            //Save User state
+            var userInfo = UserInfo.Instance;
+            userInfo.Id = (string)v["id"];
+            userInfo.Email = (string)v["email"];
+            userInfo.Name = (string)v["name"];
+            userInfo.PictureUrl = (string)v["picture"];
+            UserInfo.SaveState();
+
             //@Haris002 please save the user details in the app and also in the database
             Preferences.Set("IsUserLoggedIn", true);
             //Navigate to Dashboard.xaml
