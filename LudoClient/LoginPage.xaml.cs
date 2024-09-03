@@ -1,3 +1,4 @@
+
 using LudoClient.Dictionary;
 using LudoClient.Models;
 using Newtonsoft.Json.Linq;
@@ -10,9 +11,10 @@ namespace LudoClient
 {
     public partial class LoginPage : ContentPage
     {
+        
+        const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
         private readonly HttpClient _httpClient;
         private string fullPhoneNumber;
-
         public LoginPage()
         {
             InitializeComponent();
@@ -30,7 +32,6 @@ namespace LudoClient
             // For example:
             // MyFunction();
         }
-
         private void PopulateCountryCodePicker()
         {
             foreach (var countryCode in CountryCode.countryCodes.Keys)
@@ -38,42 +39,28 @@ namespace LudoClient
                 CountryCodePicker.Items.Add(countryCode);
             }
         }
-
         private bool IsValidPhoneNumber(string phoneNumber)
         {
             // A simple validation regex for phone numbers. This can be improved based on requirements.
             //return Regex.IsMatch(phoneNumber, @"^\+[1-9]\d{1,14}$");
             return Regex.IsMatch(phoneNumber, @"^[0-9]{7,15}$");
         }
-
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
             try
             {
-                SemanticScreenReader.Announce(CounterBtn.Text);
+               // String AuthToken = "ya29.a0AcM612zzOEp0Jib5dz6rZMcxFj1fuzGZY3E0vgx6ySSaSYsqDMCfHpqD1EfuJHqxleDL1Yg8oprBAGDpfZA6-kE05X44Dlrlwuxx_4al0Drh8r3moeAhnS02pN5MT8QU39FRgNPi_jZOj_nJbpvYyOw4yBWIVplcI1f7aCgYKAT0SARISFQHGX2MiTinthg_X4wC-CNbqU2azmQ0171";
+             //  GetUserInfoAsync(AuthToken);
+             //   SemanticScreenReader.Announce(CounterBtn.Text);
                 OnAuthenticate("Google");
-                /*/ Generate state
-                state = GenerateState();
-                string clientId = "497194700135-108a3be43e3kv3oae82pdtl9d1ju9dom.apps.googleusercontent.com";
-                string redirectUri = "http://localhost:5000";
-                string authorizationUrl = $"https://accounts.google.com/o/oauth2/auth?client_id={clientId}&redirect_uri={Uri.EscapeDataString(redirectUri)}&scope=openid%20https://www.googleapis.com/auth/userinfo.email%20profile%20email&response_type=code&access_type=offline&hl=en&state={state}";
-
-
-               // var result = await WebAuthenticator.AuthenticateAsync(new Uri(authorizationUrl), new Uri(redirectUri));
-
-                await Browser.OpenAsync(authorizationUrl, BrowserLaunchMode.SystemPreferred);
-
-                // Wait for redirect and handle auth
-                HandleGoogleAuth();
-            */
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 // Handle or log the error
                 await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
             }
         }
-
         private static string GenerateState()
         {
             using (var rng = new RNGCryptoServiceProvider())
@@ -83,7 +70,6 @@ namespace LudoClient
                 return Convert.ToBase64String(byteArray);
             }
         }
-        const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
         async Task OnAuthenticate(string scheme)
         {
             String AuthToken;
@@ -136,17 +122,26 @@ namespace LudoClient
                 DisplayAlert("Error", $"Failed: {ex.Message}", "ok");
             }
         }
-
-        private static async Task<JObject> GetUserInfoAsync(string accessToken)
+        private static async void GetUserInfoAsync(string accessToken)
         {
             var userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             var response = await client.GetAsync(userInfoUrl);
             var responseString = await response.Content.ReadAsStringAsync();
-            return JObject.Parse(responseString);
+            JObject v = JObject.Parse(responseString);
+            UserInfo userInfo = new UserInfo
+            {
+                Id = (string)v["id"],
+                Email = (string)v["email"],
+                Name = (string)v["name"],
+                PictureUrl = (string)v["picture"]
+            };
+            //@Haris002 please save the user details in the app and also in the database
+            Preferences.Set("IsUserLoggedIn", true);
+            //Navigate to Dashboard.xaml
+            Application.Current.MainPage = new AppShell();
         }
-
         private void SendOTP_Clicked(object sender, EventArgs e)
         {
                string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
@@ -166,30 +161,24 @@ namespace LudoClient
                    DisplayAlert("Error", "Please enter a valid phone number.", "OK");
                }
         }
-
         private void HideLoginPanel()
         {
             // Hide the login panel and reset state
             PhoneNumberEntry.Text = string.Empty;
             OTPPanel.IsVisible = false;
         }
-
         private async void VerifyOTP_Clicked(object sender, EventArgs e)
         {
-            
             // Get the entered OTP
             string enteredOTP = OTPEnter.Text;
-
             if (string.IsNullOrEmpty(enteredOTP))
             {
                 await DisplayAlert("Error", "Please enter OTP.", "OK");
                 return;
             }
-
             // Call the API to verify OTP
             await VerifyOtpAsync(fullPhoneNumber, enteredOTP);
         }
-
         private void Cancel_Clicked(object sender, EventArgs e)
         {
             // Hide OTP-related components and reset state
@@ -200,15 +189,11 @@ namespace LudoClient
             // Show the login panel
             ShowLoginPanel();
         }
-
         private void ShowLoginPanel()
         {
             // Show the login panel
             OTPPanel.IsVisible = false;
-
-
         }
-
         private async Task AddPhoneNumberToQueue(string phoneNumber)
         {
             var httpClient = new HttpClient();
@@ -224,25 +209,21 @@ namespace LudoClient
             var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
             await DisplayAlert("Info", result["Message"], "OK");
         }
-
         private async Task VerifyOtpAsync(string phoneNumber, string otp)
         {
             try
             {
                 string encodedPhoneNumber = Uri.EscapeDataString(phoneNumber);
-
                 var response = await _httpClient.GetAsync($"api/otp?phoneNumber={encodedPhoneNumber}&otp={otp}");
                 if (response.IsSuccessStatusCode)
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
-                    
                     if (responseBody != null)
                     {
                         var options = new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true
                         };
-
                         var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
                         string message = result.Message;
                         int playerId = result.PlayerId;

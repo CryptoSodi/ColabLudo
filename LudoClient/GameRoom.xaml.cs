@@ -56,7 +56,6 @@ public partial class GameRoom : ContentPage
                 break;
         }
         MatchMaker.CreateJoinRoom("userName", GameType, GameCost, "", shareBox);
-        
     }
     protected override bool OnBackButtonPressed()
     {     

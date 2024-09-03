@@ -6,7 +6,6 @@
         public int GameType { get; set; }
         public int GameCost { get; set; }
         public List<User> Users { get; set; }
-
         public GameRoom(string roomName, int gameType, int gameCost)
         {
             RoomName = roomName;
