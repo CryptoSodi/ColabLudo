@@ -53,7 +53,7 @@ namespace SignalR.Server
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
         } 
-        public async Task<string> CreateJoinRoomAsync(string userName, string gameType, int gameCost, string roomCode)
+        public async Task<string> CreateJoinRoom(string userName, string gameType, int gameCost, string roomCode)
         {
             //Generate a new room name if roomName is empty
             if (string.IsNullOrWhiteSpace(roomCode))

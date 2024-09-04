@@ -1,15 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 
 namespace LudoClient.Network
 {
@@ -30,7 +19,6 @@ namespace LudoClient.Network
              _hubConnection.StartAsync();
             IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
-            
             // Listen for messages from the server
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
@@ -40,9 +28,9 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinRoom(string userName, int gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinRoom(string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
         {
-            _hubConnection.InvokeAsync<string>("CreateJoinRoom", userName, gameCost, gameType, roomName).ContinueWith(task =>
+            _hubConnection.InvokeAsync<string>("CreateJoinRoom", userName, gameType, gameCost, roomName).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
