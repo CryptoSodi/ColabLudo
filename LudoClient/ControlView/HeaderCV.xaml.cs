@@ -6,4 +6,8 @@ public partial class HeaderCV : ContentView
 	{
 		InitializeComponent();
 	}
+    private void Navigate_Settings(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new SettingsPage());
+    }
 }

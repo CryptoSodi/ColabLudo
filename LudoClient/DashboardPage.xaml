@@ -21,16 +21,16 @@
         </Grid.ColumnDefinitions>
         
         <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-        
-        <ImageButton Grid.Row="2" Source="cashgame.png" BackgroundColor="Transparent" Clicked="ImageButton_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        <ImageButton Grid.Row="2" Source="cashgame.png" BackgroundColor="Transparent" Clicked="CashGame_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
 
         <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="50*" />
                 <ColumnDefinition Width="50*" />
             </Grid.ColumnDefinitions>
-            <ImageButton Source="offline.png" BackgroundColor="Transparent" Grid.Column="0" Aspect="AspectFit"/>
-            <ImageButton Source="playwithfriends.png" BackgroundColor="Transparent" Margin="0,0,0,4" Grid.Column="1" Aspect="AspectFit"/>
+            <ImageButton Source="offline.png" Clicked="Offline_Clicked" BackgroundColor="Transparent" Grid.Column="0" Aspect="AspectFit"/>
+            <ImageButton Source="playwithfriends.png" Clicked="PlayWithFriend_Clicked" BackgroundColor="Transparent" Margin="0,0,0,4" Grid.Column="1" Aspect="AspectFit"/>
         </Grid>
 
         <Grid Grid.Row="4" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
@@ -38,8 +38,8 @@
                 <ColumnDefinition Width="50*" />
                 <ColumnDefinition Width="50*" />
             </Grid.ColumnDefinitions>
-            <ImageButton Source="practice.png" BackgroundColor="Transparent" Margin="0,4,0,0" Grid.Column="0" Aspect="AspectFit"/>
-            <ImageButton Source="tournament.png" BackgroundColor="Transparent" Grid.Column="1" Aspect="AspectFit"/>
+            <ImageButton Source="practice.png" Clicked="Practice_Clicked" BackgroundColor="Transparent" Margin="0,4,0,0" Grid.Column="0" Aspect="AspectFit"/>
+            <ImageButton Source="tournament.png" Clicked="Tournament_Clicked" BackgroundColor="Transparent" Grid.Column="1" Aspect="AspectFit"/>
         </Grid>
 
         <ImageButton BackgroundColor="Transparent" Source="daily_bonus.png" Grid.Row="5" Margin="75,0,75,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
