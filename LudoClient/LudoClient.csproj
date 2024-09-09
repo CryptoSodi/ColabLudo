@@ -540,7 +540,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="OfflinePage.xaml.cs">
+	  <Compile Update="GameSettingsPages\PracticePage.xaml.cs">
+	    <DependentUpon>PracticePage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
 	    <DependentUpon>OfflinePage.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
@@ -639,13 +642,16 @@
 	  <MauiXaml Update="ControlView\HeaderCV.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="GameSettings.xaml">
+	  <MauiXaml Update="GameSettingsPages\GameSettings.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="OfflinePage.xaml">
+	  <MauiXaml Update="GameSettingsPages\PracticePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsLarge.xaml">
+	  <MauiXaml Update="GameSettingsPages\OfflinePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="GameSettingsPages\GameSettingsLarge.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="HelpDeskPage.xaml">

@@ -1,11 +1,9 @@
 using LudoClient.ControlView;
 using System.Xml.Linq;
-
 namespace LudoClient;
-
-public partial class OfflinePage : ContentPage
+public partial class PracticePage : ContentPage
 {
-	public OfflinePage()
+	public PracticePage()
 	{
 		InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
@@ -55,13 +53,13 @@ public partial class OfflinePage : ContentPage
         TabP2.SwitchSource = TabP2 == activeTab ? TabP2.SwitchOn : TabP2.SwitchOff;
         if(TabP1 == activeTab)
         {
-            TabJoin.IsVisible = false;
-            TabCreate.IsVisible = true;
+          //  TabJoin.IsVisible = false;
+          //  TabCreate.IsVisible = true;
         }
         else
         {
-            TabJoin.IsVisible = true;
-            TabCreate.IsVisible = false;
+           // TabJoin.IsVisible = true;
+          //  TabCreate.IsVisible = false;
         }
         // Add logic here to change the content based on the active tab
     }

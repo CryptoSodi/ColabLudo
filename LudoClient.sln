@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LudoClient", "LudoClient\Lu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR.Server", "SignalR\SignalR.Server\SignalR.Server.csproj", "{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LudoServer", "..\LudoServer\LudoServer.csproj", "{3AF58467-96E5-44B4-BE16-BC87000DD51B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,10 @@ Global
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

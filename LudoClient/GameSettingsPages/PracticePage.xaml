@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local ="clr-namespace:LudoClient.ControlView"
+             x:Class="LudoClient.PracticePage"
+             BackgroundImageSource="background_waitingroom.png"
+             Title="PracticePage">
+    <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+            RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
+        <local:Capsule ImageSource="game_setting_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
+                <StackLayout Grid.Column="1" Spacing="8">
+                    <local:TitleBar Grid.Column="1" TitleImage="round_offline.png" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
+                    <Image Source="dash_select_color.png"  HorizontalOptions="CenterAndExpand"/>
+                    <Grid ColumnSpacing="10" Grid.Column="1" Margin="10,0,10,0" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".1*,.1*,.1*,.1*">
+                        <Grid ColumnDefinitions=".05*,.1*,.1*,.05*">
+                            <BoxView BackgroundColor="#2B4195" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Grid.Column="1" x:Name="TabC1" SwitchOn="checkbox_red_select.png" SwitchOff="checkbox_red.png" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" RequestActivate="TabRequestedActivateC" IsIndependent="False"/>
+                            <Image Grid.Column="2" Source="red_token.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                        <Grid Grid.Column="1" ColumnDefinitions=".05*,.1*,.1*,.05*">
+                            <BoxView BackgroundColor="#2B4195" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Grid.Column="1" x:Name="TabC2" SwitchOn="checkbox_green_select.png" SwitchOff="checkbox_green.png" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" RequestActivate="TabRequestedActivateC" IsIndependent="False"/>
+                            <Image  Grid.Column="2" Source="green_token.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                        <Grid Grid.Column="2" ColumnDefinitions=".05*,.1*,.1*,.05*">
+                            <BoxView BackgroundColor="#2B4195" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Grid.Column="1" x:Name="TabC3" SwitchOn="checkbox_blue_select.png" SwitchOff="checkbox_blue.png" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" RequestActivate="TabRequestedActivateC" IsIndependent="False"/>
+                            <Image Grid.Column="2" Source="blue_token.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                        <Grid Grid.Column="3" ColumnDefinitions=".05*,.1*,.1*,.05*">
+                            <BoxView BackgroundColor="#2B4195" Grid.Column="1" Grid.ColumnSpan="2" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Grid.Column="1" x:Name="TabC4" SwitchOn="checkbox_yellow_select.png" SwitchOff="checkbox_yellow.png" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand" RequestActivate="TabRequestedActivateC" IsIndependent="False"/>
+                            <Image Grid.Column="2" Source="yellow_token.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                    </Grid>
+                    <Image Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
+                    <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
+                    <Image Source="dash_choose_bet.png" HorizontalOptions="CenterAndExpand" VerticalOptions="Start"/>
+                    <Grid Margin="8,4,8,4" ColumnSpacing="35" Grid.Column="1" HorizontalOptions="FillAndExpand" ColumnDefinitions=".1*,.1*">
+                        <Grid ColumnDefinitions=".04*,.1*,.04*" >
+                            <BoxView BackgroundColor="#2B4195" Grid.ColumnSpan="3" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Margin="0,1,10,1" x:Name="TabP1" SwitchText="" SwitchOn="radio_on.png" SwitchOff="radio_off.png" VerticalOptions="Center" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
+                            <Label Grid.Column="1">Computer</Label>
+                            <Image Margin="10,-2,0,-2" Grid.Column="2" Source="ic_computer.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                        <Grid Grid.Column="1" ColumnDefinitions=".04*,.1*,.04*" >
+                            <BoxView  BackgroundColor="#2B4195" Grid.ColumnSpan="3" CornerRadius="6" Margin="-8,-4,-8,-4"></BoxView>
+                            <local:ImageSwitch Margin="0,1,10,1" x:Name="TabP2" SwitchText="" SwitchOn="radio_on.png" SwitchOff="radio_off.png" VerticalOptions="Center" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
+                            <Label Grid.Column="1">Local</Label>
+                            <Image Margin="10,-2,0,-2" Grid.Column="2" Source="ic_local.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                        </Grid>
+                    </Grid>
+                    <Grid Margin="0,10,0,-100" HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*,.07*" ColumnDefinitions=".01*,.1*,.1*,.01*">
+                        <Image Source="btn_green.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    </Grid>
+                </StackLayout>
+            </Grid>
+        </local:Capsule>
+        <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"></local:BottomNavigation>
+    </Grid >
+</ContentPage>
