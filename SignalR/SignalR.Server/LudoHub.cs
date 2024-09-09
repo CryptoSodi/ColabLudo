@@ -53,7 +53,7 @@ namespace SignalR.Server
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
         } 
-        public async Task<string> CreateJoinRoom(string userName, string gameType, int gameCost, string roomCode)
+        public async Task<string> CreateJoinRoom(string userName, string gameType, decimal gameCost, string roomCode)
         {
             //Generate a new room name if roomName is empty
             if (string.IsNullOrWhiteSpace(roomCode))
@@ -61,7 +61,6 @@ namespace SignalR.Server
                 roomCode = GenerateUniqueRoomId(gameType, gameCost); // Generates a unique room name
             }
 
-            //@Haris - adding this to the database if it doesnot exist
             // Check if the RoomCode already exists in the database
             var existingGame = await _context.Games
                 .FirstOrDefaultAsync(g => g.RoomCode == roomCode);
@@ -69,8 +68,9 @@ namespace SignalR.Server
             if (existingGame != null)
             {
                 // RoomCode exists, retrieve the existing game data
-                // You can return the existing game's RoomCode or any other relevant information
-                return existingGame.RoomCode;
+                roomCode= existingGame.RoomCode;
+                gameType = existingGame.Type;
+                gameCost = existingGame.BetAmount;
             }
             else
             {
@@ -84,9 +84,6 @@ namespace SignalR.Server
 
                 _context.Games.Add(game);
                 await _context.SaveChangesAsync();
-
-                // Return the RoomCode of the newly created game
-                return game.RoomCode;
             }
 
             // Create or retrieve the room
@@ -97,13 +94,13 @@ namespace SignalR.Server
             // Add the user to the room's user list
             room.Users.Add(user);
             // Add the user to the specified group (room)
-            Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
             // Notify others in the room that a new user has joined
-            Clients.Group(roomCode).SendAsync("UserJoined", userName);
+            await Clients.Group(roomCode).SendAsync("UserJoined", userName);
             return roomCode; // Return the room name to the client
         }
         // Generate a unique 10-digit room ID
-        private string GenerateUniqueRoomId(string gameType, int gameCost)
+        private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
             string roomId;
             do
