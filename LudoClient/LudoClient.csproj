@@ -275,6 +275,10 @@
 	  <None Remove="Resources\Images\Support\privacy.png" />
 	  <None Remove="Resources\Images\Support\support.png" />
 	  <None Remove="Resources\Images\Support\terms.png" />
+	  <None Remove="Resources\Images\Tabs\ic_computer.png" />
+	  <None Remove="Resources\Images\Tabs\ic_local.png" />
+	  <None Remove="Resources\Images\Tabs\radio_off.png" />
+	  <None Remove="Resources\Images\Tabs\radio_on.png" />
 	  <None Remove="Resources\Images\Tabs\tab_active.png" />
 	  <None Remove="Resources\Images\Tabs\tab_active_curve.png" />
 	  <None Remove="Resources\Images\Tabs\tab_border.png" />
@@ -484,6 +488,10 @@
 	  <MauiImage Include="Resources\Images\Support\privacy.png" />
 	  <MauiImage Include="Resources\Images\Support\support.png" />
 	  <MauiImage Include="Resources\Images\Support\terms.png" />
+	  <MauiImage Include="Resources\Images\Tabs\ic_computer.png" />
+	  <MauiImage Include="Resources\Images\Tabs\ic_local.png" />
+	  <MauiImage Include="Resources\Images\Tabs\radio_off.png" />
+	  <MauiImage Include="Resources\Images\Tabs\radio_on.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_active.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_active_curve.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_border.png" />
@@ -529,6 +537,12 @@
 
 	<ItemGroup>
 	  <MauiImage Include="Resources\Images\results\silver_border.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="OfflinePage.xaml.cs">
+	    <DependentUpon>OfflinePage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -626,6 +640,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettings.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="OfflinePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettingsLarge.xaml">

@@ -16,7 +16,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new GameSettingsLarge());
+        Navigation.PushAsync(new OfflinePage());
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
