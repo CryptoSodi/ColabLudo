@@ -3,9 +3,9 @@ using System.Xml.Linq;
 
 namespace LudoClient;
 
-public partial class GameSettingsLarge : ContentPage
+public partial class PlayWithFriends : ContentPage
 {
-	public GameSettingsLarge()
+	public PlayWithFriends()
 	{
 		InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;

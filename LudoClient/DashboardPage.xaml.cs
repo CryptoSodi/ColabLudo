@@ -8,7 +8,7 @@ public partial class DashboardPage : ContentPage
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new GameSettings());
+        Navigation.PushAsync(new CashGame());
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
@@ -16,7 +16,7 @@ public partial class DashboardPage : ContentPage
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new GameSettingsLarge());
+        Navigation.PushAsync(new PlayWithFriends());
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
@@ -24,6 +24,6 @@ public partial class DashboardPage : ContentPage
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new GameSettingsLarge());
+       // Navigation.PushAsync(new GameSettingsLarge());
     }
 }
