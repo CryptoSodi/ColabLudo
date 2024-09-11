@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\LudoServer\LudoServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="LudoServer">
       <HintPath>..\..\..\LudoServer\bin\Debug\net8.0\LudoServer.dll</HintPath>
     </Reference>

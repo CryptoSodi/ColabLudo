@@ -60,15 +60,13 @@ namespace SignalR.Server
             {
                 roomCode = GenerateUniqueRoomId(gameType, gameCost); // Generates a unique room name
             }
-
             // Check if the RoomCode already exists in the database
             var existingGame = await _context.Games
                 .FirstOrDefaultAsync(g => g.RoomCode == roomCode);
-
             if (existingGame != null)
             {
                 // RoomCode exists, retrieve the existing game data
-                roomCode= existingGame.RoomCode;
+                roomCode = existingGame.RoomCode;
                 gameType = existingGame.Type;
                 gameCost = existingGame.BetAmount;
             }
@@ -81,11 +79,9 @@ namespace SignalR.Server
                     BetAmount = gameCost,
                     RoomCode = roomCode
                 };
-
                 _context.Games.Add(game);
                 await _context.SaveChangesAsync();
             }
-
             // Create or retrieve the room
             var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(roomCode, gameType, gameCost));
             // Add the user to the users dictionary
@@ -109,7 +105,6 @@ namespace SignalR.Server
                 roomId = new Random().Next(10000000, 99999999).ToString();
             }
             while (_rooms.ContainsKey(roomId)); // Ensure the ID is unique
-
             // Store the generated room ID with the game type in the games dictionary
             _rooms.TryAdd(roomId, new GameRoom(roomId, gameType, gameCost));
             //"@Haris ADD this to the database games table"

@@ -55,7 +55,7 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        MatchMaker.CreateJoinRoom("userName", GameType+"", GameCost, "", shareBox);
+        MatchMaker.CreateJoinRoom("userName", GameType + "", GameCost, "", shareBox);
     }
     protected override bool OnBackButtonPressed()
     {     
