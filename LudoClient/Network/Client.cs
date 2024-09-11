@@ -28,9 +28,9 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinRoom(string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinRoom(int playerId,string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
         {
-            _hubConnection.InvokeAsync<string>("CreateJoinRoom", userName, gameType, gameCost, roomName).ContinueWith(task =>
+            _hubConnection.InvokeAsync<string>("CreateJoinRoom", playerId, userName, gameType, gameCost, roomName).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {

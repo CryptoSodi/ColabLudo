@@ -132,7 +132,7 @@ namespace LudoClient
 
             //Save User state
             var userInfo = UserInfo.Instance;
-            userInfo.Id = (string)v["id"];
+            userInfo.Id = (int)v["id"];
             userInfo.Email = (string)v["email"];
             userInfo.Name = (string)v["name"];
             userInfo.PictureUrl = (string)v["picture"];
@@ -228,6 +228,7 @@ namespace LudoClient
                         var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
                         string message = result.Message;
                         int playerId = result.PlayerId;
+                        Preferences.Set("PlayerId", playerId);
                     }
                     //Save the user's login state
                     //@Haris pleaase save users other details and tokken too think of a better implementation

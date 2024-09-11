@@ -1,3 +1,4 @@
+using LudoServer.Data;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
 using SignalR.Server.Data;
@@ -17,7 +18,7 @@ builder.Services.AddCors(o =>
 builder.Services.AddSignalR();
 
 // Configure DbContext with SQL Server
-builder.Services.AddDbContext<SignalRServerDbContext>(options =>
+builder.Services.AddDbContext<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Build the app
