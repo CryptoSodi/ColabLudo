@@ -10,7 +10,7 @@ namespace LudoClient
     {
         private static UserInfo _instance;
         private static readonly object _lock = new object();
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Email { get; set; }
         public string Name { get; set; }
         public string PictureUrl { get; set; }
@@ -45,7 +45,7 @@ namespace LudoClient
         public static void LoadState()
         {
             var instance = Instance;
-            instance.Id = Preferences.Get(nameof(Id), string.Empty);
+            instance.Id = Preferences.Get(nameof(Id), 0);
             instance.Email = Preferences.Get(nameof(Email), string.Empty);
             instance.Name = Preferences.Get(nameof(Name), string.Empty);
             instance.PictureUrl = Preferences.Get(nameof(PictureUrl), string.Empty);
