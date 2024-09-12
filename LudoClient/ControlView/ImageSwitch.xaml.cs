@@ -2,6 +2,8 @@ namespace LudoClient.ControlView;
 
 public partial class ImageSwitch : ContentView
 {
+    // Event to notify when the switch is toggled
+    public event EventHandler SwitchToggled;
     // Event to notify when the switch wants to be activated (for tab functionality)
     public event EventHandler<EventArgs> RequestActivate;
     public static readonly BindableProperty SwitchSourceProperty = BindableProperty.Create(nameof(SwitchSource),typeof(string),typeof(ImageSwitch),propertyChanged: OnSwitchSourceChanged);
@@ -79,6 +81,8 @@ public partial class ImageSwitch : ContentView
             // Toggle own state
             SwitchState = !SwitchState;
             UpdateSwitchSource();
+            // Raise the SwitchToggled event to notify subscribers
+            SwitchToggled?.Invoke(this, EventArgs.Empty);
         }
         else
         {

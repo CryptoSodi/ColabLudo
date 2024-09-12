@@ -6,6 +6,6 @@
     <Grid>
         <Image Source="line_bg.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Label x:Name="SettingTextView" Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-        <local:ImageSwitch SwitchOn="switch_btn_on.png" SwitchOff="switch_btn_off.png" Margin="0,8,5,8"  VerticalOptions="Center" HorizontalOptions="End" />
+        <local:ImageSwitch x:Name="ImageSwitchControl" SwitchOn="switch_btn_on.png" SwitchOff="switch_btn_off.png" Margin="0,8,5,8"  VerticalOptions="Center" HorizontalOptions="End" />
     </Grid>
 </ContentView>
