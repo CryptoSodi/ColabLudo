@@ -24,6 +24,6 @@ public partial class DashboardPage : ContentPage
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
-       // Navigation.PushAsync(new GameSettingsLarge());
+        Navigation.PushAsync(new TournamentPage());
     }
 }

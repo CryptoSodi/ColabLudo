@@ -543,6 +543,9 @@
 	  <Compile Update="GameSettingsPages\CashGame.xaml.cs">
 	    <DependentUpon>CashGame.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="GameSettingsPages\TournamentPage.xaml.cs">
+	    <DependentUpon>TournamentPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="GameSettingsPages\PlayWithFriends.xaml.cs">
 	    <DependentUpon>PlayWithFriends.xaml</DependentUpon>
 	  </Compile>
@@ -642,13 +645,16 @@
 	  <MauiXaml Update="Game.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="GameRoom.xaml">
+	  <MauiXaml Update="GameSettingsPages\GameRoom.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\HeaderCV.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettingsPages\CashGame.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="GameSettingsPages\TournamentPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettingsPages\PracticePage.xaml">
@@ -697,9 +703,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="VerificationPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="WaitingRoom.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="WalletPage.xaml">
