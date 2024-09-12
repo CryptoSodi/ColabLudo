@@ -29,6 +29,7 @@ app.UseCors("AllowAnyOrigin");
 
 // Map SignalR hubs
 app.MapHub<LudoHub>("/LudoHub");
+app.MapHub<LudoHub>("/TournamentHub");
 app.MapHub<SimpleChatHub>("/simple");
 app.MapHub<AdvancedChatHub>("/advanced");
 

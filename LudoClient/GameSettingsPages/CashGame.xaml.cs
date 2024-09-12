@@ -5,13 +5,13 @@ using System.Security.AccessControl;
 
 namespace LudoClient;
 
-public partial class GameSettings : ContentPage
+public partial class CashGame : ContentPage
 {
     public int entry = GlobalConstants.initialEntry;
     public int win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
     public bool defaultTabSelection = true;
-	public GameSettings()
+	public CashGame()
     {
 		InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
