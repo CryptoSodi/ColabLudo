@@ -37,6 +37,6 @@
             <ImageButton Source="practice.png" Clicked="Practice_Clicked" BackgroundColor="Transparent" Margin="0,4,0,0" Grid.Column="0" Aspect="AspectFit"/>
             <ImageButton Source="tournament.png" Clicked="Tournament_Clicked" BackgroundColor="Transparent" Grid.Column="1" Aspect="AspectFit"/>
         </Grid>
-        <ImageButton BackgroundColor="Transparent" Source="daily_bonus.png" Grid.Row="5" Margin="75,0,75,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
+        <ImageButton BackgroundColor="Transparent" Clicked="Bonus_Clicked" Source="daily_bonus.png" Grid.Row="5" Margin="75,0,75,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
     </Grid>
 </ContentPage>

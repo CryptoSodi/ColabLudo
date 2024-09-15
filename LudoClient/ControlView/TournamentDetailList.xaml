@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.TournamentDetailList"
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+    <Grid>
+        <Grid x:Name="ExpandSheet" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <local:Capsule ImageSource="expand_card.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                <StackLayout Spacing="1" Margin="22,10,0,10" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand">
+                    <Label Text="Tournament Details" FontSize="10" TextColor="LightGray" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                        <Label Text="Start Date : " FontSize="10" TextColor="White" VerticalOptions="Center"/>
+                        <Label x:Name="StartDateLabel" Text=" 06/02/2024 17:20:00" FontSize="10" TextColor="LightGray" VerticalOptions="Center"/>
+                    </StackLayout>
+                    <StackLayout Orientation="Horizontal" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                        <Label Text="End Date : " FontSize="10" TextColor="White" VerticalOptions="Center"/>
+                        <Label x:Name="EndDateLabel" Text=" 07/02/2024 17:20:00" FontSize="10" TextColor="LightGray" VerticalOptions="Center"/>
+                    </StackLayout>
+                </StackLayout>
+            </local:Capsule>
+        </Grid>
+        <local:Capsule x:Name="SubSheet" ImageSource="total_available_bal_bg.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".3*,.1*,.04*" Padding="2,0,10,0">
+                <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label x:Name="TournamentNameLabel" Text="Monthly Tournament" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <Label x:Name="TimeRemainingLabel" Text="Time Remaining 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <Label x:Name="JoiningFeeLabel" Text="Joining Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                </StackLayout>
+                <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                    <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <Label x:Name="PrizeAmountLabel" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                </Grid>
+                <Image x:Name="SheetDirection" Source="arr_down.png" Grid.Column="2" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            </Grid>
+        </local:Capsule>
+        <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+    </Grid>
+</ContentView>

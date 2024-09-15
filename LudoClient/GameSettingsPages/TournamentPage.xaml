@@ -24,14 +24,7 @@
                     </controlview:Capsule>
                 </Grid>
                 <ScrollView Margin="20,5,20,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                    <VerticalStackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
-                        <controlview:LeaderboardLongDetailList/>
+                    <VerticalStackLayout x:Name="TournamentListStack" Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>

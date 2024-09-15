@@ -132,7 +132,10 @@ namespace LudoClient
 
             //Save User state
             var userInfo = UserInfo.Instance;
-            userInfo.Id = (int)v["id"];
+            
+            string id = ((string)v["id"]).Substring(0, 6);
+
+            userInfo.Id = Convert.ToInt32(id);
             userInfo.Email = (string)v["email"];
             userInfo.Name = (string)v["name"];
             userInfo.PictureUrl = (string)v["picture"];

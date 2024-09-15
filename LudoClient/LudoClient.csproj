@@ -540,6 +540,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="ControlView\TournamentDetailList.xaml.cs">
+	    <DependentUpon>TournamentDetailList.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="GameSettingsPages\CashGame.xaml.cs">
 	    <DependentUpon>CashGame.xaml</DependentUpon>
 	  </Compile>
@@ -625,6 +628,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\Token.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\TournamentDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">

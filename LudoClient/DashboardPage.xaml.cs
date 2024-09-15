@@ -26,4 +26,8 @@ public partial class DashboardPage : ContentPage
     {
         Navigation.PushAsync(new TournamentPage());
     }
+    private void Bonus_Clicked(object sender, EventArgs e)
+    {
+        Navigation.PushAsync(new DailyBonusPage());
+    }
 }
