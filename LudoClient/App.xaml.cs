@@ -1,6 +1,4 @@
-﻿
-using System.ComponentModel;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace LudoClient
 {
@@ -24,16 +22,224 @@ namespace LudoClient
         static readonly IntPtr HWND_TOP = IntPtr.Zero;
         public App()
         {
-           #if WINDOWS   
+#if WINDOWS
             AllocConsole();
 
             IntPtr consoleWindow = GetConsoleWindow();
             SetWindowPos(consoleWindow, HWND_TOP, 590, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
 
             Console.WriteLine("Console started alongside MAUI app at custom position.");
-       
+
+
+
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
            #endif
             InitializeComponent();
+After:
+#endif
+            InitializeComponent();
+*/
+       
+#endif
+After:
+            /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+*/
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+#endif
+            InitializeComponent();
+        After:
+#endif
+            InitializeComponent();
+            */
+
+#endif
+            After:
+            /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+                   #endif
+                    InitializeComponent();
+        After:
+        #endif
+                    InitializeComponent();
+        */
+
+#endif
+        After:
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+            /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+*/
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+#endif
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+After:
+    /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+    Before:
+    /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+    Before:
+               #endif
+                InitializeComponent();
+    After:
+    #endif
+                InitializeComponent();
+    */
+
+#endif
+*/
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+*/
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        #endif
+                    InitializeComponent();
+                After:
+        #endif
+                    InitializeComponent();
+                    */
+
+#endif
+        After:
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+#endif
+            InitializeComponent();
+            */
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+*/
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        #endif
+                    InitializeComponent();
+                After:
+        #endif
+                    InitializeComponent();
+                    */
+*/
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+                   #endif
+                    InitializeComponent();
+        After:
+        #endif
+                    InitializeComponent();
+        */
+
+#endif
+
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+            After:
+            /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+            Before:
+                       #endif
+                        InitializeComponent();
+            After:
+            #endif
+                        InitializeComponent();
+            */
+After:
+        After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+                   #endif
+                    InitializeComponent();
+        After:
+        #endif
+                    InitializeComponent();
+        */
+*/
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        */
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        #endif
+                    InitializeComponent();
+                After:
+        #endif
+                    InitializeComponent();
+                    */
+        After:
+            */
+
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+*/
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+After:
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        */
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+        #endif
+                    InitializeComponent();
+                After:
+        #endif
+                    InitializeComponent();
+                    */
+        After:
+            */
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+*/
+/* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+Before:
+#endif
+            InitializeComponent();
+        After:
+#endif
+            InitializeComponent();
+            */
+*/
+*/
+                                    /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+                                    Before:
+                                    #endif
+                                                InitializeComponent();
+                                            After:
+                                    #endif
+                                                InitializeComponent();
+                                                */
+
+#endif
+                                    InitializeComponent();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();
@@ -51,7 +257,7 @@ namespace LudoClient
 
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
-            
+
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
@@ -74,7 +280,7 @@ namespace LudoClient
             Window? window = sender as Window;
             try
             {
-                System.Diagnostics.Debug.WriteLine(window.X+"Destroying"+ window.Y);
+                System.Diagnostics.Debug.WriteLine(window.X + "Destroying" + window.Y);
             }
             catch (Exception)
             {

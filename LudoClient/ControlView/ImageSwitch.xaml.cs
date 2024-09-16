@@ -6,9 +6,9 @@ public partial class ImageSwitch : ContentView
     public event EventHandler SwitchToggled;
     // Event to notify when the switch wants to be activated (for tab functionality)
     public event EventHandler<EventArgs> RequestActivate;
-    public static readonly BindableProperty SwitchSourceProperty = BindableProperty.Create(nameof(SwitchSource),typeof(string),typeof(ImageSwitch),propertyChanged: OnSwitchSourceChanged);
-    public static readonly BindableProperty SwitchOnProperty = BindableProperty.Create(nameof(SwitchOn),typeof(string),typeof(ImageSwitch),default(string));
-    public static readonly BindableProperty SwitchOffProperty = BindableProperty.Create(nameof(SwitchOff),typeof(string),typeof(ImageSwitch),default(string));
+    public static readonly BindableProperty SwitchSourceProperty = BindableProperty.Create(nameof(SwitchSource), typeof(string), typeof(ImageSwitch), propertyChanged: OnSwitchSourceChanged);
+    public static readonly BindableProperty SwitchOnProperty = BindableProperty.Create(nameof(SwitchOn), typeof(string), typeof(ImageSwitch), default(string));
+    public static readonly BindableProperty SwitchOffProperty = BindableProperty.Create(nameof(SwitchOff), typeof(string), typeof(ImageSwitch), default(string));
     public static readonly BindableProperty IsIndependentProperty = BindableProperty.Create(nameof(IsIndependent), typeof(bool), typeof(ImageSwitch), defaultValue: true);
     public BindableProperty SwitchTextProperty = BindableProperty.Create(nameof(SwitchText), typeof(string), typeof(ImageSwitch), propertyChanged: (bindable, oldValue, newValue) =>
     {

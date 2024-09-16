@@ -13,7 +13,7 @@ public partial class Player : ContentView
         set => SetValue(PlayerImageProperty, value);
     }
     public Player()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
 }

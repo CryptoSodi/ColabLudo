@@ -18,7 +18,7 @@ public partial class Capsule : ContentView
     }
 
     public Capsule()
-	{
+    {
         InitializeComponent();
-	}
+    }
 }

@@ -1,4 +1,3 @@
-using Microsoft.Maui.Controls;
 using SimpleToolkit.Core;
 using Xe.AcrylicView;
 
@@ -6,8 +5,8 @@ namespace LudoClient.ControlView;
 
 public partial class Popover : ContentView
 {
-	public Popover()
-	{
+    public Popover()
+    {
         InitializeComponent();
     }
     private void ButtonClicked(object sender, EventArgs e)

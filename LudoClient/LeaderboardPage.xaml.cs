@@ -1,13 +1,12 @@
 using LudoClient.ControlView;
-using Microsoft.Maui.Controls;
 
 namespace LudoClient;
 
 public partial class LeaderboardPage : ContentPage
 {
-	public LeaderboardPage()
+    public LeaderboardPage()
     {
-		InitializeComponent();
+        InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
     }

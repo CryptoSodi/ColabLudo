@@ -5,10 +5,6 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Security.AccessControl;
-using System.Xml.Linq;
-using static LudoClient.CoreEngine.Engine;
 
 namespace SignalR.Server
 {
@@ -53,7 +49,7 @@ namespace SignalR.Server
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
-        } 
+        }
         public async Task<string> CreateJoinRoom(int playerId, string userName, string gameType, decimal gameCost, string roomCode)
         {
             //Generate a new room name if roomName is empty

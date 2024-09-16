@@ -16,7 +16,7 @@ namespace LudoClient.Network
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl($"http://localhost:8084/LudoHub")
                 .Build();
-             _hubConnection.StartAsync();
+            _hubConnection.StartAsync();
             IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
             // Listen for messages from the server
@@ -28,7 +28,7 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinRoom(int playerId,string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinRoom(int playerId, string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
         {
             _hubConnection.InvokeAsync<string>("CreateJoinRoom", playerId, userName, gameType, gameCost, roomName).ContinueWith(task =>
             {
@@ -50,8 +50,8 @@ namespace LudoClient.Network
         }
         public async Task<string> SendMessageAsync(string line, string commmand)
         {
-           // await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
-           // await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
+            // await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
+            // await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
             string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, commmand);
             // _hub.Invoke("Send", "client", line, commmand);
             return result;

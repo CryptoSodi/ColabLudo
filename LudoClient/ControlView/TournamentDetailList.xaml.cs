@@ -1,6 +1,4 @@
-using System;
 using System.Timers;
-using Microsoft.Maui.Controls;
 
 namespace LudoClient.ControlView
 {
@@ -14,7 +12,7 @@ namespace LudoClient.ControlView
             InitializeComponent();
 
             // Initialize the tournament details
-           
+
         }
 
         /// <summary>
@@ -24,12 +22,12 @@ namespace LudoClient.ControlView
             string tournamentName,
             string startDate,
             string endDate,
-            decimal entryPrice,
-            decimal prizeAmount)
+            int joiningFee,
+            int prizeAmount)
         {
             // Set the text of the labels
             TournamentNameLabel.Text = tournamentName;
-            JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}$";
+            JoiningFeeLabel.Text = $"Joining Fee : {joiningFee}$";
             PrizeAmountLabel.Text = $"{prizeAmount}$";
             StartDateLabel.Text = $" {startDate}";
             EndDateLabel.Text = $" {endDate}";

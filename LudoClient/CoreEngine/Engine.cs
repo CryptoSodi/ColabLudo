@@ -1,13 +1,6 @@
 ﻿
 using LudoClient.ControlView;
 using LudoClient.Network;
-using Microsoft.Maui.Controls;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LudoClient.CoreEngine
 {
@@ -113,7 +106,7 @@ namespace LudoClient.CoreEngine
         }
         AbsoluteLayout Alayout;
         Grid Glayout;
-        public void RecievedRequest(String name,int val) 
+        public void RecievedRequest(String name, int val)
         {
 
         }
@@ -345,7 +338,7 @@ namespace LudoClient.CoreEngine
                         closedPieces++;
                     }
                     else if ((player.Pieces[i].location + diceValue <= 57) && player.Pieces[i].location != 0)
-                    { 
+                    {
                         player.Pieces[i].moveable = true;
                         moveablePieces++;
                     }

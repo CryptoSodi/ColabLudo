@@ -1,7 +1,5 @@
-using LudoClient.ControlView;
 using LudoClient.Constants;
-using System.Reflection.PortableExecutable;
-using System.Security.AccessControl;
+using LudoClient.ControlView;
 
 namespace LudoClient;
 
@@ -11,9 +9,9 @@ public partial class CashGame : ContentPage
     public int win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
     public bool defaultTabSelection = true;
-	public CashGame()
+    public CashGame()
     {
-		InitializeComponent();
+        InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         Tab3.SwitchSource = Tab3.SwitchOff;

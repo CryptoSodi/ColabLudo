@@ -1,13 +1,12 @@
 using LudoClient.ControlView;
-using System.Xml.Linq;
 
 namespace LudoClient;
 
 public partial class PlayWithFriends : ContentPage
 {
-	public PlayWithFriends()
-	{
-		InitializeComponent();
+    public PlayWithFriends()
+    {
+        InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         Tab3.SwitchSource = Tab3.SwitchOff;
@@ -53,7 +52,7 @@ public partial class PlayWithFriends : ContentPage
     {
         TabP1.SwitchSource = TabP1 == activeTab ? TabP1.SwitchOn : TabP1.SwitchOff;
         TabP2.SwitchSource = TabP2 == activeTab ? TabP2.SwitchOn : TabP2.SwitchOff;
-        if(TabP1 == activeTab)
+        if (TabP1 == activeTab)
         {
             TabJoin.IsVisible = false;
             TabCreate.IsVisible = true;

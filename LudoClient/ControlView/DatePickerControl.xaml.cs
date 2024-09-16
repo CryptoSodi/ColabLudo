@@ -14,7 +14,7 @@ public partial class DatePickerControl : ContentView
     }
 
     public DatePickerControl()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
 }

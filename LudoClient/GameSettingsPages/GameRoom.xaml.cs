@@ -7,7 +7,7 @@ public partial class GameRoom : ContentPage
     Client MatchMaker = new Client();
     int GameType = 4;
     public GameRoom(int GameType, int GameCost)
-	{
+    {
         this.GameType = GameType;
         InitializeComponent();
         NavigationPage.SetHasBackButton(this, false);
@@ -56,11 +56,11 @@ public partial class GameRoom : ContentPage
                 break;
         }
         string userName = UserInfo.Instance.Name;
-        int playerId= UserInfo.Instance.Id;
-        MatchMaker.CreateJoinRoom(playerId, userName, GameType+"", GameCost, "", shareBox);
+        int playerId = UserInfo.Instance.Id;
+        MatchMaker.CreateJoinRoom(playerId, userName, GameType + "", GameCost, "", shareBox);
     }
     protected override bool OnBackButtonPressed()
-    {     
+    {
         MatchMaker.Disconnect();
         // Prevent back navigation
         return true;

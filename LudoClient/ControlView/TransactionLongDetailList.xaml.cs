@@ -2,10 +2,10 @@ namespace LudoClient.ControlView;
 
 public partial class TransactionLongDetailList : ContentView
 {
-	public TransactionLongDetailList()
-	{
-		InitializeComponent();
-	}
+    public TransactionLongDetailList()
+    {
+        InitializeComponent();
+    }
 
     private void Expand_Clicked(object sender, EventArgs e)
     {
@@ -13,7 +13,7 @@ public partial class TransactionLongDetailList : ContentView
         {
             ExpandSheet.Padding = new Thickness(0, 0, 0, 0);
             ExpandSheet.Margin = new Thickness(0, 0, 0, 0);
-            SheetDirection.Source="arr_down.png";
+            SheetDirection.Source = "arr_down.png";
             return;
         }
         else

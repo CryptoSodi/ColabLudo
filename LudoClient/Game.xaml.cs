@@ -1,9 +1,5 @@
-
-
-using LudoClient.ControlView;
 using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
-using Xe.AcrylicView;
 
 namespace LudoClient;
 
@@ -23,7 +19,7 @@ public partial class Game : ContentPage
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         RedPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         BluePlayerSeat.OnDiceClicked += PlayerDiceClicked;
-        
+
         red1.OnPieceClicked += PlayerPieceClicked;
         red2.OnPieceClicked += PlayerPieceClicked;
         red3.OnPieceClicked += PlayerPieceClicked;
@@ -53,11 +49,11 @@ public partial class Game : ContentPage
         Engine.MovePieceAsync(PieceName);
         //stop animmation
     }
-    
+
     private void PlayerDiceClicked(String SeatName)
     {
-       if(Engine.checkTurn(SeatName, "RollDice"))
-       {    
+        if (Engine.checkTurn(SeatName, "RollDice"))
+        {
             RedPlayerSeat.reset();
             GreenPlayerSeat.reset();
             YellowPlayerSeat.reset();
@@ -76,13 +72,13 @@ public partial class Game : ContentPage
                 seat = BluePlayerSeat;
             seat.AnimateDice();
             Engine.SeatTurn(SeatName);
-       }
+        }
         //Engine.PlayGame();
     }
-    public void StopDice(string SeatName,int dicevalue)
+    public void StopDice(string SeatName, int dicevalue)
     {
         var seat = GreenPlayerSeat;
-        if (SeatName=="red")
+        if (SeatName == "red")
             seat = RedPlayerSeat;
         if (SeatName == "green")
             seat = GreenPlayerSeat;
@@ -91,7 +87,7 @@ public partial class Game : ContentPage
         if (SeatName == "blue")
             seat = BluePlayerSeat;
 
-        if (dicevalue==0)
+        if (dicevalue == 0)
         {
             seat.StopDice(6);
             return;

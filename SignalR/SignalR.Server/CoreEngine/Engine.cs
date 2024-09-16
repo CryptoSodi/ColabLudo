@@ -1,12 +1,4 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LudoClient.CoreEngine
+﻿namespace LudoClient.CoreEngine
 {
     public class Engine
     {
@@ -115,7 +107,7 @@ namespace LudoClient.CoreEngine
         }
         public Engine(Gui gui)
         {
-            this.gui = gui; 
+            this.gui = gui;
             currentPlayerIndex = 0;
             board = new Piece[57];
             gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
@@ -228,11 +220,11 @@ namespace LudoClient.CoreEngine
             originalPath["hb3"] = new int[] { 12, 12 };
 
             rolls.Add(6);
-            rolls.Add(1); 
+            rolls.Add(1);
             rolls.Add(6);
-            rolls.Add(1); 
+            rolls.Add(1);
             rolls.Add(6);
-            rolls.Add(1); 
+            rolls.Add(1);
             rolls.Add(6);
             rolls.Add(1);
             rolls.Add(1);
@@ -244,8 +236,8 @@ namespace LudoClient.CoreEngine
             //
             try
             {
-               // return rnd.Next(1, 7);
-                 return rolls[index++];
+                // return rnd.Next(1, 7);
+                return rolls[index++];
             }
             catch (Exception)
             {
@@ -297,7 +289,7 @@ namespace LudoClient.CoreEngine
             else
                 return false;
         }
-        public  string SeatTurn(String SeatName)
+        public string SeatTurn(String SeatName)
         {
             int tempDice = -1;
             Player player = players[currentPlayerIndex];
@@ -466,7 +458,7 @@ namespace LudoClient.CoreEngine
                 double y = originalPath[pj][0] * width;
                 double x = originalPath[pj][1] * height;
 
-                
+
                 //    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
 
                 // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
@@ -477,7 +469,7 @@ namespace LudoClient.CoreEngine
                 Console.WriteLine($"{piece.name} is at {pj} " + x + ":" + y + ":" + width + ":" + height);
             }
         }
-        
+
         public int chainIndex = 0;
         public string chain = "";
         public void encoder(String command)

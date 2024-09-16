@@ -19,9 +19,9 @@ public partial class Token : ContentView
     public String color = "Red";
     public int location = 0;
     public Token()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
     private void Piece_Clicked(object sender, EventArgs e)
     {
         OnPieceClicked?.Invoke(name);

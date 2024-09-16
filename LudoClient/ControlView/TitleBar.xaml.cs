@@ -24,7 +24,7 @@ public partial class TitleBar : ContentView
     }
 
     public TitleBar()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
 }

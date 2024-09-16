@@ -28,7 +28,7 @@ public partial class MessageBoxConfirm : ContentView
     }
 
     public MessageBoxConfirm()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
 }

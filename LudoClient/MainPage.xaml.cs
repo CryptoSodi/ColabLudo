@@ -22,7 +22,7 @@
             Preferences.Set("UserAlreadyloggedIn", false);
 
             Shell.Current.GoToAsync(state: "//LoginPage");
-            
+
             if (count == 1)
                 CounterBtn.Text = $"Clicked {count} time";
             else

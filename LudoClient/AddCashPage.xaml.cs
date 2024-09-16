@@ -2,8 +2,8 @@ namespace LudoClient;
 
 public partial class AddCashPage : ContentPage
 {
-	public AddCashPage()
-	{
-		InitializeComponent();
-	}
+    public AddCashPage()
+    {
+        InitializeComponent();
+    }
 }

@@ -46,7 +46,7 @@ public partial class ResultCardLong : ContentView
         set => SetValue(PlayerNameProperty, value);
     }
 
-    
+
 
     public ResultCardLong()
     {

@@ -10,7 +10,7 @@ namespace LudoClient
 {
     public partial class LoginPage : ContentPage
     {
-        
+
         const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
         private readonly HttpClient _httpClient;
         private string fullPhoneNumber;
@@ -48,9 +48,9 @@ namespace LudoClient
         {
             try
             {
-               // String AuthToken = "ya29.a0AcM612zzOEp0Jib5dz6rZMcxFj1fuzGZY3E0vgx6ySSaSYsqDMCfHpqD1EfuJHqxleDL1Yg8oprBAGDpfZA6-kE05X44Dlrlwuxx_4al0Drh8r3moeAhnS02pN5MT8QU39FRgNPi_jZOj_nJbpvYyOw4yBWIVplcI1f7aCgYKAT0SARISFQHGX2MiTinthg_X4wC-CNbqU2azmQ0171";
-             //  GetUserInfoAsync(AuthToken);
-             //   SemanticScreenReader.Announce(CounterBtn.Text);
+                // String AuthToken = "ya29.a0AcM612zzOEp0Jib5dz6rZMcxFj1fuzGZY3E0vgx6ySSaSYsqDMCfHpqD1EfuJHqxleDL1Yg8oprBAGDpfZA6-kE05X44Dlrlwuxx_4al0Drh8r3moeAhnS02pN5MT8QU39FRgNPi_jZOj_nJbpvYyOw4yBWIVplcI1f7aCgYKAT0SARISFQHGX2MiTinthg_X4wC-CNbqU2azmQ0171";
+                //  GetUserInfoAsync(AuthToken);
+                //   SemanticScreenReader.Announce(CounterBtn.Text);
                 OnAuthenticate("Google");
             }
             catch (Exception ex)
@@ -132,7 +132,7 @@ namespace LudoClient
 
             //Save User state
             var userInfo = UserInfo.Instance;
-            
+
             string id = ((string)v["id"]).Substring(0, 6);
 
             userInfo.Id = Convert.ToInt32(id);
@@ -148,22 +148,22 @@ namespace LudoClient
         }
         private void SendOTP_Clicked(object sender, EventArgs e)
         {
-               string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
-               string phoneNumber = PhoneNumberEntry.Text.TrimStart('0');
-               fullPhoneNumber = selectedCountryCode + phoneNumber;
+            string selectedCountryCode = CountryCode.countryCodes[CountryCodePicker.SelectedItem.ToString()];
+            string phoneNumber = PhoneNumberEntry.Text.TrimStart('0');
+            fullPhoneNumber = selectedCountryCode + phoneNumber;
 
-               if (IsValidPhoneNumber(phoneNumber))
-               {
-                   // Add the phone number to the queue
-                   AddPhoneNumberToQueue(fullPhoneNumber);
-                   HideLoginPanel();
-                   OTPPanel.IsVisible = true;
-                   LoginPanel.IsVisible = false;
-               }
-               else
-               {
-                   DisplayAlert("Error", "Please enter a valid phone number.", "OK");
-               }
+            if (IsValidPhoneNumber(phoneNumber))
+            {
+                // Add the phone number to the queue
+                AddPhoneNumberToQueue(fullPhoneNumber);
+                HideLoginPanel();
+                OTPPanel.IsVisible = true;
+                LoginPanel.IsVisible = false;
+            }
+            else
+            {
+                DisplayAlert("Error", "Please enter a valid phone number.", "OK");
+            }
         }
         private void HideLoginPanel()
         {

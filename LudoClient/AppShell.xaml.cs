@@ -1,5 +1,5 @@
-﻿using SimpleToolkit.Core;
-using LudoClient.Utilities;
+﻿using LudoClient.Utilities;
+using SimpleToolkit.Core;
 
 namespace LudoClient
 {

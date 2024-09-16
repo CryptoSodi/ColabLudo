@@ -2,8 +2,8 @@ namespace LudoClient;
 
 public partial class EditInfoPage : ContentPage
 {
-	public EditInfoPage()
-	{
-		InitializeComponent();
-	}
+    public EditInfoPage()
+    {
+        InitializeComponent();
+    }
 }

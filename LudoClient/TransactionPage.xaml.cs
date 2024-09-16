@@ -18,8 +18,8 @@ public partial class TransactionPage : ContentPage
         // Add logic here to change the content based on the active tab
     }
     public TransactionPage()
-	{
-		InitializeComponent(); 
+    {
+        InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         Tab3.SwitchSource = Tab3.SwitchOff;

@@ -1,11 +1,10 @@
 using LudoClient.ControlView;
-using System.Xml.Linq;
 namespace LudoClient;
 public partial class PracticePage : ContentPage
 {
-	public PracticePage()
-	{
-		InitializeComponent();
+    public PracticePage()
+    {
+        InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         Tab3.SwitchSource = Tab3.SwitchOff;
@@ -34,6 +33,6 @@ public partial class PracticePage : ContentPage
     }
     private void TabRequestedActivateP(object sender, EventArgs e)
     {
-       
+
     }
 }

@@ -16,9 +16,9 @@ public partial class PlayerSeat : ContentView
         set => SetValue(PlayerImageProperty, value);
     }
     public PlayerSeat()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
     public String name = "";
     private void Dice_Clicked(object sender, EventArgs e)
     {
@@ -33,13 +33,13 @@ public partial class PlayerSeat : ContentView
 
     internal void StopDice(int DiceValue)
     {
-        DiceLayer.Source = "dice_"+ DiceValue + ".png";
+        DiceLayer.Source = "dice_" + DiceValue + ".png";
         DiceLayer.IsAnimationPlaying = false;
     }
 
     internal void reset()
     {//HARIS FIX THIS THE SOURCE FILE NEEDS TO BE MATCHED WITH dice_0.png only then we have to reset //0001
-        if(DiceLayer.Source+"" != "dice_0.png")
+        if (DiceLayer.Source + "" != "dice_0.png")
             DiceLayer.Source = "dice_0.png";
     }
 }

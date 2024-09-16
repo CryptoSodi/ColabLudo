@@ -23,7 +23,7 @@ public partial class PlayerBoxLong : ContentView
         set => SetValue(PlayerImageProperty, value);
     }
     public PlayerBoxLong()
-	{
-		InitializeComponent();
-	}
+    {
+        InitializeComponent();
+    }
 }

@@ -2,8 +2,8 @@ namespace LudoClient;
 
 public partial class TabHandeler : TabbedPage
 {
-	public TabHandeler()
-	{
-		InitializeComponent();
-	}
+    public TabHandeler()
+    {
+        InitializeComponent();
+    }
 }
