@@ -22,7 +22,7 @@ public partial class TournamentPage : ContentPage
                 tournamentName: tournament.TournamentName,
                 startDate: tournament.StartDate.ToString("g"),
                 endDate: tournament.EndDate.ToString("g"),
-                joiningFee: tournament.JoiningFee,
+                joiningFee: tournament.EntryPrice,
                 prizeAmount: tournament.PrizeAmount
             );
 
@@ -44,7 +44,7 @@ public partial class TournamentPage : ContentPage
                     TournamentName = "Monthly Tournament",
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now.AddDays(1),
-                    JoiningFee = 100,
+                    EntryPrice = 100,
                     PrizeAmount = 1000
                 },
                 new Tournament
@@ -52,7 +52,7 @@ public partial class TournamentPage : ContentPage
                     TournamentName = "Weekly Championship",
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now.AddDays(7),
-                    JoiningFee = 50,
+                    EntryPrice = 50,
                     PrizeAmount = 500
                 },
                 // Add more tournaments as needed
