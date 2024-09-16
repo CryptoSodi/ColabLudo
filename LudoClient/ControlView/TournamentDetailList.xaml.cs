@@ -22,12 +22,12 @@ namespace LudoClient.ControlView
             string tournamentName,
             string startDate,
             string endDate,
-            decimal joiningFee,
+            decimal entryPrice,
             decimal prizeAmount)
         {
             // Set the text of the labels
             TournamentNameLabel.Text = tournamentName;
-            JoiningFeeLabel.Text = $"Joining Fee : {joiningFee}$";
+            JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}$";
             PrizeAmountLabel.Text = $"{prizeAmount}$";
             StartDateLabel.Text = $" {startDate}";
             EndDateLabel.Text = $" {endDate}";
