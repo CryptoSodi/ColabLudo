@@ -1,30 +1,26 @@
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Models;
-using System.Net.Http;
 using System.Text.Json;
-
 namespace LudoClient;
-
 public partial class TournamentPage : ContentPage
 {
     private readonly HttpClient _httpClient;
-
     public TournamentPage()
     {
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
-
-        // Run the async task without blocking the constructor
-        //Task.Run(async () => await InitializeTournamentsAsync());
-        InitializeTournamentsAsync();
     }
-    private async Task InitializeTournamentsAsync()
+    public async Task InitializeTournamentsAsync()
     {
         // Retrieve or create a list of tournaments
-        var tournaments = await GetTournamentsAsync();
-
+        List<Tournament> tournaments;
+        if(GlobalConstants.Debug)
+            tournaments = GetTournaments();
+        else
+            tournaments = await GetTournamentsAsync();
         // Dynamically create and add TournamentDetailList controls
         foreach (var tournament in tournaments)
         {
@@ -36,7 +32,6 @@ public partial class TournamentPage : ContentPage
                 entryPrice: tournament.EntryPrice,
                 prizeAmount: tournament.PrizeAmount
             );
-
             // Add the control to the stack layout
             TournamentListStack.Children.Add(tournamentDetail);
         }
@@ -68,7 +63,6 @@ public partial class TournamentPage : ContentPage
     private async Task<List<Tournament>> GetTournamentsAsync()
     {
         var response = await _httpClient.GetAsync($"api/tournament");
-
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -76,8 +70,7 @@ public partial class TournamentPage : ContentPage
             {
                 PropertyNameCaseInsensitive = true
             });
-
-            return tournaments;
+            return tournaments ?? new List<Tournament>();
         }
         else
         {
@@ -87,7 +80,10 @@ public partial class TournamentPage : ContentPage
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
-        ActivateTab(sender as ImageSwitch);
+        if (sender is ImageSwitch activeTab)
+        {
+            ActivateTab(activeTab);
+        }
     }
     private void ActivateTab(ImageSwitch activeTab)
     {

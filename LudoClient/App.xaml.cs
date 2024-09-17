@@ -7,32 +7,22 @@ namespace LudoClient
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
-
         [DllImport("kernel32.dll")]
         static extern bool FreeConsole();
-
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr GetConsoleWindow();
-
         [DllImport("user32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
         const uint SWP_NOSIZE = 0x0001;
         static readonly IntPtr HWND_TOP = IntPtr.Zero;
         public App()
         {
 #if WINDOWS
             AllocConsole();
-
             IntPtr consoleWindow = GetConsoleWindow();
             SetWindowPos(consoleWindow, HWND_TOP, 590, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
-
             Console.WriteLine("Console started alongside MAUI app at custom position.");
-
-
-
-
 #endif
             InitializeComponent();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
@@ -49,19 +39,15 @@ namespace LudoClient
             }
             //MainPage =new LoginPage();
             //
-
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
-
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
         {
             var window = base.CreateWindow(activationState);
-
             const int newWidth = 400;
             const int newHeight = 800;
-
             window.Width = newWidth;
             window.Height = newHeight;
             window.X = 0;
@@ -69,7 +55,6 @@ namespace LudoClient
             window.Destroying += Window_Destroying;
             return window;
         }
-
         private void Window_Destroying(object sender, EventArgs e)
         {
             Window? window = sender as Window;

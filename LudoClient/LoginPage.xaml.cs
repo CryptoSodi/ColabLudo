@@ -1,4 +1,4 @@
-using LudoClient.Dictionary;
+using LudoClient.Constants;
 using LudoClient.Models;
 using Newtonsoft.Json.Linq;
 using System.Security.Cryptography;

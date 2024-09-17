@@ -1,4 +1,4 @@
-﻿namespace LudoClient.Dictionary
+﻿namespace LudoClient.Constants
 {
     public static class CountryCode
     {

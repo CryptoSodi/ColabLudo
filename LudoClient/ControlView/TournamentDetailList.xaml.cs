@@ -4,23 +4,16 @@ namespace LudoClient.ControlView
 {
     public partial class TournamentDetailList : ContentView
     {
-        private System.Timers.Timer countdownTimer;
+        private System.Timers.Timer? countdownTimer;
         private DateTime endDateTime;
-
         public TournamentDetailList()
         {
             InitializeComponent();
-            // Initialize the tournament details
         }
         /// <summary>
         /// Sets the tournament details on the UI and starts the countdown timer.
         /// </summary>
-        public void SetTournamentDetails(
-            string tournamentName,
-            string startDate,
-            string endDate,
-            decimal entryPrice,
-            decimal prizeAmount)
+        public void SetTournamentDetails(string tournamentName, string startDate, string endDate, decimal entryPrice, decimal prizeAmount)
         {
             // Set the text of the labels
             TournamentNameLabel.Text = tournamentName;
@@ -28,12 +21,10 @@ namespace LudoClient.ControlView
             PrizeAmountLabel.Text = $"{prizeAmount}$";
             StartDateLabel.Text = $" {startDate}";
             EndDateLabel.Text = $" {endDate}";
-
             // Parse the end date
             if (DateTime.TryParse(endDate, out DateTime parsedEndDate))
             {
                 endDateTime = parsedEndDate;
-
                 // Start the countdown timer
                 StartCountdownTimer();
             }
@@ -103,6 +94,9 @@ namespace LudoClient.ControlView
                 SheetDirection.Source = "arr_up.png";
                 ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
             }
+        }
+        private void Join_Clicked(object sender, EventArgs e)
+        {
         }
     }
 }

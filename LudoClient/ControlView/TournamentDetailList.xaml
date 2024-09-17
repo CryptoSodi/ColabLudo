@@ -34,5 +34,6 @@
             </Grid>
         </local:Capsule>
         <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+        <ImageButton Source="btn_green.png" Clicked="Join_Clicked" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
     </Grid>
 </ContentView>

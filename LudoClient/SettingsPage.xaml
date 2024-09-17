@@ -16,29 +16,26 @@
               RowDefinitions =".8*,.2*,1*,1*,1*,1*,1*,1*,1*,.6*">
 
             <local:TitleBar Title="Settings"  Margin="0,-18,0,0" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"/>
-
             <Image x:Name="Settings_Foreground" Source="settings_forground.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="5" Grid.RowSpan="4" Margin="20,0,20,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-
             <Grid Padding="20,0,20,0" Grid.Row="2" Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
                   WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
                   HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}"
                   RowDefinitions=".08*,1*,1*,1*,.08*" ColumnDefinitions="*">
-
+                
                 <local:SettingsSwitch x:Name="SoundSwitch" SettingText="SOUNDS" PreferencesKey="IsSoundEnabled" Grid.Row="1"/>
                 <local:SettingsSwitch x:Name="MusicSwitch" SettingText="MUSIC" PreferencesKey="IsMusicEnabled" Grid.Row="2"/>
                 <local:SettingsSwitch x:Name="NotificationSwitch" SettingText="NOTIFICATION" PreferencesKey="IsNotificationEnabled" Grid.Row="3"/>
             </Grid>
-            
+
             <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
                   WidthRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Width}" 
                   RowDefinitions="1*" ColumnDefinitions="1*,1*,1*,1*">
-                
+
                 <Image Source="help.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="terms.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="privacy.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
-            
             <!-- Convert btn_green.png button into a button -->
             <Image Grid.Row="7" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             <Label Grid.Row="7" Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
