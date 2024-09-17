@@ -50,7 +50,7 @@ public partial class ImageSwitch : ContentView
         InitializeComponent();
         UpdateSwitchSource();
     }
-    private void UpdateSwitchSource()
+    public void UpdateSwitchSource()
     {
         SwitchSource = SwitchState ? SwitchOn : SwitchOff;
     }

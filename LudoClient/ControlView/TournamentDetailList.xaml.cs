@@ -10,11 +10,8 @@ namespace LudoClient.ControlView
         public TournamentDetailList()
         {
             InitializeComponent();
-
             // Initialize the tournament details
-
         }
-
         /// <summary>
         /// Sets the tournament details on the UI and starts the countdown timer.
         /// </summary>

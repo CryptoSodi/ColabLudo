@@ -24,9 +24,9 @@
                   HeightRequest="{Binding Source={x:Reference Settings_Foreground}, Path=Height}"
                   RowDefinitions=".08*,1*,1*,1*,.08*" ColumnDefinitions="*">
 
-                <local:SettingsSwitch SettingText="SOUNDS" PreferencesKey="IsSoundEnabled" Grid.Row="1"/>
-                <local:SettingsSwitch SettingText="MUSIC" PreferencesKey="IsMusicEnabled" Grid.Row="2"/>
-                <local:SettingsSwitch SettingText="NOTIFICATION" PreferencesKey="IsNotificationEnabled" Grid.Row="3"/>
+                <local:SettingsSwitch x:Name="SoundSwitch" SettingText="SOUNDS" PreferencesKey="IsSoundEnabled" Grid.Row="1"/>
+                <local:SettingsSwitch x:Name="MusicSwitch" SettingText="MUSIC" PreferencesKey="IsMusicEnabled" Grid.Row="2"/>
+                <local:SettingsSwitch x:Name="NotificationSwitch" SettingText="NOTIFICATION" PreferencesKey="IsNotificationEnabled" Grid.Row="3"/>
             </Grid>
             
             <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 

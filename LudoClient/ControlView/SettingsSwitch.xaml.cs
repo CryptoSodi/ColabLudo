@@ -35,11 +35,14 @@ namespace LudoClient.ControlView
             InitializeComponent();
             // Subscribe to the SwitchToggled event of the ImageSwitch control
             ImageSwitchControl.SwitchToggled += ImageSwitchControl_SwitchToggled;
-
+        }
+        public void init()
+        {
             // Load the preference and set the switch state accordingly
             if (!string.IsNullOrEmpty(PreferencesKey))
             {
                 ImageSwitchControl.SwitchState = Preferences.Get(PreferencesKey, true); // Default value is 'true'
+                ImageSwitchControl.UpdateSwitchSource();
             }
         }
 
