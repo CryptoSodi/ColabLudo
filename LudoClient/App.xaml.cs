@@ -34,7 +34,7 @@ namespace LudoClient
 
 
 #endif
-                                    InitializeComponent();
+            InitializeComponent();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();

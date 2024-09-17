@@ -7,7 +7,7 @@ namespace LudoClient;
 
 public partial class TournamentPage : ContentPage
 {
-    private HttpClient _httpClient;
+    private readonly HttpClient _httpClient;
 
     public TournamentPage()
     {
@@ -17,7 +17,8 @@ public partial class TournamentPage : ContentPage
         _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
 
         // Run the async task without blocking the constructor
-        Task.Run(async () => await InitializeTournamentsAsync());
+        //Task.Run(async () => await InitializeTournamentsAsync());
+        InitializeTournamentsAsync();
     }
     private async Task InitializeTournamentsAsync()
     {
@@ -39,6 +40,30 @@ public partial class TournamentPage : ContentPage
             // Add the control to the stack layout
             TournamentListStack.Children.Add(tournamentDetail);
         }
+    }
+    private List<Tournament> GetTournaments()
+    {
+        // Sample data. Replace with actual data retrieval logic.
+        return new List<Tournament>
+            {
+                new Tournament
+                {
+                    TournamentName = "Monthly Tournament",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddDays(1),
+                    EntryPrice = 100,
+                    PrizeAmount = 1000
+                },
+                new Tournament
+                {
+                    TournamentName = "Weekly Championship",
+                    StartDate = DateTime.Now,
+                    EndDate = DateTime.Now.AddDays(7),
+                    EntryPrice = 50,
+                    PrizeAmount = 500
+                },
+                // Add more tournaments as needed
+            };
     }
     private async Task<List<Tournament>> GetTournamentsAsync()
     {
