@@ -9,6 +9,5 @@
         public DateTime EndDate { get; set; }
         public decimal EntryPrice { get; set; }
         public decimal PrizeAmount { get; set; }
-        public int RetryCount { get; set; }
     }
 }

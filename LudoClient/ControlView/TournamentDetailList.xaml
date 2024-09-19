@@ -26,6 +26,7 @@
         <local:Capsule x:Name="SubSheet" ImageSource="total_available_bal_bg.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
             <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".3*,.1*,.04*" Padding="2,0,10,0">
                 <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label x:Name="TournamentId" Text="" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
                     <Label x:Name="TournamentNameLabel" Text="Monthly Tournament" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
                     <Label x:Name="TimeRemainingLabel" Text="Time Remaining 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
                     <Label x:Name="JoiningFeeLabel" Text="Entry Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
