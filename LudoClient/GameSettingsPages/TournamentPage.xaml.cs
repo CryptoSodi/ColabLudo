@@ -26,6 +26,7 @@ public partial class TournamentPage : ContentPage
         {
             var tournamentDetail = new TournamentDetailList();
             tournamentDetail.SetTournamentDetails(
+                tournamentId: tournament.TournamentId,
                 tournamentName: tournament.TournamentName,
                 startDate: tournament.StartDate.ToString("g"),
                 endDate: tournament.EndDate.ToString("g"),
@@ -43,6 +44,7 @@ public partial class TournamentPage : ContentPage
             {
                 new Tournament
                 {
+                    TournamentId = 0,
                     TournamentName = "Monthly Tournament",
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now.AddDays(1),
@@ -51,6 +53,7 @@ public partial class TournamentPage : ContentPage
                 },
                 new Tournament
                 {
+                    TournamentId = 1,
                     TournamentName = "Weekly Championship",
                     StartDate = DateTime.Now,
                     EndDate = DateTime.Now.AddDays(7),

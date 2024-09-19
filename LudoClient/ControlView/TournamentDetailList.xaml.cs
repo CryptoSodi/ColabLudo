@@ -1,21 +1,27 @@
+using LudoClient.Models;
+using System.Text;
+using System.Text.Json;
 using System.Timers;
 
 namespace LudoClient.ControlView
 {
     public partial class TournamentDetailList : ContentView
     {
+        private readonly HttpClient _httpClient;
         private System.Timers.Timer? countdownTimer;
         private DateTime endDateTime;
         public TournamentDetailList()
         {
             InitializeComponent();
+            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
         }
         /// <summary>
         /// Sets the tournament details on the UI and starts the countdown timer.
         /// </summary>
-        public void SetTournamentDetails(string tournamentName, string startDate, string endDate, decimal entryPrice, decimal prizeAmount)
+        public void SetTournamentDetails(int tournamentId, string tournamentName, string startDate, string endDate, decimal entryPrice, decimal prizeAmount)
         {
             // Set the text of the labels
+            TournamentId.Text = tournamentId.ToString();
             TournamentNameLabel.Text = tournamentName;
             JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}$";
             PrizeAmountLabel.Text = $"{prizeAmount}$";
@@ -95,8 +101,33 @@ namespace LudoClient.ControlView
                 ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
             }
         }
-        private void Join_Clicked(object sender, EventArgs e)
+        private async void Join_Clicked(object sender, EventArgs e)
         {
+            int playerId = Preferences.Get("PlayerId", 0);
+            int tournamentId = Int32.Parse(TournamentId.Text);
+
+            // Build the URL with query parameters
+            var url = $"api/tournament/join?playerId={playerId}&tournamentId={tournamentId}";
+
+            // Send the POST request without a body, as parameters are in the query string
+            var response = await _httpClient.PostAsync(url, null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Handle successful join, e.g., show a message or update the UI
+                Console.WriteLine("Successfully joined the tournament!");
+            }
+
+            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                Console.WriteLine("You are already Joined");
+            }
+            else
+            {
+                // Handle failure, e.g., show an error message
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
+            }
         }
     }
 }
