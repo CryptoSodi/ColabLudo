@@ -1,3 +1,4 @@
+using LudoClient.Constants;
 using LudoClient.Models;
 using System.Text;
 using System.Text.Json;
@@ -13,7 +14,7 @@ namespace LudoClient.ControlView
         public TournamentDetailList()
         {
             InitializeComponent();
-            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
+            _httpClient = new HttpClient { BaseAddress = new Uri(GlobalConstants.BaseUrl) }; // Replace with your API base URL
         }
         /// <summary>
         /// Sets the tournament details on the UI and starts the countdown timer.
@@ -103,7 +104,7 @@ namespace LudoClient.ControlView
         }
         private async void Join_Clicked(object sender, EventArgs e)
         {
-            int playerId = Preferences.Get("PlayerId", 0);
+            int playerId = Preferences.Get("PlayerId", 1);
             int tournamentId = Int32.Parse(TournamentId.Text);
 
             // Build the URL with query parameters

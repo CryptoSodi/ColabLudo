@@ -11,9 +11,7 @@
             <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
                 <StackLayout Grid.Column="1" Spacing="8">
                     <local:TitleBar Grid.Column="1" TitleImage="round_practice.png" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
-                   
-                    
-                    <Image Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
+                    <Image Margin="0,20,0,0" Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
                     <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
                         <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
@@ -21,8 +19,8 @@
                         <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
                     
-                    <Grid Margin="0,10,0,-100" HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*,.07*" ColumnDefinitions=".01*,.1*,.1*,.01*">
-                        <Image Source="btn_green.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    <Grid Margin="0,20,0,-10" HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*,.07*" ColumnDefinitions=".01*,.1*,.1*,.01*">
+                        <Image Source="btn_play_large.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
                     </Grid>
                 </StackLayout>
             </Grid>

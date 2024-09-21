@@ -8,7 +8,7 @@
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
        RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
         <local:Capsule ImageSource="game_setting_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
+            <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
                 <StackLayout Grid.Column="1" Spacing="10">
                     <local:TitleBar Grid.Column="1" TitleImage="round_cashgames.png" Title="" Margin="35,-100,35,0" VerticalOptions="Start" HorizontalOptions="Center"/>
                     <Image Source="dash_select_players.png"  HorizontalOptions="CenterAndExpand"/>
@@ -43,7 +43,10 @@
                             <ImageButton Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" Clicked="BtnPlus" Aspect="AspectFit" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
-                    <ImageButton Source="btn_green.png" Clicked="BtnAccept_Clicked" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="20" Margin="30,0,30,0"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
+                        <ImageButton BackgroundColor="Transparent" Source="btn_join.png" Clicked="JoinRoom_Clicked" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                        <ImageButton BackgroundColor="Transparent" Source="btn_create.png" Clicked="CreateRoom_Clicked" Margin="0,12,0,12"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    </StackLayout>
                 </StackLayout>
             </Grid>
         </local:Capsule>

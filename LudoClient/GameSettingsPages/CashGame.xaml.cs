@@ -72,7 +72,20 @@ public partial class CashGame : ContentPage
         }
         WinLabel.Text = win.ToString();
     }
-    private void BtnAccept_Clicked(object sender, EventArgs e)
+    private void JoinRoom_Clicked(object sender, EventArgs e)
+    {
+        int gameType = 2;
+        if (Tab1.IsActive)
+            gameType = 2;
+        if (Tab2.IsActive)
+            gameType = 3;
+        if (Tab3.IsActive)
+            gameType = 4;
+        if (Tab4.IsActive)
+            gameType = 22;
+        Navigation.PushAsync(new GameRoom(gameType, entry));
+    }
+    private void CreateRoom_Clicked(object sender, EventArgs e)
     {
         int gameType = 2;
         if (Tab1.IsActive)

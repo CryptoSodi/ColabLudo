@@ -3,11 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.TournamentPage"
              Title="TournamentPage"
+             xmlns:controlView="clr-namespace:LudoClient.ControlView"
              xmlns:local="clr-namespace:LudoClient"
              BackgroundImageSource="background_waitingroom.png"
              xmlns:controlview="clr-namespace:LudoClient.ControlView">
 
-    <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".2*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
+    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
         <controlview:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid Margin="0,20,0,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
@@ -30,5 +31,6 @@
             </Grid>
         </controlview:Capsule>
         <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <controlView:BottomNavigation Grid.Row="2" Grid.ColumnSpan="5"></controlView:BottomNavigation>
     </Grid>
 </ContentPage>

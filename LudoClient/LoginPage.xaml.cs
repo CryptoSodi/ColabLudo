@@ -21,7 +21,7 @@ namespace LudoClient
             LoginPanel.IsVisible = true;
             var displayInfo = DeviceDisplay.Current.MainDisplayInfo;
             PopulateCountryCodePicker();
-            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
+            _httpClient = new HttpClient { BaseAddress = new Uri(GlobalConstants.BaseUrl)};
         }
         protected override void OnAppearing()
         {

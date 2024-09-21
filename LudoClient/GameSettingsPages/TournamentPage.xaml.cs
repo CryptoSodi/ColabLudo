@@ -1,26 +1,22 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Models;
+using System.Net.Http;
 using System.Text.Json;
 namespace LudoClient;
 public partial class TournamentPage : ContentPage
 {
-    private readonly HttpClient _httpClient;
     public TournamentPage()
     {
+        
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
-        _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
     }
     public async Task InitializeTournamentsAsync()
     {
         // Retrieve or create a list of tournaments
-        List<Tournament> tournaments;
-        if(GlobalConstants.Debug)
-            tournaments = GetTournaments();
-        else
-            tournaments = await GetTournamentsAsync();
+        List<Tournament> tournaments = await GetTournamentsAsync();
         // Dynamically create and add TournamentDetailList controls
         foreach (var tournament in tournaments)
         {
@@ -37,35 +33,9 @@ public partial class TournamentPage : ContentPage
             TournamentListStack.Children.Add(tournamentDetail);
         }
     }
-    private List<Tournament> GetTournaments()
-    {
-        // Sample data. Replace with actual data retrieval logic.
-        return new List<Tournament>
-            {
-                new Tournament
-                {
-                    TournamentId = 0,
-                    TournamentName = "Monthly Tournament",
-                    StartDate = DateTime.Now,
-                    EndDate = DateTime.Now.AddDays(1),
-                    EntryPrice = 100,
-                    PrizeAmount = 1000
-                },
-                new Tournament
-                {
-                    TournamentId = 1,
-                    TournamentName = "Weekly Championship",
-                    StartDate = DateTime.Now,
-                    EndDate = DateTime.Now.AddDays(7),
-                    EntryPrice = 50,
-                    PrizeAmount = 500
-                },
-                // Add more tournaments as needed
-            };
-    }
     private async Task<List<Tournament>> GetTournamentsAsync()
     {
-        var response = await _httpClient.GetAsync($"api/tournament");
+        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync("api/tournament");
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
