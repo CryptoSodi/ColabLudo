@@ -19,7 +19,7 @@
             </StackLayout>
             <StackLayout Grid.Column="2" HorizontalOptions="End" VerticalOptions="FillAndExpand">
                 <Grid HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
-                    <ImageButton Clicked="Navigate_Settings" Source="ic_settings.png" Grid.Column="1" Aspect="AspectFit"/>
+                    <ImageButton BackgroundColor="Transparent" Clicked="Navigate_Settings" Source="ic_settings.png" Grid.Column="1" Aspect="AspectFit"/>
                 </Grid>
             </StackLayout>
         </Grid>

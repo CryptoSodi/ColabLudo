@@ -30,31 +30,27 @@
                                     <Image Source="btn_minus_large.png" Margin="0,0,15,0" VerticalOptions="Center" HorizontalOptions="Start"></Image>
                                     <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".1*,.2*">
                                         <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
-                                        <Grid Margin="5,0,5,5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                                            <Label Text="Select Room" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1" Margin="5,0,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                                            <BoxView CornerRadius="4" BackgroundColor="#572BD5"></BoxView>
-                                            <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                                                <Image Source="ic_coin.png" Margin="5,10,5,10" Aspect="AspectFit" HorizontalOptions="StartAndExpand" />
-                                                <Label Text="30" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
+                                        <Label  Text="Entry Fee" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                                        <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                            <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
+                                            <StackLayout Margin="5,2,5,5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                                                <Image Source="ic_coin.png" Margin="2" Aspect="AspectFit" HorizontalOptions="StartAndExpand" />
+                                                <Label Text="5" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
                                             </StackLayout>
                                         </Grid>
                                     </Grid>
-                                    <Image Grid.Column="2" Margin="15,0,0,0"  Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"></Image>
+                                    <Image Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" VerticalOptions="Center" HorizontalOptions="End"/>
                                 </Grid>
                                 <Grid x:Name="TabJoin" IsVisible="False" Margin="20,10,20,15">
                                     <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".1*,.2*">
                                         <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
-                                        <Grid Margin="5,0,5,5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                                            <Label Text="Select Room" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
-                                        </Grid>
-                                        <Grid Grid.Row="1" Margin="5,0,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                                            <BoxView CornerRadius="4" BackgroundColor="#572BD5"></BoxView>
-                                            <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                                                <Image Source="ic_coin.png" Margin="5,10,5,10" Aspect="AspectFit" HorizontalOptions="StartAndExpand" />
-                                                <Label Text="30" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
-                                            </StackLayout>
+                                        <Label Text="Room Id" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                                        <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                            <Grid ColumnDefinitions=".5*,.1*">
+                                                <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
+                                                <Entry Margin="5,-5,5,5" Text="" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                <Image Margin="5,0,0,0" Grid.Column="1" Source="btn_exit_to_lobby.png" Aspect="AspectFit" HorizontalOptions="StartAndExpand"/>
+                                            </Grid>
                                         </Grid>
                                     </Grid>
                                 </Grid>

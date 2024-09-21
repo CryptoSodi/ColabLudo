@@ -8,13 +8,11 @@ namespace LudoClient.ControlView
 {
     public partial class TournamentDetailList : ContentView
     {
-        private readonly HttpClient _httpClient;
         private System.Timers.Timer? countdownTimer;
         private DateTime endDateTime;
         public TournamentDetailList()
         {
             InitializeComponent();
-            _httpClient = new HttpClient { BaseAddress = new Uri(GlobalConstants.BaseUrl) }; // Replace with your API base URL
         }
         /// <summary>
         /// Sets the tournament details on the UI and starts the countdown timer.
@@ -111,7 +109,7 @@ namespace LudoClient.ControlView
             var url = $"api/tournament/join?playerId={playerId}&tournamentId={tournamentId}";
 
             // Send the POST request without a body, as parameters are in the query string
-            var response = await _httpClient.PostAsync(url, null);
+            var response = await GlobalConstants.httpClient.PostAsync(url, null);
 
             if (response.IsSuccessStatusCode)
             {
