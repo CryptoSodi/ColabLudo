@@ -18,13 +18,10 @@ namespace LudoClient
             AddTab(typeof(LeaderboardPage), PageType.LeaderboardPage);
 
             Loaded += AppShellLoaded;
-
         }
-
         private static void AppShellLoaded(object sender, EventArgs e)
         {
             var shell = sender as AppShell;
-
             shell.Window.SubscribeToSafeAreaChanges(safeArea =>
             {
                 shell.pageContainer.Margin = safeArea;
@@ -33,7 +30,6 @@ namespace LudoClient
                 shell.bottomBackgroundRectangle.HeightRequest = safeArea.Bottom;
             });
         }
-
         private void AddTab(Type page, PageType pageEnum)
         {
             Tab tab = new Tab { Route = pageEnum.ToString(), Title = pageEnum.ToString() };
@@ -41,13 +37,11 @@ namespace LudoClient
 
             tabBar.Items.Add(tab);
         }
-
         private void TabBarViewCurrentPageChanged(object sender, TabBarEventArgs e)
         {
             Shell.Current.GoToAsync("///" + e.CurrentPage.ToString());
         }
     }
-
     public enum PageType
     {
         HomePage, FriendsPage, WalletPage, LeaderboardPage
