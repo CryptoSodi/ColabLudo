@@ -11,15 +11,15 @@
                     <ColumnDefinition Width="1.2*" />
                     <ColumnDefinition Width=".5*" />
                 </Grid.ColumnDefinitions>
-                <ImageButton Source="btn_back.png" BackgroundColor="Transparent" Clicked="OnBackButtonClicked" Grid.Column="0" Margin="5,0,0,0"  Aspect="AspectFit"  HorizontalOptions="Start"  VerticalOptions="CenterAndExpand"/>
+                <ImageButton Source="btn_back.png" BackgroundColor="Transparent" Clicked="OnBackButtonClicked" Grid.Column="0" Margin="5,0,0,0" Aspect="AspectFit" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
                 <StackLayout Grid.Column="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <Grid HorizontalOptions="EndAndExpand" VerticalOptions="CenterAndExpand">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="50*"/>
                             <ColumnDefinition Width="50*"/>
                         </Grid.ColumnDefinitions>
-                        <local:ImageSwitch SwitchOn="btn_music.png" SwitchOff="btn_music_off.png" Grid.Column="0"/>
-                        <local:ImageSwitch SwitchOn="btn_sound.png" SwitchOff="btn_sound_off.png" Grid.Column="1"/>
+                        <local:ImageSwitch x:Name="MusicSwitch" SwitchOn="btn_music.png" SwitchOff="btn_music_off.png" Grid.Column="0"/>
+                        <local:ImageSwitch x:Name="SoundSwitch" SwitchOn="btn_sound.png" SwitchOff="btn_sound_off.png" Grid.Column="1"/>
                     </Grid>
                 </StackLayout>
             </Grid>

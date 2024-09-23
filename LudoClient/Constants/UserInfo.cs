@@ -1,4 +1,4 @@
-﻿namespace LudoClient
+﻿namespace LudoClient.Constants
 {
     public class UserInfo
     {

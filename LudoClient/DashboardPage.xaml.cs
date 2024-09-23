@@ -1,4 +1,6 @@
 namespace LudoClient;
+
+using CommunityToolkit.Maui.Views;
 using Microsoft.Maui.Controls;
 public partial class DashboardPage : ContentPage
 {
@@ -6,7 +8,6 @@ public partial class DashboardPage : ContentPage
     OfflinePage     offlinePage = new OfflinePage();
     PlayWithFriends playWithFriends =new PlayWithFriends();
     PracticePage    practicePage = new PracticePage();
-    TournamentPage  tournamentPage = new TournamentPage();
     DailyBonusPage  dailyBonusPage = new DailyBonusPage();
     public DashboardPage()
     {
@@ -30,6 +31,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
+        TournamentPage tournamentPage = new TournamentPage();
         Navigation.PushAsync(tournamentPage);
         _ = tournamentPage.InitializeTournamentsAsync();
     }

@@ -102,7 +102,7 @@ namespace SignalR.Server
             {
                 var multiPlayer = new MultiPlayer
                 {
-                    P1 = playerId
+                    P1 = 1
                 };
 
                 // Add the MultiPlayer and save changes to get the MultiPlayerId

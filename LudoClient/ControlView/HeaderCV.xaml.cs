@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui.Views;
+
 namespace LudoClient;
 
 public partial class HeaderCV : ContentView
@@ -8,6 +10,6 @@ public partial class HeaderCV : ContentView
     }
     private void Navigate_Settings(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new SettingsPage());
+        Application.Current.MainPage.ShowPopup(new SettingsPage());
     }
 }

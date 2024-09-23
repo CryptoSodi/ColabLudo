@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Logging;
 using SimpleToolkit.Core;
 using SimpleToolkit.SimpleShell;
 using Xe.AcrylicView;
@@ -11,6 +12,7 @@ namespace LudoClient
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .UseAcrylicView()
                 .ConfigureFonts(fonts =>
                 {

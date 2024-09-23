@@ -16,9 +16,6 @@
             <RowDefinition Height="1*" />
             <RowDefinition Height=".8*" />
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
         <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <ImageButton Grid.Row="2" Source="cashgame.png" BackgroundColor="Transparent" Clicked="CashGame_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
         <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">

@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using System.Security.AccessControl;
 
 namespace LudoClient;
 
@@ -74,7 +75,7 @@ public partial class CashGame : ContentPage
     }
     private void JoinRoom_Clicked(object sender, EventArgs e)
     {
-        
+        Navigation.PushAsync(new GamesListPage());
     }
     private void CreateRoom_Clicked(object sender, EventArgs e)
     {

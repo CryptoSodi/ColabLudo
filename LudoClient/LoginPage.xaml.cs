@@ -218,7 +218,7 @@ namespace LudoClient
             try
             {
                 string encodedPhoneNumber = Uri.EscapeDataString(phoneNumber);
-                var response = await _httpClient.GetAsync($"api/otp?phoneNumber={encodedPhoneNumber}&otp={otp}");
+                var response = await GlobalConstants.httpClient.GetAsync($"api/otp?phoneNumber={encodedPhoneNumber}&otp={otp}");
                 if (response.IsSuccessStatusCode)
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
