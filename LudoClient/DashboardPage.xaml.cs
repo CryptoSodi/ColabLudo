@@ -8,7 +8,6 @@ public partial class DashboardPage : ContentPage
     OfflinePage     offlinePage = new OfflinePage();
     PlayWithFriends playWithFriends =new PlayWithFriends();
     PracticePage    practicePage = new PracticePage();
-    DailyBonusPage  dailyBonusPage = new DailyBonusPage();
     public DashboardPage()
     {
         InitializeComponent();
@@ -37,6 +36,6 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(dailyBonusPage);
+        Application.Current.MainPage.ShowPopup(new DailyBonus());
     }
 }

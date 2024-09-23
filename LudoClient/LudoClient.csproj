@@ -579,6 +579,9 @@
 	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
 	    <DependentUpon>OfflinePage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Popups\DailyBonus.xaml.cs">
+	    <DependentUpon>DailyBonus.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Popups\SettingsPage.xaml.cs">
 	    <DependentUpon>SettingsPage.xaml</DependentUpon>
 	  </Compile>
@@ -660,7 +663,7 @@
 	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DailyBonusPage.xaml">
+	  <MauiXaml Update="Popups\DailyBonus.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DashboardPage.xaml">
