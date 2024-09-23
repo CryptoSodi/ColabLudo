@@ -132,10 +132,7 @@ namespace LudoClient
 
             //Save User state
             var userInfo = UserInfo.Instance;
-
-            string id = ((string)v["id"]).Substring(0, 6);
-
-            userInfo.Id = Convert.ToInt32(id);
+          
             userInfo.Email = (string)v["email"];
             userInfo.Name = (string)v["name"];
             userInfo.PictureUrl = (string)v["picture"];
@@ -234,10 +231,8 @@ namespace LudoClient
                         Preferences.Set("PlayerId", playerId);
                     }
                     //Save the user's login state
-                    //@Haris pleaase save users other details and tokken too think of a better implementation
                     Preferences.Set("IsUserLoggedIn", true);
                     // Navigate to Dashboard.xaml
-                    //Fixed the navigation error on dashboard after login success
                     Application.Current.MainPage = new AppShell();
                     //await DisplayAlert("Success", result["message"], "OK");
                 }
