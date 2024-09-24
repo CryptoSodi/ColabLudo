@@ -558,6 +558,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="ControlView\HelpCube.xaml.cs">
+	    <DependentUpon>HelpCube.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="ControlView\TournamentDetailList.xaml.cs">
 	    <DependentUpon>TournamentDetailList.xaml</DependentUpon>
 	  </Compile>
@@ -579,11 +582,14 @@
 	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
 	    <DependentUpon>OfflinePage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Popups\HelpDesk.xaml.cs">
+	    <DependentUpon>HelpDesk.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Popups\DailyBonus.xaml.cs">
 	    <DependentUpon>DailyBonus.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Popups\SettingsPage.xaml.cs">
-	    <DependentUpon>SettingsPage.xaml</DependentUpon>
+	  <Compile Update="Popups\Settings.xaml.cs">
+	    <DependentUpon>Settings.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
@@ -610,6 +616,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\EditField.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\HelpCube.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\ImageSwitch.xaml">
@@ -702,7 +711,7 @@
 	  <MauiXaml Update="GameSettingsPages\PlayWithFriends.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="HelpDeskPage.xaml">
+	  <MauiXaml Update="Popups\HelpDesk.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="LeaderboardPage.xaml">
@@ -711,7 +720,7 @@
 	  <MauiXaml Update="LoginPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="MessageBox.xaml">
+	  <MauiXaml Update="Popups\MessageBox.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="PanCardVerficationPage.xaml">
@@ -729,10 +738,7 @@
 	  <MauiXaml Update="ResultsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Popups\SettingsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="TabHandeler.xaml">
+	  <MauiXaml Update="Popups\Settings.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="TransactionPage.xaml">

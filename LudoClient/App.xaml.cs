@@ -37,6 +37,7 @@ namespace LudoClient
             else
             {
                 MainPage = new AppShell();
+               // MainPage = new HelpDeskPage();
             }
             //MainPage =new LoginPage();
             //

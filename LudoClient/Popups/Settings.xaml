@@ -3,7 +3,7 @@
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
            xmlns:local="clr-namespace:LudoClient.ControlView"
            xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-           x:Class="LudoClient.SettingsPage"
+           x:Class="LudoClient.Settings"
            Color="#10000000">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".15*,.7*,.2*">
         <Grid Grid.RowSpan="3" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
@@ -30,7 +30,7 @@
                     </local:Capsule>
                     <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" 
                             RowDefinitions="1*" ColumnDefinitions="1*,1*,1*,1*">
-                        <Image Source="help.png" Grid.Column="0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                        <ImageButton Source="help.png" Clicked="OnHelpTapped" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                         <Image Source="terms.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                         <Image Source="privacy.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
                         <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>

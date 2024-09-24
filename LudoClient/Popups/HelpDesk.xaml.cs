@@ -1,14 +1,12 @@
 using CommunityToolkit.Maui.Views;
+
 namespace LudoClient;
-public partial class SettingsPage : Popup
+
+public partial class HelpDesk : Popup
 {
-    public SettingsPage()
+    public HelpDesk()
     {
         InitializeComponent();
-        SoundSwitch.init();
-        MusicSwitch.init();
-        NotificationSwitch.init();
-
         // Get the device's main display information
         var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
         // Calculate the width and height in device-independent units

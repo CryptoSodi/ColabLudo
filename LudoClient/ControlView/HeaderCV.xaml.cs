@@ -10,6 +10,6 @@ public partial class HeaderCV : ContentView
     }
     private void Navigate_Settings(object sender, EventArgs e)
     {
-        Application.Current.MainPage.ShowPopup(new SettingsPage());
+        Application.Current.MainPage.ShowPopup(new Settings());
     }
 }
