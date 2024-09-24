@@ -36,6 +36,6 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-        Application.Current.MainPage.ShowPopup(new DailyBonus());
+        this.ShowPopup(new DailyBonus());
     }
 }
