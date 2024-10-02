@@ -1,26 +1,15 @@
 using CommunityToolkit.Maui.Views;
-namespace LudoClient;
-public partial class Settings : Popup
+namespace LudoClient.Popups;
+public partial class Settings : BasePopup
 {
     public Settings()
     {
         InitializeComponent();
-        SoundSwitch.init();
-        MusicSwitch.init();
-        NotificationSwitch.init();
+        SoundSwitch.init("line_bg.png");
+        MusicSwitch.init("line_bg.png");
+        NotificationSwitch.init("line_bg.png");
 
-        // Get the device's main display information
-        var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
-        // Calculate the width and height in device-independent units
-        double width = mainDisplayInfo.Width / mainDisplayInfo.Density;
-        double height = mainDisplayInfo.Height / mainDisplayInfo.Density;
-        // Set the popup size
-        this.Size = new Size(width, height);
-    }
-    private void OnBackgroundTapped(object sender, EventArgs e)
-    {
-        // Close the popup when the background is tapped
-        Close();
+        basePopup.capsule.ImageSource = "dailybonus_popup_bg.png";
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {

@@ -1,8 +1,10 @@
-namespace LudoClient;
+using CommunityToolkit.Maui.Views;
 
-public partial class ResultsPage : ContentPage
+namespace LudoClient.Popups;
+
+public partial class Results : Popup
 {
-    public ResultsPage()
+    public Results()
     {
         InitializeComponent();
         /*

@@ -11,13 +11,11 @@ namespace LudoClient.ControlView
                 var control = (SettingsSwitch)bindable;
                 control.SettingTextView.Text = (string)newValue;
             });
-
         public string SettingText
         {
             get => GetValue(SettingTextProperty) as string;
             set => SetValue(SettingTextProperty, value);
         }
-
         public static readonly BindableProperty PreferencesKeyProperty = BindableProperty.Create(
             nameof(PreferencesKey),
             typeof(string),
@@ -29,23 +27,22 @@ namespace LudoClient.ControlView
             get => (string)GetValue(PreferencesKeyProperty);
             set => SetValue(PreferencesKeyProperty, value);
         }
-
         public SettingsSwitch()
         {
             InitializeComponent();
             // Subscribe to the SwitchToggled event of the ImageSwitch control
             ImageSwitchControl.SwitchToggled += ImageSwitchControl_SwitchToggled;
         }
-        public void init()
+        public void init(String BGImage)
         {
             // Load the preference and set the switch state accordingly
             if (!string.IsNullOrEmpty(PreferencesKey))
             {
                 ImageSwitchControl.SwitchState = Preferences.Get(PreferencesKey, true); // Default value is 'true'
                 ImageSwitchControl.UpdateSwitchSource();
+                bgImage.Source = BGImage;
             }
         }
-
         // Save the state in preferences when toggled
         private void ImageSwitchControl_SwitchToggled(object sender, EventArgs e)
         {

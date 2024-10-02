@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<popup:BasePopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             xmlns:popup="clr-namespace:LudoClient.Popups"
+             x:Class="LudoClient.Popups.EditInfo"
+             x:Name="basePopup">
+    <popup:BasePopup.PopupContent>
+        <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
+            <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="5,10,5,40" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <StackLayout Spacing="5" Grid.Row="1" Grid.Column="1" Margin="25,10,25,55" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <!--Convert these into components-->
+                <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Orientation="Horizontal" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <local:DatePickerControl Title="DATE OF BIRTH" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:DropDown Title="GENDER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <local:EditField Title="PHONE NUMBER" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="EMAIL ID" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            </StackLayout>
+            <!--Convert these into components-->
+            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,-10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
+        </Grid>
+    </popup:BasePopup.PopupContent>
+</popup:BasePopup>

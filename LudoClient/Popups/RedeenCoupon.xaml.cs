@@ -1,10 +1,9 @@
 using CommunityToolkit.Maui.Views;
-
 namespace LudoClient.Popups;
 
-public partial class HelpDesk : BasePopup
+public partial class RedeenCoupon : BasePopup
 {
-    public HelpDesk()
+    public RedeenCoupon()
     {
         InitializeComponent();
         basePopup.capsule.ImageSource = "signin_inner_bg.png";

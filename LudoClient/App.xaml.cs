@@ -31,13 +31,13 @@ namespace LudoClient
             //MainPage = new Game();
             if (!isUserLoggedIn)
             {
-                UserInfo.LoadState();
+                UserInfo.LoadState(); 
                 MainPage = new LoginPage();
             }
             else
             {
-                MainPage = new AppShell();
-               // MainPage = new HelpDeskPage();
+                //MainPage = new AppShell();
+                MainPage = new Game();
             }
             //MainPage =new LoginPage();
             //

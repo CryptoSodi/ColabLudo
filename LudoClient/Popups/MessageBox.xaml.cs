@@ -1,23 +1,14 @@
 using CommunityToolkit.Maui.Views;
-namespace LudoClient;
+namespace LudoClient.Popups;
 
-public partial class MessageBox : Popup
+public partial class MessageBox : BasePopup
 {
     public MessageBox()
     {
         InitializeComponent();
-        // Get the device's main display information
-        var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
-        // Calculate the width and height in device-independent units
-        double width = mainDisplayInfo.Width / mainDisplayInfo.Density;
-        double height = mainDisplayInfo.Height / mainDisplayInfo.Density;
-        // Set the popup size
-        this.Size = new Size(width, height);
-    }
-
-    private void OnBackgroundTapped(object sender, EventArgs e)
-    {
-        // Close the popup when the background is tapped
-        Close();
+        basePopup.capsule.ImageSource = "signin_inner_bg.png";
+        Message.Text = "Are you sure you want to exit?";
+        SubMessage.Text = "You will lose your bet amount!";
+        Title.Title = "Exit";
     }
 }

@@ -1,5 +1,7 @@
+using CommunityToolkit.Maui.Views;
 using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
+using LudoClient.Popups;
 
 namespace LudoClient;
 
@@ -41,6 +43,8 @@ public partial class Game : ContentPage
         GreenPlayerSeat.reset();
         YellowPlayerSeat.reset();
         BluePlayerSeat.reset();
+        SoundSwitch.init(".png");
+        MusicSwitch.init(".png");
     }
     private void PlayerPieceClicked(String PieceName)
     {
@@ -98,10 +102,21 @@ public partial class Game : ContentPage
     {
         PopoverButton.ShowAttachedPopover();
     }
+    private void QuestionClicked(object sender, EventArgs e)
+    {
+        PopoverButton.ShowAttachedPopover();
+    } 
     private void ExitToLobby(object sender, EventArgs e)
     {
+        /*
+         * 
+        <Grid x:Name="messageBoxCcnfirm" HorizontalOptions="FillAndExpand" VerticalOptions="Center" IsVisible="False" >
+            <local:MessageBoxConfirm SettingTitle="Exit" SettingText="Are you sure you want to exit? You will lose your bet amount."  />
+        </Grid>*/
+        this.ShowPopup(new MessageBox());
         PopoverButton.HideAttachedPopover();
         //show pop up for Exit to lobby
-        messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
+       // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
     }
+
 }

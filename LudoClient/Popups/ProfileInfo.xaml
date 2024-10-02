@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<popup:BasePopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             xmlns:popup="clr-namespace:LudoClient.Popups"
+             x:Class="LudoClient.Popups.ProfileInfo"
+             x:Name="basePopup">
+    <popup:BasePopup.PopupContent>
+        <Grid RowSpacing="20" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
+            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="Profile Info" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <local:Capsule ImageSource="profile_info_bg.png" VerticalOptions="Start" HorizontalOptions="Center">
+                    <Grid Padding="5,0,5,0" Grid.Row="1" Grid.Column="1" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" RowDefinitions ="2*,1*,1*">
+                        <local:PlayerBoxLong x:Name="player1" PlayerName="Player 2" PlayerImage="player.png" HorizontalOptions="FillAndExpand"/>
+                        <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="1" HorizontalOptions="FillAndExpand" >
+                            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <BoxView CornerRadius="6" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                                <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                                    <Image Source="ic_email.png" Aspect="AspectFit" Margin="8,5,0,5"/>
+                                    <Label Text="youraddress@gmail.com" FontSize="9" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                </StackLayout>
+                            </Grid>
+                            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                                <BoxView CornerRadius="8" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                                <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                                    <Image Source="ic_call.png" Aspect="AspectFit" Margin="8,5,0,5"/>
+                                    <Label Text="+923074000106" FontSize="9" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                </StackLayout>
+                            </Grid>
+                        </StackLayout>
+                        <HorizontalStackLayout Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                            <Image Source="ic_address.png" Aspect="AspectFit" Margin="7" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                            <Label Text="Karachi" VerticalTextAlignment="Center"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </local:Capsule>
+                <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" VerticalOptions="Start" HeightRequest="30">
+                    <!-- We can also convert this into a reuseable component -->
+                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <BoxView CornerRadius="8" BackgroundColor="#60000000" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                            <Image Source="ic_coin.png" Aspect="AspectFit"/>
+                            <Label Text="100" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                            <Image Source="btn_plus.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                        </StackLayout>
+                    </Grid>
+                    <!-- We can also convert this into a reuseable component -->
+                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <BoxView CornerRadius="8" BackgroundColor="#60000000" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
+                            <Image Source="ic_coin.png" Aspect="AspectFit"/>
+                            <Label Text="100" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                            <Image Source="btn_addcash.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                        </StackLayout>
+                    </Grid>
+                </StackLayout>
+                <Image Source="statistics_info.png" Margin="30,0,30,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" HeightRequest="50">
+                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" Spacing="16" HorizontalOptions="FillAndExpand" HeightRequest="50">
+                    <local:StatisticCard HorizontalOptions="EndAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+            </StackLayout>
+        </Grid>
+    </popup:BasePopup.PopupContent>
+</popup:BasePopup>

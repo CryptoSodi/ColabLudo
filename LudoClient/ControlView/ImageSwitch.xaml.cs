@@ -67,13 +67,11 @@ public partial class ImageSwitch : ContentView
             SwitchSource = SwitchOff;
         }
     }
-
     private static void OnSwitchSourceChanged(BindableObject bindable, object oldValue, object newValue)
     {
         var control = (ImageSwitch)bindable;
         control.SwitchImage.ImageSource = ImageSource.FromFile((string)newValue);
     }
-
     private void SwitchImage_Clicked(object sender, EventArgs e)
     {
         if (IsIndependent)
@@ -89,5 +87,5 @@ public partial class ImageSwitch : ContentView
             // Notify parent container (for tab functionality)
             RequestActivate?.Invoke(this, EventArgs.Empty);
         }
-    }
+    } 
 }

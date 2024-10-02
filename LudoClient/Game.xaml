@@ -49,22 +49,34 @@
                     <simpleCore:Popover.AttachedPopover>
                         <simpleCore:Popover>
                             <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                                <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
-                                    <Grid WidthRequest="180" HeightRequest="35">
-                                        <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                <VerticalStackLayout Padding="12,5,10,0" WidthRequest="180" HeightRequest="125">
+                                    <Grid WidthRequest="160" HeightRequest="35">
+                                        <Label Text="Exit to lobby" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                         <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                            <Image Source="btn_exit_to_lobby.png" Aspect="AspectFit" Margin="0,8,5,8" />
+                                            <Image Source="btn_exit_to_lobby.png" Aspect="AspectFit" Margin="0,4,8,4" />
                                             <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" Opacity=".1"/>
                                         </Grid>
                                     </Grid>
-                                    <local:VolumeSwitch SettingText="Music" WidthRequest="180" HeightRequest="35"/>
-                                    <local:VolumeSwitch SettingText="Sound" WidthRequest="180" HeightRequest="35"/>
+                                    <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                    <Grid WidthRequest="160" HeightRequest="35">
+                                        <Label Text="Music"  TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                        <Grid HorizontalOptions="End" VerticalOptions="Center">                                       
+                                            <local:SettingsSwitch x:Name="SoundSwitch" SettingText="" PreferencesKey="IsSoundEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
+                                        </Grid>
+                                    </Grid>
+                                    <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                    <Grid WidthRequest="160" HeightRequest="35">
+                                        <Label Text="Sound" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                        <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                            <local:SettingsSwitch x:Name="MusicSwitch" SettingText="" PreferencesKey="IsMusicEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
+                                        </Grid>
+                                    </Grid>
                                 </VerticalStackLayout>
                             </acrylic:AcrylicView>
                         </simpleCore:Popover>
                     </simpleCore:Popover.AttachedPopover>
                 </ImageButton>
-                <ImageButton x:Name="QuestionButton" Clicked="PopOverClicked" Source="btn_help.png" HorizontalOptions="Start" VerticalOptions="FillAndExpand">
+                <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked" Source="btn_help.png" HorizontalOptions="Start" VerticalOptions="FillAndExpand">
                     <simpleCore:Popover.AttachedPopover>
                         <simpleCore:Popover>
                             <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
@@ -76,8 +88,7 @@
                                             <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" Opacity=".1"/>
                                         </Grid>
                                     </Grid>
-                                    <local:VolumeSwitch SettingText="Music" WidthRequest="180" HeightRequest="35"/>
-                                    <local:VolumeSwitch SettingText="Sound" WidthRequest="180" HeightRequest="35"/>
+
                                 </VerticalStackLayout>
                             </acrylic:AcrylicView>
                         </simpleCore:Popover>
@@ -85,8 +96,5 @@
                 </ImageButton>
             </StackLayout>
         </local:Capsule>
-        <Grid x:Name="messageBoxCcnfirm" HorizontalOptions="FillAndExpand" VerticalOptions="Center" IsVisible="False" >
-            <local:MessageBoxConfirm SettingTitle="Exit" SettingText="Are you sure you want to exit? You will lose your bet amount."  />
-        </Grid>
     </Grid>
 </ContentPage>

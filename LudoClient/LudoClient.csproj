@@ -542,12 +542,12 @@
 
 	<ItemGroup>
 		<PackageReference Include="AcrylicView.Maui" Version="2.1.3" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.3" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.5" />
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.64.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.82" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.82" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.65.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.91" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.91" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
 		<PackageReference Include="SimpleToolkit.Core" Version="5.1.2" />
 		<PackageReference Include="SimpleToolkit.SimpleShell" Version="4.1.3" />
@@ -582,11 +582,29 @@
 	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
 	    <DependentUpon>OfflinePage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Popups\AddCash.xaml.cs">
+	    <DependentUpon>AddCash.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Popups\EditInfo.xaml.cs">
+	    <DependentUpon>EditInfo.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Popups\HelpDesk.xaml.cs">
 	    <DependentUpon>HelpDesk.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Popups\DailyBonus.xaml.cs">
 	    <DependentUpon>DailyBonus.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Popups\PanCardVerfication.xaml.cs">
+	    <DependentUpon>PanCardVerfication.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Popups\ProfileInfo.xaml.cs">
+	    <DependentUpon>ProfileInfo.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Popups\RedeenCoupon.xaml.cs">
+	    <DependentUpon>RedeenCoupon.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Popups\Results.xaml.cs">
+	    <DependentUpon>Results.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Popups\Settings.xaml.cs">
 	    <DependentUpon>Settings.xaml</DependentUpon>
@@ -594,7 +612,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="AddCashPage.xaml">
+	  <MauiXaml Update="Popups\AddCash.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\BottomCV.xaml">
@@ -672,13 +690,16 @@
 	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Popups\BasePopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Popups\DailyBonus.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DashboardPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="EditInfoPage.xaml">
+	  <MauiXaml Update="Popups\EditInfo.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="FriendsPage.xaml">
@@ -720,22 +741,28 @@
 	  <MauiXaml Update="LoginPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Popups\RedeenCoupon.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Popups\MessageBox.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="PanCardVerficationPage.xaml">
+	  <MauiXaml Update="Popups\PanCardVerfication.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="PopUpPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="ProfilePage.xaml">
+	  <MauiXaml Update="Popups\MyCustomPopup.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Popups\ProfileInfo.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="RankingPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="ResultsPage.xaml">
+	  <MauiXaml Update="Popups\Results.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Popups\Settings.xaml">

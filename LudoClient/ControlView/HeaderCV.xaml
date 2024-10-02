@@ -10,7 +10,7 @@
                 <ColumnDefinition Width=".6*" />
                 <ColumnDefinition Width=".1*" />
             </Grid.ColumnDefinitions>
-            <Image Source="player.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start" Margin="5,5,-10,-20" />
+            <ImageButton Source="player.png" Clicked="OnPlayerTapped" VerticalOptions="Start" HorizontalOptions="Start" Margin="5,5,-10,-20" />
             <StackLayout Grid.Column="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                 <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start" Margin="0,10,0,10" />
                 <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >

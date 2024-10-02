@@ -1,6 +1,8 @@
 namespace LudoClient;
 
 using CommunityToolkit.Maui.Views;
+using LudoClient.ControlView;
+using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 public partial class DashboardPage : ContentPage
 {
@@ -26,7 +28,9 @@ public partial class DashboardPage : ContentPage
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(practicePage);
+        Navigation.PushAsync(new FriendsPage());
+        //Navigation.PushAsync(new AddCash());
+        //Navigation.PushAsync(practicePage);
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
@@ -36,6 +40,10 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-        this.ShowPopup(new DailyBonus());
+        //this.ShowPopup(new DailyBonus());
+        //this.ShowPopup(new EditInfo());
+        //this.ShowPopup(new PanCardVerfication());
+        this.ShowPopup(new Results());
+        //this.ShowPopup(new AddCash());
     }
 }

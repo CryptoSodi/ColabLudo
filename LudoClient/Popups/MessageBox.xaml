@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<popup:BasePopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LudoClient.MessageBox"
              xmlns:local="clr-namespace:LudoClient.ControlView"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-             Color="#10000000">
-    <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
-       RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
-        <local:Capsule ImageSource="addcash_popup_bg.png" Grid.Column="1" Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center">
-        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="FillAndExpand" HorizontalOptions="Center" RowDefinitions=".8*,.2*,4.5*,1.5*,.7*" ColumnDefinitions=".1*,1*,.1*">
-            <local:TitleBar Grid.Column="1" Title="SPIN BONUS" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            <StackLayout Grid.Row="2" Grid.Column="1" Margin="10,0,10,0" VerticalOptions="Center" HorizontalOptions="Center">
-                <Label Text="You have successfully claimed your Spin Bonus." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-                <Label Text="Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+             xmlns:popup="clr-namespace:LudoClient.Popups"
+             x:Class="LudoClient.Popups.MessageBox"
+             x:Name="basePopup">
+    <popup:BasePopup.PopupContent>
+        <Grid RowSpacing="20" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="0,20,0,60" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <local:TitleBar x:Name="Title" Grid.Row="1" Grid.Column="1" Title="SPIN BONUS" Margin="20,-58,20,0" HorizontalOptions="FillAndExpand" VerticalOptions="Start"/>
+            
+            <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="0,40,0,60" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                <Label x:Name="Message" Text="You have successfully claimed your Spin Bonus." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                <Label x:Name="SubMessage" Text="Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
             </StackLayout>
-            <Image Grid.Row="3" Grid.Column="1" Margin="0,16,0,16" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,0" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
         </Grid>
-        </local:Capsule>
-    </Grid>
-</mct:Popup>
+    </popup:BasePopup.PopupContent>
+</popup:BasePopup>
