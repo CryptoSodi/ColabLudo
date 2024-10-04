@@ -40,10 +40,10 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-        //this.ShowPopup(new DailyBonus());
+        this.ShowPopup(new DailyBonus());
         //this.ShowPopup(new EditInfo());
         //this.ShowPopup(new PanCardVerfication());
-        this.ShowPopup(new Results());
+        //this.ShowPopup(new Results());
         //this.ShowPopup(new AddCash());
     }
 }

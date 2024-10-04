@@ -36,8 +36,8 @@ namespace LudoClient
             }
             else
             {
-                //MainPage = new AppShell();
-                MainPage = new Game();
+                MainPage = new AppShell();
+                //MainPage = new Game();
             }
             //MainPage =new LoginPage();
             //

@@ -1,3 +1,6 @@
+using CommunityToolkit.Maui.Views;
+using LudoClient.Popups;
+
 namespace LudoClient.ControlView;
 
 public partial class PlayerBoxLong : ContentView
@@ -25,5 +28,12 @@ public partial class PlayerBoxLong : ContentView
     public PlayerBoxLong()
     {
         InitializeComponent();
+    }
+    private void EditInfoClicked(object sender, EventArgs e)
+    {
+        // Handle edit info button click
+        Application.Current.MainPage.ShowPopup(new EditInfo());
+        // Close the popup when the background is tapped
+        //Close();
     }
 }
