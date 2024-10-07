@@ -9,46 +9,10 @@
     <!-- StackLayout for the content -->
     <StackLayout VerticalOptions="CenterAndExpand">
         <!-- Your content here -->
-        <Image
-                Source="logo.png"
-                HeightRequest="185"
-                Aspect="AspectFit" />
-
-        <StackLayout Padding="10" x:Name="LoginPanel" IsVisible="True">
-            <Picker x:Name="CountryCodePicker" Title="Select Country Code" Margin="0,0,0,10" />
-            <Entry Placeholder="Enter Phone Number" x:Name="PhoneNumberEntry" Margin="0,0,0,10" Keyboard="Telephone" />
-            <!-- Add margin to create spacing between Entry and button -->
-            <Button Text="Send OTP" Clicked="SendOTP_Clicked" 
-                        BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
-                        BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>
-            <!-- Blue color, White text, 1px border, 5px corner radius -->
-        </StackLayout>
-        <!-- OTP-related components initially hidden -->
-        <StackLayout Padding="10" x:Name="OTPPanel" IsVisible="False">
-            <Entry Placeholder="Enter OTP" x:Name="OTPEnter" Margin="0,0,0,10" />
-            <!-- Use a Grid layout for side-by-side buttons with padding -->
-            <Grid ColumnSpacing="10">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Text="Verify OTP" Clicked="VerifyOTP_Clicked"
-                            BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
-                            BorderWidth="1" CornerRadius="5"/>
-                <!-- Blue color, White text, 1px border, 5px corner radius -->
-                <Button Grid.Column="1" Text="Cancel" Clicked="Cancel_Clicked"
-                            BackgroundColor="#dc3545" TextColor="White" BorderColor="#c82333"
-                            BorderWidth="1" CornerRadius="5"/>
-                <!-- Red color, White text, 1px border, 5px corner radius -->
-            </Grid>
-        </StackLayout>
-        <StackLayout Padding="10" x:Name="GoogleLoginPanel" IsVisible="True">
-            <Grid>
-                <Button 
-                        x:Name="CounterBtn" Text="Google Signup" Clicked="GooleSignup_Clicked" 
-                        BackgroundColor="#007bff" TextColor="White" BorderColor="#0056b3"
-                        BorderWidth="1" CornerRadius="5" Margin="0,0,0,10"/>
-            </Grid>
-        </StackLayout>
+        <Image Source="logo.png" HeightRequest="185" Aspect="AspectFit"/>
+        <Grid x:Name="GoogleLoginPanel" IsVisible="True" Padding="30,60,30,0" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
+            <Image x:Name="CounterBtn" Source="google_login.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <ImageButton Clicked="GooleSignup_Clicked" BackgroundColor="Transparent"/>
+        </Grid>
     </StackLayout>
 </ContentPage>

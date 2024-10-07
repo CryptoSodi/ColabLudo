@@ -26,6 +26,7 @@ namespace LudoClient
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
+            Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();
