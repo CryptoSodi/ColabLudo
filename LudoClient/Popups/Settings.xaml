@@ -4,7 +4,7 @@
            xmlns:local="clr-namespace:LudoClient.ControlView"
            xmlns:popup="clr-namespace:LudoClient.Popups"
            x:Class="LudoClient.Popups.Settings"
-           x:Name="basePopup">
+           ImageSource="dailybonus_popup_bg.png">
     <popup:BasePopup.PopupContent>
         <!--Messed up display animation 004-->
         <Grid Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions =".8*,.2*,1*,1*,1*,1*,1*,1*,1*,.6*">
@@ -23,8 +23,13 @@
                 <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
             <!-- Convert btn_green.png button into a button 003-->
-            <Image Grid.Row="7" Margin="0,10,0,10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <Label Grid.Row="7" Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+            <local:Capsule Grid.Row="7" ImageSource="btn_green.png" VerticalOptions="Start" HorizontalOptions="Center">
+                <Grid>
+                    <Label Text="SIGN OUT" TextColor="Black" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                    <ImageButton Clicked="SignOutTapped" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                </Grid>
+            </local:Capsule>
+            
             <Label Grid.Row="8" Text="Version 0.01" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
     </popup:BasePopup.PopupContent>

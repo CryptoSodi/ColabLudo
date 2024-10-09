@@ -4,7 +4,7 @@
            xmlns:local="clr-namespace:LudoClient.ControlView"
            xmlns:popup="clr-namespace:LudoClient.Popups"
            x:Class="LudoClient.Popups.AddCash"
-           x:Name="basePopup">
+           ImageSource="popup_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Row="1" Grid.Column="1" Title="ADD CASH" Margin="20,-58,20,0" HorizontalOptions="FillAndExpand" VerticalOptions="Start"/>

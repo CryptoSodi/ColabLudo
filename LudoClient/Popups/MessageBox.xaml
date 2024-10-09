@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
              x:Class="LudoClient.Popups.MessageBox"
-             x:Name="basePopup">
+             ImageSource="signin_inner_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="0,20,0,60" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>

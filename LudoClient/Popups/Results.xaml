@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui" 
              x:Class="LudoClient.Popups.Results"
-                Size="Infinity, Infinity"
+             Size="Infinity, Infinity"
              Color="#10000000">
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >
         <Image Source="spinner_bk_red_glow.png" Aspect="AspectFit" Margin="-100,-100,-100,-100" />

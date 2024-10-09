@@ -22,11 +22,11 @@ namespace LudoClient
 #if WINDOWS
             AllocConsole();
             IntPtr consoleWindow = GetConsoleWindow();
-            SetWindowPos(consoleWindow, HWND_TOP, 590, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
+            SetWindowPos(consoleWindow, HWND_TOP, 490, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
-            Preferences.Clear();
+           // Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();

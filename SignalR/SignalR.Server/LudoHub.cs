@@ -96,15 +96,13 @@ namespace SignalR.Server
                     _context.MultiPlayers.Update(multiPlayer);
                     await _context.SaveChangesAsync();
                 }
-
             }
             else
             {
                 var multiPlayer = new MultiPlayer
                 {
-                    P1 = 1
+                    P1 = playerId
                 };
-
                 // Add the MultiPlayer and save changes to get the MultiPlayerId
                 _context.MultiPlayers.Add(multiPlayer);
                 await _context.SaveChangesAsync(); // This will save the newly added MultiPlayer and assign it an Id

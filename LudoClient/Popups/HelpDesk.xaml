@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <popup:BasePopup  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LudoClient.Popups.HelpDesk"
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui"
-             x:Name="basePopup">
+             x:Class="LudoClient.Popups.HelpDesk"
+             ImageSource="signin_inner_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>

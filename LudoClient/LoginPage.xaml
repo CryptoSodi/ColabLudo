@@ -3,14 +3,13 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             BackgroundColor="{DynamicResource PageBackgroundColor}"
              x:Class="LudoClient.LoginPage"
              BackgroundImageSource="background.png">
     <!-- StackLayout for the content -->
     <StackLayout VerticalOptions="CenterAndExpand">
         <!-- Your content here -->
         <Image Source="logo.png" HeightRequest="185" Aspect="AspectFit"/>
-        <Grid x:Name="GoogleLoginPanel" IsVisible="True" Padding="30,60,30,0" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
+        <Grid x:Name="GoogleLoginPanel" IsVisible="True" Padding="60,60,60,0" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
             <Image x:Name="CounterBtn" Source="google_login.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
             <ImageButton Clicked="GooleSignup_Clicked" BackgroundColor="Transparent"/>
         </Grid>

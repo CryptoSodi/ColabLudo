@@ -1,4 +1,4 @@
-using Java.Net;
+
 using LudoClient.Constants;
 using LudoClient.Models;
 using Newtonsoft.Json.Linq;
@@ -7,35 +7,37 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace LudoClient
 {
     public partial class LoginPage : ContentPage
     {
-
         const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
-        private readonly HttpClient _httpClient;
-        private string fullPhoneNumber;
+        const string userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
         public LoginPage()
         {
             InitializeComponent();
-            _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7255/") }; // Replace with your API base URL
         }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
+#if WINDOWS
+            UserInfo.Instance.Email = "tassaduq009@gmail.com";
+            UserInfo.Instance.Name = "Syed Tassaduq";
+            UserInfo.Instance.PictureUrl = "https://lh3.googleusercontent.com/a/ACg8ocLMYETsXNDf8wihXQej62uXHjuF67aNzDfoFgn7Tvp53eNu8Wux=s96-c";
+            performLoginAsync();
+#endif
+#if ANDROID
             try
             {
-                // String AuthToken = "ya29.a0AcM612zzOEp0Jib5dz6rZMcxFj1fuzGZY3E0vgx6ySSaSYsqDMCfHpqD1EfuJHqxleDL1Yg8oprBAGDpfZA6-kE05X44Dlrlwuxx_4al0Drh8r3moeAhnS02pN5MT8QU39FRgNPi_jZOj_nJbpvYyOw4yBWIVplcI1f7aCgYKAT0SARISFQHGX2MiTinthg_X4wC-CNbqU2azmQ0171";
-                //  GetUserInfoAsync(AuthToken);
-                //   SemanticScreenReader.Announce(CounterBtn.Text);
                 OnAuthenticate("Google");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
-                // Handle or log the error
                 await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
             }
+#endif
         }
         async Task OnAuthenticate(string scheme)
         {
@@ -87,38 +89,29 @@ namespace LudoClient
                 DisplayAlert("Error", $"Failed: {ex.Message}", "ok");
             }
         }
-        private static async void GetUserInfoAsync(string accessToken)
+        private async void GetUserInfoAsync(string accessToken)
         {
-            var userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
-            using var client = new HttpClient();
+            HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
             var response = await client.GetAsync(userInfoUrl);
-            var responseString = await response.Content.ReadAsStringAsync();
-            JObject v = JObject.Parse(responseString);
+            String responseString = await response.Content.ReadAsStringAsync();
 
-            //Save User state
-            var userInfo = UserInfo.Instance;
-
-            userInfo.Email = (string)v["email"];
-            userInfo.Name = (string)v["name"];
-            userInfo.PictureUrl = (string)v["picture"];
-
+            JObject googleResponse = JObject.Parse(responseString);
+            UserInfo.Instance.Email = (string)googleResponse["email"];
+            UserInfo.Instance.Name = (string)googleResponse["name"];
+            UserInfo.Instance.PictureUrl = (string)googleResponse["picture"];
+            performLoginAsync();
+        }
+        private async void performLoginAsync()
+        {
             try
             {
-                //Implement this function into the code
-                var httpClient = new HttpClient();
-
-                var url = "http://localhost:5000/addPhoneNumbers";
-                var phoneNumbers = new List<string> { phoneNumber };
-                var jsonContent = JsonSerializer.Serialize(phoneNumbers);
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-                response = await httpClient.PostAsync(url, content);
-                //https://localhost:7255/api/Otp/create?name=a&email=a&pictureUrl=a
-                response = await GlobalConstants.httpClient.GetAsync($"api/otp?name={userInfo.Name}&email={userInfo.Email}&pictureUrl={userInfo.PictureUrl}");
+                var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name={userInfo.Name}&email={userInfo.Email}&pictureUrl={userInfo.PictureUrl}");
+                var response = await GlobalConstants.httpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                var responseBody = await response.Content.ReadAsStringAsync();
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseBody = await response.Content.ReadAsStringAsync();
                     if (responseBody != null)
                     {
                         var options = new JsonSerializerOptions
@@ -126,84 +119,17 @@ namespace LudoClient
                             PropertyNameCaseInsensitive = true
                         };
                         var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
-                        string message = result.Message;
-                        int playerId = result.PlayerId;
+                        //string message = result.Message;
+
                         UserInfo.Instance.Id = result.PlayerId;
-                        // UserInfo.Instance.Email = result.;
-                        // UserInfo.Instance.Name = result.PlayerId;
-                        // UserInfo.Instance.PictureUrl = result.;
+                        //Save the user's login state
+                        UserInfo.SaveState();
+                        //Hide Loader
+                        Application.Current.MainPage = new AppShell();
                     }
-                    //Save the user's login state
-                    Preferences.Set("IsUserLoggedIn", true);
-                    // Navigate to Dashboard.xaml
-                    Application.Current.MainPage = new AppShell();
-                    //await DisplayAlert("Success", result["message"], "OK");
                 }
                 else
                 {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-                    //   await DisplayAlert("Error", result["message"], "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                //  await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
-            }
-            UserInfo.SaveState();
-
-            //@Haris002 please save the user details in the app and also in the database
-            Preferences.Set("IsUserLoggedIn", true);
-            //Navigate to Dashboard.xaml
-            Application.Current.MainPage = new AppShell();
-        }
-        private async Task AddPhoneNumberToQueue(string phoneNumber)
-        {
-            var httpClient = new HttpClient();
-            var url = "http://localhost:5000/addPhoneNumbers";
-            var phoneNumbers = new List<string> { phoneNumber };
-            var jsonContent = JsonSerializer.Serialize(phoneNumbers);
-            var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            var response = await httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-            await DisplayAlert("Info", result["Message"], "OK");
-        }
-        private async Task VerifyOtpAsync(string phoneNumber, string otp)
-        {
-            try
-            {
-                string encodedPhoneNumber = Uri.EscapeDataString(phoneNumber);
-                var response = await GlobalConstants.httpClient.GetAsync($"api/otp?phoneNumber={encodedPhoneNumber}&otp={otp}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    if (responseBody != null)
-                    {
-                        var options = new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        };
-                        var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
-                        string message = result.Message;
-                        int playerId = result.PlayerId;
-                        UserInfo.Instance.Id = result.PlayerId;
-                        // UserInfo.Instance.Email = result.;
-                        // UserInfo.Instance.Name = result.PlayerId;
-                        // UserInfo.Instance.PictureUrl = result.;
-                    }
-                    //Save the user's login state
-                    Preferences.Set("IsUserLoggedIn", true);
-                    // Navigate to Dashboard.xaml
-                    Application.Current.MainPage = new AppShell();
-                    //await DisplayAlert("Success", result["message"], "OK");
-                }
-                else
-                {
-                    var responseBody = await response.Content.ReadAsStringAsync();
                     var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
                     await DisplayAlert("Error", result["message"], "OK");
                 }

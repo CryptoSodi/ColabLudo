@@ -4,11 +4,7 @@
              x:Class="LudoClient.ControlView.TitleBar">
     <Grid>
         <Image x:Name="TitleBarImage" Source="popup_title.png" Aspect="AspectFit" />
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="1.5*"/>
-                <RowDefinition Height="1*"/>
-            </Grid.RowDefinitions>
+        <Grid RowDefinitions="1.5*,1*">
             <Label x:Name="TitleBarText" Text="Settings" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
     </Grid>

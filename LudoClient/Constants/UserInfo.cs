@@ -28,12 +28,17 @@
         }
         // Method to save state
         public static void SaveState()
-        {//Haris save this to the database using the api call this is the user data
+        {
             var instance = Instance;
             Preferences.Set(nameof(Id), instance.Id);
             Preferences.Set(nameof(Email), instance.Email);
             Preferences.Set(nameof(Name), instance.Name);
             Preferences.Set(nameof(PictureUrl), instance.PictureUrl);
+            Preferences.Set("IsUserLoggedIn", true);
+        }
+        public static void Logout()
+        {
+            Preferences.Clear();
         }
         // Method to load state
         public static void LoadState()

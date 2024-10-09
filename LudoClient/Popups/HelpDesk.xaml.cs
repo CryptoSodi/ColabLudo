@@ -7,6 +7,5 @@ public partial class HelpDesk : BasePopup
     public HelpDesk()
     {
         InitializeComponent();
-        basePopup.capsule.ImageSource = "signin_inner_bg.png";
     }
 }

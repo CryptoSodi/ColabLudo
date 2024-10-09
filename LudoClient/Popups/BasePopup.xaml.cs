@@ -2,10 +2,8 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.ControlView;
 
 namespace LudoClient.Popups;
-
 public partial class BasePopup : Popup
 {
-    public Capsule capsule;
     public BasePopup()
 	{
 		InitializeComponent();
@@ -16,7 +14,6 @@ public partial class BasePopup : Popup
         double height = mainDisplayInfo.Height / mainDisplayInfo.Density;
         // Set the popup size
         this.Size = new Size(width, height);
-        capsule = capsuleImage;
         CanBeDismissedByTappingOutsideOfPopup = false;
     }
     public static readonly BindableProperty PopupContentProperty = BindableProperty.Create(nameof(PopupContent), typeof(View), typeof(BasePopup), propertyChanged: OnPopupContentChanged);
@@ -32,6 +29,18 @@ public partial class BasePopup : Popup
         {
             popup.ContentContainer.Content = content;
         }
+    }
+    public static readonly BindableProperty ImageSourceProperty =
+            BindableProperty.Create(
+                nameof(ImageSource),
+                typeof(ImageSource),
+                typeof(BasePopup),
+                default(ImageSource));
+
+    public ImageSource ImageSource
+    {
+        get => (ImageSource)GetValue(ImageSourceProperty);
+        set => SetValue(ImageSourceProperty, value);
     }
     private void OnBackgroundTapped(object sender, EventArgs e)
     {

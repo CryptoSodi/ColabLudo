@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
              x:Class="LudoClient.ControlView.ShareBox">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <Image x:Name="Bg_Share" Source="bg_share.png"  Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-        <!-- Add better option to manage width and height -->
-        <StackLayout Orientation="Vertical" Spacing="1" Padding="10,5,10,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" 
-                         HeightRequest="{Binding Source={x:Reference Bg_Share}, Path=Height}" 
-                         WidthRequest="{Binding Source={x:Reference Bg_Share}, Path=Width}">
-            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="FillAndExpand">
-                    <Label Text="Room Code :" Margin="10,0,0,0" Grid.Column="0" HorizontalOptions="Start" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                    <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-                        <BoxView  Margin="0,5,0,5" CornerRadius="5" BackgroundColor="White" HorizontalOptions="FillAndExpand"/>
-                        <Label x:Name="shareCode" Text="25581070" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                        <!-- Add Copy image icon here -->
-                    </Grid>
-                    <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
-                </StackLayout>
-            </Grid>
-            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="FillAndExpand">
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <BoxView CornerRadius="5" BackgroundColor="DarkBlue"/>
-                        <Label Text="Share this room code with friends and ask them to join" FontSize="Caption" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                    </Grid>
-                    <Image Source="btn_whatsapp.png" Margin="0,3,0,3" Grid.Column="1" Aspect="AspectFit" HorizontalOptions="End"/>
-                </StackLayout>
-            </Grid>
-        </StackLayout>
+        <local:Capsule ImageSource="bg_share.png"  Margin="40,0,40,0" VerticalOptions="Center" HorizontalOptions="Center">
+            <!-- Add better option to manage width and height -->
+            <StackLayout Orientation="Vertical" Spacing="1" Padding="10,5,10,10" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="FillAndExpand">
+                        <Label Text="Room Code :" Margin="10,0,0,0" Grid.Column="0" HorizontalOptions="Start" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                            <BoxView  Margin="0,5,0,5" CornerRadius="5" BackgroundColor="White" HorizontalOptions="FillAndExpand"/>
+                            <Label x:Name="shareCode" Text="" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                            <!-- Add Copy image icon here -->
+                        </Grid>
+                        <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Grid>
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                    <StackLayout Orientation="Horizontal" Spacing="5" HorizontalOptions="FillAndExpand">
+                        <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                            <BoxView CornerRadius="5" BackgroundColor="DarkBlue"/>
+                            <Label Text="Share this room code with friends and ask them to join" Margin="3" FontSize="Caption" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        </Grid>
+                        <Image Source="btn_whatsapp.png" Margin="0,3,0,3" Grid.Column="1" Aspect="AspectFit" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Grid>
+            </StackLayout>
+        </local:Capsule>
     </Grid>
 </ContentView>

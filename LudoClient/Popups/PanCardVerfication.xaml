@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
              x:Class="LudoClient.Popups.PanCardVerfication"
-             x:Name="basePopup">
+             ImageSource="verification_status_main_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".4*,8*,1*" ColumnDefinitions=".4*,8*,.4*">
             <StackLayout Spacing="6" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
