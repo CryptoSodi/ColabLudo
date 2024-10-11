@@ -5,21 +5,32 @@ namespace LudoClient.Network
     public class Client
     {
         private readonly HubConnection _hubConnection;
+        string url = @"http://localhost:8084";
         string Name;
         string Messages;
         bool IsConnected;
+
         public delegate void CallbackRecievedRequest(string SeatName, int diceValue);
         public event CallbackRecievedRequest RecievedRequest;
-        string url = @"http://localhost:8084";
+
+        public delegate void PlayerSeatRecieved(string playerType, int playerId, string userName, string pictureUrl);
+        public event PlayerSeatRecieved PlayerSeat;
+
         public Client()
         {
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl($"http://localhost:8084/LudoHub")
-                .Build();
+            _hubConnection = new HubConnectionBuilder().WithUrl($"http://localhost:8084/LudoHub").Build();
             _hubConnection.StartAsync();
             IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
             // Listen for messages from the server
+            _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
+            {
+                PlayerSeat(playerType, playerId, userName, pictureUrl);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Messages = ($"{playerType}: {userName} has joined");
+                });
+            });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -28,9 +39,9 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinRoom(int playerId, string userName, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinRoom(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
         {
-            _hubConnection.InvokeAsync<string>("CreateJoinRoom", playerId, userName, gameType, gameCost, roomName).ContinueWith(task =>
+            _hubConnection.InvokeAsync<string>("CreateJoinRoom", playerId, userName, pictureUrl, gameType, gameCost, roomName).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
@@ -59,9 +70,7 @@ namespace LudoClient.Network
         public async Task Disconnect()
         {
             if (_hubConnection.State == HubConnectionState.Disconnected) return;
-
             await _hubConnection.StopAsync();
-
             IsConnected = false;
         }
     }

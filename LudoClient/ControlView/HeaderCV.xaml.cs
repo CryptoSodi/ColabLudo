@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using LudoClient.Constants;
 using LudoClient.Popups;
 namespace LudoClient;
 
@@ -7,6 +8,8 @@ public partial class HeaderCV : ContentView
     public HeaderCV()
     {
         InitializeComponent();
+        player.PlayerImage = UserInfo.Instance.PictureUrl;
+        Coins.Text = UserInfo.Instance.Coins+"";
     }
     private void Navigate_Settings(object sender, EventArgs e)
     {

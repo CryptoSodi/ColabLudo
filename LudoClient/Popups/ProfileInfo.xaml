@@ -11,59 +11,48 @@
             <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <local:Capsule ImageSource="profile_info_bg.png" VerticalOptions="Start" HorizontalOptions="Center">
                     <Grid Padding="3" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" RowDefinitions ="3*,1*,1*,1*">
-                        <local:PlayerBoxLong x:Name="player1" PlayerName="Player 2" PlayerImage="player.png" HorizontalOptions="FillAndExpand"/>
+                        <local:PlayerBoxLong x:Name="player" PlayerName="" PlayerImage="profile_image.png" HorizontalOptions="FillAndExpand"/>
                         <Grid Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="6" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
                                 <Image Source="ic_email.png" Aspect="AspectFit" Margin="6,3,0,3"/>
-                                <Label Text="youraddress@gmail.com" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                <Label x:Name="Email" Text="youraddress@gmail.com" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="8" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
                                 <Image Source="ic_call.png" Aspect="AspectFit" Margin="6,3,0,3"/>
-                                <Label Text="+923074000106" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                <Label x:Name="Number" Text="+923074000106" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="8" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
                                 <Image Source="ic_address.png" Aspect="AspectFit" Margin="6,3,0,3"/>
-                                <Label Text="Karachi" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
+                                <Label x:Name="Location" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                     </Grid>
                 </local:Capsule>
-                <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" VerticalOptions="Start" HeightRequest="30">
-                    <!-- We can also convert this into a reuseable component -->
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <BoxView CornerRadius="8" BackgroundColor="#60000000" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                            <Image Source="ic_coin.png" Aspect="AspectFit"/>
-                            <Label Text="100" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                            <Image Source="btn_plus.png" Aspect="AspectFit" HorizontalOptions="End"/>
-                        </StackLayout>
-                    </Grid>
-                    <!-- We can also convert this into a reuseable component -->
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <BoxView CornerRadius="8" BackgroundColor="#60000000" Margin="0,3,0,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <StackLayout Orientation="Horizontal" Spacing="2" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                            <Image Source="ic_coin.png" Aspect="AspectFit"/>
-                            <Label Text="100" Grid.Column="1" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                            <Image Source="btn_addcash.png" Aspect="AspectFit" HorizontalOptions="End"/>
-                        </StackLayout>
-                    </Grid>
-                </StackLayout>
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Start" HeightRequest="30">
+                    <BoxView CornerRadius="8" BackgroundColor="#80000000" Margin="8,3,8,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" Spacing="2" HorizontalOptions="FillAndExpand">
+                        <Image Source="ic_coin.png" Aspect="AspectFit" HorizontalOptions="Start"/>
+                        <Label x:Name="Coins" Text="0.0" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                        <Image Source="btn_plus.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                    </StackLayout>
+                </Grid>
                 <Image Source="statistics_info.png" Margin="30,0,30,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
                 <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" HeightRequest="50">
-                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <local:StatisticCard HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard Title="GAMES WON" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard Title="GAMES LOST" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
-                <StackLayout Orientation="Horizontal" Spacing="16" HorizontalOptions="FillAndExpand" HeightRequest="50">
-                    <local:StatisticCard HorizontalOptions="EndAndExpand" VerticalOptions="FillAndExpand"/>
-                    <local:StatisticCard HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" HeightRequest="50">
+                    <local:StatisticCard Title="BEST WIN" HorizontalOptions="EndAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard Title="TOTAL WIN" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand"/>
+                    <local:StatisticCard Title="TOTAL LOST" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
             </StackLayout>
         </Grid>

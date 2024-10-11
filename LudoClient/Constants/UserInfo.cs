@@ -8,7 +8,9 @@
         public string Email { get; set; }
         public string Name { get; set; }
         public string PictureUrl { get; set; }
-        private UserInfo() { }
+        public string Number { get; set; }
+        public string Location { get; set; }
+        public float Coins { get; set; }
         public static UserInfo Instance
         {
             get
@@ -34,6 +36,10 @@
             Preferences.Set(nameof(Email), instance.Email);
             Preferences.Set(nameof(Name), instance.Name);
             Preferences.Set(nameof(PictureUrl), instance.PictureUrl);
+            Preferences.Set(nameof(Number), instance.Number);
+            Preferences.Set(nameof(Location), instance.Location);
+            Preferences.Set(nameof(Coins), instance.Coins);
+            
             Preferences.Set("IsUserLoggedIn", true);
         }
         public static void Logout()
@@ -48,6 +54,9 @@
             instance.Email = Preferences.Get(nameof(Email), string.Empty);
             instance.Name = Preferences.Get(nameof(Name), string.Empty);
             instance.PictureUrl = Preferences.Get(nameof(PictureUrl), string.Empty);
+            instance.Number = Preferences.Get(nameof(Number), "###########");
+            instance.Location = Preferences.Get(nameof(Location), "Global");
+            instance.Coins = Preferences.Get(nameof(Coins), (float)0.0);
         }
     }
 }

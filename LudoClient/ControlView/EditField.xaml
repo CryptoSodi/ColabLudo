@@ -4,9 +4,9 @@
              x:Class="LudoClient.ControlView.EditField">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="1*,1*" RowSpacing="5">
         <Label x:Name="TitleLabel" Margin="3,0,0,0" HorizontalOptions="Start" VerticalOptions="EndAndExpand"/>
-        <Grid Grid.Row="1" VerticalOptions="StartAndExpand">
-            <BoxView Margin="0,0,0,5" Grid.Row="1" Grid.Column="1" CornerRadius="10" Color="white" Background="Transparent"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-            <Entry Margin="5,0,0,0" TextColor="Black" FontSize="13" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+        <Grid Grid.Row="1" Margin="0,0,0,-10" VerticalOptions="StartAndExpand">
+            <BoxView Margin="0,0,0,0" Grid.Row="1" Grid.Column="1" CornerRadius="10" Background="#80000000" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            <Entry Margin="0,0,0,0" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="13" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
         </Grid>
     </Grid>
 </ContentView>

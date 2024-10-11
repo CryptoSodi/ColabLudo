@@ -5,8 +5,8 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
+    int GameType = 0;
     Client MatchMaker = new Client();
-    int GameType = 4;
     public GameRoom(int GameType, int GameCost)
     {
         this.GameType = GameType;
@@ -56,9 +56,14 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        string userName = UserInfo.Instance.Name;
-        int playerId = UserInfo.Instance.Id;
-        MatchMaker.CreateJoinRoom(playerId, userName, GameType + "", GameCost, "", shareBox);
+        MatchMaker.PlayerSeat += (playerType, playerId, userName, pictureUrl) =>
+        {
+            Device.BeginInvokeOnMainThread(() =>
+            {
+                // Handle the request here
+            });
+        };
+        MatchMaker.CreateJoinRoom(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, GameType + "", GameCost, "", shareBox);
     }
     protected override bool OnBackButtonPressed()
     {

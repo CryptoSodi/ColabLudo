@@ -24,7 +24,7 @@
                         <BoxView Grid.Row="0" Margin="-5,-5,8,-5" CornerRadius="5" Color="Gray" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                         <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand">
                             <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
-                            <Label Text="186" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label x:Name="Coins" Text="0.0" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </StackLayout>
                     </Grid>
                 </Grid>

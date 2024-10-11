@@ -37,6 +37,7 @@ namespace LudoClient
             }
             else
             {
+                UserInfo.LoadState();
                 MainPage = new AppShell();
                 //MainPage = new Game();
             }

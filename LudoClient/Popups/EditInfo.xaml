@@ -9,7 +9,7 @@
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
             <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="5,10,5,40" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            <StackLayout Spacing="5" Grid.Row="1" Grid.Column="1" Margin="25,10,25,55" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <StackLayout Spacing="5" Grid.Row="1" Grid.Column="1" Margin="25,10,25,60" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <!--Convert these into components-->
                 <local:EditField Title="USER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 <local:EditField Title="FULL NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>

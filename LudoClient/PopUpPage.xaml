@@ -7,19 +7,15 @@
              BackgroundImageSource="background.png">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
       RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
-        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="signin_inner_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-        <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"
-       WidthRequest="{Binding Source={x:Reference grid_bg}, Path=Width}" 
-       HeightRequest="{Binding Source={x:Reference grid_bg}, Path=Height}"
-       RowDefinitions=".8*,5*,1*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
-
-            <StackLayout Grid.Row="1" Grid.Column="1" >
-                <Label Text="Redeem your Coupon Code" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
-                <local:EditField Title="Redeem your Coupon Code" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            </StackLayout>
-            <!--Convert these into components-->
-            <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-
-        </Grid>
+        <local:Capsule Grid.Row="1" Grid.Column="1" ImageSource="signin_inner_bg.png" VerticalOptions="Start" HorizontalOptions="Center">
+            <Grid  VerticalOptions="Start" HorizontalOptions="Center" RowDefinitions=".8*,5*,1*,.5*,.4*" ColumnDefinitions=".1*,1*,.1*">
+                <StackLayout Grid.Row="1" Grid.Column="1" >
+                    <Label Text="Redeem your Coupon Code" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                    <local:EditField Title="Redeem your Coupon Code" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                </StackLayout>
+                <!--Convert these into components-->
+                <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+            </Grid>
+        </local:Capsule>
     </Grid>
 </ContentPage>

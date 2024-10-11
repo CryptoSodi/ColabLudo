@@ -1,9 +1,10 @@
+using LudoClient.Constants;
 namespace LudoClient;
-
 public partial class WalletPage : ContentPage
 {
     public WalletPage()
     {
-        InitializeComponent();
+        InitializeComponent(); 
+        Coins.Text = UserInfo.Instance.Coins + "";
     }
 }

@@ -50,7 +50,7 @@ namespace SignalR.Server
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
         }
-        public async Task<string> CreateJoinRoom(int playerId, string userName, string gameType, decimal gameCost, string roomCode)
+        public async Task<string> CreateJoinRoom(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
             //Generate a new room name if roomName is empty
             if (string.IsNullOrWhiteSpace(roomCode))
@@ -60,6 +60,7 @@ namespace SignalR.Server
             // Check if the RoomCode already exists in the database
             var existingGame = await _context.Games
                 .FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+            MultiPlayer multiPlayer = null;
             if (existingGame != null)
             {
                 // RoomCode exists, retrieve the existing game data
@@ -68,8 +69,7 @@ namespace SignalR.Server
                 gameCost = existingGame.BetAmount;
 
                 // RoomCode exists, retrieve the associated MultiPlayer record
-                var multiPlayer = await _context.MultiPlayers
-                    .FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
+                 multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
 
                 if (multiPlayer != null)
                 {
@@ -99,7 +99,7 @@ namespace SignalR.Server
             }
             else
             {
-                var multiPlayer = new MultiPlayer
+                 multiPlayer = new MultiPlayer
                 {
                     P1 = playerId
                 };
@@ -134,8 +134,18 @@ namespace SignalR.Server
             room.Users.Add(user);
             // Add the user to the specified group (room)
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
+
             // Notify others in the room that a new user has joined
-            await Clients.Group(roomCode).SendAsync("UserJoined", userName);
+            var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P1);
+            var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P2);
+            var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P3);
+            var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P4);
+            await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
+           // await Clients.Group(roomCode).SendAsync("ReceiveMessage", "P2", "test"); 
+
+          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
+          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
+          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
             return roomCode; // Return the room name to the client
         }
         // Generate a unique 10-digit room ID

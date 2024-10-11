@@ -4,10 +4,10 @@
              x:Class="LudoClient.ControlView.DailyBonusCard">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <BoxView CornerRadius="8" BackgroundColor="Green" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        <Image Source="days_current_bg.png" Margin="1,1,1,1" Aspect="AspectFit"/>
+        <Image Source="days_current_bg.png" Margin="1" Aspect="AspectFit"/>
         <StackLayout Orientation="Vertical" Margin="1,2,1,1" Spacing="2" HorizontalOptions="FillAndExpand">
             <Label Text="Day 1" FontSize="8" VerticalTextAlignment="Center" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-            <Image Source="ic_coin.png" Margin="1,1,1,1" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            <Image Source="ic_coin.png" Margin="1" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             <Label Text="100" TextColor="Black" FontSize="8" VerticalTextAlignment="Center" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
         </StackLayout>
     </Grid>
