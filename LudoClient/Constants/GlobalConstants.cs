@@ -12,7 +12,7 @@ namespace LudoClient.Constants
                 Debug = true;
             #endif
 
-            BaseUrl = Debug ? "https://192.168.1.19:7255/" : "https://localhost:7255/";
+            BaseUrl = Debug ? "https://192.168.1.21:7255/" : "https://localhost:7255/";
 
             httpClient = new HttpClient(handler)
             {

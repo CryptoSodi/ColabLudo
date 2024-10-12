@@ -69,7 +69,7 @@ namespace SignalR.Server
                 gameCost = existingGame.BetAmount;
 
                 // RoomCode exists, retrieve the associated MultiPlayer record
-                 multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
+                multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
 
                 if (multiPlayer != null)
                 {
@@ -99,7 +99,7 @@ namespace SignalR.Server
             }
             else
             {
-                 multiPlayer = new MultiPlayer
+                multiPlayer = new MultiPlayer
                 {
                     P1 = playerId
                 };
@@ -140,12 +140,16 @@ namespace SignalR.Server
             var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P2);
             var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P3);
             var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P4);
-            await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
-           // await Clients.Group(roomCode).SendAsync("ReceiveMessage", "P2", "test"); 
+            if (P1 != null) 
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
+            // await Clients.Group(roomCode).SendAsync("ReceiveMessage", "P2", "test"); 
+            if (P2 != null)
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
+            if (P3 != null)
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
+            if (P4 != null)
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
 
-          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
-          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
-          //  await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
             return roomCode; // Return the room name to the client
         }
         // Generate a unique 10-digit room ID

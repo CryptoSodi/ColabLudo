@@ -5,7 +5,6 @@ namespace LudoClient.Network
     public class Client
     {
         private readonly HubConnection _hubConnection;
-        string url = @"http://localhost:8084";
         string Name;
         string Messages;
         bool IsConnected;
@@ -18,7 +17,7 @@ namespace LudoClient.Network
 
         public Client()
         {
-            _hubConnection = new HubConnectionBuilder().WithUrl($"http://localhost:8084/LudoHub").Build();
+            _hubConnection = new HubConnectionBuilder().WithUrl($"http://192.168.1.21:8085/LudoHub").Build();
             _hubConnection.StartAsync();
             IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
@@ -47,7 +46,7 @@ namespace LudoClient.Network
                 {
                     string code = task.Result;
                     // Handle the result here
-                    Device.BeginInvokeOnMainThread(() =>
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
                         shareBox.SetShareCode(code);
                     });

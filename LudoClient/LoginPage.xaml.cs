@@ -22,9 +22,9 @@ namespace LudoClient
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
 #if WINDOWS
-            UserInfo.Instance.Email = "tassaduq009@gmail.com";
-            UserInfo.Instance.Name = "Syed Tassaduq";
-            UserInfo.Instance.PictureUrl = "https://lh3.googleusercontent.com/a/ACg8ocLMYETsXNDf8wihXQej62uXHjuF67aNzDfoFgn7Tvp53eNu8Wux=s96-c";
+            UserInfo.Instance.Email = "Mazhar@gmail.com";
+            UserInfo.Instance.Name = "Mazhar";
+            UserInfo.Instance.PictureUrl = "https://cdn.icon-icons.com/icons2/2643/PNG/512/male_boy_person_people_avatar_white_tone_icon_159368.png";
             performLoginAsync();
 #endif
 #if ANDROID
@@ -106,7 +106,7 @@ namespace LudoClient
         {
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name={userInfo.Name}&email={userInfo.Email}&pictureUrl={userInfo.PictureUrl}");
+                var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name="+UserInfo.Instance.Name+"&email="+UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl);
                 var response = await GlobalConstants.httpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
                 var responseBody = await response.Content.ReadAsStringAsync();

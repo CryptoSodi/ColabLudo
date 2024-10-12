@@ -3,7 +3,7 @@
     "SignalR.Server": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:8084"
+      "applicationUrl": "http://0.0.0.0:8085"
     }
   }
 }

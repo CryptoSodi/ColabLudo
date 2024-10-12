@@ -7,6 +7,8 @@ public partial class GameRoom : ContentPage
 {
     int GameType = 0;
     Client MatchMaker = new Client();
+
+    [Obsolete]
     public GameRoom(int GameType, int GameCost)
     {
         this.GameType = GameType;
@@ -60,6 +62,26 @@ public partial class GameRoom : ContentPage
         {
             Device.BeginInvokeOnMainThread(() =>
             {
+                if(playerType=="P1")
+                {
+                    player1.PlayerImage = pictureUrl;
+                    player1.PlayerName = userName;
+                }
+                else if (playerType == "P2")
+                {
+                    player2.PlayerImage = pictureUrl;
+                    player2.PlayerName = userName;
+                }
+                else if (playerType == "P3")
+                {
+                    player3.PlayerImage = pictureUrl;
+                    player3.PlayerName = userName;
+                }
+                else if (playerType == "P4")
+                {
+                    player4.PlayerImage = pictureUrl;
+                    player4.PlayerName = userName;
+                }
                 // Handle the request here
             });
         };
