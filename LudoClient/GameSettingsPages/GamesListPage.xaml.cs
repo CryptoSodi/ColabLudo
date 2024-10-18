@@ -1,54 +1,45 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using LudoClient.Models;
-using System.Net.Http;
 using System.Text.Json;
 namespace LudoClient;
 public partial class GamesListPage : ContentPage
 {
     public GamesListPage()
     {
-        
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
+        InitializeTournamentsAsync();
     }
     public async Task InitializeTournamentsAsync()
     {
         // Retrieve or create a list of tournaments
-        List<Tournament> tournaments = await GetTournamentsAsync();
+        List<LudoServer.Models.Game> games = await GetGamesAsync();
         // Dynamically create and add TournamentDetailList controls
-        foreach (var tournament in tournaments)
+        foreach (var game in games)
         {
-            var tournamentDetail = new TournamentDetailList();
-            tournamentDetail.SetTournamentDetails(
-                tournamentId: tournament.TournamentId,
-                tournamentName: tournament.TournamentName,
-                startDate: tournament.StartDate.ToString("g"),
-                endDate: tournament.EndDate.ToString("g"),
-                entryPrice: tournament.EntryPrice,
-                prizeAmount: tournament.PrizeAmount
-            );
-            // Add the control to the stack layout
-            TournamentListStack.Children.Add(tournamentDetail);
+            var gameDetail = new GameDetailList();
+            gameDetail.SetTournamentDetails(game.GameId, game.RoomCode, game.Type, game.BetAmount);
+           //// Add the control to the stack layout
+            TournamentListStack.Children.Add(gameDetail);
         }
     }
-    private async Task<List<Tournament>> GetTournamentsAsync()
+    private async Task<List<LudoServer.Models.Game>> GetGamesAsync()
     {
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync("api/tournament");
+        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync("api/Game");
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
-            var tournaments = JsonSerializer.Deserialize<List<Tournament>>(responseBody, new JsonSerializerOptions
+            var games = JsonSerializer.Deserialize<List<LudoServer.Models.Game>>(responseBody, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
-            return tournaments ?? new List<Tournament>();
+            return games?.Where(g => g.State == "Active").ToList() ?? new List<LudoServer.Models.Game>();
         }
         else
         {
             // Handle the error case as needed
-            return new List<Tournament>();
+            return new List<LudoServer.Models.Game>();
         }
     }
     private void TabRequestedActivate(object sender, EventArgs e)

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using LudoClient.Constants;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace LudoClient.Network
 {
@@ -17,13 +18,14 @@ namespace LudoClient.Network
 
         public Client()
         {
-            _hubConnection = new HubConnectionBuilder().WithUrl($"http://192.168.1.21:8085/LudoHub").Build();
+            _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl+ "LudoHub").Build();
             _hubConnection.StartAsync();
             IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
             // Listen for messages from the server
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
+                if(PlayerSeat!=null)
                 PlayerSeat(playerType, playerId, userName, pictureUrl);
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
@@ -38,9 +40,9 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinRoom(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
         {
-            _hubConnection.InvokeAsync<string>("CreateJoinRoom", playerId, userName, pictureUrl, gameType, gameCost, roomName).ContinueWith(task =>
+            _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
@@ -48,7 +50,12 @@ namespace LudoClient.Network
                     // Handle the result here
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        shareBox.SetShareCode(code);
+                        if (shareBox == null)
+                        {
+                            Console.WriteLine("ShareBox is null");
+                        }
+                        else
+                            shareBox.SetShareCode(code);
                     });
                 }
                 else

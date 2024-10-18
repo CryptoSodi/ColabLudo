@@ -4,7 +4,12 @@ using LudoServer.Data;
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Concurrent;
+using System.ComponentModel.Design;
+using System.Drawing;
+using System.Security.AccessControl;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SignalR.Server
 {
@@ -12,21 +17,29 @@ namespace SignalR.Server
     public record Message(string User, string Text);
     public class LudoHub : Hub
     {
+        public override async Task OnConnectedAsync()
+        {
+            // Get the connection ID of the newly connected user
+            var connectionId = Context.ConnectionId;
+            // Print the connection message to the console
+            Console.WriteLine($"User connected: {connectionId}");
+            await base.OnConnectedAsync();
+        }
+
         private readonly LudoDbContext _context;
 
         public LudoHub(LudoDbContext context)
         {
             _context = context;
         }
-        public static String GameID = "12";
         public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
         private static ConcurrentDictionary<string, User> _users = new();
-
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
+
         public string Send(string name, string message, string commandtype)
         {
             Console.WriteLine($"{name}: {message}:{commandtype}");
-            Clients.All.SendAsync("addMessage", name, GameID);
+            //  Clients.All.SendAsync("addMessage", name, GameID);
             if (commandtype == "MovePiece")
             {
                 //eng.MovePiece();
@@ -50,54 +63,39 @@ namespace SignalR.Server
                 await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
         }
-        public async Task<string> CreateJoinRoom(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
+        public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
         {
             //Generate a new room name if roomName is empty
             if (string.IsNullOrWhiteSpace(roomCode))
-            {
-                roomCode = GenerateUniqueRoomId(gameType, gameCost); // Generates a unique room name
-            }
+                // Generates a unique room name
+                roomCode = GenerateUniqueRoomId(gameType, gameCost);
+
             // Check if the RoomCode already exists in the database
-            var existingGame = await _context.Games
-                .FirstOrDefaultAsync(g => g.RoomCode == roomCode);
-            MultiPlayer multiPlayer = null;
-            if (existingGame != null)
+            var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+
+            MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
+            if (multiPlayer == null)
+                return null;//All Player Seats taken
+            if (existingGame == null)
             {
-                // RoomCode exists, retrieve the existing game data
-                roomCode = existingGame.RoomCode;
-                gameType = existingGame.Type;
-                gameCost = existingGame.BetAmount;
-
-                // RoomCode exists, retrieve the associated MultiPlayer record
-                multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
-
-                if (multiPlayer != null)
+                // RoomCode does not exist, create a new game entry
+                existingGame = new Game
                 {
-                    // Check available slots (P2, P3, P4)
-                    if (multiPlayer.P2 == null)
-                    {
-                        multiPlayer.P2 = playerId;
-                    }
-                    else if (multiPlayer.P3 == null)
-                    {
-                        multiPlayer.P3 = playerId;
-                    }
-                    else if (multiPlayer.P4 == null)
-                    {
-                        multiPlayer.P4 = playerId;
-                    }
-                    else
-                    {
-                        // All player slots are full
-                        return "All slots are full. Please join another game.";
-                    }
-
-                    // Save the updated multiplayer record
-                    _context.MultiPlayers.Update(multiPlayer);
-                    await _context.SaveChangesAsync();
-                }
+                    MultiPlayerId = multiPlayer.MultiPlayerId,
+                    Type = gameType,
+                    BetAmount = gameCost,
+                    RoomCode = roomCode,
+                    State = "Active"
+                };
+                _context.Games.Add(existingGame);
+                await _context.SaveChangesAsync(); // Save the game entry to the database
             }
-            else
+            return existingGame;
+        }
+        private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
+        {
+            MultiPlayer multiPlayer;
+            if (existingGame == null)
             {
                 multiPlayer = new MultiPlayer
                 {
@@ -106,24 +104,43 @@ namespace SignalR.Server
                 // Add the MultiPlayer and save changes to get the MultiPlayerId
                 _context.MultiPlayers.Add(multiPlayer);
                 await _context.SaveChangesAsync(); // This will save the newly added MultiPlayer and assign it an Id
+                return multiPlayer;
+            }
+            else
+            {
+                existingGame.MultiPlayer = multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
+                
 
-                int multiPlayerId = await _context.MultiPlayers
-                    .Where(g => g.P1 == playerId)
-                    .Select(g => g.MultiPlayerId)
-                    .FirstOrDefaultAsync();
+                if (multiPlayer.P1 == null)
+                    multiPlayer.P1 = playerId;
+                else if (multiPlayer.P2 == null)
+                    multiPlayer.P2 = playerId;
+                else if (multiPlayer.P3 == null)
+                    multiPlayer.P3 = playerId;
+                else if (multiPlayer.P4 == null)
+                    multiPlayer.P4 = playerId;//Change game state
+                else
+                    // All player slots are full
+                    return null;
 
-                // RoomCode does not exist, create a new game entry
-                var game = new Game
-                {
-                    MultiPlayerId = multiPlayerId,
-                    Type = gameType,
-                    BetAmount = gameCost,
-                    RoomCode = roomCode
-                };
-                _context.Games.Add(game);
-                await _context.SaveChangesAsync(); // Save the game entry to the database
+                // Save the updated multiplayer record
+                _context.MultiPlayers.Update(multiPlayer);
+                await _context.SaveChangesAsync();
+            }
+            return multiPlayer;
+        }
+        public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
+        {
+            var existingGame = await GetGameLobby(playerId, roomCode, gameType, gameCost);
+
+            if (existingGame == null)
+            {
+                return "Room is full";
             }
 
+            roomCode = existingGame.RoomCode;
+            gameType = existingGame.Type;
+            gameCost = existingGame.BetAmount;
 
             // Create or retrieve the room
             var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(roomCode, gameType, gameCost));
@@ -136,13 +153,12 @@ namespace SignalR.Server
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
             // Notify others in the room that a new user has joined
-            var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P1);
-            var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P2);
-            var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P3);
-            var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == multiPlayer.P4);
-            if (P1 != null) 
+            var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
+            var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
+            var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
+            var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
+            if (P1 != null)
                 await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
-            // await Clients.Group(roomCode).SendAsync("ReceiveMessage", "P2", "test"); 
             if (P2 != null)
                 await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
             if (P3 != null)
@@ -167,16 +183,11 @@ namespace SignalR.Server
             //"@Haris ADD this to the database games table"
             return roomId;
         }
-        public async Task JoinRoom(int playerId, string userName, string roomName)
-        {
-            _users.TryAdd(Context.ConnectionId, new User(playerId, userName, roomName));
-            await Groups.AddToGroupAsync(Context.ConnectionId, roomName);
-            await Clients.Group(roomName).SendAsync("UserJoined", userName);
-        }
         public async Task SendMessageToRoom(string roomName, string content)
         {
             var message = new Message(_users[Context.ConnectionId].Name, content);
             await Clients.Group(roomName).SendAsync("ReceiveMessage", message);
         }
+
     }
 }

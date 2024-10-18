@@ -559,8 +559,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Reference Include="LudoServer">
+	    <HintPath>..\..\LudoServer\bin\Debug\net8.0\LudoServer.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Update="ControlView\HelpCube.xaml.cs">
 	    <DependentUpon>HelpCube.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="ControlView\GameDetailList.xaml.cs">
+	    <DependentUpon>GameDetailList.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="ControlView\TournamentDetailList.xaml.cs">
 	    <DependentUpon>TournamentDetailList.xaml</DependentUpon>
@@ -613,6 +622,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="ControlView\GameDetailList.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Popups\AddCash.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -706,7 +718,7 @@
 	  <MauiXaml Update="FriendsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Game.xaml">
+	  <MauiXaml Update="CoreEngine\Game.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="GameSettingsPages\GameRoom.xaml">

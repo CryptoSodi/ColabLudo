@@ -1,9 +1,8 @@
 using CommunityToolkit.Maui.Views;
-using LudoClient.CoreEngine;
 using SimpleToolkit.Core;
 using LudoClient.Popups;
 
-namespace LudoClient;
+namespace LudoClient.CoreEngine;
 
 public partial class Game : ContentPage
 {

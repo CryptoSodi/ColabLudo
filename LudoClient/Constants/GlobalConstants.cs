@@ -1,29 +1,36 @@
-﻿using System.Diagnostics;
+﻿using LudoClient.Network;
+using System.Diagnostics;
 
 namespace LudoClient.Constants
 {
     public static class GlobalConstants
-    {
+    {        
+        public static readonly HttpClient httpClient;
+        public static readonly int initialEntry = 5;
+        public static readonly bool Debug = false;
+        public static readonly string Url;
+        public static readonly string BaseUrl;
+        public static readonly string HubUrl;
+        public static Client MatchMaker;
         static GlobalConstants()
         {
-            #if WINDOWS
+#if WINDOWS
                 Debug = false;
-            #elif ANDROID
+#elif ANDROID
                 Debug = true;
-            #endif
+#endif
+            //Url = Debug ? "https://192.168.1.23" : "https://localhost";
 
-            BaseUrl = Debug ? "https://192.168.1.21:7255/" : "https://localhost:7255/";
+            Url = "http://192.168.1.18";
+            BaseUrl = Url.Replace("http:", "https:") + ":7255/";
+            HubUrl  = Url + ":8085/";
 
             httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(BaseUrl) // Set the base URL
             };
+            MatchMaker = new Client();
         }
-        public static readonly HttpClient httpClient;
-        public static readonly int initialEntry = 5;
-        public static readonly bool Debug = false;
-        public static readonly string BaseUrl;
-
         static readonly HttpClientHandler handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>

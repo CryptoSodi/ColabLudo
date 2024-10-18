@@ -6,7 +6,6 @@ namespace LudoClient;
 public partial class GameRoom : ContentPage
 {
     int GameType = 0;
-    Client MatchMaker = new Client();
 
     [Obsolete]
     public GameRoom(int GameType, int GameCost)
@@ -58,7 +57,7 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        MatchMaker.PlayerSeat += (playerType, playerId, userName, pictureUrl) =>
+        GlobalConstants.MatchMaker.PlayerSeat += (playerType, playerId, userName, pictureUrl) =>
         {
             Device.BeginInvokeOnMainThread(() =>
             {
@@ -85,11 +84,10 @@ public partial class GameRoom : ContentPage
                 // Handle the request here
             });
         };
-        MatchMaker.CreateJoinRoom(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, GameType + "", GameCost, "", shareBox);
+        GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, GameType + "", GameCost, "", shareBox);
     }
     protected override bool OnBackButtonPressed()
     {
-        MatchMaker.Disconnect();
         // Prevent back navigation
         return true;
     }

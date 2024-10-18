@@ -102,7 +102,7 @@ namespace LudoClient.ControlView
         }
         private async void Join_Clicked(object sender, EventArgs e)
         {
-            int playerId = Preferences.Get("PlayerId", 1);
+            int playerId = Preferences.Get("PlayerId", UserInfo.Instance.Id);
             int tournamentId = Int32.Parse(TournamentId.Text);
 
             // Build the URL with query parameters
