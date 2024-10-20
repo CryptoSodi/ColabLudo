@@ -1,14 +1,15 @@
 ﻿using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Maui.Controls;
+using System.Security.AccessControl;
 
 namespace LudoClient.Network
 {
     public class Client
     {
-        private readonly HubConnection _hubConnection;
+        public static HubConnection _hubConnection;
         string Name;
         string Messages;
-        bool IsConnected;
 
         public delegate void CallbackRecievedRequest(string SeatName, int diceValue);
         public event CallbackRecievedRequest RecievedRequest;
@@ -16,11 +17,12 @@ namespace LudoClient.Network
         public delegate void PlayerSeatRecieved(string playerType, int playerId, string userName, string pictureUrl);
         public event PlayerSeatRecieved PlayerSeat;
 
+        public delegate void GameStart();
+        public event GameStart gameStart;
         public Client()
         {
             _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl+ "LudoHub").Build();
             _hubConnection.StartAsync();
-            IsConnected = true;
             Console.WriteLine("Connection started. Waiting for messages from the server...");
             // Listen for messages from the server
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
@@ -32,6 +34,14 @@ namespace LudoClient.Network
                     Messages = ($"{playerType}: {userName} has joined");
                 });
             });
+            _hubConnection.On<string, string>("GameStart", (user, message) =>
+            {
+                //gameStart(); bnhmjvfgtyr56ú€g
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Messages = ($"{user} says {message}");
+                });
+            });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -40,22 +50,18 @@ namespace LudoClient.Network
                 });
             });
         }
-        public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName, ControlView.ShareBox shareBox)
+        public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
         {
             _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {
-                    string code = task.Result;
+                    string roomCode = task.Result;
                     // Handle the result here
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        if (shareBox == null)
-                        {
-                            Console.WriteLine("ShareBox is null");
-                        }
-                        else
-                            shareBox.SetShareCode(code);
+                        Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+                        //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
                     });
                 }
                 else
@@ -77,7 +83,23 @@ namespace LudoClient.Network
         {
             if (_hubConnection.State == HubConnectionState.Disconnected) return;
             await _hubConnection.StopAsync();
-            IsConnected = false;
+        }
+        internal void Ready(string roomCode)
+        {
+            _hubConnection.InvokeAsync<string>("Ready", roomCode).ContinueWith(task =>
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    string roomCode = task.Result;
+
+                    Console.WriteLine(task.Result);
+                }
+                else
+                {
+                    // Handle errors
+                    Console.WriteLine(task.Exception?.Message);
+                }
+            });
         }
     }
 }

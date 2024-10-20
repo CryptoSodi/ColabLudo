@@ -5,17 +5,19 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
-    int GameType = 0;
+    string GameType = "0";
 
     [Obsolete]
-    public GameRoom(int GameType, int GameCost)
+    public GameRoom(string GameType, int GameCost, string roomCode)
     {
-        this.GameType = GameType;
         InitializeComponent();
+        this.GameType = GameType;
+        shareBox.SetShareCode(roomCode);
         NavigationPage.SetHasBackButton(this, false);
+        GlobalConstants.MatchMaker.Ready(roomCode);
         switch (GameType)
         {
-            case 2:
+            case "2":
                 Grid.SetRow(player1, 3);
                 Grid.SetColumn(player1, 1);
                 Grid.SetRow(player2, 5);
@@ -24,7 +26,7 @@ public partial class GameRoom : ContentPage
                 grid.Children.Remove(player4);
                 thunder.Source = "thunder_" + GameType + ".gif";
                 break;
-            case 3:
+            case "3":
                 Grid.SetRow(player1, 3);
                 Grid.SetColumn(player1, 2);
                 Grid.SetRow(player2, 5);
@@ -34,7 +36,7 @@ public partial class GameRoom : ContentPage
                 grid.Children.Remove(player4);
                 thunder.Source = "thunder_" + GameType + ".gif";
                 break;
-            case 4:
+            case "4":
                 Grid.SetRow(player1, 3);
                 Grid.SetColumn(player1, 2);
                 Grid.SetRow(player2, 4);
@@ -45,7 +47,7 @@ public partial class GameRoom : ContentPage
                 Grid.SetColumn(player4, 2);
                 thunder.Source = "thunder_" + GameType + ".gif";
                 break;
-            case 22:
+            case "22":
                 Grid.SetRow(player1, 3);
                 Grid.SetColumn(player1, 2);
                 Grid.SetRow(player2, 4);
@@ -84,7 +86,6 @@ public partial class GameRoom : ContentPage
                 // Handle the request here
             });
         };
-        GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, GameType + "", GameCost, "", shareBox);
     }
     protected override bool OnBackButtonPressed()
     {

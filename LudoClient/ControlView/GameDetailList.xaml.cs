@@ -13,10 +13,8 @@ namespace LudoClient.ControlView
         public GameDetailList()
         {
             InitializeComponent();
+            
         }
-        /// <summary>
-        /// Sets the tournament details on the UI and starts the countdown timer.
-        /// </summary>
         public void SetTournamentDetails(int gameId, string roomCode, string gameType, decimal betAmount)
         {
             // Set the text of the labels
@@ -27,7 +25,9 @@ namespace LudoClient.ControlView
         }
         private async void Join_Tapped(object sender, EventArgs e)
         {
-            GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, "", 0, RoomCode.Text, null);
+            Console.WriteLine("Join Tapped");
+            //playerId, userName, pictureUrl, gameType, gameCost, roomName
+            GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, TotalPlayersLabel.Text.Replace("Total Players : ", ""), int.Parse(JoiningFeeLabel.Text.Replace("Entry Fee : ", "").Replace(".00", "")), RoomCode.Text);
         }
     }
 }

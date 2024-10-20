@@ -10,6 +10,7 @@ public partial class BottomNavigation : ContentView
 
     async void OnBackButtonClicked(object sender, EventArgs e)
     {
-        await Navigation.PopAsync();
+        //await Navigation.PopAsync();
+        Application.Current.MainPage = new AppShell();
     }
 }

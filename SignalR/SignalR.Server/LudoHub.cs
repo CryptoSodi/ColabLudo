@@ -74,6 +74,7 @@ namespace SignalR.Server
             var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
 
             MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
+           
             if (multiPlayer == null)
                 return null;//All Player Seats taken
             if (existingGame == null)
@@ -87,6 +88,7 @@ namespace SignalR.Server
                     RoomCode = roomCode,
                     State = "Active"
                 };
+                existingGame.MultiPlayer = multiPlayer;
                 _context.Games.Add(existingGame);
                 await _context.SaveChangesAsync(); // Save the game entry to the database
             }
@@ -110,7 +112,6 @@ namespace SignalR.Server
             {
                 existingGame.MultiPlayer = multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
                 
-
                 if (multiPlayer.P1 == null)
                     multiPlayer.P1 = playerId;
                 else if (multiPlayer.P2 == null)
@@ -128,6 +129,14 @@ namespace SignalR.Server
                 await _context.SaveChangesAsync();
             }
             return multiPlayer;
+        }
+        public async Task<string> Ready(string roomCode)
+        {
+            var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+            existingGame.MultiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
+            await BroadcastPlayersAsync( existingGame,  roomCode);
+            //await BroadcastPlayersAsync(existingGame, roomCode);
+            return "ready";
         }
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
@@ -152,22 +161,34 @@ namespace SignalR.Server
             // Add the user to the specified group (room)
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            // Notify others in the room that a new user has joined
-            var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-            var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
-            var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-            var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-            if (P1 != null)
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
-            if (P2 != null)
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
-            if (P3 != null)
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
-            if (P4 != null)
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
-
+            BroadcastPlayersAsync(existingGame, roomCode);
             return roomCode; // Return the room name to the client
         }
+        private async Task BroadcastPlayersAsync(Game existingGame, string roomCode)
+        {
+            // Notify others in the room that a new user has joined
+            if (existingGame.MultiPlayer.P1 != null)
+            {
+                var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
+            }
+            if (existingGame.MultiPlayer.P2 != null)
+            {
+                var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
+            }
+            if (existingGame.MultiPlayer.P3 != null)
+            {
+                var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
+            }
+            if (existingGame.MultiPlayer.P4 != null)
+            {
+                var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
+                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
+            }
+        }
+
         // Generate a unique 10-digit room ID
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {

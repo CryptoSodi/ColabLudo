@@ -21,7 +21,7 @@ namespace LudoClient.Constants
 #endif
             //Url = Debug ? "https://192.168.1.23" : "https://localhost";
 
-            Url = "http://192.168.1.18";
+            Url = "http://192.168.1.16";
             BaseUrl = Url.Replace("http:", "https:") + ":7255/";
             HubUrl  = Url + ":8085/";
 
