@@ -4,12 +4,7 @@ using LudoServer.Data;
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Concurrent;
-using System.ComponentModel.Design;
-using System.Drawing;
-using System.Security.AccessControl;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace SignalR.Server
 {
@@ -17,6 +12,14 @@ namespace SignalR.Server
     public record Message(string User, string Text);
     public class LudoHub : Hub
     {
+        private readonly LudoDbContext _context;
+        public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
+        private static ConcurrentDictionary<string, User> _users = new();
+        private static ConcurrentDictionary<string, GameRoom> _rooms = new();
+        public LudoHub(LudoDbContext context)
+        {
+            _context = context;
+        }
         public override async Task OnConnectedAsync()
         {
             // Get the connection ID of the newly connected user
@@ -25,17 +28,6 @@ namespace SignalR.Server
             Console.WriteLine($"User connected: {connectionId}");
             await base.OnConnectedAsync();
         }
-
-        private readonly LudoDbContext _context;
-
-        public LudoHub(LudoDbContext context)
-        {
-            _context = context;
-        }
-        public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
-        private static ConcurrentDictionary<string, User> _users = new();
-        private static ConcurrentDictionary<string, GameRoom> _rooms = new();
-
         public string Send(string name, string message, string commandtype)
         {
             Console.WriteLine($"{name}: {message}:{commandtype}");
@@ -119,22 +111,43 @@ namespace SignalR.Server
                 else if (multiPlayer.P3 == null)
                     multiPlayer.P3 = playerId;
                 else if (multiPlayer.P4 == null)
-                    multiPlayer.P4 = playerId;//Change game state
+                    multiPlayer.P4 = playerId;
                 else
                     // All player slots are full
                     return null;
-
                 // Save the updated multiplayer record
                 _context.MultiPlayers.Update(multiPlayer);
                 await _context.SaveChangesAsync();
             }
             return multiPlayer;
         }
+        private async Task gameStartAsync(Game existingGame)
+        {
+            int playerCounter = 0;
+            if (existingGame.MultiPlayer.P1 != null)
+                playerCounter++;
+            if (existingGame.MultiPlayer.P2 != null)
+                playerCounter++;
+            if (existingGame.MultiPlayer.P3 != null)
+                playerCounter++;
+            if (existingGame.MultiPlayer.P4 != null)
+                playerCounter++;
+
+            if (existingGame.Type == playerCounter + "")
+            {
+                await Task.Delay(3000);
+                Clients.Group(existingGame.RoomCode).SendAsync("GameStart");
+                existingGame.State = "Playing";
+                 _context.Games.Update(existingGame);
+                await _context.SaveChangesAsync();
+            }
+        }
         public async Task<string> Ready(string roomCode)
         {
             var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
             existingGame.MultiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
-            await BroadcastPlayersAsync( existingGame,  roomCode);
+            await BroadcastPlayersAsync(existingGame);
+            await gameStartAsync(existingGame);
             //await BroadcastPlayersAsync(existingGame, roomCode);
             return "ready";
         }
@@ -161,31 +174,31 @@ namespace SignalR.Server
             // Add the user to the specified group (room)
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
-            BroadcastPlayersAsync(existingGame, roomCode);
+            BroadcastPlayersAsync(existingGame);
             return roomCode; // Return the room name to the client
         }
-        private async Task BroadcastPlayersAsync(Game existingGame, string roomCode)
+        private async Task BroadcastPlayersAsync(Game existingGame)
         {
             // Notify others in the room that a new user has joined
             if (existingGame.MultiPlayer.P1 != null)
             {
                 var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
             }
             if (existingGame.MultiPlayer.P2 != null)
             {
                 var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
             }
             if (existingGame.MultiPlayer.P3 != null)
             {
                 var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
             }
             if (existingGame.MultiPlayer.P4 != null)
             {
                 var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-                await Clients.Group(roomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
             }
         }
 
@@ -209,6 +222,5 @@ namespace SignalR.Server
             var message = new Message(_users[Context.ConnectionId].Name, content);
             await Clients.Group(roomName).SendAsync("ReceiveMessage", message);
         }
-
     }
 }

@@ -34,12 +34,15 @@ namespace LudoClient.Network
                     Messages = ($"{playerType}: {userName} has joined");
                 });
             });
-            _hubConnection.On<string, string>("GameStart", (user, message) =>
+            _hubConnection.On("GameStart", () =>
             {
                 //gameStart(); bnhmjvfgtyr56ú€g
+                    Console.WriteLine("Starting Game 1 " + DateTime.Now);
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    Messages = ($"{user} says {message}");
+                    Console.WriteLine("Starting Game " + DateTime.Now);
+                    Task.Delay(10000);
+                    Console.WriteLine("GameStarted " + DateTime.Now);
                 });
             });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
@@ -84,9 +87,9 @@ namespace LudoClient.Network
             if (_hubConnection.State == HubConnectionState.Disconnected) return;
             await _hubConnection.StopAsync();
         }
-        internal void Ready(string roomCode)
+        internal async void Ready(string roomCode)
         {
-            _hubConnection.InvokeAsync<string>("Ready", roomCode).ContinueWith(task =>
+            await _hubConnection.InvokeAsync<string>("Ready", roomCode).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
                 {

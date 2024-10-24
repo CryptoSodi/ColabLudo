@@ -104,34 +104,46 @@ namespace LudoClient
         }
         private async void performLoginAsync()
         {
+            string responseBody = null;
             try
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name="+UserInfo.Instance.Name+"&email="+UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl);
-                var response = await GlobalConstants.httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                var responseBody = await response.Content.ReadAsStringAsync();
-                if (response.IsSuccessStatusCode)
+                if (GlobalConstants.online)
                 {
-                    if (responseBody != null)
+                    var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl);
+                    var response = await GlobalConstants.httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    if (response.IsSuccessStatusCode)
                     {
-                        var options = new JsonSerializerOptions
+                        if (responseBody != null)
                         {
-                            PropertyNameCaseInsensitive = true
-                        };
-                        var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
-                        //string message = result.Message;
+                            var options = new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive = true
+                            };
+                            var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
+                            //string message = result.Message;
 
-                        UserInfo.Instance.Id = result.PlayerId;
-                        //Save the user's login state
-                        UserInfo.SaveState();
-                        //Hide Loader
-                        Application.Current.MainPage = new AppShell();
+                            UserInfo.Instance.Id = result.PlayerId;
+                            //Save the user's login state
+                            UserInfo.SaveState();
+                            //Hide Loader
+                            Application.Current.MainPage = new AppShell();
+                        }
+                    }
+                    else
+                    {
+                        var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
+                        await DisplayAlert("Error", result["message"], "OK");
                     }
                 }
                 else
                 {
-                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-                    await DisplayAlert("Error", result["message"], "OK");
+                    UserInfo.Instance.Id = 1;
+                    //Save the user's login state
+                    UserInfo.SaveState();
+                    //Hide Loader
+                    Application.Current.MainPage = new AppShell();
                 }
             }
             catch (Exception ex)

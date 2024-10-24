@@ -7,7 +7,6 @@ public partial class TournamentPage : ContentPage
 {
     public TournamentPage()
     {
-        
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;

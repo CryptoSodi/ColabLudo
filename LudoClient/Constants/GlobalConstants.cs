@@ -1,6 +1,7 @@
 ﻿using LudoClient.Network;
 using System.Diagnostics;
-
+using System.Net;
+using System.Net.Sockets;
 namespace LudoClient.Constants
 {
     public static class GlobalConstants
@@ -12,6 +13,7 @@ namespace LudoClient.Constants
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
         public static Client MatchMaker;
+        public static bool online = false;
         static GlobalConstants()
         {
 #if WINDOWS
@@ -19,12 +21,20 @@ namespace LudoClient.Constants
 #elif ANDROID
                 Debug = true;
 #endif
-            //Url = Debug ? "https://192.168.1.23" : "https://localhost";
-
-            Url = "http://192.168.1.16";
+            Url = Debug ? "http://192.168.1.24" : "https://localhost";
+#if WINDOWS  
+            var host = Dns.GetHostEntry(Dns.GetHostName());
+            foreach (var ip in host.AddressList)
+            {
+                if (ip.AddressFamily == AddressFamily.InterNetwork) // IPv4 address
+                {
+                    Console.WriteLine( ip.ToString());
+                    Url = "http://"+ip.ToString();
+                }
+            }
+#endif
             BaseUrl = Url.Replace("http:", "https:") + ":7255/";
             HubUrl  = Url + ":8085/";
-
             httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(BaseUrl) // Set the base URL

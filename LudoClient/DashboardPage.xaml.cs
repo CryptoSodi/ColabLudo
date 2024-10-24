@@ -13,6 +13,11 @@ public partial class DashboardPage : ContentPage
     public DashboardPage()
     {
         InitializeComponent();
+        Task.Run(async () =>
+        {
+            // Asynchronously initialize heavy content in the background
+          //  await cashGame.initComponent();
+        });
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
