@@ -1,17 +1,41 @@
 ﻿
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Network;
+using System.Security.AccessControl;
 
 namespace LudoClient.CoreEngine
 {
     public class Engine
     {
-        Client client = new Client();
-        List<int> home = [52, 11, 24, 37];
-        List<int> safeZone = [0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1];
-        string gameType = "Online";
-        Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+        // UI Components
+        private AbsoluteLayout Alayout;
+        private Capsule Glayout;
+
+        // Public fields
         public Gui gui;
+
+        public delegate void CallbackEventHandler(string SeatName, int diceValue);
+        public event CallbackEventHandler StopDice;
+        int diceValue = 0;
+        String gameState = "RollDice";
+        // Private fields
+        private List<Player> players;
+        private int currentPlayerIndex;
+        private Piece[] board = new Piece[57];
+        private string gameType = "";
+
+        public int chainIndex = 0;
+        public string chain = "";
+        // Constants or configuration lists
+        private readonly List<int> home = new List<int> { 52, 11, 24, 37 };
+        private readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
+        private readonly Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+
+        // Game logic helpers
+        private List<int> rolls = new List<int>();
+        private int index = 0;
+
         public class Piece
         {
             public Token piece;
@@ -23,7 +47,7 @@ namespace LudoClient.CoreEngine
             public Piece(string color, string name, Token piece)
             {
                 this.piece = piece;
-                this.name = name;
+                this.name = piece.name;
                 Color = color;
                 Position = -1; // -1 indicates the piece is in the base
 
@@ -47,7 +71,6 @@ namespace LudoClient.CoreEngine
                         new Piece(color,gui.red4.name, gui.red4)
                     };
                 }
-
                 if (color == "green")
                 {
                     Pieces = new List<Piece>
@@ -58,7 +81,6 @@ namespace LudoClient.CoreEngine
                         new Piece(color,gui.gre4.name, gui.gre4)
                     };
                 }
-
                 if (color == "yellow")
                 {
                     Pieces = new List<Piece>
@@ -69,7 +91,6 @@ namespace LudoClient.CoreEngine
                         new Piece(color,gui.yel4.name, gui.yel4)
                     };
                 }
-
                 if (color == "blue")
                 {
                     Pieces = new List<Piece>
@@ -89,10 +110,7 @@ namespace LudoClient.CoreEngine
                 }[color];
             }
         }
-        private List<Player> players;
-        private int currentPlayerIndex;
-        private Piece[] board;
-        public void pupulate(Gui gui)
+        public void pupulate(Gui gui, int rotation)
         {
             //players[0].Pieces[0].location = 50;
             //players[0].Pieces[0].Position = 49;
@@ -100,32 +118,44 @@ namespace LudoClient.CoreEngine
             {
                 for (int j = 0; j < players[i].Pieces.Count; j++)
                 {
-                    Relocate(players[i], players[i].Pieces[j], true);
+                    Relocate(players[i], players[i].Pieces[j], true, rotation);
                 }
             }
         }
-        AbsoluteLayout Alayout;
-        Grid Glayout;
         public void RecievedRequest(String name, int val)
         {
-
         }
-        public Engine(Gui gui, Grid Glayout, AbsoluteLayout Alayout)
+        public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
-            client.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
+            this.gameType = gameType;
+            currentPlayerIndex = 0;
+            GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
             this.gui = gui;
             gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
             this.Glayout = Glayout;
             this.Alayout = Alayout;
 
-
+            int rotation = 360;
+            switch (playerColor)
+            {
+                case "Green":
+                    rotation = 270;
+                    break;
+                case "Yellow":
+                    rotation = 180;
+                    break;
+                case "Blue":
+                    rotation = 90;
+                    break;
+            }
+            Glayout.RotateTo(rotation);
             Alayout.SizeChanged += (sender, e) =>
             {
                 // This code will run when the layout is rendered or resized
                 // You can perform your actions here
                 Console.WriteLine("The layout has been loaded and rendered.");
-                pupulate(gui);
+                pupulate(gui, rotation);
             };
             players = new List<Player>
             {
@@ -134,9 +164,6 @@ namespace LudoClient.CoreEngine
                 new Player("yellow",gui),
                 new Player("blue",gui)
             };
-            currentPlayerIndex = 0;
-
-            board = new Piece[57];
 
             originalPath["p0"] = new int[] { 13, 6 };
             originalPath["p1"] = new int[] { 12, 6 };
@@ -250,23 +277,15 @@ namespace LudoClient.CoreEngine
             rolls.Add(1);
             rolls.Add(1);
         }
-        Random rnd = new Random();
-        List<int> rolls = new List<int>();
-        int index = 0;
-        private int RollDice()
-        {
-            //perform the animation of the dice rolling
-            //
-            try
-            {
-                return rnd.Next(1, 7);
-                // return rolls[index++];
-            }
-            catch (Exception)
-            {
-                return 1;
-            }
-        }
+
+        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
+        Before:
+                private int RollDice(string SeatName)
+                {
+        After:
+                private async Task<int> RollDiceAsync(string SeatName)
+                {
+        */
         private Piece getPiece(List<Piece> pieces, string name)
         {
             for (int i = 0; i < pieces.Count; i++)
@@ -311,23 +330,17 @@ namespace LudoClient.CoreEngine
             else
                 return false;
         }
-        public async void SeatTurn(String SeatName)
+        public async void SeatTurn(String seatName)
         {
             int tempDice = -1;
             Player player = players[currentPlayerIndex];
-            if (player.Color == SeatName && gameState == "RollDice")
+            if (player.Color == seatName && gameState == "RollDice")
             {
-                if (gameType != "Online")
-                {
-                    diceValue = RollDice();
-                }
-                else
-                {
-                    diceValue = Int32.Parse(await client.SendMessageAsync(SeatName, "Seat"));
-                }
-                tempDice = diceValue;
                 int moveablePieces = 0;
                 int closedPieces = 0;
+                diceValue = await RollDice(seatName);
+                tempDice = diceValue;
+
                 for (int i = 0; i < player.Pieces.Count; i++)
                 {
                     if (player.Pieces[i].location == 0 && diceValue == 6)
@@ -344,6 +357,7 @@ namespace LudoClient.CoreEngine
                     }
                     else player.Pieces[i].moveable = false;
                 }
+
                 Console.WriteLine($"{player.Color} rolled a {diceValue} " + $"can move " + moveablePieces + " pieces.");
                 encoder($"{player.Color}");
                 if (moveablePieces == 1)
@@ -365,7 +379,7 @@ namespace LudoClient.CoreEngine
                 if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
                 {
                     gameState = "MovePiece";
-                    MovePieceAsync(player.Pieces[rnd.Next(0, player.Pieces.Count)].name);
+                    MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].name);
                 }
                 else
                 if (moveablePieces > 0)
@@ -387,14 +401,16 @@ namespace LudoClient.CoreEngine
                 Console.WriteLine("Not the turn of the player");
 
             }
-            await Sleep(rnd.Next(1, 500));//simulating the server delay
-            StopDice(SeatName, tempDice);
+            await Task.Delay(GlobalConstants.rnd.Next(1, 500));//simulating the server delay
+            StopDice(seatName, tempDice);
         }
-        async Task Sleep(int delay)
+        private async Task<int> RollDice(string seatName)
         {
-            await Task.Delay(delay);
+            if (gameType != "Online")
+                return GlobalConstants.rnd.Next(1, 7);
+            else
+                return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
         }
-
         public async Task MovePieceAsync(String Piece)
         {
             Player player = players[currentPlayerIndex];
@@ -403,7 +419,8 @@ namespace LudoClient.CoreEngine
                 return;//Exit not the Current player Piece
             if (gameState == "MovePiece" && piece.moveable)
             {
-                Piece = await client.SendMessageAsync(Piece, "Piece");
+                if (gameType == "Online")
+                    Piece = await GlobalConstants.MatchMaker.SendMessageAsync(Piece, "Piece");
                 bool killed = false;
                 if (piece.Position == -1 && diceValue == 6)
                 {
@@ -412,7 +429,7 @@ namespace LudoClient.CoreEngine
                     board[player.StartPosition] = piece;
                     //perform the animation of the piece moving from base to the start position
                     encoder(piece.name);
-                    Relocate(player, piece, false);
+                    Relocate(player, piece, false, 0);
                 }
                 else
                 {
@@ -424,14 +441,14 @@ namespace LudoClient.CoreEngine
                             killed = true;
                             board[newPosition].Position = -1;
                             board[newPosition].location = 0;
-                            Relocate(player, board[newPosition], false);
+                            Relocate(player, board[newPosition], false, 0);
                         }
                         board[piece.Position] = null;
                         piece.Position = newPosition;
                         piece.location = ((piece.location + diceValue));
                         board[newPosition] = piece;
                         encoder(piece.name);
-                        Relocate(player, piece, false);
+                        Relocate(player, piece, false, 0);
                         if (piece.location == 57)
                         {
                             player.Pieces.Remove(piece);
@@ -466,7 +483,7 @@ namespace LudoClient.CoreEngine
         {
             SeatTurn(players[currentPlayerIndex].Color);
         }
-        public void Relocate(Player player, Piece piece, bool baseflag)
+        public void Relocate(Player player, Piece piece, bool baseflag, int rotation)
         {
             //piece.Position
             //player.StartPosition
@@ -493,21 +510,19 @@ namespace LudoClient.CoreEngine
                 double x = originalPath[pj][1] * height;
 
                 if (baseflag)
+                {
                     AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(0, 0, width, height));
-
-                //    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
-
-                // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
-
+                    // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
+                    // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
+                    piece.piece.RotateTo(-rotation);
+                }
                 piece.piece.TranslateTo(x, y, 200, Easing.CubicIn);
                 // Grid.SetRow(piece.piece, originalPath[pj][0]);
-                //    Grid.SetRow(piece.piece, originalPath[pj][0]);
-                //    Grid.SetColumn(piece.piece, originalPath[pj][1]);
+                // Grid.SetRow(piece.piece, originalPath[pj][0]);
+                // Grid.SetColumn(piece.piece, originalPath[pj][1]);
                 Console.WriteLine($"{piece.name} is at {pj} " + x + ":" + y + ":" + width + ":" + height);
             }
         }
-        public int chainIndex = 0;
-        public string chain = "";
         public void encoder(String command)
         { //encode the game state
             chain += chainIndex + "," + command + "+";
@@ -547,9 +562,5 @@ namespace LudoClient.CoreEngine
         {
 
         }
-        public delegate void CallbackEventHandler(string SeatName, int diceValue);
-        public event CallbackEventHandler StopDice;
-        int diceValue = 0;
-        String gameState = "RollDice";
     }
 }

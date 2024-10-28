@@ -1,7 +1,6 @@
 ﻿using LudoClient.Constants;
+using LudoClient.CoreEngine;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Controls;
-using System.Security.AccessControl;
 
 namespace LudoClient.Network
 {
@@ -36,13 +35,10 @@ namespace LudoClient.Network
             });
             _hubConnection.On("GameStart", () =>
             {
-                //gameStart(); bnhmjvfgtyr56ú€g
-                    Console.WriteLine("Starting Game 1 " + DateTime.Now);
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     Console.WriteLine("Starting Game " + DateTime.Now);
-                    Task.Delay(10000);
-                    Console.WriteLine("GameStarted " + DateTime.Now);
+                    Application.Current.MainPage = new Game("","","");
                 });
             });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>

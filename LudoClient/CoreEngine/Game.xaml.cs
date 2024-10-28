@@ -1,20 +1,161 @@
-using CommunityToolkit.Maui.Views;
+using LudoClient.ControlView;
 using SimpleToolkit.Core;
-using LudoClient.Popups;
-
 namespace LudoClient.CoreEngine;
-
 public partial class Game : ContentPage
 {
-    Engine Engine;
-    public Game()
+    Engine Engine; 
+    PlayerSeat RedPlayerSeat; PlayerSeat GreenPlayerSeat; PlayerSeat YellowPlayerSeat; PlayerSeat BluePlayerSeat;
+    public Game(string gametype, string playerCount, string playerColor)
     {
         InitializeComponent();
-        //   Grid.SetRow(GameView, 0);
-        //   Grid.SetColumn(GameView, 0);
+        //Grid.SetRow(GameView, 0);
+        //Grid.SetColumn(GameView, 0);
 
+        // Create RedPlayerSeat
+        RedPlayerSeat = new PlayerSeat
+        {
+            PlayerBG = "red_container.png",
+            HorizontalOptions = LayoutOptions.FillAndExpand,
+            VerticalOptions = LayoutOptions.End
+        };
+        // Create GreenPlayerSeat
+        GreenPlayerSeat = new PlayerSeat
+        {
+            PlayerBG = "green_container.png",
+            HorizontalOptions = LayoutOptions.FillAndExpand,
+            VerticalOptions = LayoutOptions.End
+        };
+        // Create YellowPlayerSeat
+        YellowPlayerSeat = new PlayerSeat
+        {
+            PlayerBG = "yellow_container.png",
+            HorizontalOptions = LayoutOptions.FillAndExpand,
+            VerticalOptions = LayoutOptions.End
+        };
+        // Create BluePlayerSeat
+        BluePlayerSeat = new PlayerSeat
+        {
+            PlayerBG = "blue_container.png",
+            HorizontalOptions = LayoutOptions.FillAndExpand,
+            VerticalOptions = LayoutOptions.End
+        };
+        switch (playerCount)
+        {
+            case "2":
+                switch (playerColor)
+                {
+                    case "Red":
+                        Row1.Children.Add(YellowPlayerSeat);
+                        Row2.Children.Add(RedPlayerSeat);
+                        break;
+                    case "Yellow":
+                        Row2.Children.Add(YellowPlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+                        break;
+                    case "Green":
+                        Row1.Children.Add(BluePlayerSeat);
+                        Row2.Children.Add(GreenPlayerSeat);
+                        break;
+                    case "Blue":
+                        Row2.Children.Add(BluePlayerSeat);
+                        Row1.Children.Add(GreenPlayerSeat);
+                        break;
+                }
+                break;
+            case "3":
+                switch (playerColor)
+                {
+                    case "Red":
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row1.Children.Add(YellowPlayerSeat);
+                        Row2.Children.Add(RedPlayerSeat);
+                        break;
+                    case "Yellow":
+                        Row1.Children.Add(BluePlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+                        Row2.Children.Add(YellowPlayerSeat);
+                        break;
+                    case "Green":
+                        Row1.Children.Add(YellowPlayerSeat);
+                        Row1.Children.Add(BluePlayerSeat);
+                        Row2.Children.Add(GreenPlayerSeat);
+                        break;
+                    case "Blue":
+                        Row1.Children.Add(RedPlayerSeat);
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row2.Children.Add(BluePlayerSeat);
+                        break;
+                }
+                break;
+            case "4":
+                switch (playerColor)
+                {
+                    case "Red":
+                        Row2.Children.Add(RedPlayerSeat);
+                        Row2.Children.Add(BluePlayerSeat);
+
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row1.Children.Add(YellowPlayerSeat);
+                        break;
+                    case "Green":
+                        Row2.Children.Add(GreenPlayerSeat);
+                        Row2.Children.Add(RedPlayerSeat);
+
+                        Row1.Children.Add(YellowPlayerSeat);
+                        Row1.Children.Add(BluePlayerSeat);
+                        break;
+                    case "Yellow":
+                        Row1.Children.Add(BluePlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+
+                        Row2.Children.Add(YellowPlayerSeat);
+                        Row2.Children.Add(GreenPlayerSeat);
+                        break;
+                    case "Blue":
+                        Row2.Children.Add(BluePlayerSeat);
+                        Row2.Children.Add(YellowPlayerSeat);
+
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+                        break;
+                }
+                break;
+            case "22":
+                switch (playerColor)
+                {
+                    case "Red":
+                        Row2.Children.Add(RedPlayerSeat);
+                        Row2.Children.Add(BluePlayerSeat);
+
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row1.Children.Add(YellowPlayerSeat);
+                        break;
+                    case "Green":
+                        Row2.Children.Add(GreenPlayerSeat);
+                        Row2.Children.Add(RedPlayerSeat);
+
+                        Row1.Children.Add(YellowPlayerSeat);
+                        Row1.Children.Add(BluePlayerSeat);
+                        break;
+                    case "Yellow":
+                        Row1.Children.Add(BluePlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+
+                        Row2.Children.Add(YellowPlayerSeat);
+                        Row2.Children.Add(GreenPlayerSeat);
+                        break;
+                    case "Blue":
+                        Row2.Children.Add(BluePlayerSeat);
+                        Row2.Children.Add(YellowPlayerSeat);
+
+                        Row1.Children.Add(GreenPlayerSeat);
+                        Row1.Children.Add(RedPlayerSeat);
+                        break;
+                }
+                break;
+        }
         Gui gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
-        Engine = new Engine(gui, Glayout, Alayout);
+        Engine = new Engine(gametype, playerCount, playerColor, gui, Glayout, Alayout);
         //Event Handelers
         GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
@@ -37,13 +178,15 @@ public partial class Game : ContentPage
         blu2.OnPieceClicked += PlayerPieceClicked;
         blu3.OnPieceClicked += PlayerPieceClicked;
         blu4.OnPieceClicked += PlayerPieceClicked;
-        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+
         RedPlayerSeat.reset();
         GreenPlayerSeat.reset();
         YellowPlayerSeat.reset();
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
+
+        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
     }
     private void PlayerPieceClicked(String PieceName)
     {
@@ -107,15 +250,11 @@ public partial class Game : ContentPage
     } 
     private void ExitToLobby(object sender, EventArgs e)
     {
-        /*
-         * 
-        <Grid x:Name="messageBoxCcnfirm" HorizontalOptions="FillAndExpand" VerticalOptions="Center" IsVisible="False" >
-            <local:MessageBoxConfirm SettingTitle="Exit" SettingText="Are you sure you want to exit? You will lose your bet amount."  />
-        </Grid>*/
-        this.ShowPopup(new MessageBox());
+        //this.ShowPopup(new MessageBox());
         PopoverButton.HideAttachedPopover();
         //show pop up for Exit to lobby
-       // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
-    }
+        // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
 
+        Application.Current.MainPage = new AppShell();
+    }
 }

@@ -9,12 +9,10 @@
              xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
              Title="Game">
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-        <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill"
-               RowDefinitions=".4*,.3*,1.6*,.3*,.4*" >
-            <local:Capsule Grid.Row="2" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                <Grid x:Name="Glayout" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" 
-                      RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
-                    <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15" >
+        <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill" RowDefinitions=".4*,.3*,1.6*,.3*,.4*">
+            <local:Capsule x:Name="Glayout" Grid.Row="2" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
+                    <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
                         <local:Token x:Name="red1" piece="red_token_large.png"/>
                         <local:Token x:Name="red2" piece="red_token_large.png"/>
                         <local:Token x:Name="red3" piece="red_token_large.png"/>
@@ -34,13 +32,9 @@
                     </AbsoluteLayout>
                 </Grid>
             </local:Capsule>
-            <StackLayout Grid.Row="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="End">
-                <local:PlayerSeat x:Name="GreenPlayerSeat" PlayerBG="green_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
-                <local:PlayerSeat x:Name="YellowPlayerSeat" PlayerBG="yellow_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+            <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="End">
             </StackLayout>
-            <StackLayout Grid.Row="3" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <local:PlayerSeat x:Name="RedPlayerSeat" PlayerBG="red_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
-                <local:PlayerSeat x:Name="BluePlayerSeat" PlayerBG="blue_container.png" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
+            <StackLayout x:Name="Row2" Grid.Row="3" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             </StackLayout>
         </Grid>
         <local:Capsule ImageSource="footer.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">

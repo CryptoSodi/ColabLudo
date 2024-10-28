@@ -13,7 +13,8 @@ namespace LudoClient.Constants
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
         public static Client MatchMaker;
-        public static bool online = false;
+        public static bool online = true;
+        public static Random rnd = new Random();
         static GlobalConstants()
         {
 #if WINDOWS
@@ -21,7 +22,7 @@ namespace LudoClient.Constants
 #elif ANDROID
                 Debug = true;
 #endif
-            Url = Debug ? "http://192.168.1.24" : "https://localhost";
+                Url = Debug ? "http://192.168.1.13" : "https://localhost";
 #if WINDOWS  
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
