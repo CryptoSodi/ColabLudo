@@ -1,0 +1,106 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LudoClient.CoreEngine
+{
+    public static class GameRecorder
+    {
+        public static Engine engine = null;
+        public static List<GameAction> gameHistory = new List<GameAction>();
+
+        public static void EncodeAction(GameAction action)
+        {
+            gameHistory.Add(action);
+        }
+        public static string SerializeHistory()
+        {
+            // Convert the game history to JSON (or other format if preferred)
+            return Newtonsoft.Json.JsonConvert.SerializeObject(gameHistory);
+        }
+        // Record an action for the encoder
+        private static void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int newPosition = -1, bool killed = false)
+        {
+            var action = new GameAction(player.Color, actionType, diceValue, piece?.Name, newPosition, killed);
+            gameHistory.Add(action);
+        }
+        // Method to record a dice roll
+        public static void RecordDiceRoll(Player player, int diceValue)
+        {
+            RecordAction("RollDice", diceValue, player);
+        }
+        // Method to record a move action
+        public static void RecordMove(int diceValue, Player player, Piece piece, int newPosition, bool killed = false)
+        {
+            RecordAction("MovePiece", diceValue, player, piece, newPosition, killed);
+        }
+        // Save the game history to a file
+        public static void SaveGameHistory()
+        {
+
+            // Get the startup directory of the application
+            string startupPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Define the file path for saving the history file in the startup directory
+            string filePath = Path.Combine(startupPath, "GameHistory.json");
+
+            // Serialize the game history to JSON format
+            var serializedHistory = Newtonsoft.Json.JsonConvert.SerializeObject(gameHistory);
+
+            // Write the serialized history to the file
+            File.WriteAllText(filePath, serializedHistory);
+
+            Console.WriteLine($"Game history saved at: {filePath}");
+        }
+        public static async Task ReplayGameAsync(string fileName)
+        {
+            // Get the startup directory of the application
+            string startupPath = AppDomain.CurrentDomain.BaseDirectory;
+
+            // Define the file path for saving the history file in the startup directory
+            string filePath = Path.Combine(startupPath, fileName);
+
+            if (!File.Exists(filePath))
+            {
+                Console.WriteLine("Game history file not found.");
+                return;
+            }
+
+            string historyData = File.ReadAllText(filePath);
+            var actions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<GameAction>>(historyData);
+
+            foreach (var action in actions)
+            {   
+                await Task.Delay(500); // Delay to mimic real-time play (adjust as needed)
+                await PlayActionAsync(action);
+            }
+        }
+        private static async Task PlayActionAsync(GameAction action)
+        {
+            switch (action.ActionType)
+            {
+                case "RollDice":
+                    Console.WriteLine($"{action.PlayerColor} rolled a {action.DiceValue}");
+                    engine.SeatTurn(action.PlayerColor,action.DiceValue);
+                    break;
+                case "MovePiece":
+                    Console.WriteLine($" moved  to {action.PieceName}");
+                    engine.MovePieceAsync(action.PieceName, action.DiceValue);
+                    break;
+
+                case "Kill":
+                    Console.WriteLine($"{action.PlayerColor} killed an opponent piece at {action.NewPosition}");
+                    break;
+
+                case "ChangeTurn":
+                    Console.WriteLine("Turn changed.");
+                    break;
+
+                default:
+                    throw new InvalidOperationException("Unknown action type.");
+            }
+        }
+    }
+}

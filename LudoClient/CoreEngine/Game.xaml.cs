@@ -254,7 +254,7 @@ public partial class Game : ContentPage
         PopoverButton.HideAttachedPopover();
         //show pop up for Exit to lobby
         // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
-
+        GameRecorder.SaveGameHistory();
         Application.Current.MainPage = new AppShell();
     }
 }

@@ -2,7 +2,7 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Network;
-using System.Security.AccessControl;
+using Microsoft.Maui.Storage;
 
 namespace LudoClient.CoreEngine
 {
@@ -15,115 +15,144 @@ namespace LudoClient.CoreEngine
         // Public fields
         public Gui gui;
 
+        // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
-        int diceValue = 0;
-        String gameState = "RollDice";
+
         // Private fields
         private List<Player> players;
-        private int currentPlayerIndex;
+        private int currentPlayerIndex = 0;
         private Piece[] board = new Piece[57];
         private string gameType = "";
+        private int diceValue = 0;
+        private string gameState = "RollDice";
 
-        public int chainIndex = 0;
-        public string chain = "";
         // Constants or configuration lists
         private readonly List<int> home = new List<int> { 52, 11, 24, 37 };
         private readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
-        private readonly Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+        private          Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
 
         // Game logic helpers
-        private List<int> rolls = new List<int>();
+        bool replay = true;
         private int index = 0;
-
-        public class Piece
+        private void InitializeGuiLocations(Gui gui)
         {
-            public Token piece;
-            public string name = "";
-            public bool moveable = false;
-            internal int location;
-            public string Color { get; private set; }
-            public int Position { get; set; }
-            public Piece(string color, string name, Token piece)
+            // Set initial locations for each token to -1
+            foreach (var token in new[] { gui.red1, gui.red2, gui.red3, gui.red4,
+                                   gui.gre1, gui.gre2, gui.gre3, gui.gre4,
+                                   gui.blu1, gui.blu2, gui.blu3, gui.blu4,
+                                   gui.yel1, gui.yel2, gui.yel3, gui.yel4 })
             {
-                this.piece = piece;
-                this.name = piece.name;
-                Color = color;
-                Position = -1; // -1 indicates the piece is in the base
-
+                token.location = -1;
             }
         }
-        public class Player
+        private int SetRotation(string playerColor)
         {
-            public string Color { get; private set; }
-            public List<Piece> Pieces { get; private set; }
-            public int StartPosition { get; private set; }
-            public Player(string color, Gui gui)
+            return playerColor switch
             {
-                Color = color;
-                if (color == "red")
-                {
-                    Pieces = new List<Piece>
-                    {
-                        new Piece(color,gui.red1.name, gui.red1),
-                        new Piece(color,gui.red2.name, gui.red2),
-                        new Piece(color,gui.red3.name, gui.red3),
-                        new Piece(color,gui.red4.name, gui.red4)
-                    };
-                }
-                if (color == "green")
-                {
-                    Pieces = new List<Piece>
-                    {
-                        new Piece(color,gui.gre1.name, gui.gre1),
-                        new Piece(color,gui.gre2.name, gui.gre2),
-                        new Piece(color,gui.gre3.name, gui.gre3),
-                        new Piece(color,gui.gre4.name, gui.gre4)
-                    };
-                }
-                if (color == "yellow")
-                {
-                    Pieces = new List<Piece>
-                    {
-                        new Piece(color,gui.yel1.name, gui.yel1),
-                        new Piece(color,gui.yel2.name, gui.yel2),
-                        new Piece(color,gui.yel3.name, gui.yel3),
-                        new Piece(color,gui.yel4.name, gui.yel4)
-                    };
-                }
-                if (color == "blue")
-                {
-                    Pieces = new List<Piece>
-                    {
-                        new Piece(color,gui.blu1.name, gui.blu1),
-                        new Piece(color,gui.blu2.name, gui.blu2),
-                        new Piece(color,gui.blu3.name, gui.blu3),
-                        new Piece(color,gui.blu4.name, gui.blu4)
-                    };
-                }
-                StartPosition = new Dictionary<string, int>
-                {
-                    { "red", 0 },
-                    { "green", 13 },
-                    { "yellow", 26 },
-                    { "blue", 39 }
-                }[color];
-            }
+                "Green" => 270,
+                "Yellow" => 180,
+                "Blue" => 90,
+                _ => 360 // Default rotation for Red or unrecognized color
+            };
         }
-        public void pupulate(Gui gui, int rotation)
+        private void InitializeOriginalPath()
         {
-            //players[0].Pieces[0].location = 50;
-            //players[0].Pieces[0].Position = 49;
-            for (int i = 0; i < players.Count; i++)
+            originalPath = new Dictionary<string, int[]>
             {
-                for (int j = 0; j < players[i].Pieces.Count; j++)
-                {
-                    Relocate(players[i], players[i].Pieces[j], true, rotation);
-                }
-            }
-        }
-        public void RecievedRequest(String name, int val)
-        {
+                { "p0", new int[] { 13, 6 } },
+                { "p1", new int[] { 12, 6 } },
+                { "p2", new int[] { 11, 6 } },
+                { "p3", new int[] { 10, 6 } },
+                { "p4", new int[] { 9, 6 } },
+                { "p5", new int[] { 8, 5 } },
+                { "p6", new int[] { 8, 4 } },
+                { "p7", new int[] { 8, 3 } },
+                { "p8", new int[] { 8, 2 } },
+                { "p9", new int[] { 8, 1 } },
+                { "p10", new int[] { 8, 0 } },
+                { "p11", new int[] { 7, 0 } },
+                { "p12", new int[] { 6, 0 } },
+                { "p13", new int[] { 6, 1 } },
+                { "p14", new int[] { 6, 2 } },
+                { "p15", new int[] { 6, 3 } },
+                { "p16", new int[] { 6, 4 } },
+                { "p17", new int[] { 6, 5 } },
+                { "p18", new int[] { 5, 6 } },
+                { "p19", new int[] { 4, 6 } },
+                { "p20", new int[] { 3, 6 } },
+                { "p21", new int[] { 2, 6 } },
+                { "p22", new int[] { 1, 6 } },
+                { "p23", new int[] { 0, 6 } },
+                { "p24", new int[] { 0, 7 } },
+                { "p25", new int[] { 0, 8 } },
+                { "p26", new int[] { 1, 8 } },
+                { "p27", new int[] { 2, 8 } },
+                { "p28", new int[] { 3, 8 } },
+                { "p29", new int[] { 4, 8 } },
+                { "p30", new int[] { 5, 8 } },
+                { "p31", new int[] { 6, 9 } },
+                { "p32", new int[] { 6, 10 } },
+                { "p33", new int[] { 6, 11 } },
+                { "p34", new int[] { 6, 12 } },
+                { "p35", new int[] { 6, 13 } },
+                { "p36", new int[] { 6, 14 } },
+                { "p37", new int[] { 7, 14 } },
+                { "p38", new int[] { 8, 14 } },
+                { "p39", new int[] { 8, 13 } },
+                { "p40", new int[] { 8, 12 } },
+                { "p41", new int[] { 8, 11 } },
+                { "p42", new int[] { 8, 10 } },
+                { "p43", new int[] { 8, 9 } },
+                { "p44", new int[] { 9, 8 } },
+                { "p45", new int[] { 10, 8 } },
+                { "p46", new int[] { 11, 8 } },
+                { "p47", new int[] { 12, 8 } },
+                { "p48", new int[] { 13, 8 } },
+                { "p49", new int[] { 14, 8 } },
+                { "p50", new int[] { 14, 7 } },
+                { "p51", new int[] { 14, 6 } },
+                { "r51", new int[] { 13, 7 } },
+                { "r52", new int[] { 12, 7 } },
+                { "r53", new int[] { 11, 7 } },
+                { "r54", new int[] { 10, 7 } },
+                { "r55", new int[] { 9, 7 } },
+                { "r56", new int[] { 8, 7 } },
+                { "g51", new int[] { 7, 1 } },
+                { "g52", new int[] { 7, 2 } },
+                { "g53", new int[] { 7, 3 } },
+                { "g54", new int[] { 7, 4 } },
+                { "g55", new int[] { 7, 5 } },
+                { "g56", new int[] { 7, 6 } },
+                { "y51", new int[] { 1, 7 } },
+                { "y52", new int[] { 2, 7 } },
+                { "y53", new int[] { 3, 7 } },
+                { "y54", new int[] { 4, 7 } },
+                { "y55", new int[] { 5, 7 } },
+                { "y56", new int[] { 6, 7 } },
+                { "b51", new int[] { 7, 13 } },
+                { "b52", new int[] { 7, 12 } },
+                { "b53", new int[] { 7, 11 } },
+                { "b54", new int[] { 7, 10 } },
+                { "b55", new int[] { 7, 9 } },
+                { "b56", new int[] { 7, 8 } },
+                { "hr0", new int[] { 11, 2 } },
+                { "hr1", new int[] { 11, 3 } },
+                { "hr2", new int[] { 12, 2 } },
+                { "hr3", new int[] { 12, 3 } },
+                { "hg0", new int[] { 2, 2 } },
+                { "hg1", new int[] { 2, 3 } },
+                { "hg2", new int[] { 3, 2 } },
+                { "hg3", new int[] { 3, 3 } },
+                { "hy0", new int[] { 2, 11 } },
+                { "hy1", new int[] { 2, 12 } },
+                { "hy2", new int[] { 3, 11 } },
+                { "hy3", new int[] { 3, 12 } },
+                { "hb0", new int[] { 11, 11 } },
+                { "hb1", new int[] { 11, 12 } },
+                { "hb2", new int[] { 12, 11 } },
+                { "hb3", new int[] { 12, 12 } }
+            };
         }
         public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
@@ -131,190 +160,69 @@ namespace LudoClient.CoreEngine
             currentPlayerIndex = 0;
             GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
+            // Initialize GUI and layout locations
+            InitializeGuiLocations(gui);
+
             this.gui = gui;
-            gui.red1.location = gui.red2.location = gui.red3.location = gui.red4.location = gui.gre1.location = gui.gre2.location = gui.gre3.location = gui.gre4.location = gui.blu1.location = gui.blu2.location = gui.blu3.location = gui.blu4.location = gui.yel1.location = gui.yel2.location = gui.yel3.location = gui.yel4.location = -1;
             this.Glayout = Glayout;
             this.Alayout = Alayout;
 
-            int rotation = 360;
-            switch (playerColor)
-            {
-                case "Green":
-                    rotation = 270;
-                    break;
-                case "Yellow":
-                    rotation = 180;
-                    break;
-                case "Blue":
-                    rotation = 90;
-                    break;
-            }
+            // Set rotation based on player color
+            int rotation = SetRotation(playerColor);
             Glayout.RotateTo(rotation);
+
+            // Handle layout size changes
             Alayout.SizeChanged += (sender, e) =>
             {
-                // This code will run when the layout is rendered or resized
-                // You can perform your actions here
                 Console.WriteLine("The layout has been loaded and rendered.");
-                pupulate(gui, rotation);
+                Pupulate(gui, rotation);
             };
+            // Initialize players
             players = new List<Player>
             {
-                new Player("red",gui),
-                new Player("green",gui),
-                new Player("yellow",gui),
-                new Player("blue",gui)
+                new Player("red", gui),
+                new Player("green", gui),
+                new Player("yellow", gui),
+                new Player("blue", gui)
             };
-
-            originalPath["p0"] = new int[] { 13, 6 };
-            originalPath["p1"] = new int[] { 12, 6 };
-            originalPath["p2"] = new int[] { 11, 6 };
-            originalPath["p3"] = new int[] { 10, 6 };
-            originalPath["p4"] = new int[] { 9, 6 };
-            originalPath["p5"] = new int[] { 8, 5 };
-            originalPath["p6"] = new int[] { 8, 4 };
-            originalPath["p7"] = new int[] { 8, 3 };
-            originalPath["p8"] = new int[] { 8, 2 };
-            originalPath["p9"] = new int[] { 8, 1 };
-            originalPath["p10"] = new int[] { 8, 0 };
-            originalPath["p11"] = new int[] { 7, 0 };
-            originalPath["p12"] = new int[] { 6, 0 };
-            originalPath["p13"] = new int[] { 6, 1 };
-            originalPath["p14"] = new int[] { 6, 2 };
-            originalPath["p15"] = new int[] { 6, 3 };
-            originalPath["p16"] = new int[] { 6, 4 };
-            originalPath["p17"] = new int[] { 6, 5 };
-            originalPath["p18"] = new int[] { 5, 6 };
-            originalPath["p19"] = new int[] { 4, 6 };
-            originalPath["p20"] = new int[] { 3, 6 };
-            originalPath["p21"] = new int[] { 2, 6 };
-            originalPath["p22"] = new int[] { 1, 6 };
-            originalPath["p23"] = new int[] { 0, 6 };
-            originalPath["p24"] = new int[] { 0, 7 };
-            originalPath["p25"] = new int[] { 0, 8 };
-            originalPath["p26"] = new int[] { 1, 8 };
-            originalPath["p27"] = new int[] { 2, 8 };
-            originalPath["p28"] = new int[] { 3, 8 };
-            originalPath["p29"] = new int[] { 4, 8 };
-            originalPath["p30"] = new int[] { 5, 8 };
-            originalPath["p31"] = new int[] { 6, 9 };
-            originalPath["p32"] = new int[] { 6, 10 };
-            originalPath["p33"] = new int[] { 6, 11 };
-            originalPath["p34"] = new int[] { 6, 12 };
-            originalPath["p35"] = new int[] { 6, 13 };
-            originalPath["p36"] = new int[] { 6, 14 };
-            originalPath["p37"] = new int[] { 7, 14 };
-            originalPath["p38"] = new int[] { 8, 14 };
-            originalPath["p39"] = new int[] { 8, 13 };
-            originalPath["p40"] = new int[] { 8, 12 };
-            originalPath["p41"] = new int[] { 8, 11 };
-            originalPath["p42"] = new int[] { 8, 10 };
-            originalPath["p43"] = new int[] { 8, 9 };
-            originalPath["p44"] = new int[] { 9, 8 };
-            originalPath["p45"] = new int[] { 10, 8 };
-            originalPath["p46"] = new int[] { 11, 8 };
-            originalPath["p47"] = new int[] { 12, 8 };
-            originalPath["p48"] = new int[] { 13, 8 };
-            originalPath["p49"] = new int[] { 14, 8 };
-            originalPath["p50"] = new int[] { 14, 7 };
-            originalPath["p51"] = new int[] { 14, 6 };
-
-            originalPath["r51"] = new int[] { 13, 7 };
-            originalPath["r52"] = new int[] { 12, 7 };
-            originalPath["r53"] = new int[] { 11, 7 };
-            originalPath["r54"] = new int[] { 10, 7 };
-            originalPath["r55"] = new int[] { 9, 7 };
-            originalPath["r56"] = new int[] { 8, 7 };
-
-            originalPath["g51"] = new int[] { 7, 1 };
-            originalPath["g52"] = new int[] { 7, 2 };
-            originalPath["g53"] = new int[] { 7, 3 };
-            originalPath["g54"] = new int[] { 7, 4 };
-            originalPath["g55"] = new int[] { 7, 5 };
-            originalPath["g56"] = new int[] { 7, 6 };
-
-            originalPath["y51"] = new int[] { 1, 7 };
-            originalPath["y52"] = new int[] { 2, 7 };
-            originalPath["y53"] = new int[] { 3, 7 };
-            originalPath["y54"] = new int[] { 4, 7 };
-            originalPath["y55"] = new int[] { 5, 7 };
-            originalPath["y56"] = new int[] { 6, 7 };
-
-            originalPath["b51"] = new int[] { 7, 13 };
-            originalPath["b52"] = new int[] { 7, 12 };
-            originalPath["b53"] = new int[] { 7, 11 };
-            originalPath["b54"] = new int[] { 7, 10 };
-            originalPath["b55"] = new int[] { 7, 9 };
-            originalPath["b56"] = new int[] { 7, 8 };
-
-            originalPath["hr0"] = new int[] { 11, 2 };
-            originalPath["hr1"] = new int[] { 11, 3 };
-            originalPath["hr2"] = new int[] { 12, 2 };
-            originalPath["hr3"] = new int[] { 12, 3 };
-
-            originalPath["hg0"] = new int[] { 2, 2 };
-            originalPath["hg1"] = new int[] { 2, 3 };
-            originalPath["hg2"] = new int[] { 3, 2 };
-            originalPath["hg3"] = new int[] { 3, 3 };
-
-            originalPath["hy0"] = new int[] { 2, 11 };
-            originalPath["hy1"] = new int[] { 2, 12 };
-            originalPath["hy2"] = new int[] { 3, 11 };
-            originalPath["hy3"] = new int[] { 3, 12 };
-
-            originalPath["hb0"] = new int[] { 11, 11 };
-            originalPath["hb1"] = new int[] { 11, 12 };
-            originalPath["hb2"] = new int[] { 12, 11 };
-            originalPath["hb3"] = new int[] { 12, 12 };
-
-            rolls.Add(6);
-            rolls.Add(1);
-            rolls.Add(6);
-            rolls.Add(1);
-            rolls.Add(6);
-            rolls.Add(1);
-            rolls.Add(6);
-            rolls.Add(1);
-            rolls.Add(1);
-            rolls.Add(1);
+            // Initialize original path
+            InitializeOriginalPath();
+            GameRecorder.engine = this;
+            GameRecorder.ReplayGameAsync("GameHistory.json");
         }
-
-        /* Unmerged change from project 'LudoClient (net8.0-windows10.0.19041.0)'
-        Before:
-                private int RollDice(string SeatName)
-                {
-        After:
-                private async Task<int> RollDiceAsync(string SeatName)
-                {
-        */
-        private Piece getPiece(List<Piece> pieces, string name)
+        private Piece GetPiece(List<Piece> pieces, string name,int diceValue=0)
         {
-            for (int i = 0; i < pieces.Count; i++)
+            foreach (var piece in pieces)
             {
-                if (pieces[i].moveable && pieces[i].name == name)
+                if (piece.Moveable && piece.Name == name)
                 {
-                    if (pieces[i].Position == -1 && diceValue != 6)
+                    // If the piece is at start (-1) and dice roll is not 6, it's not eligible for selection
+                    if (piece.Position == -1 && diceValue != 6)
                     {
                         return null;
                     }
-                    return pieces[i];
+                    return piece;
                 }
             }
             return null;
         }
-        private void performTurnChecks(bool killed)
+        private void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
+
             if (!killed)
+            {
                 if (diceValue != 6)
                 {
                     ChangeTurn();
                 }
                 else
                 {
-                    //If Auto Play Enabled Auto Move the piece
-                    //After Movement is completed change the turn
+                    // Auto Play logic here if enabled
+                    // Optionally move the piece automatically and then change the turn
                 }
-            diceValue = 0;
+            }
+            diceValue = 0;  // Reset dice value for the next turn
         }
         private bool IsPieceSafe(Player player, Piece piece)
         {
@@ -330,139 +238,153 @@ namespace LudoClient.CoreEngine
             else
                 return false;
         }
-        public async void SeatTurn(String seatName)
+        public async void SeatTurn(string seatName,int diceValue=0)
         {
-            int tempDice = -1;
             Player player = players[currentPlayerIndex];
+            int tempDice = -1;
+
+            // Check if it's the correct player's turn and if the game is in the roll state
             if (player.Color == seatName && gameState == "RollDice")
             {
                 int moveablePieces = 0;
                 int closedPieces = 0;
-                diceValue = await RollDice(seatName);
+
+                // Roll the dice
+                diceValue = await RollDice(seatName, diceValue);
                 tempDice = diceValue;
 
-                for (int i = 0; i < player.Pieces.Count; i++)
+                // Determine which pieces can move
+                foreach (var piece in player.Pieces)
                 {
-                    if (player.Pieces[i].location == 0 && diceValue == 6)
+                    if (piece.Location == 0 && diceValue == 6)
                     {
-                        //open the token
-                        player.Pieces[i].moveable = true;
+                        // Open the token if it's in base and dice shows a 6
+                        piece.Moveable = true;
                         moveablePieces++;
                         closedPieces++;
                     }
-                    else if ((player.Pieces[i].location + diceValue <= 57) && player.Pieces[i].location != 0)
+                    else if (piece.Location + diceValue <= 57 && piece.Location != 0)
                     {
-                        player.Pieces[i].moveable = true;
+                        piece.Moveable = true;
                         moveablePieces++;
                     }
-                    else player.Pieces[i].moveable = false;
+                    else
+                    {
+                        piece.Moveable = false;
+                    }
                 }
 
-                Console.WriteLine($"{player.Color} rolled a {diceValue} " + $"can move " + moveablePieces + " pieces.");
-                encoder($"{player.Color}");
+                Console.WriteLine($"{player.Color} rolled a {diceValue}. Can move {moveablePieces} pieces.");
+                GameRecorder.RecordDiceRoll(player, diceValue);
+
+                // Handle possible scenarios based on the number of moveable pieces
                 if (moveablePieces == 1)
                 {
                     Console.WriteLine("Turn Animation of the moveable piece;");
-                    //If Auto Play Enabled Auto Move the piece
-                    //After Movement is completed change the turn
                     gameState = "MovePiece";
-                    for (int i = 0; i < player.Pieces.Count; i++)
-                    {
-                        if (player.Pieces[i].moveable)
-                        {
-                            MovePieceAsync(player.Pieces[i].name);
-                            break;
-                        }
-                    }
+                    if (!replay)
+                        await MovePieceAsync(player.Pieces.First(p => p.Moveable).Name); // Move the only moveable piece
                 }
-                else
-                if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
+                else if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
                 {
                     gameState = "MovePiece";
-                    MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].name);
+                    if (!replay)
+                        await MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].Name); // Randomly move one piece
                 }
-                else
-                if (moveablePieces > 0)
+                else if (moveablePieces > 0)
                 {
                     Console.WriteLine("Turn Animation of the moveable pieces;");
-                    //Turn Animation of the moveable pieces;
-                    //Start the timer for the auto play of 10 seconds. at the end of the timer auto perform the action of move on a random piece or drop the turn.
+                    // Start timer for auto play or prompt for user action
                     gameState = "MovePiece";
                 }
                 else
                 {
                     Console.WriteLine($"{player.Color} could not move any piece.");
-                    ChangeTurn();
+                    ChangeTurn(); // Change turn to the next player
                     gameState = "RollDice";
                 }
             }
             else
             {
                 Console.WriteLine("Not the turn of the player");
-
             }
-            await Task.Delay(GlobalConstants.rnd.Next(1, 500));//simulating the server delay
-            StopDice(seatName, tempDice);
+
+            // Simulate server delay
+            await Task.Delay(GlobalConstants.rnd.Next(1, 500));
+            StopDice(seatName, tempDice); // Notify the end of the dice roll
         }
-        private async Task<int> RollDice(string seatName)
+        public async Task<int> RollDice(string seatName="", int diceValue=0)
         {
-            if (gameType != "Online")
-                return GlobalConstants.rnd.Next(1, 7);
-            else
-                return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
+            if (diceValue == 0)
+            {
+                if (gameType != "Online")
+                    return GlobalConstants.rnd.Next(1, 7);
+                else
+                    return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
+            }else return diceValue;
         }
-        public async Task MovePieceAsync(String Piece)
+        public async Task MovePieceAsync(String pieceName, int diceValue = -1)
         {
             Player player = players[currentPlayerIndex];
-            Piece piece = getPiece(player.Pieces, Piece);
+            Piece piece = GetPiece(player.Pieces, pieceName, diceValue);
             if (piece == null || diceValue == 0)
-                return;//Exit not the Current player Piece
-            if (gameState == "MovePiece" && piece.moveable)
+                return; // Exit if not the current player's piece or no dice roll
+
+            if (gameState == "MovePiece" && piece.Moveable)
             {
                 if (gameType == "Online")
-                    Piece = await GlobalConstants.MatchMaker.SendMessageAsync(Piece, "Piece");
+                    pieceName = await GlobalConstants.MatchMaker.SendMessageAsync(pieceName, "Piece");
+
                 bool killed = false;
-                if (piece.Position == -1 && diceValue == 6)
+
+                if (piece.Position == -1 && diceValue == 6) // Moving from base to start
                 {
                     piece.Position = player.StartPosition;
-                    piece.location = 1;
+                    piece.Location = 1;
                     board[player.StartPosition] = piece;
-                    //perform the animation of the piece moving from base to the start position
-                    encoder(piece.name);
-                    Relocate(player, piece, false, 0);
+
+                    GameRecorder.RecordMove(diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    Relocate(player, piece, false, 0); // Move to start position
                 }
-                else
+                else if (piece.Location + diceValue <= 57) // Normal move within bounds
                 {
-                    if ((piece.location + diceValue) <= 57)
+                    int newPosition = (piece.Position + diceValue) % 52;
+
+                    // Check if an opponent’s piece is in the new position
+                    if (board[newPosition] != null && board[newPosition].Color != player.Color)
                     {
-                        int newPosition = ((piece.Position + diceValue) % 52);
-                        if (board[newPosition] != null && board[newPosition].Color != player.Color)
-                        {
-                            killed = true;
-                            board[newPosition].Position = -1;
-                            board[newPosition].location = 0;
-                            Relocate(player, board[newPosition], false, 0);
-                        }
-                        board[piece.Position] = null;
-                        piece.Position = newPosition;
-                        piece.location = ((piece.location + diceValue));
-                        board[newPosition] = piece;
-                        encoder(piece.name);
-                        Relocate(player, piece, false, 0);
-                        if (piece.location == 57)
-                        {
-                            player.Pieces.Remove(piece);
-                            Console.WriteLine($"{player.Color} piece has reached home!");
-                        }
+                        killed = true;
+                        board[newPosition].Position = -1; // Send opponent's piece back to base
+                        board[newPosition].Location = 0;
+                        Relocate(player, board[newPosition], false, 0);
+                    }
+
+                    // Update board and piece positions
+                    board[piece.Position] = null;
+                    piece.Position = newPosition;
+                    piece.Location += diceValue;
+                    board[newPosition] = piece;
+
+                    GameRecorder.RecordMove(diceValue, player, piece, newPosition, killed); // Prepare animation
+                    Relocate(player, piece, false, 0);
+
+                    // Check if piece has reached the end
+                    if (piece.Location == 57)
+                    {
+                        player.Pieces.Remove(piece);
+                        Console.WriteLine($"{player.Color} piece has reached home!");
+
                         if (player.Pieces.Count == 0)
                             Console.WriteLine($"{player.Color} has won the game!");
                     }
                 }
-                //     checkKills(player,piece);
-                performTurnChecks(killed);
+                //checkKills(player,piece);
+                PerformTurnChecks(killed, diceValue);
                 //perform turn turn check
             }
         }
+        // Record an action for the encoder
+       
         private void ChangeTurn()
         {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
@@ -487,80 +409,57 @@ namespace LudoClient.CoreEngine
         {
             //piece.Position
             //player.StartPosition
-            String pj = "p" + (piece.Position);
-            if (piece.Position == -1)
+            string pj = piece.Position == -1
+                    ? "h" + piece.Name.Substring(0, 1) + (int.Parse(piece.Name.Substring(3, 1)) - 1)
+                    : "p" + piece.Position;
+
+            if (piece.Location > 51 && piece.Location < 58)
             {
-                pj = "h" + piece.name.Substring(0, 1) + (Int32.Parse(piece.name.Substring(3, 1)) - 1);
-            }
-            else
-            if (piece.location > 51 && piece.location < 58)
-            {
-                pj = piece.name.Substring(0, 1) + (piece.location - 1);
+                pj = piece.Name.Substring(0, 1) + (piece.Location - 1);
             }
 
-            if (piece.location > 57)
-            {
-
-            }
-            else
+            if (piece.Location <= 57)
             {
                 double width = Alayout.Width / 15;
                 double height = Alayout.Height / 15;
-                double y = originalPath[pj][0] * width;
-                double x = originalPath[pj][1] * height;
+                double x = originalPath[pj][1] * width;
+                double y = originalPath[pj][0] * height;
 
                 if (baseflag)
                 {
-                    AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(0, 0, width, height));
+                    AbsoluteLayout.SetLayoutBounds(piece.PieceToken, new Rect(0, 0, width, height));
                     // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
                     // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
-                    piece.piece.RotateTo(-rotation);
+                    piece.PieceToken.RotateTo(-rotation);
                 }
-                piece.piece.TranslateTo(x, y, 200, Easing.CubicIn);
+
+                piece.PieceToken.TranslateTo(x, y, 200, Easing.CubicIn);
                 // Grid.SetRow(piece.piece, originalPath[pj][0]);
                 // Grid.SetRow(piece.piece, originalPath[pj][0]);
                 // Grid.SetColumn(piece.piece, originalPath[pj][1]);
-                Console.WriteLine($"{piece.name} is at {pj} " + x + ":" + y + ":" + width + ":" + height);
+                Console.WriteLine($"{piece.Name} is at {pj} - Position: ({x}, {y}), Size: ({width}, {height})");
+            }
+            else
+            {
+
             }
         }
-        public void encoder(String command)
-        { //encode the game state
-            chain += chainIndex + "," + command + "+";
-            chainIndex++;
-            //Console.WriteLine(chain);
-        }
-        public void decoder()
+        public void Pupulate(Gui gui, int rotation)
         {
-            string[] chainArray = chain.Split('+');
-            foreach (string item in chainArray)
+            //players[0].Pieces[0].location = 50;
+            //players[0].Pieces[0].Position = 49;
+            for (int i = 0; i < players.Count; i++)
             {
-                string[] parts = item.Split(',');
-                int index = int.Parse(parts[0]);
-                string command = parts[1];
-                // Perform actions based on the decoded command
-                switch (command)
+                for (int j = 0; j < players[i].Pieces.Count; j++)
                 {
-                    case "red":
-                        // Handle red player command
-                        break;
-                    case "green":
-                        // Handle green player command
-                        break;
-                    case "yellow":
-                        // Handle yellow player command
-                        break;
-                    case "blue":
-                        // Handle blue player command
-                        break;
-                    default:
-                        // Handle unknown command
-                        break;
+                    Relocate(players[i], players[i].Pieces[j], true, rotation);
                 }
             }
         }
-        public void chaser()
+        public void RecievedRequest(String name, int val)
         {
-
         }
+        // Method to load and replay a saved game
+        
     }
 }
