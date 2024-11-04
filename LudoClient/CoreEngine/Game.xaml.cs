@@ -198,7 +198,7 @@ public partial class Game : ContentPage
 
     private void PlayerDiceClicked(String SeatName)
     {
-        if (Engine.checkTurn(SeatName, "RollDice"))
+        if (EngineHelper.checkTurn(SeatName, "RollDice"))
         {
             RedPlayerSeat.reset();
             GreenPlayerSeat.reset();

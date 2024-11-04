@@ -3,39 +3,225 @@ using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Network;
 using Microsoft.Maui.Storage;
+using System.Security.AccessControl;
 
 namespace LudoClient.CoreEngine
 {
     public class Engine
     {
-        // UI Components
-        private AbsoluteLayout Alayout;
-        private Capsule Glayout;
-
-        // Public fields
-        public Gui gui;
-
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
-
-        // Private fields
-        private List<Player> players;
-        private int currentPlayerIndex = 0;
-        private Piece[] board = new Piece[57];
-        private string gameType = "";
-        private int diceValue = 0;
-        private string gameState = "RollDice";
-
-        // Constants or configuration lists
-        private readonly List<int> home = new List<int> { 52, 11, 24, 37 };
-        private readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
-        private          Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-
         // Game logic helpers
-        bool replay = true;
-        private int index = 0;
-        private void InitializeGuiLocations(Gui gui)
+        private Piece[] board = new Piece[57];
+        public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
+        {
+            EngineHelper.gameType = gameType;
+            EngineHelper.currentPlayerIndex = 0;
+            GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
+
+            // Initialize GUI and layout locations
+            EngineHelper.InitializeGuiLocations(gui);
+
+            EngineHelper.gui = gui;
+            EngineHelper.Glayout = Glayout;
+            EngineHelper.Alayout = Alayout;
+
+            // Set rotation based on player color
+            int rotation = EngineHelper.SetRotation(playerColor);
+            Glayout.RotateTo(rotation);
+
+            // Handle layout size changes
+            Alayout.SizeChanged += (sender, e) =>
+            {
+                Console.WriteLine("The layout has been loaded and rendered.");
+                EngineHelper.Pupulate(gui, rotation);
+            };
+            // Initialize players
+            EngineHelper.players = new List<Player>
+            {
+                new Player("red", gui),
+                new Player("green", gui),
+                new Player("yellow", gui),
+                new Player("blue", gui)
+            };
+            // Initialize original path
+            EngineHelper.InitializeOriginalPath();
+            if (EngineHelper.replay)
+            {
+                GameRecorder.engine = this;
+                GameRecorder.ReplayGameAsync("GameHistory.json");
+            }
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
+        }
+        public async void SeatTurn(string seatName)
+        {
+            Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
+            int tempDice = -1;
+
+            // Check if it's the correct player's turn and if the game is in the roll state
+            if (player.Color == seatName && EngineHelper.gameState == "RollDice")
+            {
+                int moveablePieces = 0;
+                int closedPieces = 0;
+
+                // Roll the dice
+                EngineHelper.diceValue = await EngineHelper.RollDice(seatName);
+                tempDice = EngineHelper.diceValue;
+
+                // Determine which pieces can move
+                foreach (var piece in player.Pieces)
+                {
+                    if (piece.Location == 0 && EngineHelper.diceValue == 6)
+                    {
+                        // Open the token if it's in base and dice shows a 6
+                        piece.Moveable = true;
+                        moveablePieces++;
+                        closedPieces++;
+                    }
+                    else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
+                    {
+                        piece.Moveable = true;
+                        moveablePieces++;
+                    }
+                    else
+                    {
+                        piece.Moveable = false;
+                    }
+                }
+
+                Console.WriteLine($"{player.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces} pieces.");
+                GameRecorder.RecordDiceRoll(player, EngineHelper.diceValue);
+
+                // Handle possible scenarios based on the number of moveable pieces
+                if (moveablePieces == 1)
+                {
+                    Console.WriteLine("Turn Animation of the moveable piece;");
+                    EngineHelper.gameState = "MovePiece";
+                    if (!EngineHelper.replay)
+                        await MovePieceAsync(player.Pieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                }
+                else if (moveablePieces == player.Pieces.Count && EngineHelper.diceValue == 6 && closedPieces == player.Pieces.Count)
+                {
+                    EngineHelper.gameState = "MovePiece";
+                    if (!EngineHelper.replay)
+                        await MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].Name); // Randomly move one piece
+                }
+                else if (moveablePieces > 0)
+                {
+                    Console.WriteLine("Turn Animation of the moveable pieces;");
+                    // Start timer for auto play or prompt for user action
+                    EngineHelper.gameState = "MovePiece";
+                }
+                else
+                {
+                    Console.WriteLine($"{player.Color} could not move any piece.");
+                    EngineHelper.ChangeTurn(); // Change turn to the next player
+                    EngineHelper.gameState = "RollDice";
+                }
+            }
+            else
+            {
+                Console.WriteLine("Not the turn of the player");
+            }
+
+            // Simulate server delay
+            await Task.Delay(GlobalConstants.rnd.Next(1, 500));
+            StopDice(seatName, tempDice); // Notify the end of the dice roll
+        }
+        public async Task MovePieceAsync(String pieceName)
+        {
+            Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
+            Piece piece = EngineHelper.GetPiece(player.Pieces, pieceName);
+            if (piece == null || EngineHelper.diceValue == 0)
+                return; // Exit if not the current player's piece or no dice roll
+
+            if (EngineHelper.gameState == "MovePiece" && piece.Moveable)
+            {
+                if (EngineHelper.gameType == "Online")
+                    pieceName = await GlobalConstants.MatchMaker.SendMessageAsync(pieceName, "Piece");
+
+                bool killed = false;
+
+                if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
+                {
+                    piece.Position = player.StartPosition;
+                    piece.Location = 1;
+                    board[player.StartPosition] = piece;
+
+                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    EngineHelper.Relocate(player, piece, false, 0); // Move to start position
+                }
+                else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
+                {
+                    int newPosition = (piece.Position + EngineHelper.diceValue) % 52;
+
+                    // Check if an opponent’s piece is in the new position
+                    if (board[newPosition] != null && board[newPosition].Color != player.Color)
+                    {
+                        killed = true;
+                        board[newPosition].Position = -1; // Send opponent's piece back to base
+                        board[newPosition].Location = 0;
+                        EngineHelper.Relocate(player, board[newPosition], false, 0);
+                    }
+
+                    // Update board and piece positions
+                    board[piece.Position] = null;
+                    piece.Position = newPosition;
+                    piece.Location += EngineHelper.diceValue;
+                    board[newPosition] = piece;
+
+                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, newPosition, killed); // Prepare animation
+                    EngineHelper.Relocate(player, piece, false, 0);
+
+                    // Check if piece has reached the end
+                    if (piece.Location == 57)
+                    {
+                        player.Pieces.Remove(piece);
+                        Console.WriteLine($"{player.Color} piece has reached home!");
+
+                        if (player.Pieces.Count == 0)
+                            Console.WriteLine($"{player.Color} has won the game!");
+                    }
+                }
+                //checkKills(player,piece);
+                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
+                //perform turn turn check
+            }
+        }
+        // Record an action for the encoder
+        public void PlayGame()
+        {
+            SeatTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color);
+        }
+        public void RecievedRequest(String name, int val)
+        {
+        }
+    }
+    public static class EngineHelper
+    {
+        // Game logic helpers
+        public static List<int> rolls = new List<int>();
+        public static bool replay = true;
+        public static int currentPlayerIndex = 0;
+        public static string gameType = "";
+        // Game logic helpers
+        static private int index = 0;
+        public static int diceValue = 0;
+        public static string gameState = "RollDice";
+        // Private fields
+        public static List<Player> players;
+        // Public fields
+        public static Gui gui;
+        // Constants or configuration lists
+        private static readonly List<int> home = new List<int> { 52, 11, 24, 37 };
+        private static readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
+        private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+        // UI Components
+        public static AbsoluteLayout Alayout;
+        public static Capsule Glayout;
+        public static void InitializeGuiLocations(Gui gui)
         {
             // Set initial locations for each token to -1
             foreach (var token in new[] { gui.red1, gui.red2, gui.red3, gui.red4,
@@ -46,7 +232,7 @@ namespace LudoClient.CoreEngine
                 token.location = -1;
             }
         }
-        private int SetRotation(string playerColor)
+        public static int SetRotation(string playerColor)
         {
             return playerColor switch
             {
@@ -56,7 +242,7 @@ namespace LudoClient.CoreEngine
                 _ => 360 // Default rotation for Red or unrecognized color
             };
         }
-        private void InitializeOriginalPath()
+        public static void InitializeOriginalPath()
         {
             originalPath = new Dictionary<string, int[]>
             {
@@ -154,258 +340,7 @@ namespace LudoClient.CoreEngine
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-        public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
-        {
-            this.gameType = gameType;
-            currentPlayerIndex = 0;
-            GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
-
-            // Initialize GUI and layout locations
-            InitializeGuiLocations(gui);
-
-            this.gui = gui;
-            this.Glayout = Glayout;
-            this.Alayout = Alayout;
-
-            // Set rotation based on player color
-            int rotation = SetRotation(playerColor);
-            Glayout.RotateTo(rotation);
-
-            // Handle layout size changes
-            Alayout.SizeChanged += (sender, e) =>
-            {
-                Console.WriteLine("The layout has been loaded and rendered.");
-                Pupulate(gui, rotation);
-            };
-            // Initialize players
-            players = new List<Player>
-            {
-                new Player("red", gui),
-                new Player("green", gui),
-                new Player("yellow", gui),
-                new Player("blue", gui)
-            };
-            // Initialize original path
-            InitializeOriginalPath();
-            GameRecorder.engine = this;
-            GameRecorder.ReplayGameAsync("GameHistory.json");
-        }
-        private Piece GetPiece(List<Piece> pieces, string name,int diceValue=0)
-        {
-            foreach (var piece in pieces)
-            {
-                if (piece.Moveable && piece.Name == name)
-                {
-                    // If the piece is at start (-1) and dice roll is not 6, it's not eligible for selection
-                    if (piece.Position == -1 && diceValue != 6)
-                    {
-                        return null;
-                    }
-                    return piece;
-                }
-            }
-            return null;
-        }
-        private void PerformTurnChecks(bool killed, int diceValue = -1)
-        {
-            gameState = "RollDice";
-
-            if (!killed)
-            {
-                if (diceValue != 6)
-                {
-                    ChangeTurn();
-                }
-                else
-                {
-                    // Auto Play logic here if enabled
-                    // Optionally move the piece automatically and then change the turn
-                }
-            }
-            diceValue = 0;  // Reset dice value for the next turn
-        }
-        private bool IsPieceSafe(Player player, Piece piece)
-        {
-            return safeZone.Contains(piece.Position);
-        }
-        public bool checkTurn(String SeatName, String GameState)
-        {
-            Player player = players[currentPlayerIndex];
-            if (player.Color == SeatName && gameState == GameState)
-            {
-                return true;
-            }
-            else
-                return false;
-        }
-        public async void SeatTurn(string seatName,int diceValue=0)
-        {
-            Player player = players[currentPlayerIndex];
-            int tempDice = -1;
-
-            // Check if it's the correct player's turn and if the game is in the roll state
-            if (player.Color == seatName && gameState == "RollDice")
-            {
-                int moveablePieces = 0;
-                int closedPieces = 0;
-
-                // Roll the dice
-                diceValue = await RollDice(seatName, diceValue);
-                tempDice = diceValue;
-
-                // Determine which pieces can move
-                foreach (var piece in player.Pieces)
-                {
-                    if (piece.Location == 0 && diceValue == 6)
-                    {
-                        // Open the token if it's in base and dice shows a 6
-                        piece.Moveable = true;
-                        moveablePieces++;
-                        closedPieces++;
-                    }
-                    else if (piece.Location + diceValue <= 57 && piece.Location != 0)
-                    {
-                        piece.Moveable = true;
-                        moveablePieces++;
-                    }
-                    else
-                    {
-                        piece.Moveable = false;
-                    }
-                }
-
-                Console.WriteLine($"{player.Color} rolled a {diceValue}. Can move {moveablePieces} pieces.");
-                GameRecorder.RecordDiceRoll(player, diceValue);
-
-                // Handle possible scenarios based on the number of moveable pieces
-                if (moveablePieces == 1)
-                {
-                    Console.WriteLine("Turn Animation of the moveable piece;");
-                    gameState = "MovePiece";
-                    if (!replay)
-                        await MovePieceAsync(player.Pieces.First(p => p.Moveable).Name); // Move the only moveable piece
-                }
-                else if (moveablePieces == player.Pieces.Count && diceValue == 6 && closedPieces == player.Pieces.Count)
-                {
-                    gameState = "MovePiece";
-                    if (!replay)
-                        await MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].Name); // Randomly move one piece
-                }
-                else if (moveablePieces > 0)
-                {
-                    Console.WriteLine("Turn Animation of the moveable pieces;");
-                    // Start timer for auto play or prompt for user action
-                    gameState = "MovePiece";
-                }
-                else
-                {
-                    Console.WriteLine($"{player.Color} could not move any piece.");
-                    ChangeTurn(); // Change turn to the next player
-                    gameState = "RollDice";
-                }
-            }
-            else
-            {
-                Console.WriteLine("Not the turn of the player");
-            }
-
-            // Simulate server delay
-            await Task.Delay(GlobalConstants.rnd.Next(1, 500));
-            StopDice(seatName, tempDice); // Notify the end of the dice roll
-        }
-        public async Task<int> RollDice(string seatName="", int diceValue=0)
-        {
-            if (diceValue == 0)
-            {
-                if (gameType != "Online")
-                    return GlobalConstants.rnd.Next(1, 7);
-                else
-                    return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
-            }else return diceValue;
-        }
-        public async Task MovePieceAsync(String pieceName, int diceValue = -1)
-        {
-            Player player = players[currentPlayerIndex];
-            Piece piece = GetPiece(player.Pieces, pieceName, diceValue);
-            if (piece == null || diceValue == 0)
-                return; // Exit if not the current player's piece or no dice roll
-
-            if (gameState == "MovePiece" && piece.Moveable)
-            {
-                if (gameType == "Online")
-                    pieceName = await GlobalConstants.MatchMaker.SendMessageAsync(pieceName, "Piece");
-
-                bool killed = false;
-
-                if (piece.Position == -1 && diceValue == 6) // Moving from base to start
-                {
-                    piece.Position = player.StartPosition;
-                    piece.Location = 1;
-                    board[player.StartPosition] = piece;
-
-                    GameRecorder.RecordMove(diceValue, player, piece, piece.Position, killed); // Prepare animation
-                    Relocate(player, piece, false, 0); // Move to start position
-                }
-                else if (piece.Location + diceValue <= 57) // Normal move within bounds
-                {
-                    int newPosition = (piece.Position + diceValue) % 52;
-
-                    // Check if an opponent’s piece is in the new position
-                    if (board[newPosition] != null && board[newPosition].Color != player.Color)
-                    {
-                        killed = true;
-                        board[newPosition].Position = -1; // Send opponent's piece back to base
-                        board[newPosition].Location = 0;
-                        Relocate(player, board[newPosition], false, 0);
-                    }
-
-                    // Update board and piece positions
-                    board[piece.Position] = null;
-                    piece.Position = newPosition;
-                    piece.Location += diceValue;
-                    board[newPosition] = piece;
-
-                    GameRecorder.RecordMove(diceValue, player, piece, newPosition, killed); // Prepare animation
-                    Relocate(player, piece, false, 0);
-
-                    // Check if piece has reached the end
-                    if (piece.Location == 57)
-                    {
-                        player.Pieces.Remove(piece);
-                        Console.WriteLine($"{player.Color} piece has reached home!");
-
-                        if (player.Pieces.Count == 0)
-                            Console.WriteLine($"{player.Color} has won the game!");
-                    }
-                }
-                //checkKills(player,piece);
-                PerformTurnChecks(killed, diceValue);
-                //perform turn turn check
-            }
-        }
-        // Record an action for the encoder
-       
-        private void ChangeTurn()
-        {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-        }
-        private bool IsGameOver()
-        {
-            foreach (Player player in players)
-            {
-                if (player.Pieces.Count == 0)
-                {
-                    Console.WriteLine($"{player.Color} has won the game!");
-                    return true;
-                }
-            }
-            return false;
-        }
-        public void PlayGame()
-        {
-            SeatTurn(players[currentPlayerIndex].Color);
-        }
-        public void Relocate(Player player, Piece piece, bool baseflag, int rotation)
+        public static void Relocate(Player player, Piece piece, bool baseflag, int rotation)
         {
             //piece.Position
             //player.StartPosition
@@ -444,7 +379,7 @@ namespace LudoClient.CoreEngine
 
             }
         }
-        public void Pupulate(Gui gui, int rotation)
+        public static void Pupulate(Gui gui, int rotation)
         {
             //players[0].Pieces[0].location = 50;
             //players[0].Pieces[0].Position = 49;
@@ -456,10 +391,92 @@ namespace LudoClient.CoreEngine
                 }
             }
         }
-        public void RecievedRequest(String name, int val)
+        private static bool IsPieceSafe(Player player, Piece piece)
         {
+            return safeZone.Contains(piece.Position);
         }
-        // Method to load and replay a saved game
-        
+        public static void PerformTurnChecks(bool killed, int diceValue = -1)
+        {
+            gameState = "RollDice";
+
+            if (!killed)
+            {
+                if (diceValue != 6)
+                {
+                    ChangeTurn();
+                }
+                else
+                {
+                    // Auto Play logic here if enabled
+                    // Optionally move the piece automatically and then change the turn
+                }
+            }
+            diceValue = 0;  // Reset dice value for the next turn
+        }
+        public static bool checkTurn(String SeatName, String GameState)
+        {
+            Player player = players[currentPlayerIndex];
+            if (player.Color == SeatName && EngineHelper.gameState == GameState)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+        public static async Task<int> RollDice(string seatName = "")
+        {
+            if(replay)
+            {
+                return GameRecorder.RequestDice();
+            }
+            if (rolls.Count != 0)
+            {
+                diceValue = rolls[0];
+                rolls.RemoveAt(0);
+                return diceValue;
+            }
+            if (diceValue == 0)
+            {
+                if (gameType != "Online")
+                {
+                    return GlobalConstants.rnd.Next(1, 7);
+                }
+                else
+                    return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
+            }
+            else return diceValue;
+        }
+        public static void ChangeTurn()
+        {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+        }
+        public static Piece GetPiece(List<Piece> pieces, string name)
+        {
+            foreach (var piece in pieces)
+            {
+                if (piece.Moveable && piece.Name == name)
+                {
+                    // If the piece is at start (-1) and dice roll is not 6, it's not eligible for selection
+                    if (piece.Position == -1 && diceValue != 6)
+                    {
+                        return null;
+                    }
+                    return piece;
+                }
+            }
+            return null;
+        }
+        public static bool IsGameOver()
+        {
+            foreach (Player player in players)
+            {
+                if (player.Pieces.Count == 0)
+                {
+                    Console.WriteLine($"{player.Color} has won the game!");
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 }

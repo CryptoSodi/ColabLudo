@@ -77,17 +77,23 @@ namespace LudoClient.CoreEngine
                 await PlayActionAsync(action);
             }
         }
-        private static async Task PlayActionAsync(GameAction action)
+        static int DiceValue = 0;
+        public static int RequestDice()
+        {
+            return DiceValue;
+        }
+            private static async Task PlayActionAsync(GameAction action)
         {
             switch (action.ActionType)
             {
                 case "RollDice":
                     Console.WriteLine($"{action.PlayerColor} rolled a {action.DiceValue}");
-                    engine.SeatTurn(action.PlayerColor,action.DiceValue);
+                    DiceValue = action.DiceValue;
+                    engine.SeatTurn(action.PlayerColor);
                     break;
                 case "MovePiece":
                     Console.WriteLine($" moved  to {action.PieceName}");
-                    engine.MovePieceAsync(action.PieceName, action.DiceValue);
+                    engine.MovePieceAsync(action.PieceName);
                     break;
 
                 case "Kill":
