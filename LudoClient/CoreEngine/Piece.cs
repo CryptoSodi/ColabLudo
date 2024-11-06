@@ -9,6 +9,7 @@ namespace LudoClient.CoreEngine
 {
     public class Piece
     {
+
         public Token PieceToken { get; private set; }
         public string Name { get; private set; }
         public bool Moveable { get; set; }

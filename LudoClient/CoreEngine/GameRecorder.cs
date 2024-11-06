@@ -70,10 +70,16 @@ namespace LudoClient.CoreEngine
 
             string historyData = File.ReadAllText(filePath);
             var actions = Newtonsoft.Json.JsonConvert.DeserializeObject<List<GameAction>>(historyData);
-
+            int count = 0;
             foreach (var action in actions)
-            {   
-                await Task.Delay(500); // Delay to mimic real-time play (adjust as needed)
+            {
+                count++;
+                if (count >= 340) //118
+                {
+                    await Task.Delay(1000);
+                }
+                Console.WriteLine($"Replaying action {count}...");
+                await Task.Delay(100); // Delay to mimic real-time play (adjust as needed)
                 await PlayActionAsync(action);
             }
         }

@@ -13,9 +13,105 @@ namespace LudoClient.CoreEngine
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
         // Game logic helpers
-        private Piece[] board = new Piece[57];
+        private static Dictionary<string, List<Piece>> board;
+
         public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
+            board = new Dictionary<string, List<Piece>>
+    {
+        { "p0", new List<Piece>() },
+        { "p1", new List<Piece>() },
+        { "p2", new List<Piece>() },
+        { "p3", new List<Piece>() },
+        { "p4", new List<Piece>() },
+        { "p5", new List<Piece>() },
+        { "p6", new List<Piece>() },
+        { "p7", new List<Piece>() },
+        { "p8", new List<Piece>() },
+        { "p9", new List<Piece>() },
+        { "p10", new List<Piece>() },
+        { "p11", new List<Piece>() },
+        { "p12", new List<Piece>() },
+        { "p13", new List<Piece>() },
+        { "p14", new List<Piece>() },
+        { "p15", new List<Piece>() },
+        { "p16", new List<Piece>() },
+        { "p17", new List<Piece>() },
+        { "p18", new List<Piece>() },
+        { "p19", new List<Piece>() },
+        { "p20", new List<Piece>() },
+        { "p21", new List<Piece>() },
+        { "p22", new List<Piece>() },
+        { "p23", new List<Piece>() },
+        { "p24", new List<Piece>() },
+        { "p25", new List<Piece>() },
+        { "p26", new List<Piece>() },
+        { "p27", new List<Piece>() },
+        { "p28", new List<Piece>() },
+        { "p29", new List<Piece>() },
+        { "p30", new List<Piece>() },
+        { "p31", new List<Piece>() },
+        { "p32", new List<Piece>() },
+        { "p33", new List<Piece>() },
+        { "p34", new List<Piece>() },
+        { "p35", new List<Piece>() },
+        { "p36", new List<Piece>() },
+        { "p37", new List<Piece>() },
+        { "p38", new List<Piece>() },
+        { "p39", new List<Piece>() },
+        { "p40", new List<Piece>() },
+        { "p41", new List<Piece>() },
+        { "p42", new List<Piece>() },
+        { "p43", new List<Piece>() },
+        { "p44", new List<Piece>() },
+        { "p45", new List<Piece>() },
+        { "p46", new List<Piece>() },
+        { "p47", new List<Piece>() },
+        { "p48", new List<Piece>() },
+        { "p49", new List<Piece>() },
+        { "p50", new List<Piece>() },
+        { "p51", new List<Piece>() },
+        { "r51", new List<Piece>() },
+        { "r52", new List<Piece>() },
+        { "r53", new List<Piece>() },
+        { "r54", new List<Piece>() },
+        { "r55", new List<Piece>() },
+        { "r56", new List<Piece>() },
+        { "g51", new List<Piece>() },
+        { "g52", new List<Piece>() },
+        { "g53", new List<Piece>() },
+        { "g54", new List<Piece>() },
+        { "g55", new List<Piece>() },
+        { "g56", new List<Piece>() },
+        { "y51", new List<Piece>() },
+        { "y52", new List<Piece>() },
+        { "y53", new List<Piece>() },
+        { "y54", new List<Piece>() },
+        { "y55", new List<Piece>() },
+        { "y56", new List<Piece>() },
+        { "b51", new List<Piece>() },
+        { "b52", new List<Piece>() },
+        { "b53", new List<Piece>() },
+        { "b54", new List<Piece>() },
+        { "b55", new List<Piece>() },
+        { "b56", new List<Piece>() },
+        { "hr0", new List<Piece>() },
+        { "hr1", new List<Piece>() },
+        { "hr2", new List<Piece>() },
+        { "hr3", new List<Piece>() },
+        { "hg0", new List<Piece>() },
+        { "hg1", new List<Piece>() },
+        { "hg2", new List<Piece>() },
+        { "hg3", new List<Piece>() },
+        { "hy0", new List<Piece>() },
+        { "hy1", new List<Piece>() },
+        { "hy2", new List<Piece>() },
+        { "hy3", new List<Piece>() },
+        { "hb0", new List<Piece>() },
+        { "hb1", new List<Piece>() },
+        { "hb2", new List<Piece>() },
+        { "hb3", new List<Piece>() }
+    };
             EngineHelper.gameType = gameType;
             EngineHelper.currentPlayerIndex = 0;
             GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
@@ -53,7 +149,19 @@ namespace LudoClient.CoreEngine
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(2);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
         }
         public async void SeatTurn(string seatName)
         {
@@ -63,9 +171,6 @@ namespace LudoClient.CoreEngine
             // Check if it's the correct player's turn and if the game is in the roll state
             if (player.Color == seatName && EngineHelper.gameState == "RollDice")
             {
-                int moveablePieces = 0;
-                int closedPieces = 0;
-
                 // Roll the dice
                 EngineHelper.diceValue = await EngineHelper.RollDice(seatName);
                 tempDice = EngineHelper.diceValue;
@@ -73,46 +178,40 @@ namespace LudoClient.CoreEngine
                 // Determine which pieces can move
                 foreach (var piece in player.Pieces)
                 {
-                    if (piece.Location == 0 && EngineHelper.diceValue == 6)
-                    {
-                        // Open the token if it's in base and dice shows a 6
+                    if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
-                        moveablePieces++;
-                        closedPieces++;
-                    }
                     else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
-                    {
                         piece.Moveable = true;
-                        moveablePieces++;
-                    }
                     else
-                    {
                         piece.Moveable = false;
-                    }
                 }
+                List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
 
                 Console.WriteLine($"{player.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces} pieces.");
                 GameRecorder.RecordDiceRoll(player, EngineHelper.diceValue);
 
                 // Handle possible scenarios based on the number of moveable pieces
-                if (moveablePieces == 1)
+                if (moveablePieces.Count == 1)
                 {
                     Console.WriteLine("Turn Animation of the moveable piece;");
                     EngineHelper.gameState = "MovePiece";
                     if (!EngineHelper.replay)
                         await MovePieceAsync(player.Pieces.First(p => p.Moveable).Name); // Move the only moveable piece
                 }
-                else if (moveablePieces == player.Pieces.Count && EngineHelper.diceValue == 6 && closedPieces == player.Pieces.Count)
+                else if (moveablePieces.Count > 0)
                 {
+                    int firstLocation = moveablePieces[0].Location;
                     EngineHelper.gameState = "MovePiece";
-                    if (!EngineHelper.replay)
-                        await MovePieceAsync(player.Pieces[GlobalConstants.rnd.Next(0, player.Pieces.Count)].Name); // Randomly move one piece
-                }
-                else if (moveablePieces > 0)
-                {
-                    Console.WriteLine("Turn Animation of the moveable pieces;");
-                    // Start timer for auto play or prompt for user action
-                    EngineHelper.gameState = "MovePiece";
+                    if (moveablePieces.All(p => p.Location == firstLocation))
+                    {
+                        if (!EngineHelper.replay)
+                            await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                    }
+                    else
+                    {
+                        Console.WriteLine("Turn Animation of the moveable pieces;");
+                        // Start timer for auto play or prompt for user action
+                    }
                 }
                 else
                 {
@@ -148,7 +247,8 @@ namespace LudoClient.CoreEngine
                 {
                     piece.Position = player.StartPosition;
                     piece.Location = 1;
-                    board[player.StartPosition] = piece;
+
+                    board[EngineHelper.getPieceBox(piece)].Add(piece);
 
                     GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
                     EngineHelper.Relocate(player, piece, false, 0); // Move to start position
@@ -157,32 +257,44 @@ namespace LudoClient.CoreEngine
                 {
                     int newPosition = (piece.Position + EngineHelper.diceValue) % 52;
 
-                    // Check if an opponent’s piece is in the new position
-                    if (board[newPosition] != null && board[newPosition].Color != player.Color)
-                    {
-                        killed = true;
-                        board[newPosition].Position = -1; // Send opponent's piece back to base
-                        board[newPosition].Location = 0;
-                        EngineHelper.Relocate(player, board[newPosition], false, 0);
-                    }
-
+                    string pj = EngineHelper.getPieceBox(piece);
                     // Update board and piece positions
-                    board[piece.Position] = null;
+                    board[pj].Remove(piece);
                     piece.Position = newPosition;
                     piece.Location += EngineHelper.diceValue;
-                    board[newPosition] = piece;
+                    pj = EngineHelper.getPieceBox(piece);
 
+                    // Check if an opponent’s piece is in the new position
+                    if (board[pj].Count != 0 && board[pj].Count < 2 && !EngineHelper.safeZone.Contains(newPosition))
+                    {
+                        if(board[pj][0].Color != player.Color)
+                        {
+                            killed = true;
+                            board[pj][0].Position = -1; // Send opponent's piece back to base
+                            board[pj][0].Location = 0;
+                            Piece killedPiece = board[pj][0];
+                            board[pj].Remove(killedPiece);
+                            board[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
+                            EngineHelper.Relocate(player, killedPiece, false, 0);
+                        }
+                    }
+
+                    board[pj].Add(piece);
                     GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, newPosition, killed); // Prepare animation
                     EngineHelper.Relocate(player, piece, false, 0);
 
                     // Check if piece has reached the end
                     if (piece.Location == 57)
                     {
+                        killed = true;
                         player.Pieces.Remove(piece);
                         Console.WriteLine($"{player.Color} piece has reached home!");
 
                         if (player.Pieces.Count == 0)
+                        {
                             Console.WriteLine($"{player.Color} has won the game!");
+                            EngineHelper.players.Remove(player);
+                        }
                     }
                 }
                 //checkKills(player,piece);
@@ -203,7 +315,8 @@ namespace LudoClient.CoreEngine
     {
         // Game logic helpers
         public static List<int> rolls = new List<int>();
-        public static bool replay = true;
+        public static bool replay = !true;
+
         public static int currentPlayerIndex = 0;
         public static string gameType = "";
         // Game logic helpers
@@ -216,7 +329,7 @@ namespace LudoClient.CoreEngine
         public static Gui gui;
         // Constants or configuration lists
         private static readonly List<int> home = new List<int> { 52, 11, 24, 37 };
-        private static readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
+        public static readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
         private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         // UI Components
         public static AbsoluteLayout Alayout;
@@ -340,7 +453,7 @@ namespace LudoClient.CoreEngine
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-        public static void Relocate(Player player, Piece piece, bool baseflag, int rotation)
+        public static string getPieceBox(Piece piece)
         {
             //piece.Position
             //player.StartPosition
@@ -352,6 +465,13 @@ namespace LudoClient.CoreEngine
             {
                 pj = piece.Name.Substring(0, 1) + (piece.Location - 1);
             }
+            return pj;
+        }
+        public static void Relocate(Player player, Piece piece, bool baseflag, int rotation)
+        {
+            //piece.Position
+            //player.StartPosition
+            string pj = getPieceBox(piece);
 
             if (piece.Location <= 57)
             {
@@ -435,20 +555,24 @@ namespace LudoClient.CoreEngine
                 rolls.RemoveAt(0);
                 return diceValue;
             }
-            if (diceValue == 0)
-            {
                 if (gameType != "Online")
                 {
                     return GlobalConstants.rnd.Next(1, 7);
                 }
                 else
                     return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
-            }
-            else return diceValue;
         }
         public static void ChangeTurn()
         {
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+            Player currentPlayer = players[currentPlayerIndex];
+
+            foreach (var piece in currentPlayer.Pieces)
+            {
+                // Assume each piece has a UI element or rendering component
+                Alayout.Remove(piece.PieceToken);
+                Alayout.Add(piece.PieceToken);
+            }
         }
         public static Piece GetPiece(List<Piece> pieces, string name)
         {

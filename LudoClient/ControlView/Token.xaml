@@ -4,8 +4,6 @@
              x:Class="LudoClient.ControlView.Token">
     <Grid>
         <Image x:Name="Piece" Source="red_token_large.png" Aspect="AspectFit"/>
-        <ImageButton Clicked="Piece_Clicked" ></ImageButton>
-
+        <ImageButton Clicked="Piece_Clicked"/>
     </Grid>
-    
 </ContentView>
