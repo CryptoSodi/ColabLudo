@@ -2,8 +2,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Network;
-using Microsoft.Maui.Storage;
-using System.Security.AccessControl;
 
 namespace LudoClient.CoreEngine
 {
@@ -14,9 +12,12 @@ namespace LudoClient.CoreEngine
         public event CallbackEventHandler StopDice;
         // Game logic helpers
         private static Dictionary<string, List<Piece>> board;
-
+        string playerColor; 
+        private Timer _timer;
+        bool run = false;
         public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
+            this.playerColor = playerColor;
             board = new Dictionary<string, List<Piece>>
     {
         { "p0", new List<Piece>() },
@@ -133,14 +134,9 @@ namespace LudoClient.CoreEngine
                 Console.WriteLine("The layout has been loaded and rendered.");
                 EngineHelper.Pupulate(gui, rotation);
             };
-            // Initialize players
-            EngineHelper.players = new List<Player>
-            {
-                new Player("red", gui),
-                new Player("green", gui),
-                new Player("yellow", gui),
-                new Player("blue", gui)
-            };
+
+            EngineHelper.InitializePlayers(playerCount, playerColor);
+           
             // Initialize original path
             EngineHelper.InitializeOriginalPath();
             if (EngineHelper.replay)
@@ -148,20 +144,30 @@ namespace LudoClient.CoreEngine
                 GameRecorder.engine = this;
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
+            _timer = new Timer(TimerCallback, null, 0, 2000);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
+            StopTimer();
+        }
+        public void StopTimer()
+        {
+            _timer?.Change(Timeout.Infinite, Timeout.Infinite); // Stops the timer
+        }
+        // Method to start or restart the timer with a 2000 ms interval
+        public void StartTimer()
+        {
+            _timer?.Change(1000, 2000); // Start with an immediate first tick, then every 2000 ms
+        }
+        private void TimerCallback(object state)
+        {
+            Console.WriteLine("Tick");
+            // Call the PlayGame method on each tick
+            if (run)
+            {
+                run = false;
+                StopTimer();
+                PlayGame();
+            }
         }
         public async void SeatTurn(string seatName)
         {
@@ -211,6 +217,11 @@ namespace LudoClient.CoreEngine
                     {
                         Console.WriteLine("Turn Animation of the moveable pieces;");
                         // Start timer for auto play or prompt for user action
+                        if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
+                        {
+                            if (!EngineHelper.replay)
+                                await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                        }
                     }
                 }
                 else
@@ -218,6 +229,11 @@ namespace LudoClient.CoreEngine
                     Console.WriteLine($"{player.Color} could not move any piece.");
                     EngineHelper.ChangeTurn(); // Change turn to the next player
                     EngineHelper.gameState = "RollDice";
+                    if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
+                    {
+                        run = true;
+                        StartTimer();
+                    }
                 }
             }
             else
@@ -247,7 +263,7 @@ namespace LudoClient.CoreEngine
                 {
                     piece.Position = player.StartPosition;
                     piece.Location = 1;
-
+                    board[EngineHelper.getPieceBox(piece)].Remove(piece);
                     board[EngineHelper.getPieceBox(piece)].Add(piece);
 
                     GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
@@ -259,7 +275,7 @@ namespace LudoClient.CoreEngine
 
                     string pj = EngineHelper.getPieceBox(piece);
                     // Update board and piece positions
-                    board[pj].Remove(piece);
+                    board[pj].Remove(piece); // Bug fixed I suspect that on move the piece was not being removed for old box
                     piece.Position = newPosition;
                     piece.Location += EngineHelper.diceValue;
                     pj = EngineHelper.getPieceBox(piece);
@@ -300,12 +316,45 @@ namespace LudoClient.CoreEngine
                 //checkKills(player,piece);
                 EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
                 //perform turn turn check
+                if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
+                {
+                    run = true;
+                    StartTimer();
+                }
             }
         }
         // Record an action for the encoder
         public void PlayGame()
         {
-            SeatTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color);
+            if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+
+                if (EngineHelper.checkTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color, "RollDice"))
+                {
+                    string SeatName = EngineHelper.players[EngineHelper.currentPlayerIndex].Color;
+                        EngineHelper.gui.red.reset();
+                        EngineHelper.gui.green.reset();
+                        EngineHelper.gui.yellow.reset();
+                        EngineHelper.gui.blue.reset();
+
+                        // Handle the dice click for the green player
+                        //check turn
+                        var seat = EngineHelper.gui.red;
+                        if (SeatName == "red")
+                            seat = EngineHelper.gui.red;
+                        if (SeatName == "green")
+                            seat = EngineHelper.gui.green;
+                        if (SeatName == "yellow")
+                            seat = EngineHelper.gui.yellow;
+                        if (SeatName == "blue")
+                            seat = EngineHelper.gui.blue;
+                        seat.AnimateDice();
+                        SeatTurn(SeatName);
+                    }
+                });
+            }
         }
         public void RecievedRequest(String name, int val)
         {
@@ -334,6 +383,129 @@ namespace LudoClient.CoreEngine
         // UI Components
         public static AbsoluteLayout Alayout;
         public static Capsule Glayout;
+        public static void InitializePlayers(string playerCount, string playerColor)
+        {
+            // Assume each piece has a UI element or rendering component
+            Alayout.Remove(gui.red1);
+            Alayout.Remove(gui.red2);
+            Alayout.Remove(gui.red3);
+            Alayout.Remove(gui.red4);
+            Alayout.Remove(gui.gre1);
+            Alayout.Remove(gui.gre2);
+            Alayout.Remove(gui.gre3);
+            Alayout.Remove(gui.gre4);
+            Alayout.Remove(gui.yel1);
+            Alayout.Remove(gui.yel2);
+            Alayout.Remove(gui.yel3);
+            Alayout.Remove(gui.yel4);
+            Alayout.Remove(gui.blu1);
+            Alayout.Remove(gui.blu2);
+            Alayout.Remove(gui.blu3);
+            Alayout.Remove(gui.blu4);
+
+            int count = int.Parse(playerCount);
+
+            if (playerColor == "Red")
+            {
+                if (count == 3)
+                    players = new List<Player>
+                    {
+                        new Player("red", gui),
+                        new Player("green", gui),
+                        new Player("yellow", gui)
+                    };
+                else if (count == 2)
+                    players = new List<Player>
+                    {
+                        new Player("red", gui),
+                        new Player("yellow", gui)
+                    };
+                else
+                    players = new List<Player>
+                    {
+                        new Player("red", gui),
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui)
+                    };
+            }
+            else if (playerColor == "Green")
+            {
+                if (count == 3)
+                    players = new List<Player>
+                    {
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui)
+                    };
+                else if (count == 2)
+                    players = new List<Player>
+                    {
+                        new Player("green", gui),
+                        new Player("blue", gui)
+                    };
+                else
+                    players = new List<Player>
+                    {
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                    new Player("red", gui)
+                    };
+            }
+            else if (playerColor == "Yellow")
+            {
+                if (count == 3)
+                    players = new List<Player>
+                    {
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                        new Player("red", gui)
+                    };
+                else if (count == 2)
+                    players = new List<Player>
+                    {
+                        new Player("yellow", gui),
+                        new Player("red", gui)
+                    };
+                else
+                    players = new List<Player>
+                    {
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui)
+                    };
+            }
+            else if (playerColor == "Blue")
+            {
+                if (count == 3)
+                    players = new List<Player>
+                    {
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui)
+                    };
+                else if (count == 2)
+                    players = new List<Player>
+                    {
+                        new Player("blue", gui),
+                        new Player("green", gui)
+                    };
+                else
+                    players = new List<Player>
+                    {
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui),
+                        new Player("yellow", gui)
+                    };
+            }
+            else
+            {
+                throw new ArgumentException("Invalid player color selected.");
+            }
+        }
         public static void InitializeGuiLocations(Gui gui)
         {
             // Set initial locations for each token to -1
@@ -569,7 +741,7 @@ namespace LudoClient.CoreEngine
 
             foreach (var piece in currentPlayer.Pieces)
             {
-                // Assume each piece has a UI element or rendering component
+                // Safely update the UI
                 Alayout.Remove(piece.PieceToken);
                 Alayout.Add(piece.PieceToken);
             }

@@ -3,8 +3,8 @@ using SimpleToolkit.Core;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
-    Engine Engine; 
-    PlayerSeat RedPlayerSeat; PlayerSeat GreenPlayerSeat; PlayerSeat YellowPlayerSeat; PlayerSeat BluePlayerSeat;
+    Engine Engine;
+    public PlayerSeat RedPlayerSeat; public PlayerSeat GreenPlayerSeat; public PlayerSeat YellowPlayerSeat; public PlayerSeat BluePlayerSeat;
     public Game(string gametype, string playerCount, string playerColor)
     {
         InitializeComponent();
