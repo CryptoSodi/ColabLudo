@@ -1,5 +1,4 @@
-﻿
-using LudoClient.Constants;
+﻿using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Network;
 
@@ -13,7 +12,7 @@ namespace LudoClient.CoreEngine
         // Game logic helpers
         private static Dictionary<string, List<Piece>> board;
         string playerColor; 
-        private Timer _timer;
+        private Timer _computerTimer;
         bool run = false;
         public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
@@ -144,19 +143,21 @@ namespace LudoClient.CoreEngine
                 GameRecorder.engine = this;
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
-            _timer = new Timer(TimerCallback, null, 0, 2000);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(4);
-            StopTimer();
+            _computerTimer = new Timer(TimerCallback, null, 0, 2000);
+            //EngineHelper.rolls.Add(6);
+            StopComputerTimer();
+            EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
         }
-        public void StopTimer()
+        public void StopComputerTimer()
         {
-            _timer?.Change(Timeout.Infinite, Timeout.Infinite); // Stops the timer
+            run = false;
+            _computerTimer?.Change(Timeout.Infinite, Timeout.Infinite); // Stops the timer
         }
         // Method to start or restart the timer with a 2000 ms interval
-        public void StartTimer()
+        public void StartComputerTimer()
         {
-            _timer?.Change(1000, 2000); // Start with an immediate first tick, then every 2000 ms
+            run = true;
+            _computerTimer?.Change(1000, 2000); // Start with an immediate first tick, then every 2000 ms
         }
         private void TimerCallback(object state)
         {
@@ -164,8 +165,7 @@ namespace LudoClient.CoreEngine
             // Call the PlayGame method on each tick
             if (run)
             {
-                run = false;
-                StopTimer();
+                StopComputerTimer();
                 PlayGame();
             }
         }
@@ -197,21 +197,21 @@ namespace LudoClient.CoreEngine
                 GameRecorder.RecordDiceRoll(player, EngineHelper.diceValue);
 
                 // Handle possible scenarios based on the number of moveable pieces
+                bool moveSeat = false;
+
                 if (moveablePieces.Count == 1)
                 {
                     Console.WriteLine("Turn Animation of the moveable piece;");
-                    EngineHelper.gameState = "MovePiece";
-                    if (!EngineHelper.replay)
-                        await MovePieceAsync(player.Pieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                    moveSeat = true;
                 }
                 else if (moveablePieces.Count > 0)
                 {
-                    int firstLocation = moveablePieces[0].Location;
+
                     EngineHelper.gameState = "MovePiece";
+                    int firstLocation = moveablePieces[0].Location;
                     if (moveablePieces.All(p => p.Location == firstLocation))
                     {
-                        if (!EngineHelper.replay)
-                            await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                        moveSeat = true;
                     }
                     else
                     {
@@ -219,8 +219,11 @@ namespace LudoClient.CoreEngine
                         // Start timer for auto play or prompt for user action
                         if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
                         {
-                            if (!EngineHelper.replay)
-                                await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                            moveSeat = true;
+                        }
+                        else
+                        {
+                            EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
                         }
                     }
                 }
@@ -231,16 +234,22 @@ namespace LudoClient.CoreEngine
                     EngineHelper.gameState = "RollDice";
                     if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
                     {
-                        run = true;
-                        StartTimer();
+                        StartComputerTimer();
                     }
+                }
+
+                if (moveSeat)
+                {
+                    EngineHelper.gameState = "MovePiece";
+
+                    if (!EngineHelper.replay)
+                        await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
                 }
             }
             else
             {
                 Console.WriteLine("Not the turn of the player");
             }
-
             // Simulate server delay
             await Task.Delay(GlobalConstants.rnd.Next(1, 500));
             StopDice(seatName, tempDice); // Notify the end of the dice roll
@@ -318,9 +327,9 @@ namespace LudoClient.CoreEngine
                 //perform turn turn check
                 if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
                 {
-                    run = true;
-                    StartTimer();
+                    StartComputerTimer();
                 }
+                EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
             }
         }
         // Record an action for the encoder
@@ -330,14 +339,13 @@ namespace LudoClient.CoreEngine
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-
-                if (EngineHelper.checkTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color, "RollDice"))
-                {
-                    string SeatName = EngineHelper.players[EngineHelper.currentPlayerIndex].Color;
-                        EngineHelper.gui.red.reset();
-                        EngineHelper.gui.green.reset();
-                        EngineHelper.gui.yellow.reset();
-                        EngineHelper.gui.blue.reset();
+                    if (EngineHelper.checkTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color, "RollDice"))
+                    {
+                        string SeatName = EngineHelper.players[EngineHelper.currentPlayerIndex].Color;
+                            EngineHelper.gui.red.reset();
+                            EngineHelper.gui.green.reset();
+                            EngineHelper.gui.yellow.reset();
+                            EngineHelper.gui.blue.reset();
 
                         // Handle the dice click for the green player
                         //check turn
@@ -736,14 +744,34 @@ namespace LudoClient.CoreEngine
         }
         public static void ChangeTurn()
         {
+            GetPlayerSeat(players[currentPlayerIndex].Color).StopProgressAnimation();
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
             Player currentPlayer = players[currentPlayerIndex];
-
+            GetPlayerSeat(currentPlayer.Color).StartProgressAnimation();
             foreach (var piece in currentPlayer.Pieces)
             {
                 // Safely update the UI
                 Alayout.Remove(piece.PieceToken);
                 Alayout.Add(piece.PieceToken);
+            }
+        }
+        public static PlayerSeat GetPlayerSeat(string seatColor)
+        {
+            if(seatColor=="red")
+            {
+                return gui.red;
+            }
+            else if (seatColor == "green")
+            {
+                return gui.green;
+            }
+            else if (seatColor == "yellow")
+            {
+                return gui.yellow;
+            }
+            else
+            {
+                return gui.blue;
             }
         }
         public static Piece GetPiece(List<Piece> pieces, string name)

@@ -9,6 +9,12 @@
             <Image Grid.Column="1" Grid.Row="1" Source="player.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
             <ImageButton x:Name="Dice" Clicked="Dice_Clicked" Grid.Column="3" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+
+            <Grid Grid.Row="2" Grid.ColumnSpan="4" RowDefinitions=".14*,1*,.14*" ColumnDefinitions=".13*,1*,.13*">
+                <Grid x:Name="ProgressBoxParent" Grid.Column="1" Grid.Row="1" HeightRequest="9" >
+                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111"/>
+                </Grid>
+            </Grid>
         </Grid>
     </local:Capsule>
 </ContentView>

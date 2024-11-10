@@ -195,7 +195,6 @@ public partial class Game : ContentPage
         Engine.MovePieceAsync(PieceName);
         //stop animmation
     }
-
     private void PlayerDiceClicked(String SeatName)
     {
         if (EngineHelper.checkTurn(SeatName, "RollDice"))
