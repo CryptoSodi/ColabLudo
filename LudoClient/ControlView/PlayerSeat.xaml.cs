@@ -1,11 +1,19 @@
+using Microsoft.Maui.Controls;
+
 namespace LudoClient.ControlView;
 
 public partial class PlayerSeat : ContentView
 {
+    public bool autoPlayFlag = false;
     public bool IsRendered { get; private set; } = false;
-    public String name = "";
+    private String seatColor = "";
+    public String PlayerName { get; set; }
     public delegate void DiceClickedHandler(string SeatName);
     public event DiceClickedHandler OnDiceClicked;
+
+    public delegate void TimerTimeoutHandler(string SeatName);
+    public event TimerTimeoutHandler TimerTimeout;
+
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
     {
         var control = (PlayerSeat)bindable;
@@ -16,20 +24,44 @@ public partial class PlayerSeat : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
-    public PlayerSeat()
+    public PlayerSeat(string seatColor)
     {
+        this.seatColor = seatColor;
         InitializeComponent();
         this.Loaded += OnLoaded;
+            CheckBox.Source = "checkbox_"+seatColor+".png"; 
     }
     private void OnLoaded(object sender, EventArgs e)
     {
         IsRendered = true; // Mark as rendered once layout completes
         this.Loaded -= OnLoaded; // Unsubscribe to avoid repeated events
     }
+    private void AutoClicked(object sender, EventArgs e)
+    {         
+        autoPlayFlag = !autoPlayFlag;
+        if(autoPlayFlag)
+            CheckBox.Source = "checkbox_"+seatColor+"_select.png";
+        else
+            CheckBox.Source = "checkbox_"+seatColor+".png";
 
+        //ImageSwitch activeTab = sender as ImageSwitch;
+        //TabC1.SwitchSource = TabC1 == activeTab ? TabC1.SwitchOn : TabC1.SwitchOff;
+        //TabC2.SwitchSource = TabC2 == activeTab ? TabC2.SwitchOn : TabC2.SwitchOff;
+        //TabC3.SwitchSource = TabC3 == activeTab ? TabC3.SwitchOn : TabC3.SwitchOff;
+        //TabC4.SwitchSource = TabC4 == activeTab ? TabC4.SwitchOn : TabC4.SwitchOff;
+        //// Add logic here to change the content based on the active tab
+        //if (TabC1 == activeTab)
+        //    playerColor = "Red";
+        //if (TabC2 == activeTab)
+        //    playerColor = "Green";
+        //if (TabC3 == activeTab)
+        //    playerColor = "Blue";
+        //if (TabC4 == activeTab)
+        //    playerColor = "Yellow";
+    }
     private CancellationTokenSource _animationCancellationTokenSource;
     public async void StartProgressAnimation()
-    { 
+    {
         // Wait until the component has rendered
         while (!IsRendered)
         {
@@ -66,15 +98,17 @@ public partial class PlayerSeat : ContentView
         {
             // Check if cancellation has been requested
             if (token.IsCancellationRequested)
+                return;
+            if (autoPlayFlag && i>25)
                 break;
-          
             ProgressBox.WidthRequest = i * widthChange;
             await Task.Delay((int)interval);
         }
+        TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {
-        OnDiceClicked?.Invoke(name);
+        OnDiceClicked?.Invoke(seatColor);
     }
     internal void AnimateDice()
     {
@@ -94,9 +128,5 @@ public partial class PlayerSeat : ContentView
         {
             DiceLayer.Source = "dice_0.png";
         }
-    }
-    internal void SetColor(string colorName)
-    {
-        ProgressBox.BackgroundColor = Color.Parse(colorName);
     }
 }

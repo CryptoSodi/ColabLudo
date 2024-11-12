@@ -11,9 +11,20 @@ namespace LudoClient.CoreEngine
         public event CallbackEventHandler StopDice;
         // Game logic helpers
         private static Dictionary<string, List<Piece>> board;
-        string playerColor; 
-        private Timer _computerTimer;
-        bool run = false;
+        string playerColor;
+        private void TimerTimeout(String SeatName)
+        {
+           switch(EngineHelper.gameState){
+                case "RollDice":
+                    SeatTurn(SeatName);
+                    break;
+                case "MovePiece":
+                    Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
+                    List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
+                    MovePieceAsync(moveablePieces.First(p => p.Moveable).Name);
+                    break;
+            }
+        }
         public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
         {
             this.playerColor = playerColor;
@@ -143,30 +154,23 @@ namespace LudoClient.CoreEngine
                 GameRecorder.engine = this;
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
-            _computerTimer = new Timer(TimerCallback, null, 0, 2000);
             //EngineHelper.rolls.Add(6);
-            StopComputerTimer();
             EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
-        }
-        public void StopComputerTimer()
-        {
-            run = false;
-            _computerTimer?.Change(Timeout.Infinite, Timeout.Infinite); // Stops the timer
-        }
-        // Method to start or restart the timer with a 2000 ms interval
-        public void StartComputerTimer()
-        {
-            run = true;
-            _computerTimer?.Change(1000, 2000); // Start with an immediate first tick, then every 2000 ms
-        }
-        private void TimerCallback(object state)
-        {
-            Console.WriteLine("Tick");
-            // Call the PlayGame method on each tick
-            if (run)
+
+            gui.red.TimerTimeout += TimerTimeout;
+            gui.green.TimerTimeout += TimerTimeout;
+            gui.yellow.TimerTimeout += TimerTimeout;
+            gui.blue.TimerTimeout += TimerTimeout;
+            if (gameType == "Computer")
             {
-                StopComputerTimer();
-                PlayGame();
+                if(playerColor!="Red")
+                    gui.red.autoPlayFlag = true;
+                if (playerColor != "Green")
+                    gui.green.autoPlayFlag = true;
+                if (playerColor != "Yellow")
+                    gui.yellow.autoPlayFlag = true;
+                if (playerColor != "Blue")
+                    gui.blue.autoPlayFlag = true;
             }
         }
         public async void SeatTurn(string seatName)
@@ -217,14 +221,7 @@ namespace LudoClient.CoreEngine
                     {
                         Console.WriteLine("Turn Animation of the moveable pieces;");
                         // Start timer for auto play or prompt for user action
-                        if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
-                        {
-                            moveSeat = true;
-                        }
-                        else
-                        {
-                            EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
-                        }
+                        EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
                     }
                 }
                 else
@@ -232,10 +229,6 @@ namespace LudoClient.CoreEngine
                     Console.WriteLine($"{player.Color} could not move any piece.");
                     EngineHelper.ChangeTurn(); // Change turn to the next player
                     EngineHelper.gameState = "RollDice";
-                    if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
-                    {
-                        StartComputerTimer();
-                    }
                 }
 
                 if (moveSeat)
@@ -325,10 +318,6 @@ namespace LudoClient.CoreEngine
                 //checkKills(player,piece);
                 EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
                 //perform turn turn check
-                if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
-                {
-                    StartComputerTimer();
-                }
                 EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
             }
         }

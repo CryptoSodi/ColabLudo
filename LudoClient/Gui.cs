@@ -29,13 +29,9 @@ namespace LudoClient
         public Gui(Token red1, Token red2, Token red3, Token red4, Token gre1, Token gre2, Token gre3, Token gre4, Token blu1, Token blu2, Token blu3, Token blu4, Token yel1, Token yel2, Token yel3, Token yel4, PlayerSeat red, PlayerSeat green, PlayerSeat yellow, PlayerSeat blue)
         {
             this.red = red;
-            this.red.name = "red";
             this.green = green;
-            this.green.name = "green";
             this.yellow = yellow;
-            this.yellow.name = "yellow";
             this.blue = blue;
-            this.blue.name = "blue";
 
             this.red1 = red1;
             this.red1.name = "red1";

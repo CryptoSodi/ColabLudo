@@ -12,28 +12,28 @@ public partial class Game : ContentPage
         //Grid.SetColumn(GameView, 0);
 
         // Create RedPlayerSeat
-        RedPlayerSeat = new PlayerSeat
+        RedPlayerSeat = new PlayerSeat("red")
         {
             PlayerBG = "red_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create GreenPlayerSeat
-        GreenPlayerSeat = new PlayerSeat
+        GreenPlayerSeat = new PlayerSeat("green")
         {
             PlayerBG = "green_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create YellowPlayerSeat
-        YellowPlayerSeat = new PlayerSeat
+        YellowPlayerSeat = new PlayerSeat("yellow")
         {
             PlayerBG = "yellow_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create BluePlayerSeat
-        BluePlayerSeat = new PlayerSeat
+        BluePlayerSeat = new PlayerSeat("blue")
         {
             PlayerBG = "blue_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,
