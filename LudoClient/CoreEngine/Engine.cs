@@ -10,7 +10,7 @@ namespace LudoClient.CoreEngine
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
         // Game logic helpers
-        private static Dictionary<string, List<Piece>> board;
+        private static Dictionary<string, List<Piece>>? board;
         string playerColor;
         private void TimerTimeout(String SeatName)
         {
@@ -21,7 +21,7 @@ namespace LudoClient.CoreEngine
                 case "MovePiece":
                     Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
                     List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-                    MovePieceAsync(moveablePieces.First(p => p.Moveable).Name);
+                    _ = MovePieceAsync(moveablePieces.First(p => p.Moveable).Name);
                     break;
             }
         }
@@ -312,6 +312,9 @@ namespace LudoClient.CoreEngine
                         {
                             Console.WriteLine($"{player.Color} has won the game!");
                             EngineHelper.players.Remove(player);
+                           if(gameEnd())
+                                return;
+                            
                         }
                     }
                 }
@@ -321,6 +324,26 @@ namespace LudoClient.CoreEngine
                 EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
             }
         }
+
+        private bool gameEnd()
+        {
+            if (EngineHelper.players.Count == 1)
+            {
+                //Show results page
+                cleanGame();
+                return true;
+            }
+            return false;
+        }
+        public static void cleanGame()
+        {
+            EngineHelper.players.Clear();
+            EngineHelper.rolls.Clear();
+            EngineHelper.currentPlayerIndex = 0;
+            EngineHelper.gameType = "";
+            EngineHelper.gameState = "RollDice";
+        }
+
         // Record an action for the encoder
         public void PlayGame()
         {

@@ -69,7 +69,6 @@ public partial class PlayerSeat : ContentView
         }
         // Cancel any previous animation
         StopProgressAnimation();
-        Console.WriteLine("ANIMATE PROGRESS");
         _animationCancellationTokenSource = new CancellationTokenSource();
         await AnimateProgress(_animationCancellationTokenSource.Token);
     }
@@ -85,7 +84,6 @@ public partial class PlayerSeat : ContentView
     }
     private async Task AnimateProgress(CancellationToken token)
     {
-        Console.WriteLine("PROGRESS STARTED");
         double totalWidth = ProgressBoxParent.Width; // Get the width of the container
         double duration = 10000; // 10 seconds in milliseconds
         double interval = 20; // Update every 20 milliseconds
