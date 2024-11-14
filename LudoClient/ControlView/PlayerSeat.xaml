@@ -17,7 +17,6 @@
                 <Grid x:Name="ProgressBoxParent" Grid.Column="1" >
                     <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111"/>
                     <Label VerticalTextAlignment="Center" VerticalOptions="Center" Margin="5,0,0,0">Auto</Label>
-
                 </Grid>
                 <Grid VerticalOptions="Center" HorizontalOptions="Center">
                     <Image x:Name="CheckBox" Source="checkbox_red.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Aspect="AspectFit"/>

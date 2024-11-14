@@ -43,21 +43,6 @@ public partial class PlayerSeat : ContentView
             CheckBox.Source = "checkbox_"+seatColor+"_select.png";
         else
             CheckBox.Source = "checkbox_"+seatColor+".png";
-
-        //ImageSwitch activeTab = sender as ImageSwitch;
-        //TabC1.SwitchSource = TabC1 == activeTab ? TabC1.SwitchOn : TabC1.SwitchOff;
-        //TabC2.SwitchSource = TabC2 == activeTab ? TabC2.SwitchOn : TabC2.SwitchOff;
-        //TabC3.SwitchSource = TabC3 == activeTab ? TabC3.SwitchOn : TabC3.SwitchOff;
-        //TabC4.SwitchSource = TabC4 == activeTab ? TabC4.SwitchOn : TabC4.SwitchOff;
-        //// Add logic here to change the content based on the active tab
-        //if (TabC1 == activeTab)
-        //    playerColor = "Red";
-        //if (TabC2 == activeTab)
-        //    playerColor = "Green";
-        //if (TabC3 == activeTab)
-        //    playerColor = "Blue";
-        //if (TabC4 == activeTab)
-        //    playerColor = "Yellow";
     }
     private CancellationTokenSource _animationCancellationTokenSource;
     public async void StartProgressAnimation()
@@ -92,15 +77,21 @@ public partial class PlayerSeat : ContentView
 
         ProgressBox.WidthRequest = 0; // Start with 0 width
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        for (int i = 0; i <= steps; i++)
+        try
         {
-            // Check if cancellation has been requested
-            if (token.IsCancellationRequested)
-                return;
-            if (autoPlayFlag && i>25)
-                break;
-            ProgressBox.WidthRequest = i * widthChange;
-            await Task.Delay((int)interval);
+            for (int i = 0; i <= steps; i++)
+            {
+                // Check if cancellation has been requested
+                if (token.IsCancellationRequested)
+                    return;
+                if (autoPlayFlag && i > 25)
+                    break;
+                ProgressBox.WidthRequest = i * widthChange;
+                await Task.Delay((int)interval);
+            }
+        }
+        catch (Exception)
+        {
         }
         TimerTimeout?.Invoke(seatColor);
     }

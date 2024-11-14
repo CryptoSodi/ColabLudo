@@ -6,6 +6,7 @@ namespace LudoClient.CoreEngine
 {
     public class Engine
     {
+        static string PlayState = "Active";
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
@@ -161,9 +162,10 @@ namespace LudoClient.CoreEngine
             gui.green.TimerTimeout += TimerTimeout;
             gui.yellow.TimerTimeout += TimerTimeout;
             gui.blue.TimerTimeout += TimerTimeout;
+
             if (gameType == "Computer")
             {
-                if(playerColor!="Red")
+                if (playerColor != "Red")
                     gui.red.autoPlayFlag = true;
                 if (playerColor != "Green")
                     gui.green.autoPlayFlag = true;
@@ -172,9 +174,12 @@ namespace LudoClient.CoreEngine
                 if (playerColor != "Blue")
                     gui.blue.autoPlayFlag = true;
             }
+            PlayState = "Active";
         }
         public async void SeatTurn(string seatName)
         {
+            if (PlayState == "Stop")
+                return;
             Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
             int tempDice = -1;
 
@@ -249,6 +254,8 @@ namespace LudoClient.CoreEngine
         }
         public async Task MovePieceAsync(String pieceName)
         {
+            if (PlayState == "Stop")
+                return;
             Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
             Piece piece = EngineHelper.GetPiece(player.Pieces, pieceName);
             if (piece == null || EngineHelper.diceValue == 0)
@@ -337,14 +344,18 @@ namespace LudoClient.CoreEngine
         }
         public static void cleanGame()
         {
+            EngineHelper.GetPlayerSeat("red").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("green").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("yellow").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("blue").StopProgressAnimation();
+
+            PlayState = "Stop";
             EngineHelper.players.Clear();
             EngineHelper.rolls.Clear();
             EngineHelper.currentPlayerIndex = 0;
             EngineHelper.gameType = "";
             EngineHelper.gameState = "RollDice";
         }
-
-        // Record an action for the encoder
         public void PlayGame()
         {
             if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
@@ -359,18 +370,7 @@ namespace LudoClient.CoreEngine
                             EngineHelper.gui.yellow.reset();
                             EngineHelper.gui.blue.reset();
 
-                        // Handle the dice click for the green player
-                        //check turn
-                        var seat = EngineHelper.gui.red;
-                        if (SeatName == "red")
-                            seat = EngineHelper.gui.red;
-                        if (SeatName == "green")
-                            seat = EngineHelper.gui.green;
-                        if (SeatName == "yellow")
-                            seat = EngineHelper.gui.yellow;
-                        if (SeatName == "blue")
-                            seat = EngineHelper.gui.blue;
-                        seat.AnimateDice();
+                        EngineHelper.GetPlayerSeat(SeatName).AnimateDice();
                         SeatTurn(SeatName);
                     }
                 });
@@ -770,21 +770,13 @@ namespace LudoClient.CoreEngine
         public static PlayerSeat GetPlayerSeat(string seatColor)
         {
             if(seatColor=="red")
-            {
                 return gui.red;
-            }
             else if (seatColor == "green")
-            {
                 return gui.green;
-            }
             else if (seatColor == "yellow")
-            {
                 return gui.yellow;
-            }
             else
-            {
                 return gui.blue;
-            }
         }
         public static Piece GetPiece(List<Piece> pieces, string name)
         {
