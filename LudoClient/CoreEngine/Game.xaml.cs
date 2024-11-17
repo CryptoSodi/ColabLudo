@@ -199,23 +199,6 @@ public partial class Game : ContentPage
     {
         if (EngineHelper.checkTurn(SeatName, "RollDice"))
         {
-            RedPlayerSeat.reset();
-            GreenPlayerSeat.reset();
-            YellowPlayerSeat.reset();
-            BluePlayerSeat.reset();
-
-            // Handle the dice click for the green player
-            //check turn
-            var seat = RedPlayerSeat;
-            if (SeatName == "red")
-                seat = RedPlayerSeat;
-            if (SeatName == "green")
-                seat = GreenPlayerSeat;
-            if (SeatName == "yellow")
-                seat = YellowPlayerSeat;
-            if (SeatName == "blue")
-                seat = BluePlayerSeat;
-            seat.AnimateDice();
             Engine.SeatTurn(SeatName);
         }
         //Engine.PlayGame();

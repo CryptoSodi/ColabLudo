@@ -1,3 +1,4 @@
+using LudoClient.CoreEngine;
 using Microsoft.Maui.Controls;
 
 namespace LudoClient.ControlView;
@@ -7,7 +8,7 @@ public partial class PlayerSeat : ContentView
     public bool autoPlayFlag = false;
     public bool IsRendered { get; private set; } = false;
     private String seatColor = "";
-    public String PlayerName { get; set; }
+
     public delegate void DiceClickedHandler(string SeatName);
     public event DiceClickedHandler OnDiceClicked;
 
@@ -24,12 +25,32 @@ public partial class PlayerSeat : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
+    public void showAuto(String PlayerName, bool hideAll, bool autoPlayFlag)
+    {
+        PlayerNameText.Text = PlayerName;
+        this.autoPlayFlag = autoPlayFlag;
+        Grid.SetColumn(ProgressBoxParent, 1);
+        Grid.SetColumnSpan(ProgressBoxParent, 1);
+        CheckBox.IsVisible = true;
+        ProgressBoxText.IsVisible = true;
+        ProgressBoxParentContainer.IsVisible = true;
+    }
+    public void hideAuto(String PlayerName, bool hideAll, bool autoPlayFlag)
+    {
+        PlayerNameText.Text = PlayerName;
+        this.autoPlayFlag = autoPlayFlag;
+        ProgressBoxParentContainer.IsVisible = false;
+        Grid.SetColumn(ProgressBoxParent, 0);
+        Grid.SetColumnSpan(ProgressBoxParent, 2);
+        CheckBox.IsVisible = false;
+        ProgressBoxText.IsVisible = false;
+    }
     public PlayerSeat(string seatColor)
     {
         this.seatColor = seatColor;
         InitializeComponent();
         this.Loaded += OnLoaded;
-            CheckBox.Source = "checkbox_"+seatColor+".png"; 
+        CheckBox.Source = "checkbox_"+seatColor+".png"; 
     }
     private void OnLoaded(object sender, EventArgs e)
     {
@@ -37,7 +58,9 @@ public partial class PlayerSeat : ContentView
         this.Loaded -= OnLoaded; // Unsubscribe to avoid repeated events
     }
     private void AutoClicked(object sender, EventArgs e)
-    {         
+    {
+        if (!CheckBox.IsVisible)
+            return;
         autoPlayFlag = !autoPlayFlag;
         if(autoPlayFlag)
             CheckBox.Source = "checkbox_"+seatColor+"_select.png";
@@ -76,7 +99,7 @@ public partial class PlayerSeat : ContentView
         double widthChange = totalWidth / steps; // Width increment per step
 
         ProgressBox.WidthRequest = 0; // Start with 0 width
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
         try
         {
             for (int i = 0; i <= steps; i++)
@@ -84,19 +107,17 @@ public partial class PlayerSeat : ContentView
                 // Check if cancellation has been requested
                 if (token.IsCancellationRequested)
                     return;
-                if (autoPlayFlag && i > 25)
+                if (autoPlayFlag && i > 25 && !EngineHelper.animationBlock)
                     break;
                 ProgressBox.WidthRequest = i * widthChange;
                 await Task.Delay((int)interval);
             }
         }
-        catch (Exception)
-        {
-        }
+        catch (Exception){}
         TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)
-    {
+    {        
         OnDiceClicked?.Invoke(seatColor);
     }
     internal void AnimateDice()
@@ -106,8 +127,11 @@ public partial class PlayerSeat : ContentView
     }
     internal void StopDice(int DiceValue)
     {
-        DiceLayer.Source = "dice_" + DiceValue + ".png";
-        DiceLayer.IsAnimationPlaying = false;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            DiceLayer.Source = "dice_" + DiceValue + ".png";
+            DiceLayer.IsAnimationPlaying = false;
+        });
     }
     internal void reset()
     {

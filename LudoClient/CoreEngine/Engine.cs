@@ -11,7 +11,7 @@ namespace LudoClient.CoreEngine
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
         // Game logic helpers
-        private static Dictionary<string, List<Piece>>? board;
+        public static Dictionary<string, List<Piece>>? board;
         string playerColor;
         private void TimerTimeout(String SeatName)
         {
@@ -155,7 +155,7 @@ namespace LudoClient.CoreEngine
                 GameRecorder.engine = this;
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
-            //EngineHelper.rolls.Add(6);
+            
             EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
 
             gui.red.TimerTimeout += TimerTimeout;
@@ -166,20 +166,57 @@ namespace LudoClient.CoreEngine
             if (gameType == "Computer")
             {
                 if (playerColor != "Red")
-                    gui.red.autoPlayFlag = true;
+                    gui.red.hideAuto("Computer 1", true, true);
                 if (playerColor != "Green")
-                    gui.green.autoPlayFlag = true;
+                    gui.green.hideAuto("Computer 2", true, true);
                 if (playerColor != "Yellow")
-                    gui.yellow.autoPlayFlag = true;
+                    gui.yellow.hideAuto("Computer 3", true, true);
                 if (playerColor != "Blue")
-                    gui.blue.autoPlayFlag = true;
+                    gui.blue.hideAuto("Computer 4", true, true);
+            }else if (gameType == "Online")
+            {
+                if (playerColor != "Red")
+                    gui.red.hideAuto(" 1", false, false);
+                if (playerColor != "Green")
+                    gui.green.hideAuto(" 2", false, false);
+                if (playerColor != "Yellow")
+                    gui.yellow.hideAuto(" 3", false, false);
+                if (playerColor != "Blue")
+                    gui.blue.hideAuto(" 4", false, false);
+            }
+            else{
+                gui.red.showAuto("Player 1", false, false);
+                gui.green.showAuto("Player 2", false, false);
+                gui.yellow.showAuto("Player 3", false, false);
+                gui.blue.showAuto("Player 4", false, false);
             }
             PlayState = "Active";
+            EngineHelper.rolls.Add(2);
+            EngineHelper.rolls.Add(6);
         }
         public async void SeatTurn(string seatName)
         {
             if (PlayState == "Stop")
                 return;
+
+            EngineHelper.gui.red.reset();
+            EngineHelper.gui.green.reset();
+            EngineHelper.gui.yellow.reset();
+            EngineHelper.gui.blue.reset();
+
+            // Handle the dice click for the green player
+            //check turn
+            var seat = EngineHelper.gui.red;
+            if (seatName == "red")
+                seat = EngineHelper.gui.red;
+            if (seatName == "green")
+                seat = EngineHelper.gui.green;
+            if (seatName == "yellow")
+                seat = EngineHelper.gui.yellow;
+            if (seatName == "blue")
+                seat = EngineHelper.gui.blue;
+            seat.AnimateDice();
+
             Player player = EngineHelper.players[EngineHelper.currentPlayerIndex];
             int tempDice = -1;
 
@@ -189,20 +226,26 @@ namespace LudoClient.CoreEngine
                 // Roll the dice
                 EngineHelper.diceValue = await EngineHelper.RollDice(seatName);
                 tempDice = EngineHelper.diceValue;
+                // Simulate server delay
+                await Task.Delay(GlobalConstants.rnd.Next(1, 500));
+                // Notify the end of the dice roll
+                StopDice(seatName, tempDice);
+
 
                 // Determine which pieces can move
                 foreach (var piece in player.Pieces)
                 {
-                    if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
+                    if (piece.Location == 0 && EngineHelper.diceValue == 6)                             // Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
                     else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
                         piece.Moveable = true;
                     else
                         piece.Moveable = false;
                 }
-                List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
 
+                List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
                 Console.WriteLine($"{player.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces} pieces.");
+
                 GameRecorder.RecordDiceRoll(player, EngineHelper.diceValue);
 
                 // Handle possible scenarios based on the number of moveable pieces
@@ -215,7 +258,6 @@ namespace LudoClient.CoreEngine
                 }
                 else if (moveablePieces.Count > 0)
                 {
-
                     EngineHelper.gameState = "MovePiece";
                     int firstLocation = moveablePieces[0].Location;
                     if (moveablePieces.All(p => p.Location == firstLocation))
@@ -231,6 +273,7 @@ namespace LudoClient.CoreEngine
                 }
                 else
                 {
+                    EngineHelper.animationBlock = false;
                     Console.WriteLine($"{player.Color} could not move any piece.");
                     EngineHelper.ChangeTurn(); // Change turn to the next player
                     EngineHelper.gameState = "RollDice";
@@ -241,16 +284,13 @@ namespace LudoClient.CoreEngine
                     EngineHelper.gameState = "MovePiece";
 
                     if (!EngineHelper.replay)
-                        await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name); // Move the only moveable piece
+                        await MovePieceAsync(moveablePieces.First(p => p.Moveable).Name);       // Move the only moveable piece
                 }
             }
             else
             {
                 Console.WriteLine("Not the turn of the player");
             }
-            // Simulate server delay
-            await Task.Delay(GlobalConstants.rnd.Next(1, 500));
-            StopDice(seatName, tempDice); // Notify the end of the dice roll
         }
         public async Task MovePieceAsync(String pieceName)
         {
@@ -267,46 +307,41 @@ namespace LudoClient.CoreEngine
                     pieceName = await GlobalConstants.MatchMaker.SendMessageAsync(pieceName, "Piece");
 
                 bool killed = false;
+                Piece pieceClone = piece.Clone();
 
                 if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    piece.Position = player.StartPosition;
-                    piece.Location = 1;
-                    board[EngineHelper.getPieceBox(piece)].Remove(piece);
-                    board[EngineHelper.getPieceBox(piece)].Add(piece);
-
-                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
-                    EngineHelper.Relocate(player, piece, false, 0); // Move to start position
+                    piece.Jump(EngineHelper.diceValue);
+                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
+                    EngineHelper.RelocateAsync(piece, piece.Clone());
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    int newPosition = (piece.Position + EngineHelper.diceValue) % 52;
+                    //int newPosition = (piece.Position + EngineHelper.diceValue) % 52;
+
+                    //string pj = EngineHelper.getPieceBox(piece);
+                    // Update board and piece positions
+                    // board[pj].Remove(piece); // Bug fixed I suspect that on move the piece was not being removed for old box
+
+                    piece.Jump(EngineHelper.diceValue);
 
                     string pj = EngineHelper.getPieceBox(piece);
-                    // Update board and piece positions
-                    board[pj].Remove(piece); // Bug fixed I suspect that on move the piece was not being removed for old box
-                    piece.Position = newPosition;
-                    piece.Location += EngineHelper.diceValue;
-                    pj = EngineHelper.getPieceBox(piece);
-
+                    List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     // Check if an opponent’s piece is in the new position
-                    if (board[pj].Count != 0 && board[pj].Count < 2 && !EngineHelper.safeZone.Contains(newPosition))
+                    if (kilablePieces.Count != 0 && kilablePieces.Count < 2 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
-                        if(board[pj][0].Color != player.Color)
-                        {
-                            killed = true;
-                            board[pj][0].Position = -1; // Send opponent's piece back to base
-                            board[pj][0].Location = 0;
-                            Piece killedPiece = board[pj][0];
-                            board[pj].Remove(killedPiece);
-                            board[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
-                            EngineHelper.Relocate(player, killedPiece, false, 0);
-                        }
+                        killed = true;
+                        Piece killedPiece = kilablePieces[0];
+                        killedPiece.Position = -1; // Send opponent's piece back to base
+                        killedPiece.Location = 0;
+                        board[pj].Remove(killedPiece);
+                        board[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
                     }
-
-                    board[pj].Add(piece);
-                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, newPosition, killed); // Prepare animation
-                    EngineHelper.Relocate(player, piece, false, 0);
+                    //board[pj].Add(piece);
+                    GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    await EngineHelper.RelocateAsync(piece, pieceClone);
+                    if(killed)
+                        await EngineHelper.RelocateAsync(kilablePieces[0], kilablePieces[0]);
 
                     // Check if piece has reached the end
                     if (piece.Location == 57)
@@ -319,11 +354,14 @@ namespace LudoClient.CoreEngine
                         {
                             Console.WriteLine($"{player.Color} has won the game!");
                             EngineHelper.players.Remove(player);
-                           if(gameEnd())
+                            if (EngineHelper.checkGameOver())
                                 return;
-                            
                         }
                     }
+                }
+                else
+                {
+                    EngineHelper.animationBlock = false;
                 }
                 //checkKills(player,piece);
                 EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
@@ -331,17 +369,7 @@ namespace LudoClient.CoreEngine
                 EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
             }
         }
-
-        private bool gameEnd()
-        {
-            if (EngineHelper.players.Count == 1)
-            {
-                //Show results page
-                cleanGame();
-                return true;
-            }
-            return false;
-        }
+        
         public static void cleanGame()
         {
             EngineHelper.GetPlayerSeat("red").StopProgressAnimation();
@@ -397,12 +425,13 @@ namespace LudoClient.CoreEngine
         // Public fields
         public static Gui gui;
         // Constants or configuration lists
-        private static readonly List<int> home = new List<int> { 52, 11, 24, 37 };
-        public static readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
+        public static readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
         private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         // UI Components
         public static AbsoluteLayout Alayout;
         public static Capsule Glayout;
+        public static bool animationBlock = false;
+
         public static void InitializePlayers(string playerCount, string playerColor)
         {
             // Assume each piece has a UI element or rendering component
@@ -659,53 +688,60 @@ namespace LudoClient.CoreEngine
             }
             return pj;
         }
-        public static void Relocate(Player player, Piece piece, bool baseflag, int rotation)
+        public static async Task RelocateAsync(Piece piece, Piece pieceClone)
         {
+            animationBlock = true;
             //piece.Position
             //player.StartPosition
-            string pj = getPieceBox(piece);
+            string PB = getPieceBox(piece);
 
-            if (piece.Location <= 57)
+            if (pieceClone.Location < piece.Location)
             {
-                double width = Alayout.Width / 15;
-                double height = Alayout.Height / 15;
-                double x = originalPath[pj][1] * width;
-                double y = originalPath[pj][0] * height;
+                pieceClone.Jump(1, true);
+                string PBC = getPieceBox(pieceClone);
 
-                if (baseflag)
+                double x = originalPath[PBC][1] * (Alayout.Width / 15);
+                double y = originalPath[PBC][0] * (Alayout.Height / 15);
+
+                _ = piece.PieceToken.TranslateTo(x, y, 200, Easing.CubicIn).ContinueWith(t =>
                 {
-                    AbsoluteLayout.SetLayoutBounds(piece.PieceToken, new Rect(0, 0, width, height));
-                    // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(y, x, width, height));
-                    // AbsoluteLayout.SetLayoutBounds(piece.piece, new Rect(x, y, width, height));
-                    piece.PieceToken.RotateTo(-rotation);
-                }
-
-                piece.PieceToken.TranslateTo(x, y, 200, Easing.CubicIn);
-                // Grid.SetRow(piece.piece, originalPath[pj][0]);
-                // Grid.SetRow(piece.piece, originalPath[pj][0]);
-                // Grid.SetColumn(piece.piece, originalPath[pj][1]);
-                Console.WriteLine($"{piece.Name} is at {pj} - Position: ({x}, {y}), Size: ({width}, {height})");
+                    if (t.IsCompletedSuccessfully)
+                    {
+                        Console.WriteLine($"{piece.Name} has finished moving to ({x}, {y})");
+                        if (pieceClone.Location != piece.Location)
+                            RelocateAsync(piece, pieceClone);
+                        else
+                            animationBlock = false;
+                    }
+                    else if (t.IsFaulted)
+                    {
+                        Console.WriteLine($"Error during translation: {t.Exception?.Message}");
+                    }
+                });
+                Console.WriteLine($"{piece.Name} is at {PBC} - Position: ({x}, {y}), Size: ({(Alayout.Width / 15)}, {(Alayout.Height / 15)})");
             }
             else
             {
-
+                double x = originalPath[PB][1] * (Alayout.Width / 15);
+                double y = originalPath[PB][0] * (Alayout.Height / 15);
+                _ = piece.PieceToken.TranslateTo(x, y, 200, Easing.CubicIn);
+                animationBlock = false;
+            }
+            while (animationBlock)
+            {
+                Console.WriteLine("Waiting for animation to complete...");
+                await Task.Delay(200);
             }
         }
         public static void Pupulate(Gui gui, int rotation)
         {
-            //players[0].Pieces[0].location = 50;
-            //players[0].Pieces[0].Position = 49;
             for (int i = 0; i < players.Count; i++)
-            {
                 for (int j = 0; j < players[i].Pieces.Count; j++)
                 {
-                    Relocate(players[i], players[i].Pieces[j], true, rotation);
+                    players[i].Pieces[j].PieceToken.RotateTo(-rotation);
+                    AbsoluteLayout.SetLayoutBounds(players[i].Pieces[j].PieceToken, new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
+                    RelocateAsync(players[i].Pieces[j], players[i].Pieces[j]);
                 }
-            }
-        }
-        private static bool IsPieceSafe(Player player, Piece piece)
-        {
-            return safeZone.Contains(piece.Position);
         }
         public static void PerformTurnChecks(bool killed, int diceValue = -1)
         {
@@ -794,15 +830,13 @@ namespace LudoClient.CoreEngine
             }
             return null;
         }
-        public static bool IsGameOver()
+        public static bool checkGameOver()
         {
-            foreach (Player player in players)
+            if (EngineHelper.players.Count == 1)
             {
-                if (player.Pieces.Count == 0)
-                {
-                    Console.WriteLine($"{player.Color} has won the game!");
-                    return true;
-                }
+                //Show results page
+                Engine.cleanGame();
+                return true;
             }
             return false;
         }

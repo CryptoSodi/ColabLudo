@@ -15,7 +15,6 @@ namespace LudoClient.CoreEngine
             {
                 EngineHelper.Alayout.Add(piece.PieceToken);
             }
-            
 
             StartPosition = new Dictionary<string, int>
             {

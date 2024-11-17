@@ -10,13 +10,13 @@
             <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
             <ImageButton x:Name="Dice" Clicked="Dice_Clicked" Grid.Column="3" Grid.Row="1"  Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
 
-            <Grid Grid.Row="2" Grid.ColumnSpan="4" RowDefinitions=".14*,1*,.14*" ColumnDefinitions=".13*,1*,.13*">
-              
+            <Grid Grid.Row="2" Grid.ColumnSpan="4" >
+                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="10,0,0,2" TextColor="Black">Tassaduq</Label>
             </Grid>
-            <Grid BackgroundColor="#992B4195" Grid.Row="2" Grid.ColumnSpan="4" Margin="0,20,0,-20" ColumnDefinitions=".2*,1*">
+            <Grid x:Name="ProgressBoxParentContainer" BackgroundColor="#992B4195" Grid.Row="2" Grid.ColumnSpan="4" Margin="0,20,0,-20" ColumnDefinitions=".2*,1*">
                 <Grid x:Name="ProgressBoxParent" Grid.Column="1" >
                     <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111"/>
-                    <Label VerticalTextAlignment="Center" VerticalOptions="Center" Margin="5,0,0,0">Auto</Label>
+                    <Label x:Name="ProgressBoxText" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="5,0,0,0">Auto</Label>
                 </Grid>
                 <Grid VerticalOptions="Center" HorizontalOptions="Center">
                     <Image x:Name="CheckBox" Source="checkbox_red.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Aspect="AspectFit"/>
