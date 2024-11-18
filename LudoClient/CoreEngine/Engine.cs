@@ -155,19 +155,10 @@ namespace LudoClient.CoreEngine
                 GameRecorder.engine = this;
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
-            
-            
 
             foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
-            {
                 seat.TimerTimeout += TimerTimeout;
-            }
-
-            bool flag = gameType == "Computer";
-
-            var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
-
-
+            
             PlayerSeat playerSeat = playerColor switch
             {
                 "Red" => gui.red,
@@ -177,26 +168,24 @@ namespace LudoClient.CoreEngine
                 _ => null
             };
 
+            var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
             if (gameType == "Online")
             {
                 foreach (var (color, seat) in colors)
-                {
                     if (playerColor != color)
                         seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
-                }
 
                 playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
             }
             else
             {
                 foreach (var (color, seat) in colors)
-                {
                     if (playerColor != color)
-                        if (flag)
+                        if (gameType == "Computer")
                             seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
                         else
                             seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
-                }
+
                 playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
             }
 
