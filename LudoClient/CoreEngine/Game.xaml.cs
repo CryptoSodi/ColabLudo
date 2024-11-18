@@ -115,8 +115,8 @@ public partial class Game : ContentPage
                         Row2.Children.Add(BluePlayerSeat);
                         Row2.Children.Add(YellowPlayerSeat);
 
-                        Row1.Children.Add(GreenPlayerSeat);
                         Row1.Children.Add(RedPlayerSeat);
+                        Row1.Children.Add(GreenPlayerSeat);
                         break;
                 }
                 break;

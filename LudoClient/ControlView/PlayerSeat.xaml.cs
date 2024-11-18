@@ -1,5 +1,4 @@
 using LudoClient.CoreEngine;
-using Microsoft.Maui.Controls;
 
 namespace LudoClient.ControlView;
 
@@ -25,8 +24,9 @@ public partial class PlayerSeat : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
-    public void showAuto(String PlayerName, bool hideAll, bool autoPlayFlag)
+    public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
     {
+        PlayerImage.Source = PictureUrl;
         PlayerNameText.Text = PlayerName;
         this.autoPlayFlag = autoPlayFlag;
         Grid.SetColumn(ProgressBoxParent, 1);
@@ -35,8 +35,9 @@ public partial class PlayerSeat : ContentView
         ProgressBoxText.IsVisible = true;
         ProgressBoxParentContainer.IsVisible = true;
     }
-    public void hideAuto(String PlayerName, bool hideAll, bool autoPlayFlag)
+    public void hideAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
     {
+        PlayerImage.Source = PictureUrl;
         PlayerNameText.Text = PlayerName;
         this.autoPlayFlag = autoPlayFlag;
         ProgressBoxParentContainer.IsVisible = false;
@@ -135,11 +136,8 @@ public partial class PlayerSeat : ContentView
     }
     internal void reset()
     {
-        Console.WriteLine("RESET DICE");
         //HARIS FIX THIS THE SOURCE FILE NEEDS TO BE MATCHED WITH dice_0.png only then we have to reset //0001
         if (DiceLayer.Source + "" != "dice_0.png")
-        {
             DiceLayer.Source = "dice_0.png";
-        }
     }
 }

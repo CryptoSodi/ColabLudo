@@ -156,40 +156,51 @@ namespace LudoClient.CoreEngine
                 GameRecorder.ReplayGameAsync("GameHistory.json");
             }
             
+            
+
+            foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
+            {
+                seat.TimerTimeout += TimerTimeout;
+            }
+
+            bool flag = gameType == "Computer";
+
+            var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
+
+
+            PlayerSeat playerSeat = playerColor switch
+            {
+                "Red" => gui.red,
+                "Green" => gui.green,
+                "Yellow" => gui.yellow,
+                "Blue" => gui.blue,
+                _ => null
+            };
+
+            if (gameType == "Online")
+            {
+                foreach (var (color, seat) in colors)
+                {
+                    if (playerColor != color)
+                        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+                }
+
+                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            }
+            else
+            {
+                foreach (var (color, seat) in colors)
+                {
+                    if (playerColor != color)
+                        if (flag)
+                            seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
+                        else
+                            seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+                }
+                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            }
+
             EngineHelper.GetPlayerSeat(EngineHelper.players[EngineHelper.currentPlayerIndex].Color).StartProgressAnimation();
-
-            gui.red.TimerTimeout += TimerTimeout;
-            gui.green.TimerTimeout += TimerTimeout;
-            gui.yellow.TimerTimeout += TimerTimeout;
-            gui.blue.TimerTimeout += TimerTimeout;
-
-            if (gameType == "Computer")
-            {
-                if (playerColor != "Red")
-                    gui.red.hideAuto("Computer 1", true, true);
-                if (playerColor != "Green")
-                    gui.green.hideAuto("Computer 2", true, true);
-                if (playerColor != "Yellow")
-                    gui.yellow.hideAuto("Computer 3", true, true);
-                if (playerColor != "Blue")
-                    gui.blue.hideAuto("Computer 4", true, true);
-            }else if (gameType == "Online")
-            {
-                if (playerColor != "Red")
-                    gui.red.hideAuto(" 1", false, false);
-                if (playerColor != "Green")
-                    gui.green.hideAuto(" 2", false, false);
-                if (playerColor != "Yellow")
-                    gui.yellow.hideAuto(" 3", false, false);
-                if (playerColor != "Blue")
-                    gui.blue.hideAuto(" 4", false, false);
-            }
-            else{
-                gui.red.showAuto("Player 1", false, false);
-                gui.green.showAuto("Player 2", false, false);
-                gui.yellow.showAuto("Player 3", false, false);
-                gui.blue.showAuto("Player 4", false, false);
-            }
             PlayState = "Active";
             EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(6);
@@ -339,6 +350,7 @@ namespace LudoClient.CoreEngine
                     }
                     //board[pj].Add(piece);
                     GameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    
                     await EngineHelper.RelocateAsync(piece, pieceClone);
                     if(killed)
                         await EngineHelper.RelocateAsync(kilablePieces[0], kilablePieces[0]);
@@ -729,7 +741,6 @@ namespace LudoClient.CoreEngine
             }
             while (animationBlock)
             {
-                Console.WriteLine("Waiting for animation to complete...");
                 await Task.Delay(200);
             }
         }
