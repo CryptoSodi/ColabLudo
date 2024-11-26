@@ -73,9 +73,7 @@ public partial class PlayerSeat : ContentView
     {
         // Wait until the component has rendered
         while (!IsRendered)
-        {
             await Task.Delay(10); // Small delay to prevent blocking
-        }
         // Cancel any previous animation
         StopProgressAnimation();
         _animationCancellationTokenSource = new CancellationTokenSource();
@@ -93,12 +91,18 @@ public partial class PlayerSeat : ContentView
     }
     private async Task AnimateProgress(CancellationToken token)
     {
+        
         double totalWidth = ProgressBoxParent.Width; // Get the width of the container
         double duration = 10000; // 10 seconds in milliseconds
         double interval = 20; // Update every 20 milliseconds
         double steps = duration / interval; // Number of steps for the animation
         double widthChange = totalWidth / steps; // Width increment per step
-
+        if (EngineHelper.stopAnimate)
+        {
+            await Task.Delay(200);
+            TimerTimeout?.Invoke(seatColor);
+            return;
+        }
         ProgressBox.WidthRequest = 0; // Start with 0 width
 
         try
@@ -108,7 +112,7 @@ public partial class PlayerSeat : ContentView
                 // Check if cancellation has been requested
                 if (token.IsCancellationRequested)
                     return;
-                if (autoPlayFlag && i > 25 && !EngineHelper.animationBlock)
+                if (autoPlayFlag && i > 20 && !EngineHelper.animationBlock)
                     break;
                 ProgressBox.WidthRequest = i * widthChange;
                 await Task.Delay((int)interval);

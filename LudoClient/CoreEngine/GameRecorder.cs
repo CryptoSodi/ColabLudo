@@ -15,9 +15,9 @@
             return Newtonsoft.Json.JsonConvert.SerializeObject(gameHistory);
         }
         // Record an action for the encoder
-        private static void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int newPosition = -1, bool killed = false)
+        private static void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int location = -1, int newPosition = -1, bool killed = false)
         {
-            var action = new GameAction(player.Color, actionType, diceValue, piece?.Name, newPosition, killed);
+            var action = new GameAction(player.Color, actionType, diceValue, piece?.Name, location, newPosition, killed);
             gameHistory.Add(action);
         }
         // Method to record a dice roll
@@ -28,7 +28,7 @@
         // Method to record a move action
         public static void RecordMove(int diceValue, Player player, Piece piece, int newPosition, bool killed = false)
         {
-            RecordAction("MovePiece", diceValue, player, piece, newPosition, killed);
+            RecordAction("MovePiece", diceValue, player, piece, piece.Location, newPosition, killed);
         }
         // Save the game history to a file
         public static void SaveGameHistory()
