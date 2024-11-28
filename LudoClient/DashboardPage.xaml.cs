@@ -2,8 +2,11 @@ namespace LudoClient;
 
 using CommunityToolkit.Maui.Views;
 using LudoClient.ControlView;
+using LudoClient.CoreEngine;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
+using System.Security.AccessControl;
+
 public partial class DashboardPage : ContentPage
 {
     CashGame        cashGame = new CashGame();
@@ -16,7 +19,7 @@ public partial class DashboardPage : ContentPage
         Task.Run(async () =>
         {
             // Asynchronously initialize heavy content in the background
-          //  await cashGame.initComponent();
+            //  await cashGame.initComponent();
         });
     }
     private void CashGame_Clicked(object sender, EventArgs e)

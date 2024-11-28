@@ -1,54 +1,80 @@
-﻿namespace LudoClient.CoreEngine
-{
-    public static class GameRecorder
-    {
-        public static Engine engine = null;
-        public static List<GameAction> gameHistory = new List<GameAction>();
+﻿using LudoClient.Constants;
 
-        public static void EncodeAction(GameAction action)
+namespace LudoClient.CoreEngine
+{
+    public class GameRecorder
+    {
+        public Engine engine = null;
+        public List<GameAction> gameHistory = new List<GameAction>();
+        public int DiceValue = 0;
+        public void EncodeAction(GameAction action)
         {
             gameHistory.Add(action);
         }
-        public static string SerializeHistory()
+        public string SerializeHistory()
         {
             // Convert the game history to JSON (or other format if preferred)
             return Newtonsoft.Json.JsonConvert.SerializeObject(gameHistory);
         }
         // Record an action for the encoder
-        private static void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int location = -1, int newPosition = -1, bool killed = false)
+        private void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int location = -1, int newPosition = -1, bool killed = false)
         {
             var action = new GameAction(player.Color, actionType, diceValue, piece?.Name, location, newPosition, killed);
             gameHistory.Add(action);
         }
         // Method to record a dice roll
-        public static void RecordDiceRoll(Player player, int diceValue)
+        public void RecordDiceRoll(Player player, int diceValue)
         {
             RecordAction("RollDice", diceValue, player);
         }
         // Method to record a move action
-        public static void RecordMove(int diceValue, Player player, Piece piece, int newPosition, bool killed = false)
+        public void RecordMove(int diceValue, Player player, Piece piece, int newPosition, bool killed = false)
         {
             RecordAction("MovePiece", diceValue, player, piece, piece.Location, newPosition, killed);
         }
         // Save the game history to a file
-        public static void SaveGameHistory()
+        public void SaveGameHistory()
         {
+            // Get the startup directory of the application AppDomain.CurrentDomain.BaseDirectory+ 
+            // Define the directory and file path
+            string startupPath = "C:\\GameData\\";
+            string filePath = Path.Combine(startupPath, GlobalConstants.GameHistorySaveIndex + ".csv");
+            GlobalConstants.GameHistorySaveIndex++;
 
-            // Get the startup directory of the application
-            string startupPath = AppDomain.CurrentDomain.BaseDirectory;
+            // Ensure the directory exists
+            Directory.CreateDirectory(startupPath);
 
-            // Define the file path for saving the history file in the startup directory
-            string filePath = Path.Combine(startupPath, "GameHistory.json");
+            // Open a StreamWriter for the CSV file
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                // Write the header  GameId	TurnId	red1	red2	red3	red4	gre1	gre2	gre3	gre4	DiceValue	PieceName	Location	NewPosition	Killed	Safe	Color_green	Color_red	Action_MovePiece	Action_RollDice
 
-            // Serialize the game history to JSON format
-            var serializedHistory = Newtonsoft.Json.JsonConvert.SerializeObject(gameHistory);
+                writer.WriteLine("GameId,TurnId,red1,red2,red3,red4,gre1,gre2,gre3,gre4,yel1,yel2,yel3,yel4,blu1,blu2,blu3,blu4,isRed,isGreen,isYellow,isBlue,isRollDice,isMovePiece,DiceValue,PieceName,Location,NewPosition,Killed,Safe");
+                int TurnId = 0;
+                // Write each entry as a CSV row
+                foreach (var entry in gameHistory)
+                {
+                    int isRed = entry.PlayerColor == "red" ? 1 : 0;
+                    int isGreen = entry.PlayerColor == "green" ? 1 : 0;
+                    int isYellow = entry.PlayerColor == "yellow" ? 1 : 0;
+                    int isBlue = entry.PlayerColor == "blue" ? 1 : 0;
 
-            // Write the serialized history to the file
-            File.WriteAllText(filePath, serializedHistory);
+                    int isRollDice = entry.ActionType == "RollDice" ? 1 : 0;
+                    int isMovePiece = entry.ActionType == "MovePiece" ? 1 : 0;
 
-            Console.WriteLine($"Game history saved at: {filePath}");
-        }
-        public static async Task ReplayGameAsync(string fileName)
+                    // Extract values from the entry and write them as a single line
+                    string csvRow = $"{entry.GameId},{TurnId++},{entry.redPiece1},{entry.redPiece2},{entry.redPiece3},{entry.redPiece4}," +
+                                    $"{entry.grePiece1},{entry.grePiece2},{entry.grePiece3},{entry.grePiece4}," +
+                                    $"{entry.yelPiece1},{entry.yelPiece2},{entry.yelPiece3},{entry.yelPiece4}," +
+                                    $"{entry.bluPiece1},{entry.bluPiece2},{entry.bluPiece3},{entry.bluPiece4}," +
+                                    $"{isRed},{isGreen},{isYellow},{isBlue},{isRollDice},{isMovePiece},{entry.DiceValue},{entry.PieceName},{entry.Location},{entry.NewPosition},{entry.Killed},{entry.Safe}";
+                    writer.WriteLine(csvRow);
+                }
+            }
+
+            Console.WriteLine($"Game history saved as CSV at: {filePath}");
+        }        
+        public async Task ReplayGameAsync(string fileName)
         {
             // Get the startup directory of the application
             string startupPath = AppDomain.CurrentDomain.BaseDirectory;
@@ -77,12 +103,11 @@
                 await PlayActionAsync(action);
             }
         }
-        static int DiceValue = 0;
-        public static int RequestDice()
+        public int RequestDice()
         {
             return DiceValue;
         }
-            private static async Task PlayActionAsync(GameAction action)
+        private async Task PlayActionAsync(GameAction action)
         {
             switch (action.ActionType)
             {

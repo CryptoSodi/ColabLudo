@@ -4,7 +4,8 @@ using System.Net.Sockets;
 namespace LudoClient.Constants
 {
     public static class GlobalConstants
-    {        
+    {
+        public static int GameHistorySaveIndex = 0;
         public static readonly HttpClient httpClient;
         public static readonly int initialEntry = 5;
         public static readonly bool Debug = false;

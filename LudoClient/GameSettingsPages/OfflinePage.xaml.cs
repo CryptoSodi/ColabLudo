@@ -23,6 +23,8 @@ public partial class OfflinePage : ContentPage
 
         TabP1.SwitchSource = TabP1.SwitchOn;
         TabP2.SwitchSource = TabP2.SwitchOff;
+
+        
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
