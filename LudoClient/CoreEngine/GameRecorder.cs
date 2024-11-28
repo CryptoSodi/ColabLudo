@@ -38,9 +38,10 @@ namespace LudoClient.CoreEngine
             // Get the startup directory of the application AppDomain.CurrentDomain.BaseDirectory+ 
             // Define the directory and file path
             string startupPath = "C:\\GameData\\";
-            string filePath = Path.Combine(startupPath, GlobalConstants.GameHistorySaveIndex + ".csv");
-            GlobalConstants.GameHistorySaveIndex++;
+            GlobalConstants.GameHistorySaveIndex = Directory.GetFiles(startupPath).Length;
 
+            string filePath = Path.Combine(startupPath, GlobalConstants.GameHistorySaveIndex + ".csv");
+            
             // Ensure the directory exists
             Directory.CreateDirectory(startupPath);
 
@@ -49,7 +50,17 @@ namespace LudoClient.CoreEngine
             {
                 // Write the header  GameId	TurnId	red1	red2	red3	red4	gre1	gre2	gre3	gre4	DiceValue	PieceName	Location	NewPosition	Killed	Safe	Color_green	Color_red	Action_MovePiece	Action_RollDice
 
-                writer.WriteLine("GameId,TurnId,red1,red2,red3,red4,gre1,gre2,gre3,gre4,yel1,yel2,yel3,yel4,blu1,blu2,blu3,blu4,isRed,isGreen,isYellow,isBlue,isRollDice,isMovePiece,DiceValue,PieceName,Location,NewPosition,Killed,Safe");
+                writer.WriteLine(
+                    "GameId,TurnId,red1,red2,red3,red4,gre1,gre2,gre3,gre4," +
+                    "yel1,yel2,yel3,yel4,blu1,blu2,blu3,blu4," +
+                    "isRed,isGreen,isYellow,isBlue," +
+                    "isRollDice,isMovePiece," +
+                    "isRed1,isRed2,isRed3,isRed4," +
+                    "isGreen1,isGreen2,isGreen3,isGreen4," +
+                    "isYellow1,isYellow2,isYellow3,isYellow4," +
+                    "isBlue1,isBlue2,isBlue3,isBlue4," +
+                    "DiceValue,Location,NewPosition,Killed,Safe"
+                ); 
                 int TurnId = 0;
                 // Write each entry as a CSV row
                 foreach (var entry in gameHistory)
@@ -62,12 +73,37 @@ namespace LudoClient.CoreEngine
                     int isRollDice = entry.ActionType == "RollDice" ? 1 : 0;
                     int isMovePiece = entry.ActionType == "MovePiece" ? 1 : 0;
 
+                    int isRed1 = entry.PieceName == "red1" ? 1 : 0;
+                    int isRed2 = entry.PieceName == "red2" ? 1 : 0;
+                    int isRed3 = entry.PieceName == "red3" ? 1 : 0;
+                    int isRed4 = entry.PieceName == "red4" ? 1 : 0;
+
+                    int isGreen1 = entry.PieceName == "gre1" ? 1 : 0;
+                    int isGreen2 = entry.PieceName == "gre2" ? 1 : 0;
+                    int isGreen3 = entry.PieceName == "gre3" ? 1 : 0;
+                    int isGreen4 = entry.PieceName == "gre4" ? 1 : 0;
+
+                    int isYellow1 = entry.PieceName == "yel1" ? 1 : 0;
+                    int isYellow2 = entry.PieceName == "yel2" ? 1 : 0;
+                    int isYellow3 = entry.PieceName == "yel3" ? 1 : 0;
+                    int isYellow4 = entry.PieceName == "yel4" ? 1 : 0;
+
+                    int isBlue1 = entry.PieceName == "blu1" ? 1 : 0;
+                    int isBlue2 = entry.PieceName == "blu2" ? 1 : 0;
+                    int isBlue3 = entry.PieceName == "blu3" ? 1 : 0;
+                    int isBlue4 = entry.PieceName == "blu4" ? 1 : 0;
+
                     // Extract values from the entry and write them as a single line
                     string csvRow = $"{entry.GameId},{TurnId++},{entry.redPiece1},{entry.redPiece2},{entry.redPiece3},{entry.redPiece4}," +
                                     $"{entry.grePiece1},{entry.grePiece2},{entry.grePiece3},{entry.grePiece4}," +
                                     $"{entry.yelPiece1},{entry.yelPiece2},{entry.yelPiece3},{entry.yelPiece4}," +
                                     $"{entry.bluPiece1},{entry.bluPiece2},{entry.bluPiece3},{entry.bluPiece4}," +
-                                    $"{isRed},{isGreen},{isYellow},{isBlue},{isRollDice},{isMovePiece},{entry.DiceValue},{entry.PieceName},{entry.Location},{entry.NewPosition},{entry.Killed},{entry.Safe}";
+                                    $"{isRed},{isGreen},{isYellow},{isBlue},{isRollDice},{isMovePiece},"+
+                                    $"{isRed1},{isRed2},{isRed3},{isRed4}," +
+                                    $"{isGreen1},{isGreen2},{isGreen3},{isGreen4}," +
+                                    $"{isYellow1},{isYellow2},{isYellow3},{isYellow4}," +
+                                    $"{isBlue1},{isBlue2},{isBlue3},{isBlue4}," +
+                                    $"{entry.DiceValue},{entry.Location},{entry.NewPosition},{entry.Killed},{entry.Safe}";
                     writer.WriteLine(csvRow);
                 }
             }

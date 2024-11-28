@@ -200,7 +200,7 @@ namespace LudoClient.CoreEngine
                 EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
             PlayState = "Active";
             //EngineHelper.rolls.Add(6);
-
+            Task.Delay(2000);
             if (EngineHelper.stopAnimate)
                 TimerTimeout(EngineHelper.currentPlayer.Color);
         }
