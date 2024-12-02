@@ -560,7 +560,7 @@
 
 	<ItemGroup>
 	  <Reference Include="LudoServer">
-	    <HintPath>..\..\LudoServer\bin\Debug\net8.0\LudoServer.dll</HintPath>
+	    <HintPath>..\..\LudoServer\bin\Debug\net9.0\LudoServer.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
