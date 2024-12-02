@@ -1,12 +1,8 @@
-﻿using CommunityToolkit.Maui.Converters;
-using LudoClient;
-using LudoClient.Constants;
-using LudoClient.ControlView;
-using LudoClient.CoreEngine;
-using LudoClient.Network;
-using Microsoft.Maui.Controls;
+﻿using SharedCode.Constants;
+using SharedCode.ControlView;
+using SharedCode.Network;
 
-namespace LudoClient.CoreEngine
+namespace SharedCode.CoreEngine
 {
     public class Engine
     {
@@ -396,7 +392,7 @@ namespace LudoClient.CoreEngine
 
                         gameRecorder.SaveGameHistory();
                         //Application.Current.MainPage = new AppShell();
-                        Application.Current.MainPage = new Game("Computer", "4", "Red");
+                       // Application.Current.MainPage = new Game("Computer", "4", "Red");
                         return;
                     }
                 }

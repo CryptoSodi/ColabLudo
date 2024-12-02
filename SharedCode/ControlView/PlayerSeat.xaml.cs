@@ -1,6 +1,6 @@
-using LudoClient.CoreEngine;
+using SharedCode.CoreEngine;
 
-namespace LudoClient.ControlView;
+namespace SharedCode.ControlView;
 
 public partial class PlayerSeat : ContentView
 {
