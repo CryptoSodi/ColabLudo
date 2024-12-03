@@ -1,23 +1,14 @@
-﻿using SharedCode.ControlView;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SharedCode.CoreEngine
+﻿namespace SharedCode.CoreEngine
 {
     public class Piece
     {
-        public Token PieceToken { get; private set; }
         public string Name { get; private set; }
         public bool Moveable { get; set; }
         public int Location { get; set; }
         public string Color { get; private set; }
         public int Position { get; set; }
-        public Piece(string color, string name, Token pieceToken)
+        public Piece(string color, string name)
         {
-            PieceToken = pieceToken;
             Name = name;
             Color = color;
             Position = -1; // -1 indicates the piece is in the base
@@ -26,7 +17,7 @@ namespace SharedCode.CoreEngine
         }
         public Piece Clone()
         {
-            return new Piece(this.Color, this.Name, this.PieceToken) // Assuming Token is reference-safe
+            return new Piece(this.Color, this.Name) // Assuming Token is reference-safe
             {
                 Moveable = this.Moveable,
                 Location = this.Location,

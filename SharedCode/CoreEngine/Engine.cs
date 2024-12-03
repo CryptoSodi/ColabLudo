@@ -1,5 +1,4 @@
 ﻿using SharedCode.Constants;
-using SharedCode.ControlView;
 using SharedCode.Network;
 
 namespace SharedCode.CoreEngine
@@ -14,7 +13,7 @@ namespace SharedCode.CoreEngine
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
         string playerColor;
-        private void TimerTimeout(String SeatName)
+        public void TimerTimeout(String SeatName)
         {
            
            switch(EngineHelper.gameState){
@@ -29,7 +28,7 @@ namespace SharedCode.CoreEngine
                     break;
             }
         }
-        public Engine(string gameType, string playerCount, string playerColor, Gui gui, Capsule Glayout, AbsoluteLayout Alayout)
+        public Engine(string gameType, string playerCount, string playerColor)
         {
             gameRecorder = new GameRecorder();
             this.playerColor = playerColor;
@@ -132,24 +131,6 @@ namespace SharedCode.CoreEngine
             EngineHelper.currentPlayerIndex = 0;
             GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
-            // Initialize GUI and layout locations
-            EngineHelper.InitializeGuiLocations(gui);
-
-            EngineHelper.gui = gui;
-            EngineHelper.Glayout = Glayout;
-            EngineHelper.Alayout = Alayout;
-
-            // Set rotation based on player color
-            int rotation = EngineHelper.SetRotation(playerColor);
-            Glayout.RotateTo(rotation);
-
-            // Handle layout size changes
-            Alayout.SizeChanged += (sender, e) =>
-            {
-                Console.WriteLine("The layout has been loaded and rendered.");
-                EngineHelper.Pupulate(gui, rotation);
-            };
-
             EngineHelper.InitializePlayers(playerCount, playerColor);
            
             // Initialize original path
@@ -160,38 +141,7 @@ namespace SharedCode.CoreEngine
                 _ = gameRecorder.ReplayGameAsync("GameHistory.json");
             }
 
-            foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
-                seat.TimerTimeout += TimerTimeout;
             
-            PlayerSeat playerSeat = playerColor switch
-            {
-                "Red" => gui.red,
-                "Green" => gui.green,
-                "Yellow" => gui.yellow,
-                "Blue" => gui.blue,
-                _ => null
-            };
-
-            var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
-            if (gameType == "Online")
-            {
-                foreach (var (color, seat) in colors)
-                    if (playerColor != color)
-                        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
-
-                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            }
-            else
-            {
-                foreach (var (color, seat) in colors)
-                    if (playerColor != color)
-                        if (gameType == "Computer")
-                            seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
-                        else
-                            seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
-
-                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            }
             EngineHelper.currentPlayer = EngineHelper.players[EngineHelper.currentPlayerIndex];
 
             if (!EngineHelper.stopAnimate)
@@ -457,14 +407,12 @@ namespace SharedCode.CoreEngine
         public static string gameState = "RollDice";
         // Private fields
         public static List<Player> players;
-        // Public fields
-        public static Gui gui;
+
         // Constants or configuration lists
         public static readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
         private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
         // UI Components
         public static AbsoluteLayout Alayout;
-        public static Capsule Glayout;
         public static bool animationBlock = false;
         public static Player getPlayer(String color)
         {
@@ -592,28 +540,7 @@ namespace SharedCode.CoreEngine
             {
                 throw new ArgumentException("Invalid player color selected.");
             }
-        }
-        public static void InitializeGuiLocations(Gui gui)
-        {
-            // Set initial locations for each token to -1
-            foreach (var token in new[] { gui.red1, gui.red2, gui.red3, gui.red4,
-                                   gui.gre1, gui.gre2, gui.gre3, gui.gre4,
-                                   gui.blu1, gui.blu2, gui.blu3, gui.blu4,
-                                   gui.yel1, gui.yel2, gui.yel3, gui.yel4 })
-            {
-                token.location = -1;
-            }
-        }
-        public static int SetRotation(string playerColor)
-        {
-            return playerColor switch
-            {
-                "Green" => 270,
-                "Yellow" => 180,
-                "Blue" => 90,
-                _ => 360 // Default rotation for Red or unrecognized color
-            };
-        }
+        }        
         public static void InitializeOriginalPath()
         {
             originalPath = new Dictionary<string, int[]>
@@ -774,7 +701,7 @@ namespace SharedCode.CoreEngine
                 await Task.Delay(20);
             }
         }
-        public static void Pupulate(Gui gui, int rotation)
+        public static void Pupulate(int rotation)
         {
             for (int i = 0; i < players.Count; i++)
                 for (int j = 0; j < players[i].Pieces.Count; j++)
@@ -851,7 +778,7 @@ namespace SharedCode.CoreEngine
                 Alayout.Add(piece.PieceToken);
             }
         }
-        public static PlayerSeat GetPlayerSeat(string seatColor)
+        public static dynamic GetPlayerSeat(string seatColor)
         {
             if(seatColor=="red")
                 return gui.red;
