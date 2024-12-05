@@ -136,9 +136,6 @@ namespace LudoClient.CoreEngine
             EngineHelper.currentPlayerIndex = 0;
             GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
-            // Initialize GUI and layout locations
-            EngineHelper.InitializeGuiLocations(gui);
-
             EngineHelper.gui = gui;
             EngineHelper.Glayout = Glayout;
             EngineHelper.Alayout = Alayout;
@@ -595,17 +592,6 @@ namespace LudoClient.CoreEngine
             else
             {
                 throw new ArgumentException("Invalid player color selected.");
-            }
-        }
-        public static void InitializeGuiLocations(Gui gui)
-        {
-            // Set initial locations for each token to -1
-            foreach (var token in new[] { gui.red1, gui.red2, gui.red3, gui.red4,
-                                   gui.gre1, gui.gre2, gui.gre3, gui.gre4,
-                                   gui.blu1, gui.blu2, gui.blu3, gui.blu4,
-                                   gui.yel1, gui.yel2, gui.yel3, gui.yel4 })
-            {
-                token.location = -1;
             }
         }
         public static int SetRotation(string playerColor)

@@ -2,6 +2,8 @@ namespace LudoClient.ControlView;
 
 public partial class Token : ContentView
 {
+    public String name = "";
+
     public delegate void PieceClickedHandler(String PieceName);
     public event PieceClickedHandler OnPieceClicked;
 
@@ -15,9 +17,6 @@ public partial class Token : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
-    public String name = "";
-    public String color = "Red";
-    public int location = 0;
     public Token()
     {
         InitializeComponent();
