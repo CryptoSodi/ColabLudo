@@ -559,12 +559,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="LudoServer">
-	    <HintPath>..\..\LudoServer\bin\Debug\net9.0\LudoServer.dll</HintPath>
-	  </Reference>
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Compile Update="ControlView\HelpCube.xaml.cs">
 	    <DependentUpon>HelpCube.xaml</DependentUpon>
 	  </Compile>

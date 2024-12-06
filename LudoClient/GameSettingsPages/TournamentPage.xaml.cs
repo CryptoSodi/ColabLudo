@@ -1,6 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using LudoServer.Models;
+using LudoClient.Models;
 using System.Text.Json;
 namespace LudoClient;
 public partial class TournamentPage : ContentPage
