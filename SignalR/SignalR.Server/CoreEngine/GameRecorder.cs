@@ -7,10 +7,6 @@ namespace LudoClient.CoreEngine
         public Engine engine = null;
         public List<GameAction> gameHistory = new List<GameAction>();
         public int DiceValue = 0;
-        public GameRecorder(Engine engine)
-        {
-            this.engine = engine;
-        }
         public void EncodeAction(GameAction action)
         {
             gameHistory.Add(action);
@@ -23,7 +19,7 @@ namespace LudoClient.CoreEngine
         // Record an action for the encoder
         private void RecordAction(string actionType, int diceValue, Player player, Piece piece = null, int location = -1, int newPosition = -1, bool killed = false)
         {
-            GameAction action = new GameAction(engine, player.Color, actionType, diceValue, piece?.Name, location, newPosition, killed);
+            var action = new GameAction(player.Color, actionType, diceValue, piece?.Name, location, newPosition, killed);
             gameHistory.Add(action);
         }
         // Method to record a dice roll

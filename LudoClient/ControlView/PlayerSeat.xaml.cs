@@ -5,8 +5,9 @@ namespace LudoClient.ControlView;
 public partial class PlayerSeat : ContentView
 {
     public bool autoPlayFlag = false;
-    public bool IsRendered { get; private set; } = false;
     private String seatColor = "";
+    public EngineHelper EngineHelper { get; internal set; }
+    public bool IsRendered { get; private set; } = false;
 
     public delegate void DiceClickedHandler(string SeatName);
     public event DiceClickedHandler OnDiceClicked;
@@ -24,6 +25,7 @@ public partial class PlayerSeat : ContentView
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
+
     public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
     {
         PlayerImage.Source = PictureUrl;
@@ -90,8 +92,7 @@ public partial class PlayerSeat : ContentView
         }
     }
     private async Task AnimateProgress(CancellationToken token)
-    {
-        
+    {   
         double totalWidth = ProgressBoxParent.Width; // Get the width of the container
         double duration = 10000; // 10 seconds in milliseconds
         double interval = 20; // Update every 20 milliseconds

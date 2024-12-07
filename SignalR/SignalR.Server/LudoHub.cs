@@ -5,6 +5,7 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Concurrent;
+using System.Security.AccessControl;
 
 namespace SignalR.Server
 {
@@ -13,7 +14,7 @@ namespace SignalR.Server
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
-        public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
+        public static Engine eng = new Engine("4", "4", "red", new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         public LudoHub(LudoDbContext context)

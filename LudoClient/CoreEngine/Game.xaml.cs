@@ -1,13 +1,35 @@
+using LudoClient.Constants;
 using LudoClient.ControlView;
+using LudoServer.Models;
 using SimpleToolkit.Core;
+using System;
+using System.IO.Pipelines;
+using System.Security.AccessControl;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
     Engine Engine;
-    public PlayerSeat RedPlayerSeat; public PlayerSeat GreenPlayerSeat; public PlayerSeat YellowPlayerSeat; public PlayerSeat BluePlayerSeat;
-    public Game(string gametype, string playerCount, string playerColor)
+    Gui gui;
+    public PlayerSeat RedPlayerSeat; 
+    public PlayerSeat GreenPlayerSeat; 
+    public PlayerSeat YellowPlayerSeat; 
+    public PlayerSeat BluePlayerSeat;
+    public PlayerSeat GetPlayerSeat(string seatColor)
+    {
+        if (seatColor == "red")
+            return gui.red;
+        else if (seatColor == "green")
+            return gui.green;
+        else if (seatColor == "yellow")
+            return gui.yellow;
+        else
+            return gui.blue;
+    }
+    public Game(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
+
+        //GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);//For ggetting msggs from the game server
         //Grid.SetRow(GameView, 0);
         //Grid.SetColumn(GameView, 0);
 
@@ -39,6 +61,7 @@ public partial class Game : ContentPage
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
+        
         switch (playerCount)
         {
             case "2":
@@ -154,8 +177,94 @@ public partial class Game : ContentPage
                 }
                 break;
         }
-        Gui gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
-        Engine = new Engine(gametype, playerCount, playerColor, gui, Glayout, Alayout);
+        
+        gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
+
+        Alayout.Remove(gui.red1);
+        Alayout.Remove(gui.red2);
+        Alayout.Remove(gui.red3);
+        Alayout.Remove(gui.red4);
+        Alayout.Remove(gui.gre1);
+        Alayout.Remove(gui.gre2);
+        Alayout.Remove(gui.gre3);
+        Alayout.Remove(gui.gre4);
+        Alayout.Remove(gui.yel1);
+        Alayout.Remove(gui.yel2);
+        Alayout.Remove(gui.yel3);
+        Alayout.Remove(gui.yel4);
+        Alayout.Remove(gui.blu1);
+        Alayout.Remove(gui.blu2);
+        Alayout.Remove(gui.blu3);
+        Alayout.Remove(gui.blu4);
+
+
+        PlayerSeat playerSeat = playerColor switch
+        {
+            "Red" => gui.red,
+            "Green" => gui.green,
+            "Yellow" => gui.yellow,
+            "Blue" => gui.blue,
+            _ => null
+        };
+
+        var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
+        if (gameType == "Online")
+        {
+            foreach (var (color, seat) in colors)
+                if (playerColor != color)
+                    seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+
+            playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+        }
+        else
+        {
+            foreach (var (color, seat) in colors)
+                if (playerColor != color)
+                    if (gameType == "Computer")
+                        seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
+                    else
+                        seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+
+            playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+        }
+
+        Engine = new Engine(gameType, playerCount, playerColor);
+        gui.red.EngineHelper = Engine.EngineHelper;
+        gui.green.EngineHelper = Engine.EngineHelper;
+        gui.yellow.EngineHelper = Engine.EngineHelper;
+        gui.blue.EngineHelper = Engine.EngineHelper;
+        if (!Engine.EngineHelper.stopAnimate)
+            StartProgressAnimation(Engine.EngineHelper.currentPlayer.Color);
+
+        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+
+        Engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
+        Engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
+
+        Engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
+
+    // Set rotation based on player color
+    int rotation = Engine.EngineHelper.SetRotation(playerColor);
+        Glayout.RotateTo(rotation);
+
+        for (int i = 0; i < Engine.EngineHelper.players.Count; i++)
+            for (int j = 0; j < Engine.EngineHelper.players[i].Pieces.Count; j++)
+            {
+                Alayout.Add(gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]));
+            }
+        // Handle layout size changes
+        Alayout.SizeChanged += (sender, e) =>
+        {
+            Console.WriteLine("The layout has been loaded and rendered.");
+            Pupulate(rotation);
+        };
+
+        // Pupulate(rotation);
+
+
+        foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
+            seat.TimerTimeout += Engine.TimerTimeout;
+
         //Event Handelers
         GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
@@ -186,22 +295,114 @@ public partial class Game : ContentPage
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
 
-        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+
+
+    }
+    public void Pupulate(int rotation)
+    {
+        for (int i = 0; i < Engine.EngineHelper.players.Count; i++)
+            for (int j = 0; j < Engine.EngineHelper.players[i].Pieces.Count; j++)
+            {
+                gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]).RotateTo(-rotation);
+                AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
+                _ = RelocateAsync(Engine.EngineHelper.players[i].Pieces[j], Engine.EngineHelper.players[i].Pieces[j]);
+            }
+    }
+    public async Task RelocateAsync(Piece piece, Piece pieceClone)
+    {
+        Engine.EngineHelper.animationBlock = true;
+
+        uint animTime = 200;
+        if (Engine.EngineHelper.stopAnimate)
+        {
+            animTime = 40;
+            pieceClone = piece.Clone();
+        }
+        //piece.Position
+        //player.StartPosition
+        string PB = Engine.EngineHelper.getPieceBox(piece);
+
+        if (pieceClone.Location < piece.Location)
+        {
+            pieceClone.Jump(Engine, 1, true);
+            string PBC = Engine.EngineHelper.getPieceBox(pieceClone);
+
+            double x = Engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
+            double y = Engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
+
+            _ = gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn).ContinueWith(t =>
+            {
+                if (t.IsCompletedSuccessfully)
+                {
+                    if (pieceClone.Location != piece.Location)
+                        _ = RelocateAsync(piece, pieceClone);
+                    else
+                        Engine.EngineHelper.animationBlock = false;
+                }
+                else if (t.IsFaulted)
+                {
+                    Console.WriteLine($"Error during translation: {t.Exception?.Message}");
+                }
+            });
+        }
+        else
+        {
+            double x = Engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
+            double y = Engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
+            _ = gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn);
+            Engine.EngineHelper.animationBlock = false;
+        }
+        while (Engine.EngineHelper.animationBlock)
+        {
+            await Task.Delay(20);
+        }
     }
     private void PlayerPieceClicked(String PieceName)
     {
         //start animation
         // Handle the dice click for the green player
-        Engine.MovePieceAsync(PieceName);
+        _ = Engine.MovePieceAsync(PieceName);
         //stop animmation
     }
     private void PlayerDiceClicked(String SeatName)
     {
-        if (EngineHelper.checkTurn(SeatName, "RollDice"))
+        if (Engine.EngineHelper.checkTurn(SeatName, "RollDice"))
         {
+            gui.red.reset();
+            gui.green.reset();
+            gui.yellow.reset();
+            gui.blue.reset();
+
+            // Handle the dice click for the green player
+            //check turn
+            var seat = gui.red;
+            if (SeatName == "red")
+                seat = gui.red;
+            if (SeatName == "green")
+                seat = gui.green;
+            if (SeatName == "yellow")
+                seat = gui.yellow;
+            if (SeatName == "blue")
+                seat = gui.blue;
+
+            seat.AnimateDice();
             Engine.SeatTurn(SeatName);
         }
+        foreach (var piece in Engine.EngineHelper.currentPlayer.Pieces)
+        {
+            // Safely update the UI
+            Alayout.Remove(gui.getPieceToken(piece));
+            Alayout.Add(gui.getPieceToken(piece));
+        }
         //Engine.PlayGame();
+    }
+    public void StartProgressAnimation(string SeatName)
+    {
+        GetPlayerSeat(SeatName).StartProgressAnimation();
+    }
+    public void StopProgressAnimation(string SeatName)
+    {
+        GetPlayerSeat(SeatName).StopProgressAnimation();
     }
     public void StopDice(string SeatName, int dicevalue)
     {
@@ -221,6 +422,7 @@ public partial class Game : ContentPage
             return;
         }
         seat.StopDice(dicevalue);
+
     }
     private void PopOverClicked(object sender, EventArgs e)
     {

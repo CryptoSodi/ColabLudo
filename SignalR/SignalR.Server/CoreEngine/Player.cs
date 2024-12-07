@@ -10,8 +10,12 @@ namespace LudoClient.CoreEngine
         public Player(string color)
         {
             Color = color;
-            Pieces = InitializePieces(color);
-            
+            Pieces = InitializePieces(color, gui);
+            foreach (var piece in Pieces)
+            {
+                EngineHelper.Alayout.Add(piece.PieceToken);
+            }
+
             StartPosition = new Dictionary<string, int>
             {
                 { "red", 0 },

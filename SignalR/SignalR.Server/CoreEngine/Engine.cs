@@ -1,4 +1,6 @@
-﻿using LudoClient.Constants;
+﻿using LudoClient;
+using LudoClient.Constants;
+using LudoClient.CoreEngine;
 
 namespace LudoClient.CoreEngine
 {
@@ -9,23 +11,12 @@ namespace LudoClient.CoreEngine
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
-
-        public delegate Task CallbackEventHandlerRelocateAsync(Piece piece, Piece pieceClone);
-        public event CallbackEventHandlerRelocateAsync RelocateAsync;
-
-        public delegate void CallbackEventHandlerStartProgressAnimation(string SeatColor);
-        public event CallbackEventHandlerStartProgressAnimation StartProgressAnimation;
-
-        public delegate void CallbackEventHandlerStopProgressAnimation(string SeatColor);
-        public event CallbackEventHandlerStopProgressAnimation StopProgressAnimation;
-
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
         string playerColor;
-
-        public EngineHelper EngineHelper = new EngineHelper();
-        public void TimerTimeout(String SeatName)
-        {  
+        private void TimerTimeout(String SeatName)
+        {
+           
            switch(EngineHelper.gameState){
                 case "RollDice":
                     SeatTurn(SeatName);
@@ -38,9 +29,9 @@ namespace LudoClient.CoreEngine
                     break;
             }
         }
-        public Engine(string gameType, string playerCount, string playerColor)
+        public Engine(string gameType, string playerCount, string playerColor, Gui gui, dynamic Glayout = null, dynamic Alayout = null)
         {
-            gameRecorder = new GameRecorder(this);
+            gameRecorder = new GameRecorder();
             this.playerColor = playerColor;
             board = new Dictionary<string, List<Piece>>
     {
@@ -137,9 +128,23 @@ namespace LudoClient.CoreEngine
         { "hb2", new List<Piece>() },
         { "hb3", new List<Piece>() }
     };
-            
             EngineHelper.gameType = gameType;
             EngineHelper.currentPlayerIndex = 0;
+         
+            EngineHelper.gui = gui;
+            EngineHelper.Glayout = Glayout;
+            EngineHelper.Alayout = Alayout;
+
+            // Set rotation based on player color
+            int rotation = EngineHelper.SetRotation(playerColor);
+            Glayout.RotateTo(rotation);
+
+            // Handle layout size changes
+            Alayout.SizeChanged += (sender, e) =>
+            {
+                Console.WriteLine("The layout has been loaded and rendered.");
+                EngineHelper.Pupulate(gui, rotation);
+            };
 
             EngineHelper.InitializePlayers(playerCount, playerColor);
            
@@ -151,9 +156,44 @@ namespace LudoClient.CoreEngine
                 _ = gameRecorder.ReplayGameAsync("GameHistory.json");
             }
 
+            foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
+                seat.TimerTimeout += TimerTimeout;
+            
+            PlayerSeat playerSeat = playerColor switch
+            {
+                "Red" => gui.red,
+                "Green" => gui.green,
+                "Yellow" => gui.yellow,
+                "Blue" => gui.blue,
+                _ => null
+            };
+
+            var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
+            if (gameType == "Online")
+            {
+                foreach (var (color, seat) in colors)
+                    if (playerColor != color)
+                        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+
+                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            }
+            else
+            {
+                foreach (var (color, seat) in colors)
+                    if (playerColor != color)
+                        if (gameType == "Computer")
+                            seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
+                        else
+                            seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+
+                playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            }
             EngineHelper.currentPlayer = EngineHelper.players[EngineHelper.currentPlayerIndex];
 
+            if (!EngineHelper.stopAnimate)
+                EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
             PlayState = "Active";
+            //EngineHelper.rolls.Add(6);
             if (EngineHelper.stopAnimate)
                 TimerTimeout(EngineHelper.currentPlayer.Color);
         }
@@ -161,6 +201,24 @@ namespace LudoClient.CoreEngine
         {
             if (PlayState == "Stop")
                 return;
+
+            EngineHelper.gui.red.reset();
+            EngineHelper.gui.green.reset();
+            EngineHelper.gui.yellow.reset();
+            EngineHelper.gui.blue.reset();
+
+            // Handle the dice click for the green player
+            //check turn
+            var seat = EngineHelper.gui.red;
+            if (seatName == "red")
+                seat = EngineHelper.gui.red;
+            if (seatName == "green")
+                seat = EngineHelper.gui.green;
+            if (seatName == "yellow")
+                seat = EngineHelper.gui.yellow;
+            if (seatName == "blue")
+                seat = EngineHelper.gui.blue;
+            seat.AnimateDice();
 
             Player player = EngineHelper.currentPlayer;
             int tempDice = -1;
@@ -219,7 +277,7 @@ namespace LudoClient.CoreEngine
                         Console.WriteLine("Turn Animation of the moveable pieces;");
                         if (!EngineHelper.stopAnimate)
                             // Start timer for auto play or prompt for user action
-                            StartProgressAnimation(EngineHelper.currentPlayer.Color);
+                            EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
                         else
                         {
                             Console.WriteLine("PREVENT ANIMATION TIER");
@@ -230,11 +288,7 @@ namespace LudoClient.CoreEngine
                 {
                     EngineHelper.animationBlock = false;
                     Console.WriteLine($"{player.Color} could not move any piece.");
-
-                    StopProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
-                    if (!EngineHelper.stopAnimate)
-                        StartProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.gameState = "RollDice";
                 }
 
@@ -247,7 +301,7 @@ namespace LudoClient.CoreEngine
                 }
                 else
                 {
-                    //TimerTimeout(EngineHelper.currentPlayer.Color);
+                    TimerTimeout(EngineHelper.currentPlayer.Color);
                 }
             }
             else
@@ -274,13 +328,13 @@ namespace LudoClient.CoreEngine
 
                 if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    piece.Jump(this, EngineHelper.diceValue);
-                    RelocateAsync(piece, piece.Clone());
+                    piece.Jump(EngineHelper.diceValue);
+                    EngineHelper.RelocateAsync(piece, piece.Clone());
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    piece.Jump(this, EngineHelper.diceValue);
+                    piece.Jump(EngineHelper.diceValue);
 
                     string pj = EngineHelper.getPieceBox(piece);
                     List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
@@ -296,9 +350,9 @@ namespace LudoClient.CoreEngine
                     }
 
                     
-                    await RelocateAsync(piece, pieceClone);
+                    await EngineHelper.RelocateAsync(piece, pieceClone);
                     if(killed)
-                        await RelocateAsync(kilablePieces[0], kilablePieces[0]);
+                        await EngineHelper.RelocateAsync(kilablePieces[0], kilablePieces[0]);
 
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
                     if (piece.Location == 57)
@@ -320,12 +374,8 @@ namespace LudoClient.CoreEngine
                 }
 
 
-                StopProgressAnimation(EngineHelper.currentPlayer.Color);
                 //checkKills(player,piece);
-                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue); 
-                
-                if (!EngineHelper.stopAnimate)
-                    StartProgressAnimation(EngineHelper.currentPlayer.Color);
+                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
 
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
@@ -338,24 +388,24 @@ namespace LudoClient.CoreEngine
 
                         gameRecorder.SaveGameHistory();
                         //Application.Current.MainPage = new AppShell();
-                        Application.Current.MainPage = new Game("Computer", "4", "Red");
+                        
                         return;
                     }
                 }
 
                 if (!EngineHelper.stopAnimate)
                     //perform turn turn check
-                    StartProgressAnimation(EngineHelper.currentPlayer.Color);
+                    EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
                 else
                     TimerTimeout(EngineHelper.currentPlayer.Color);
             }
         }
-        public void cleanGame()
+        public static void cleanGame()
         {
-            StopProgressAnimation("red");
-            StopProgressAnimation("green");
-            StopProgressAnimation("yellow");
-            StopProgressAnimation("blue");
+            EngineHelper.GetPlayerSeat("red").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("green").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("yellow").StopProgressAnimation();
+            EngineHelper.GetPlayerSeat("blue").StopProgressAnimation();
 
             PlayState = "Stop";
             EngineHelper.players.Clear();
@@ -364,38 +414,77 @@ namespace LudoClient.CoreEngine
             EngineHelper.gameType = "";
             EngineHelper.gameState = "RollDice";
         }
-        public void RecievedRequest(String name, int val)
+        public void PlayGame()
         {
+            if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (EngineHelper.checkTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color, "RollDice"))
+                    {
+                        string SeatName = EngineHelper.players[EngineHelper.currentPlayerIndex].Color;
+                            EngineHelper.gui.red.reset();
+                            EngineHelper.gui.green.reset();
+                            EngineHelper.gui.yellow.reset();
+                            EngineHelper.gui.blue.reset();
+
+                        EngineHelper.GetPlayerSeat(SeatName).AnimateDice();
+                        SeatTurn(SeatName);
+                    }
+                });
+            }
         }
     }
-    public class EngineHelper
+    public static class EngineHelper
     {
         // Game logic helpers
-        public List<int> rolls = new List<int>();
-        public bool replay = !true;
-        public bool stopAnimate = !true;
-        public Player currentPlayer;
-        public int currentPlayerIndex = 0;
-        public string gameType = "";
+        public static List<int> rolls = new List<int>();
+        public static bool replay = !true;
+        public static bool stopAnimate = !true;
+        public static Player currentPlayer;
+        public static int currentPlayerIndex = 0;
+        public static string gameType = "";
         // Game logic helpers
-        public int diceValue = 0;
-        public string gameState = "RollDice";
+        static private int index = 0;
+        public static int diceValue = 0;
+        public static string gameState = "RollDice";
         // Private fields
-        public List<Player> players;
+        public static List<Player> players;
         // Public fields
+        public static Gui gui;
         // Constants or configuration lists
-        public readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
-        public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-        
-        public bool animationBlock = false;
-        public Player getPlayer(String color)
+        public static readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
+        private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+        // UI Components
+        public static AbsoluteLayout Alayout;
+        public static Capsule Glayout;
+        public static bool animationBlock = false;
+        public static Player getPlayer(String color)
         {
-            return players.FirstOrDefault(p => p.Color == color);
+            return EngineHelper.players.FirstOrDefault(p => p.Color == color);
         }
-        public void InitializePlayers(string playerCount, string playerColor)
+        public static void InitializePlayers(string playerCount, string playerColor)
         {
             // Assume each piece has a UI element or rendering component
+            Alayout.Remove(gui.red1);
+            Alayout.Remove(gui.red2);
+            Alayout.Remove(gui.red3);
+            Alayout.Remove(gui.red4);
+            Alayout.Remove(gui.gre1);
+            Alayout.Remove(gui.gre2);
+            Alayout.Remove(gui.gre3);
+            Alayout.Remove(gui.gre4);
+            Alayout.Remove(gui.yel1);
+            Alayout.Remove(gui.yel2);
+            Alayout.Remove(gui.yel3);
+            Alayout.Remove(gui.yel4);
+            Alayout.Remove(gui.blu1);
+            Alayout.Remove(gui.blu2);
+            Alayout.Remove(gui.blu3);
+            Alayout.Remove(gui.blu4);
+
             int count = int.Parse(playerCount);
+
             if (playerColor == "Red")
             {
                 if (count == 3)
@@ -408,16 +497,16 @@ namespace LudoClient.CoreEngine
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("red"),
-                        new Player("yellow")
+                        new Player("red", gui),
+                        new Player("yellow", gui)
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("red"),
-                        new Player("green"),
-                        new Player("yellow"),
-                        new Player("blue")
+                        new Player("red", gui),
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui)
                     };
             }
             else if (playerColor == "Green")
@@ -425,23 +514,23 @@ namespace LudoClient.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("green"),
-                        new Player("yellow"),
-                        new Player("blue")
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui)
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("green"),
-                        new Player("blue")
+                        new Player("green", gui),
+                        new Player("blue", gui)
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("green"),
-                        new Player("yellow"),
-                        new Player("blue"),
-                        new Player("red")
+                        new Player("green", gui),
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                    new Player("red", gui)
                     };
             }
             else if (playerColor == "Yellow")
@@ -449,23 +538,23 @@ namespace LudoClient.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("yellow"),
-                        new Player("blue"),
-                        new Player("red")
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                        new Player("red", gui)
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("yellow"),
-                        new Player("red")
+                        new Player("yellow", gui),
+                        new Player("red", gui)
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("yellow"),
-                        new Player("blue"),
-                        new Player("red"),
-                        new Player("green")
+                        new Player("yellow", gui),
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui)
                     };
             }
             else if (playerColor == "Blue")
@@ -473,23 +562,23 @@ namespace LudoClient.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("blue"),
-                        new Player("red"),
-                        new Player("green")
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui)
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("blue"),
-                        new Player("green")
+                        new Player("blue", gui),
+                        new Player("green", gui)
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("blue"),
-                        new Player("red"),
-                        new Player("green"),
-                        new Player("yellow")
+                        new Player("blue", gui),
+                        new Player("red", gui),
+                        new Player("green", gui),
+                        new Player("yellow", gui)
                     };
             }
             else
@@ -497,7 +586,7 @@ namespace LudoClient.CoreEngine
                 throw new ArgumentException("Invalid player color selected.");
             }
         }
-        public int SetRotation(string playerColor)
+        public static int SetRotation(string playerColor)
         {
             return playerColor switch
             {
@@ -507,7 +596,7 @@ namespace LudoClient.CoreEngine
                 _ => 360 // Default rotation for Red or unrecognized color
             };
         }
-        public void InitializeOriginalPath()
+        public static void InitializeOriginalPath()
         {
             originalPath = new Dictionary<string, int[]>
             {
@@ -605,7 +694,7 @@ namespace LudoClient.CoreEngine
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-        public string getPieceBox(Piece piece)
+        public static string getPieceBox(Piece piece)
         {
             //piece.Position
             //player.StartPosition
@@ -619,7 +708,65 @@ namespace LudoClient.CoreEngine
             }
             return pj;
         }
-        public void PerformTurnChecks(bool killed, int diceValue = -1)
+        public static async Task RelocateAsync(Piece piece, Piece pieceClone)
+        {
+            animationBlock = true;
+
+            uint animTime = 200;
+            if (stopAnimate) {
+                animTime = 40;
+                pieceClone = piece.Clone();
+            }
+            //piece.Position
+            //player.StartPosition
+            string PB = getPieceBox(piece);
+
+            if (pieceClone.Location < piece.Location)
+            {
+                pieceClone.Jump(1, true);
+                string PBC = getPieceBox(pieceClone);
+
+                double x = originalPath[PBC][1] * (Alayout.Width / 15);
+                double y = originalPath[PBC][0] * (Alayout.Height / 15);
+                
+                _ = piece.PieceToken.TranslateTo(x, y, animTime, Easing.CubicIn).ContinueWith(t =>
+                {
+                    if (t.IsCompletedSuccessfully)
+                    {
+                        if (pieceClone.Location != piece.Location)
+                            RelocateAsync(piece, pieceClone);
+                        else
+                            animationBlock = false;
+                    }
+                    else if (t.IsFaulted)
+                    {
+                        Console.WriteLine($"Error during translation: {t.Exception?.Message}");
+                    }
+                });
+            }
+            else
+            {
+                double x = originalPath[PB][1] * (Alayout.Width / 15);
+                double y = originalPath[PB][0] * (Alayout.Height / 15);
+                _ = piece.PieceToken.TranslateTo(x, y, animTime, Easing.CubicIn);
+                animationBlock = false;
+            }
+            while (animationBlock)
+            {
+                await Task.Delay(20);
+            }
+        }
+        public static void Pupulate(Gui gui, int rotation)
+        {
+            for (int i = 0; i < players.Count; i++)
+                for (int j = 0; j < players[i].Pieces.Count; j++)
+                {
+                    players[i].Pieces[j].PieceToken.RotateTo(-rotation);
+                    AbsoluteLayout.SetLayoutBounds(players[i].Pieces[j].PieceToken, new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
+                    RelocateAsync(players[i].Pieces[j], players[i].Pieces[j]);
+                }
+        }
+        public static void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
 
@@ -637,17 +784,17 @@ namespace LudoClient.CoreEngine
             }
             diceValue = 0;  // Reset dice value for the next turn
         }
-        public bool checkTurn(String SeatName, String GameState)
+        public static bool checkTurn(String SeatName, String GameState)
         {
             Player player = players[currentPlayerIndex];
-            if (player.Color == SeatName && gameState == GameState)
+            if (player.Color == SeatName && EngineHelper.gameState == GameState)
             {
                 return true;
             }
             else
                 return false;
         }
-        public async Task<int> RollDice(string seatName = "")
+        public static async Task<int> RollDice(string seatName = "")
         {
             if(replay)
             {
@@ -666,13 +813,38 @@ namespace LudoClient.CoreEngine
                 else
                     return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
         }
-        public void ChangeTurn()
+        public static void ChangeTurn()
         {
+            GetPlayerSeat(EngineHelper.currentPlayer.Color).StopProgressAnimation();
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
+           
             currentPlayer = players[currentPlayerIndex];
             Console.WriteLine("Current Player : " + currentPlayer.Color);
+            
+
+            
+            if (!EngineHelper.stopAnimate)
+                GetPlayerSeat(currentPlayer.Color).StartProgressAnimation();
+
+            foreach (var piece in currentPlayer.Pieces)
+            {
+                // Safely update the UI
+                Alayout.Remove(piece.PieceToken);
+                Alayout.Add(piece.PieceToken);
+            }
         }
-        public Piece GetPiece(List<Piece> pieces, string name)
+        public static PlayerSeat GetPlayerSeat(string seatColor)
+        {
+            if(seatColor=="red")
+                return gui.red;
+            else if (seatColor == "green")
+                return gui.green;
+            else if (seatColor == "yellow")
+                return gui.yellow;
+            else
+                return gui.blue;
+        }
+        public static Piece GetPiece(List<Piece> pieces, string name)
         {
             foreach (var piece in pieces)
             {
@@ -688,11 +860,12 @@ namespace LudoClient.CoreEngine
             }
             return null;
         }
-        public bool checkGameOver()
+        public static bool checkGameOver()
         {
-            if (players.Count == 0)
+            if (EngineHelper.players.Count == 0)
             {
                 //Show results page
+                Engine.cleanGame();
                 return true;
             }
             return false;

@@ -1,4 +1,5 @@
 ﻿using LudoClient.ControlView;
+using LudoClient.CoreEngine;
 
 namespace LudoClient
 {
@@ -65,6 +66,33 @@ namespace LudoClient
             this.yel3.name = "yel3";
             this.yel4 = yel4;
             this.yel4.name = "yel4";
+        }
+
+        public Token getPieceToken(Piece piece)
+        {
+            // Compare the name of the piece with each token's name and return the matching token
+            if (red1.name == piece.Name) return red1;
+            if (red2.name == piece.Name) return red2;
+            if (red3.name == piece.Name) return red3;
+            if (red4.name == piece.Name) return red4;
+
+            if (gre1.name == piece.Name) return gre1;
+            if (gre2.name == piece.Name) return gre2;
+            if (gre3.name == piece.Name) return gre3;
+            if (gre4.name == piece.Name) return gre4;
+
+            if (blu1.name == piece.Name) return blu1;
+            if (blu2.name == piece.Name) return blu2;
+            if (blu3.name == piece.Name) return blu3;
+            if (blu4.name == piece.Name) return blu4;
+
+            if (yel1.name == piece.Name) return yel1;
+            if (yel2.name == piece.Name) return yel2;
+            if (yel3.name == piece.Name) return yel3;
+            if (yel4.name == piece.Name) return yel4;
+
+            // Return null if no token matches the piece's name
+            return null;
         }
     }
 }
