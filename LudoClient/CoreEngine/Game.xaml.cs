@@ -1,10 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using LudoServer.Models;
 using SimpleToolkit.Core;
-using System;
-using System.IO.Pipelines;
-using System.Security.AccessControl;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
@@ -197,7 +193,6 @@ public partial class Game : ContentPage
         Alayout.Remove(gui.blu3);
         Alayout.Remove(gui.blu4);
 
-
         PlayerSeat playerSeat = playerColor switch
         {
             "Red" => gui.red,
@@ -237,22 +232,19 @@ public partial class Game : ContentPage
             StartProgressAnimation(Engine.EngineHelper.currentPlayer.Color);
 
         Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
-
         Engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
         Engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
-
         Engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
 
     // Set rotation based on player color
     int rotation = Engine.EngineHelper.SetRotation(playerColor);
         Glayout.RotateTo(rotation);
 
-        for (int i = 0; i < Engine.EngineHelper.players.Count; i++)
-            for (int j = 0; j < Engine.EngineHelper.players[i].Pieces.Count; j++)
-            {
-                Alayout.Add(gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]));
-            }
-        // Handle layout size changes
+        foreach (var player in Engine.EngineHelper.players)
+            foreach (var piece in player.Pieces)
+                Alayout.Add(gui.getPieceToken(piece));
+
+                // Handle layout size changes
         Alayout.SizeChanged += (sender, e) =>
         {
             Console.WriteLine("The layout has been loaded and rendered.");

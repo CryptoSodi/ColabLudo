@@ -1,13 +1,11 @@
-﻿using LudoClient;
-using LudoClient.CoreEngine;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using System.Collections.Concurrent;
 
 public record User(string Name, string Room);
 public record Message(string User, string Text);
 public class AdvancedChatHub : Hub
 {
-    public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
+  //  public static Engine eng = new Engine(new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
 
     private static ConcurrentDictionary<string, User> _users = new();
     public override async Task OnDisconnectedAsync(Exception? exception)
@@ -39,7 +37,7 @@ public class AdvancedChatHub : Hub
         }
         else
         {
-            return eng.SeatTurn(message);
+           // return eng.SeatTurn(message);
         }
         return "0";
     }
