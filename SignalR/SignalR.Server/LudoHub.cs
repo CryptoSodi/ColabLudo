@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using SharedCode.CoreEngine;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -11,7 +12,7 @@ namespace SignalR.Server
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
-      //  public static Engine eng = new Engine("4", "4", "red", new Gui(new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new Token(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat(), new PlayerSeat()));
+        public static Engine eng = new Engine("4", "4", "red");
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         public LudoHub(LudoDbContext context)
@@ -32,11 +33,11 @@ namespace SignalR.Server
             //  Clients.All.SendAsync("addMessage", name, GameID);
             if (commandtype == "MovePiece")
             {
-                //eng.MovePiece();
+                eng.MovePieceAsync(message);
             }
             else
             {
-              //  return eng.SeatTurn(message);
+                return eng.SeatTurn(message).GetAwaiter().GetResult();
             }
             return "0";
         }

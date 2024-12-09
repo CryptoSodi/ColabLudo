@@ -1,6 +1,6 @@
-﻿using LudoClient.Constants;
+﻿using SharedCode.Constants;
 
-namespace LudoClient.CoreEngine
+namespace SharedCode.CoreEngine
 {
     public class Engine
     {
@@ -157,10 +157,10 @@ namespace LudoClient.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeout(EngineHelper.currentPlayer.Color);
         }
-        public async void SeatTurn(string seatName)
+        public async Task<string> SeatTurn(string seatName)
         {
             if (PlayState == "Stop")
-                return;
+                return "";
 
             Player player = EngineHelper.currentPlayer;
             int tempDice = -1;
@@ -254,6 +254,7 @@ namespace LudoClient.CoreEngine
             {
                 Console.WriteLine("Not the turn of the player");
             }
+            return tempDice+"";
         }
         public async Task MovePieceAsync(String pieceName)
         {

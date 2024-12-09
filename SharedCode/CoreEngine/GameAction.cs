@@ -1,6 +1,6 @@
-﻿using LudoClient.Constants;
+﻿using SharedCode.Constants;
 
-namespace LudoClient.CoreEngine
+namespace SharedCode.CoreEngine
 {
     public class GameAction
     {

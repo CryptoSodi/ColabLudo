@@ -1,8 +1,8 @@
-﻿using LudoClient.Constants;
-using LudoClient.CoreEngine;
+﻿using SharedCode.Constants;
+using SharedCode.CoreEngine;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace LudoClient.Network
+namespace SharedCode.Network
 {
     public class Client
     {
