@@ -1,4 +1,4 @@
-﻿namespace SharedCode.CoreEngine
+﻿namespace LudoClient.CoreEngine
 {
     public class Piece
     {
@@ -24,25 +24,25 @@
                 Position = this.Position
             };
         }
-        public void Jump(int DiceValue, bool clone=false)
+        public void Jump(Engine engine, int DiceValue, bool clone=false)
         {
             if (this.Position == -1 && DiceValue == 6)
             {
                 if (!clone)
-                    Engine.board[EngineHelper.getPieceBox(this)].Remove(this);
-                this.Position = EngineHelper.players.Where(p => p.Color == Color).ToList()[0].StartPosition;
+                    Engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
+                this.Position = engine.EngineHelper.players.Where(p => p.Color == Color).ToList()[0].StartPosition;
                 this.Location = 1;
                 if (!clone)
-                    Engine.board[EngineHelper.getPieceBox(this)].Add(this);
+                    Engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
             }
             else if (this.Location + DiceValue <= 57)
             {
                 if (!clone)
-                    Engine.board[EngineHelper.getPieceBox(this)].Remove(this);
+                    Engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
                 this.Position = (this.Position + DiceValue) % 52;
                 this.Location += DiceValue;
                 if (!clone)
-                    Engine.board[EngineHelper.getPieceBox(this)].Add(this);
+                    Engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
             }
         }
     }

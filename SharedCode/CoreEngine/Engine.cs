@@ -1,7 +1,6 @@
-﻿using SharedCode.Constants;
-using SharedCode.Network;
+﻿using LudoClient.Constants;
 
-namespace SharedCode.CoreEngine
+namespace LudoClient.CoreEngine
 {
     public class Engine
     {
@@ -10,12 +9,23 @@ namespace SharedCode.CoreEngine
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
+
+        public delegate Task CallbackEventHandlerRelocateAsync(Piece piece, Piece pieceClone);
+        public event CallbackEventHandlerRelocateAsync RelocateAsync;
+
+        public delegate void CallbackEventHandlerStartProgressAnimation(string SeatColor);
+        public event CallbackEventHandlerStartProgressAnimation StartProgressAnimation;
+
+        public delegate void CallbackEventHandlerStopProgressAnimation(string SeatColor);
+        public event CallbackEventHandlerStopProgressAnimation StopProgressAnimation;
+
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
         string playerColor;
+
+        public EngineHelper EngineHelper = new EngineHelper();
         public void TimerTimeout(String SeatName)
-        {
-           
+        {  
            switch(EngineHelper.gameState){
                 case "RollDice":
                     SeatTurn(SeatName);
@@ -30,7 +40,7 @@ namespace SharedCode.CoreEngine
         }
         public Engine(string gameType, string playerCount, string playerColor)
         {
-            gameRecorder = new GameRecorder();
+            gameRecorder = new GameRecorder(this);
             this.playerColor = playerColor;
             board = new Dictionary<string, List<Piece>>
     {
@@ -127,9 +137,9 @@ namespace SharedCode.CoreEngine
         { "hb2", new List<Piece>() },
         { "hb3", new List<Piece>() }
     };
+            
             EngineHelper.gameType = gameType;
             EngineHelper.currentPlayerIndex = 0;
-            GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);
 
             EngineHelper.InitializePlayers(playerCount, playerColor);
            
@@ -141,13 +151,9 @@ namespace SharedCode.CoreEngine
                 _ = gameRecorder.ReplayGameAsync("GameHistory.json");
             }
 
-            
             EngineHelper.currentPlayer = EngineHelper.players[EngineHelper.currentPlayerIndex];
 
-            if (!EngineHelper.stopAnimate)
-                EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
             PlayState = "Active";
-            //EngineHelper.rolls.Add(6);
             if (EngineHelper.stopAnimate)
                 TimerTimeout(EngineHelper.currentPlayer.Color);
         }
@@ -155,24 +161,6 @@ namespace SharedCode.CoreEngine
         {
             if (PlayState == "Stop")
                 return;
-
-            EngineHelper.gui.red.reset();
-            EngineHelper.gui.green.reset();
-            EngineHelper.gui.yellow.reset();
-            EngineHelper.gui.blue.reset();
-
-            // Handle the dice click for the green player
-            //check turn
-            var seat = EngineHelper.gui.red;
-            if (seatName == "red")
-                seat = EngineHelper.gui.red;
-            if (seatName == "green")
-                seat = EngineHelper.gui.green;
-            if (seatName == "yellow")
-                seat = EngineHelper.gui.yellow;
-            if (seatName == "blue")
-                seat = EngineHelper.gui.blue;
-            seat.AnimateDice();
 
             Player player = EngineHelper.currentPlayer;
             int tempDice = -1;
@@ -231,7 +219,7 @@ namespace SharedCode.CoreEngine
                         Console.WriteLine("Turn Animation of the moveable pieces;");
                         if (!EngineHelper.stopAnimate)
                             // Start timer for auto play or prompt for user action
-                            EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
+                            StartProgressAnimation(EngineHelper.currentPlayer.Color);
                         else
                         {
                             Console.WriteLine("PREVENT ANIMATION TIER");
@@ -242,7 +230,11 @@ namespace SharedCode.CoreEngine
                 {
                     EngineHelper.animationBlock = false;
                     Console.WriteLine($"{player.Color} could not move any piece.");
+
+                    StopProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
+                    if (!EngineHelper.stopAnimate)
+                        StartProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.gameState = "RollDice";
                 }
 
@@ -255,7 +247,7 @@ namespace SharedCode.CoreEngine
                 }
                 else
                 {
-                    TimerTimeout(EngineHelper.currentPlayer.Color);
+                    //TimerTimeout(EngineHelper.currentPlayer.Color);
                 }
             }
             else
@@ -282,13 +274,13 @@ namespace SharedCode.CoreEngine
 
                 if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    piece.Jump(EngineHelper.diceValue);
-                    EngineHelper.RelocateAsync(piece, piece.Clone());
+                    piece.Jump(this, EngineHelper.diceValue);
+                    RelocateAsync(piece, piece.Clone());
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    piece.Jump(EngineHelper.diceValue);
+                    piece.Jump(this, EngineHelper.diceValue);
 
                     string pj = EngineHelper.getPieceBox(piece);
                     List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
@@ -304,9 +296,9 @@ namespace SharedCode.CoreEngine
                     }
 
                     
-                    await EngineHelper.RelocateAsync(piece, pieceClone);
+                    await RelocateAsync(piece, pieceClone);
                     if(killed)
-                        await EngineHelper.RelocateAsync(kilablePieces[0], kilablePieces[0]);
+                        await RelocateAsync(kilablePieces[0], kilablePieces[0]);
 
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
                     if (piece.Location == 57)
@@ -328,8 +320,12 @@ namespace SharedCode.CoreEngine
                 }
 
 
+                StopProgressAnimation(EngineHelper.currentPlayer.Color);
                 //checkKills(player,piece);
-                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
+                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue); 
+                
+                if (!EngineHelper.stopAnimate)
+                    StartProgressAnimation(EngineHelper.currentPlayer.Color);
 
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
@@ -342,24 +338,24 @@ namespace SharedCode.CoreEngine
 
                         gameRecorder.SaveGameHistory();
                         //Application.Current.MainPage = new AppShell();
-                       // Application.Current.MainPage = new Game("Computer", "4", "Red");
+                      //  Application.Current.MainPage = new Game("Computer", "4", "Red");
                         return;
                     }
                 }
 
                 if (!EngineHelper.stopAnimate)
                     //perform turn turn check
-                    EngineHelper.GetPlayerSeat(EngineHelper.currentPlayer.Color).StartProgressAnimation();
+                    StartProgressAnimation(EngineHelper.currentPlayer.Color);
                 else
                     TimerTimeout(EngineHelper.currentPlayer.Color);
             }
         }
-        public static void cleanGame()
+        public void cleanGame()
         {
-            EngineHelper.GetPlayerSeat("red").StopProgressAnimation();
-            EngineHelper.GetPlayerSeat("green").StopProgressAnimation();
-            EngineHelper.GetPlayerSeat("yellow").StopProgressAnimation();
-            EngineHelper.GetPlayerSeat("blue").StopProgressAnimation();
+            StopProgressAnimation("red");
+            StopProgressAnimation("green");
+            StopProgressAnimation("yellow");
+            StopProgressAnimation("blue");
 
             PlayState = "Stop";
             EngineHelper.players.Clear();
@@ -368,100 +364,60 @@ namespace SharedCode.CoreEngine
             EngineHelper.gameType = "";
             EngineHelper.gameState = "RollDice";
         }
-        public void PlayGame()
-        {
-            if (EngineHelper.gameType == "Computer" && playerColor.ToLower() != EngineHelper.players[EngineHelper.currentPlayerIndex].Color)
-            {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    if (EngineHelper.checkTurn(EngineHelper.players[EngineHelper.currentPlayerIndex].Color, "RollDice"))
-                    {
-                        string SeatName = EngineHelper.players[EngineHelper.currentPlayerIndex].Color;
-                            EngineHelper.gui.red.reset();
-                            EngineHelper.gui.green.reset();
-                            EngineHelper.gui.yellow.reset();
-                            EngineHelper.gui.blue.reset();
-
-                        EngineHelper.GetPlayerSeat(SeatName).AnimateDice();
-                        SeatTurn(SeatName);
-                    }
-                });
-            }
-        }
         public void RecievedRequest(String name, int val)
         {
         }
     }
-    public static class EngineHelper
+    public class EngineHelper
     {
         // Game logic helpers
-        public static List<int> rolls = new List<int>();
-        public static bool replay = !true;
-        public static bool stopAnimate = !true;
-        public static Player currentPlayer;
-        public static int currentPlayerIndex = 0;
-        public static string gameType = "";
+        public List<int> rolls = new List<int>();
+        public bool replay = !true;
+        public bool stopAnimate = !true;
+        public Player currentPlayer;
+        public int currentPlayerIndex = 0;
+        public string gameType = "";
         // Game logic helpers
-        static private int index = 0;
-        public static int diceValue = 0;
-        public static string gameState = "RollDice";
+        public int diceValue = 0;
+        public string gameState = "RollDice";
         // Private fields
-        public static List<Player> players;
-
+        public List<Player> players;
+        // Public fields
         // Constants or configuration lists
-        public static readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
-        private static Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-        // UI Components
-        public static AbsoluteLayout Alayout;
-        public static bool animationBlock = false;
-        public static Player getPlayer(String color)
+        public readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
+        public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
+        
+        public bool animationBlock = false;
+        public Player getPlayer(String color)
         {
-            return EngineHelper.players.FirstOrDefault(p => p.Color == color);
+            return players.FirstOrDefault(p => p.Color == color);
         }
-        public static void InitializePlayers(string playerCount, string playerColor)
+        public void InitializePlayers(string playerCount, string playerColor)
         {
             // Assume each piece has a UI element or rendering component
-            Alayout.Remove(gui.red1);
-            Alayout.Remove(gui.red2);
-            Alayout.Remove(gui.red3);
-            Alayout.Remove(gui.red4);
-            Alayout.Remove(gui.gre1);
-            Alayout.Remove(gui.gre2);
-            Alayout.Remove(gui.gre3);
-            Alayout.Remove(gui.gre4);
-            Alayout.Remove(gui.yel1);
-            Alayout.Remove(gui.yel2);
-            Alayout.Remove(gui.yel3);
-            Alayout.Remove(gui.yel4);
-            Alayout.Remove(gui.blu1);
-            Alayout.Remove(gui.blu2);
-            Alayout.Remove(gui.blu3);
-            Alayout.Remove(gui.blu4);
-
             int count = int.Parse(playerCount);
-
             if (playerColor == "Red")
             {
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("red", gui),
-                        new Player("green", gui),
-                        new Player("yellow", gui)
+                        new Player("red"),
+                        new Player("green"),
+                        new Player("yellow")
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("red", gui),
-                        new Player("yellow", gui)
+                        new Player("red"),
+                        new Player("yellow")
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("red", gui),
-                        new Player("green", gui),
-                        new Player("yellow", gui),
-                        new Player("blue", gui)
+                        new Player("red"),
+                        new Player("green"),
+                        new Player("yellow"),
+                        new Player("blue")
                     };
             }
             else if (playerColor == "Green")
@@ -469,23 +425,23 @@ namespace SharedCode.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("green", gui),
-                        new Player("yellow", gui),
-                        new Player("blue", gui)
+                        new Player("green"),
+                        new Player("yellow"),
+                        new Player("blue")
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("green", gui),
-                        new Player("blue", gui)
+                        new Player("green"),
+                        new Player("blue")
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("green", gui),
-                        new Player("yellow", gui),
-                        new Player("blue", gui),
-                    new Player("red", gui)
+                        new Player("green"),
+                        new Player("yellow"),
+                        new Player("blue"),
+                        new Player("red")
                     };
             }
             else if (playerColor == "Yellow")
@@ -493,23 +449,23 @@ namespace SharedCode.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("yellow", gui),
-                        new Player("blue", gui),
-                        new Player("red", gui)
+                        new Player("yellow"),
+                        new Player("blue"),
+                        new Player("red")
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("yellow", gui),
-                        new Player("red", gui)
+                        new Player("yellow"),
+                        new Player("red")
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("yellow", gui),
-                        new Player("blue", gui),
-                        new Player("red", gui),
-                        new Player("green", gui)
+                        new Player("yellow"),
+                        new Player("blue"),
+                        new Player("red"),
+                        new Player("green")
                     };
             }
             else if (playerColor == "Blue")
@@ -517,31 +473,41 @@ namespace SharedCode.CoreEngine
                 if (count == 3)
                     players = new List<Player>
                     {
-                        new Player("blue", gui),
-                        new Player("red", gui),
-                        new Player("green", gui)
+                        new Player("blue"),
+                        new Player("red"),
+                        new Player("green")
                     };
                 else if (count == 2)
                     players = new List<Player>
                     {
-                        new Player("blue", gui),
-                        new Player("green", gui)
+                        new Player("blue"),
+                        new Player("green")
                     };
                 else
                     players = new List<Player>
                     {
-                        new Player("blue", gui),
-                        new Player("red", gui),
-                        new Player("green", gui),
-                        new Player("yellow", gui)
+                        new Player("blue"),
+                        new Player("red"),
+                        new Player("green"),
+                        new Player("yellow")
                     };
             }
             else
             {
                 throw new ArgumentException("Invalid player color selected.");
             }
-        }        
-        public static void InitializeOriginalPath()
+        }
+        public int SetRotation(string playerColor)
+        {
+            return playerColor switch
+            {
+                "Green" => 270,
+                "Yellow" => 180,
+                "Blue" => 90,
+                _ => 360 // Default rotation for Red or unrecognized color
+            };
+        }
+        public void InitializeOriginalPath()
         {
             originalPath = new Dictionary<string, int[]>
             {
@@ -639,7 +605,7 @@ namespace SharedCode.CoreEngine
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-        public static string getPieceBox(Piece piece)
+        public string getPieceBox(Piece piece)
         {
             //piece.Position
             //player.StartPosition
@@ -653,65 +619,7 @@ namespace SharedCode.CoreEngine
             }
             return pj;
         }
-        public static async Task RelocateAsync(Piece piece, Piece pieceClone)
-        {
-            animationBlock = true;
-
-            uint animTime = 200;
-            if (stopAnimate) {
-                animTime = 40;
-                pieceClone = piece.Clone();
-            }
-            //piece.Position
-            //player.StartPosition
-            string PB = getPieceBox(piece);
-
-            if (pieceClone.Location < piece.Location)
-            {
-                pieceClone.Jump(1, true);
-                string PBC = getPieceBox(pieceClone);
-
-                double x = originalPath[PBC][1] * (Alayout.Width / 15);
-                double y = originalPath[PBC][0] * (Alayout.Height / 15);
-                
-                _ = piece.PieceToken.TranslateTo(x, y, animTime, Easing.CubicIn).ContinueWith(t =>
-                {
-                    if (t.IsCompletedSuccessfully)
-                    {
-                        if (pieceClone.Location != piece.Location)
-                            RelocateAsync(piece, pieceClone);
-                        else
-                            animationBlock = false;
-                    }
-                    else if (t.IsFaulted)
-                    {
-                        Console.WriteLine($"Error during translation: {t.Exception?.Message}");
-                    }
-                });
-            }
-            else
-            {
-                double x = originalPath[PB][1] * (Alayout.Width / 15);
-                double y = originalPath[PB][0] * (Alayout.Height / 15);
-                _ = piece.PieceToken.TranslateTo(x, y, animTime, Easing.CubicIn);
-                animationBlock = false;
-            }
-            while (animationBlock)
-            {
-                await Task.Delay(20);
-            }
-        }
-        public static void Pupulate(int rotation)
-        {
-            for (int i = 0; i < players.Count; i++)
-                for (int j = 0; j < players[i].Pieces.Count; j++)
-                {
-                    players[i].Pieces[j].PieceToken.RotateTo(-rotation);
-                    AbsoluteLayout.SetLayoutBounds(players[i].Pieces[j].PieceToken, new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
-                    RelocateAsync(players[i].Pieces[j], players[i].Pieces[j]);
-                }
-        }
-        public static void PerformTurnChecks(bool killed, int diceValue = -1)
+        public void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
 
@@ -729,17 +637,17 @@ namespace SharedCode.CoreEngine
             }
             diceValue = 0;  // Reset dice value for the next turn
         }
-        public static bool checkTurn(String SeatName, String GameState)
+        public bool checkTurn(String SeatName, String GameState)
         {
             Player player = players[currentPlayerIndex];
-            if (player.Color == SeatName && EngineHelper.gameState == GameState)
+            if (player.Color == SeatName && gameState == GameState)
             {
                 return true;
             }
             else
                 return false;
         }
-        public static async Task<int> RollDice(string seatName = "")
+        public async Task<int> RollDice(string seatName = "")
         {
             if(replay)
             {
@@ -758,38 +666,13 @@ namespace SharedCode.CoreEngine
                 else
                     return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
         }
-        public static void ChangeTurn()
+        public void ChangeTurn()
         {
-            GetPlayerSeat(EngineHelper.currentPlayer.Color).StopProgressAnimation();
             currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-           
             currentPlayer = players[currentPlayerIndex];
             Console.WriteLine("Current Player : " + currentPlayer.Color);
-            
-
-            
-            if (!EngineHelper.stopAnimate)
-                GetPlayerSeat(currentPlayer.Color).StartProgressAnimation();
-
-            foreach (var piece in currentPlayer.Pieces)
-            {
-                // Safely update the UI
-                Alayout.Remove(piece.PieceToken);
-                Alayout.Add(piece.PieceToken);
-            }
         }
-        public static dynamic GetPlayerSeat(string seatColor)
-        {
-            if(seatColor=="red")
-                return gui.red;
-            else if (seatColor == "green")
-                return gui.green;
-            else if (seatColor == "yellow")
-                return gui.yellow;
-            else
-                return gui.blue;
-        }
-        public static Piece GetPiece(List<Piece> pieces, string name)
+        public Piece GetPiece(List<Piece> pieces, string name)
         {
             foreach (var piece in pieces)
             {
@@ -805,12 +688,11 @@ namespace SharedCode.CoreEngine
             }
             return null;
         }
-        public static bool checkGameOver()
+        public bool checkGameOver()
         {
-            if (EngineHelper.players.Count == 0)
+            if (players.Count == 0)
             {
                 //Show results page
-                Engine.cleanGame();
                 return true;
             }
             return false;

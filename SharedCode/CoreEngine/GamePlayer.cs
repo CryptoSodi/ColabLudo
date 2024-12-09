@@ -1,4 +1,4 @@
-﻿namespace SharedCode.CoreEngine
+﻿namespace LudoClient.CoreEngine
 {
     public class GamePlayer
     {

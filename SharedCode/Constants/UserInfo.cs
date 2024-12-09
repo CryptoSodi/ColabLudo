@@ -1,4 +1,4 @@
-﻿namespace SharedCode.Constants
+﻿namespace LudoClient.Constants
 {
     public class UserInfo
     {

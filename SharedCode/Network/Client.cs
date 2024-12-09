@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using SharedCode.Constants;
+﻿using LudoClient.Constants;
+using LudoClient.CoreEngine;
+using Microsoft.AspNetCore.SignalR.Client;
 
-namespace SharedCode.Network
+namespace LudoClient.Network
 {
     public class Client
     {
@@ -37,7 +38,7 @@ namespace SharedCode.Network
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     Console.WriteLine("Starting Game " + DateTime.Now);
-                   // Application.Current.MainPage = new Game("","","");
+                    //Application.Current.MainPage = new Game("","","");
                 });
             });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
@@ -58,7 +59,7 @@ namespace SharedCode.Network
                     // Handle the result here
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
-                       // Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+                        //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
                         //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
                     });
                 }

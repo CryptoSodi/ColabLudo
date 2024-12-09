@@ -1,7 +1,7 @@
-﻿using SharedCode.Network;
+﻿using LudoClient.Network;
 using System.Net;
 using System.Net.Sockets;
-namespace SharedCode.Constants
+namespace LudoClient.Constants
 {
     public static class GlobalConstants
     {
