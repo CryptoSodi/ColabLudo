@@ -1,5 +1,5 @@
 using CommunityToolkit.Maui.Views;
-using LudoClient.Constants;
+using SharedCode.Constants;
 using LudoClient.Popups;
 namespace LudoClient;
 

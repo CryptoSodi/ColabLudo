@@ -8,15 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\SharedCode\Constants\CountryCode.cs" Link="Constants\CountryCode.cs" />
     <Compile Include="..\..\SharedCode\Constants\GlobalConstants.cs" Link="Constants\GlobalConstants.cs" />
-    <Compile Include="..\..\SharedCode\Constants\UserInfo.cs" Link="Constants\UserInfo.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Engine.cs" Link="CoreEngine\Engine.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\GameAction.cs" Link="CoreEngine\GameAction.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\GamePlayer.cs" Link="CoreEngine\GamePlayer.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\GameRecorder.cs" Link="CoreEngine\GameRecorder.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
+    <Compile Include="..\..\SharedCode\Network\Client.cs" Link="Network\Client.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +26,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -39,6 +39,7 @@
     <Folder Include="Interfaces\" />
     <Folder Include="CoreEngine\" />
     <Folder Include="Constants\" />
+    <Folder Include="Network\" />
   </ItemGroup>
 
 </Project>

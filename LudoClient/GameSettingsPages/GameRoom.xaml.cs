@@ -1,5 +1,4 @@
-using LudoClient.Constants;
-using LudoClient.Network;
+using SharedCode.Constants;
 
 namespace LudoClient;
 

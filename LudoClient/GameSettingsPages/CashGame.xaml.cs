@@ -1,4 +1,4 @@
-using LudoClient.Constants;
+using SharedCode.Constants;
 using LudoClient.ControlView;
 using System.Security.AccessControl;
 

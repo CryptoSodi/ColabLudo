@@ -1,5 +1,5 @@
-﻿using System.Runtime.InteropServices;
-using LudoClient.Constants;
+﻿using SharedCode.Constants;
+using System.Runtime.InteropServices;
 
 namespace LudoClient
 {

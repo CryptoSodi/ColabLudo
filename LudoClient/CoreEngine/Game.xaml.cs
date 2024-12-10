@@ -1,5 +1,8 @@
-using LudoClient.Constants;
+
 using LudoClient.ControlView;
+using SharedCode.Constants;
+using SharedCode.CoreEngine;
+using SharedCode.Network;
 using SimpleToolkit.Core;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
@@ -24,7 +27,7 @@ public partial class Game : ContentPage
     public Game(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
-
+        GlobalConstants.MatchMaker = new Client();
         //GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);//For ggetting msggs from the game server
         //Grid.SetRow(GameView, 0);
         //Grid.SetColumn(GameView, 0);
@@ -353,6 +356,7 @@ public partial class Game : ContentPage
     {
         //start animation
         // Handle the dice click for the green player
+
         _ = Engine.MovePieceAsync(PieceName);
         //stop animmation
     }

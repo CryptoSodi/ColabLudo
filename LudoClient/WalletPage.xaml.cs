@@ -1,4 +1,4 @@
-using LudoClient.Constants;
+using SharedCode.Constants;
 namespace LudoClient;
 public partial class WalletPage : ContentPage
 {

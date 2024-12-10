@@ -1,4 +1,5 @@
-﻿using SharedCode.Network;
+﻿
+using SharedCode.Network;
 using System.Net;
 using System.Net.Sockets;
 namespace SharedCode.Constants

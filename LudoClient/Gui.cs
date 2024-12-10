@@ -1,5 +1,5 @@
 ﻿using LudoClient.ControlView;
-using LudoClient.CoreEngine;
+using SharedCode.CoreEngine;
 
 namespace LudoClient
 {

@@ -268,7 +268,7 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.gameState == "MovePiece" && piece.Moveable)
             {
                 if (EngineHelper.gameType == "Online")
-                    pieceName = await GlobalConstants.MatchMaker.SendMessageAsync(pieceName, "Piece");
+                    pieceName = await GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "Piece");
 
                 bool killed = false;
                 Piece pieceClone = piece.Clone();
@@ -665,7 +665,7 @@ namespace SharedCode.CoreEngine
                     return GlobalConstants.rnd.Next(1, 7);
                 }
                 else
-                    return Int32.Parse(await GlobalConstants.MatchMaker.SendMessageAsync(seatName, "Seat"));
+                    return Int32.Parse(await GlobalConstants.MatchMaker?.SendMessageAsync(seatName, "Seat"));
         }
         public void ChangeTurn()
         {

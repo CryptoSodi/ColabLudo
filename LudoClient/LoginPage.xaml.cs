@@ -1,13 +1,8 @@
 
-using LudoClient.Constants;
 using LudoClient.Models;
 using Newtonsoft.Json.Linq;
-using System.Net.Http;
-using System.Security.Cryptography;
-using System.Text;
+using SharedCode.Constants;
 using System.Text.Json;
-using System.Text.RegularExpressions;
-using static Google.Apis.Requests.BatchRequest;
 
 namespace LudoClient
 {

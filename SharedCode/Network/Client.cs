@@ -1,6 +1,5 @@
-﻿using SharedCode.Constants;
-using SharedCode.CoreEngine;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using SharedCode.Constants;
 
 namespace SharedCode.Network
 {
@@ -28,25 +27,19 @@ namespace SharedCode.Network
             {
                 if(PlayerSeat!=null)
                 PlayerSeat(playerType, playerId, userName, pictureUrl);
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    Messages = ($"{playerType}: {userName} has joined");
-                });
+                Messages = ($"{playerType}: {userName} has joined");
             });
             _hubConnection.On("GameStart", () =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
                     Console.WriteLine("Starting Game " + DateTime.Now);
                     //Application.Current.MainPage = new Game("","","");
-                });
+             
             });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
+                
                     Messages = ($"{user} says {message}");
-                });
+                
             });
         }
         public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
@@ -57,11 +50,9 @@ namespace SharedCode.Network
                 {
                     string roomCode = task.Result;
                     // Handle the result here
-                    MainThread.BeginInvokeOnMainThread(() =>
-                    {
                         //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
                         //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
-                    });
+                    
                 }
                 else
                 {

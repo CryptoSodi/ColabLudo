@@ -1,7 +1,6 @@
-using LudoClient.CoreEngine;
+using SharedCode.CoreEngine;
 
 namespace LudoClient.ControlView;
-
 public partial class PlayerSeat : ContentView
 {
     public bool autoPlayFlag = false;
