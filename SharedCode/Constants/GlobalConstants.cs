@@ -41,7 +41,6 @@ namespace SharedCode.Constants
             {
                 BaseAddress = new Uri(BaseUrl) // Set the base URL
             };
-            MatchMaker = new Client();
         }
         static readonly HttpClientHandler handler = new HttpClientHandler
         {

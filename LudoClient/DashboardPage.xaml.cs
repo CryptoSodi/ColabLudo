@@ -5,6 +5,8 @@ using LudoClient.ControlView;
 using LudoClient.CoreEngine;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
+using SharedCode.Constants;
+using SharedCode.Network;
 using System.Security.AccessControl;
 
 public partial class DashboardPage : ContentPage
@@ -20,8 +22,19 @@ public partial class DashboardPage : ContentPage
         {
             // Asynchronously initialize heavy content in the background
             //  await cashGame.initComponent();
+
+           GlobalConstants.MatchMaker = new Client();
+           GlobalConstants.MatchMaker.roomJoin += OnRoomJoin;
         });
     }
+    private void OnRoomJoin(string gameType, int gameCost, string roomCode)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+        });
+    }
+
     private void CashGame_Clicked(object sender, EventArgs e)
     {
         Navigation.PushAsync(cashGame);

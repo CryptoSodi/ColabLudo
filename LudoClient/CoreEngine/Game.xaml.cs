@@ -27,7 +27,6 @@ public partial class Game : ContentPage
     public Game(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
-        GlobalConstants.MatchMaker = new Client();
         //GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);//For ggetting msggs from the game server
         //Grid.SetRow(GameView, 0);
         //Grid.SetColumn(GameView, 0);

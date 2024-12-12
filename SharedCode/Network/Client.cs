@@ -17,6 +17,9 @@ namespace SharedCode.Network
 
         public delegate void GameStart();
         public event GameStart gameStart;
+
+        public delegate void RoomJoin(string gameType, int gameCost, string roomCode);
+        public event RoomJoin roomJoin;
         public Client()
         {
             _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl+ "LudoHub").Build();
@@ -32,14 +35,13 @@ namespace SharedCode.Network
             _hubConnection.On("GameStart", () =>
             {
                     Console.WriteLine("Starting Game " + DateTime.Now);
-                    //Application.Current.MainPage = new Game("","","");
-             
+                //Application.Current.MainPage = new Game("","","");
+                //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+                //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
             });
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
-                
                     Messages = ($"{user} says {message}");
-                
             });
         }
         public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
@@ -50,9 +52,8 @@ namespace SharedCode.Network
                 {
                     string roomCode = task.Result;
                     // Handle the result here
-                        //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
-                        //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
-                    
+                    //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+                    roomJoin(gameType, gameCost, roomCode);
                 }
                 else
                 {

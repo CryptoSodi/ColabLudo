@@ -12,7 +12,7 @@ namespace SignalR.Server
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
-        public static Engine eng = new Engine("4", "4", "red");
+        public static Engine eng;// = new Engine("4", "4", "red");
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         public LudoHub(LudoDbContext context)
