@@ -90,7 +90,7 @@ public partial class CashGame : ContentPage
             gameType = 22;
 
         //Navigation.PushAsync(new GameRoom(gameType, entry));
-        GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType + "", entry, "");
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType + "", entry, "");
 
     }
 }

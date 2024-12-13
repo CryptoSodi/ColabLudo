@@ -1,29 +1,32 @@
 ﻿using SharedCode.Constants;
+using SharedCode.Network;
 using System.Runtime.InteropServices;
 
 namespace LudoClient
 {
     public partial class App : Application
     {
-        ////Integrated console to the MAUI app for better debugging
-        //[DllImport("kernel32.dll")]
-        //static extern bool AllocConsole();
-        //[DllImport("kernel32.dll")]
-        //static extern bool FreeConsole();
-        //[DllImport("kernel32.dll", SetLastError = true)]
-        //static extern IntPtr GetConsoleWindow();
-        //[DllImport("user32.dll", SetLastError = true)]
-        //[return: MarshalAs(UnmanagedType.Bool)]
-        //static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-        //const uint SWP_NOSIZE = 0x0001;
-        //static readonly IntPtr HWND_TOP = IntPtr.Zero;
+        //Integrated console to the MAUI app for better debugging
+        [DllImport("kernel32.dll")]
+        static extern bool AllocConsole();
+        [DllImport("kernel32.dll")]
+        static extern bool FreeConsole();
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr GetConsoleWindow();
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+        const uint SWP_NOSIZE = 0x0001;
+        static readonly IntPtr HWND_TOP = IntPtr.Zero;
         public App()
         {
 #if WINDOWS
-           // AllocConsole();
-           // IntPtr consoleWindow = GetConsoleWindow();
-           // SetWindowPos(consoleWindow, HWND_TOP, 490, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
+#if DEBUG
+            AllocConsole();
+            IntPtr consoleWindow = GetConsoleWindow();
+            SetWindowPos(consoleWindow, HWND_TOP, 490, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
             Console.WriteLine("Console started alongside MAUI app at custom position.");
+#endif
 #endif
             InitializeComponent();
            // Preferences.Clear();
@@ -38,6 +41,9 @@ namespace LudoClient
             else
             {
                 UserInfo.LoadState();
+                GlobalConstants.MatchMaker = new Client();
+                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+                
                 MainPage = new AppShell();
                 //MainPage = new Game();
             }
@@ -45,6 +51,16 @@ namespace LudoClient
             //
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
+        }
+        private void OnRoomJoined(object sender, (string GameType, int GameCost, string RoomCode) args)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var gameType = args.GameType;
+                var gameCost = args.GameCost;
+                var roomCode = args.RoomCode;
+                Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+            });
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
@@ -69,7 +85,7 @@ namespace LudoClient
             catch (Exception)
             {
             }
-           // FreeConsole();
+            FreeConsole();
         }
 #endif
     }

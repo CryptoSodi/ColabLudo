@@ -1,3 +1,5 @@
+using SharedCode.Constants;
+
 namespace LudoClient.ControlView;
 
 public partial class BottomNavigation : ContentView
@@ -10,6 +12,7 @@ public partial class BottomNavigation : ContentView
 
     async void OnBackButtonClicked(object sender, EventArgs e)
     {
+        GlobalConstants.MatchMaker.LeavingRoom();
         //await Navigation.PopAsync();
         Application.Current.MainPage = new AppShell();
     }

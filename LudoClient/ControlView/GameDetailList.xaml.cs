@@ -28,7 +28,7 @@ namespace LudoClient.ControlView
         {
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
-            GlobalConstants.MatchMaker.CreateJoinLobby(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, TotalPlayersLabel.Text.Replace("Total Players : ", ""), int.Parse(JoiningFeeLabel.Text.Replace("Entry Fee : ", "").Replace(".00", "")), RoomCode.Text);
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, TotalPlayersLabel.Text.Replace("Total Players : ", ""), int.Parse(JoiningFeeLabel.Text.Replace("Entry Fee : ", "").Replace(".00", "")), RoomCode.Text);
         }
     }
 }

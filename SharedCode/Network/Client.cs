@@ -5,92 +5,172 @@ namespace SharedCode.Network
 {
     public class Client
     {
-        public static HubConnection _hubConnection;
-        string Name;
-        string Messages;
+        private HubConnection _hubConnection;
+        private string _messages;
 
-        public delegate void CallbackRecievedRequest(string SeatName, int diceValue);
-        public event CallbackRecievedRequest RecievedRequest;
+        // Event Definitions using standard .NET event patterns
+        public event EventHandler<(string SeatName, int DiceValue)> ReceivedRequest;
+        public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
+        public event EventHandler GameStarted;
+        public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
 
-        public delegate void PlayerSeatRecieved(string playerType, int playerId, string userName, string pictureUrl);
-        public event PlayerSeatRecieved PlayerSeat;
-
-        public delegate void GameStart();
-        public event GameStart gameStart;
-
-        public delegate void RoomJoin(string gameType, int gameCost, string roomCode);
-        public event RoomJoin roomJoin;
         public Client()
         {
-            _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl+ "LudoHub").Build();
-            _hubConnection.StartAsync();
-            Console.WriteLine("Connection started. Waiting for messages from the server...");
-            // Listen for messages from the server
+            // Build connection with automatic reconnect
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(GlobalConstants.HubUrl + "LudoHub")
+                .WithAutomaticReconnect()
+                .Build();
+            _ = ConnectAsync();
+            RegisterHubEvents();
+        }
+        private void RegisterHubEvents()
+        {
+            // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
-                if(PlayerSeat!=null)
-                PlayerSeat(playerType, playerId, userName, pictureUrl);
-                Messages = ($"{playerType}: {userName} has joined");
+                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));
+                _messages = $"{playerType}: {userName} has joined.";
+                Console.WriteLine(_messages);
             });
+
+            // Game start event
             _hubConnection.On("GameStart", () =>
             {
-                    Console.WriteLine("Starting Game " + DateTime.Now);
-                //Application.Current.MainPage = new Game("","","");
-                //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
-                //Navigation.PushAsync(new GameRoom(gameType, gameCost, code));
+                Console.WriteLine("Starting Game " + DateTime.Now);
+                GameStarted?.Invoke(this, EventArgs.Empty);
             });
+
+            // Message event
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
-                    Messages = ($"{user} says {message}");
+                _messages = $"{user} says {message}";
+                Console.WriteLine(_messages);
             });
-        }
-        public void CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
-        {
-            _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ContinueWith(task =>
-            {
-                if (task.IsCompletedSuccessfully)
-                {
-                    string roomCode = task.Result;
-                    // Handle the result here
-                    //Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
-                    roomJoin(gameType, gameCost, roomCode);
-                }
-                else
-                {
-                    // Handle errors
-                    Console.WriteLine(task.Exception?.Message);
-                }
-            });
-        }
-        public async Task<string> SendMessageAsync(string line, string commmand)
-        {
-            // await _hubConnection.InvokeAsync("JoinRoom", Name, commmand);
-            // await _hubConnection.InvokeAsync("SendMessageToRoom", Name, commmand);
-            string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, commmand);
-            // _hub.Invoke("Send", "client", line, commmand);
-            return result;
-        }
-        public async Task Disconnect()
-        {
-            if (_hubConnection.State == HubConnectionState.Disconnected) return;
-            await _hubConnection.StopAsync();
-        }
-        internal async void Ready(string roomCode)
-        {
-            await _hubConnection.InvokeAsync<string>("Ready", roomCode).ContinueWith(task =>
-            {
-                if (task.IsCompletedSuccessfully)
-                {
-                    string roomCode = task.Result;
 
-                    Console.WriteLine(task.Result);
-                }
-                else
+            // Connection lifecycle events
+            _hubConnection.Reconnecting += error =>
+            {
+                Console.WriteLine("Connection lost. Reconnecting...");
+                if (error != null)
                 {
-                    // Handle errors
-                    Console.WriteLine(task.Exception?.Message);
+                    Console.WriteLine($"Reconnecting due to: {error.Message}");
                 }
-            });
+                return Task.CompletedTask;
+            };
+
+            _hubConnection.Reconnected += connectionId =>
+            {
+                Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
+                return Task.CompletedTask;
+            };
+
+            _hubConnection.Closed += async error =>
+            {
+                Console.WriteLine("Connection closed.");
+                if (error != null)
+                {
+                    Console.WriteLine($"Connection closed due to error: {error.Message}");
+                }
+                // Optionally, we can try to reconnect manually if automatic reconnect is not desired.
+                // await ConnectAsync();
+            };
+        }
+
+        /// <summary>
+        /// Establish the connection to the server asynchronously.
+        /// </summary>
+        public async Task ConnectAsync()
+        {
+            if (_hubConnection.State == HubConnectionState.Connected)
+            {
+                Console.WriteLine("Already connected.");
+                return;
+            }
+
+            try
+            {
+                await _hubConnection.StartAsync().ConfigureAwait(false);
+                Console.WriteLine("Connection started. Waiting for messages from the server...");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start the connection: {ex.Message}");
+                // Consider retry logic here if desired
+            }
+        }
+
+        /// <summary>
+        /// Disconnect from the server.
+        /// </summary>
+        public async Task DisconnectAsync()
+        {
+            if (_hubConnection == null) return;
+            if (_hubConnection.State == HubConnectionState.Disconnected) return;
+
+            try
+            {
+                await _hubConnection.StopAsync().ConfigureAwait(false);
+                Console.WriteLine("Disconnected from the server.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while disconnecting: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
+        /// </summary>
+        public async Task CreateJoinLobbyAsync(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
+        {
+            try
+            {
+                var roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ConfigureAwait(false);
+                Console.WriteLine($"Joined room: {roomCode}");
+                RoomJoined?.Invoke(this, (gameType, gameCost, roomCode));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in CreateJoinLobbyAsync: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Send a message to the server.
+        /// </summary>
+        public async Task<string> SendMessageAsync(string line, string command)
+        {
+            try
+            {
+                string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, command).ConfigureAwait(false);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex.Message}");
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Sends a Ready state for the given room code.
+        /// </summary>
+        public async Task ReadyAsync(string roomCode)
+        {
+            try
+            {
+                string result = await _hubConnection.InvokeAsync<string>("Ready", roomCode).ConfigureAwait(false);
+                Console.WriteLine($"Ready acknowledged for room: {result}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in ReadyAsync: {ex.Message}");
+            }
+        }
+        public void LeavingRoom()
+        {
+            _hubConnection.InvokeAsync("LeaveRoom").ConfigureAwait(false);
         }
     }
 }

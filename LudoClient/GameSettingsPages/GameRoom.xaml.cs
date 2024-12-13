@@ -13,7 +13,7 @@ public partial class GameRoom : ContentPage
         this.GameType = GameType;
         shareBox.SetShareCode(roomCode);
         NavigationPage.SetHasBackButton(this, false);
-        GlobalConstants.MatchMaker.Ready(roomCode);
+        _ = GlobalConstants.MatchMaker.ReadyAsync(roomCode);
         switch (GameType)
         {
             case "2":
@@ -58,8 +58,9 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        GlobalConstants.MatchMaker.PlayerSeat += (playerType, playerId, userName, pictureUrl) =>
+        GlobalConstants.MatchMaker.PlayerSeated += (sender, args) =>
         {
+            var (playerType, playerId, userName, pictureUrl) = args;
             Device.BeginInvokeOnMainThread(() =>
             {
                 if(playerType=="P1")

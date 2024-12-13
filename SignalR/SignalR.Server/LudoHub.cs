@@ -46,6 +46,10 @@ namespace SignalR.Server
         {
             Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
         }
+        public void LeaveRoom()
+        {
+
+        }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             if (_users.TryGetValue(Context.ConnectionId, out var user))
