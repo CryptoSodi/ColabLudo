@@ -11,6 +11,7 @@ namespace LudoClient.ControlView
 {
     public partial class GameDetailList : ContentView
     {
+        public int gameId = 0;
         public GameDetailList()
         {
             InitializeComponent();
@@ -18,6 +19,7 @@ namespace LudoClient.ControlView
         }
         public void SetTournamentDetails(int gameId, string roomCode, string gameType, decimal betAmount)
         {
+            this.gameId = gameId;
             // Set the text of the labels
             GameId.Text = "Game : "+ gameId.ToString();
             TotalPlayersLabel.Text = "Total Players : " + gameType;
