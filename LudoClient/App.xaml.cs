@@ -59,6 +59,7 @@ namespace LudoClient
                 var gameType = args.GameType;
                 var gameCost = args.GameCost;
                 var roomCode = args.RoomCode;
+                GlobalConstants.RoomCode = roomCode;
                 Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
             });
         }

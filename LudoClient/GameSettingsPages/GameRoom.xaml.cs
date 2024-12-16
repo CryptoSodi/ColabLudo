@@ -13,7 +13,7 @@ public partial class GameRoom : ContentPage
         this.GameType = GameType;
         shareBox.SetShareCode(roomCode);
         NavigationPage.SetHasBackButton(this, false);
-        _ = GlobalConstants.MatchMaker.ReadyAsync(roomCode);
+        _ = GlobalConstants.MatchMaker.ReadyAsync();
         switch (GameType)
         {
             case "2":

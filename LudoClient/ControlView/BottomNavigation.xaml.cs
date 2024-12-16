@@ -12,7 +12,7 @@ public partial class BottomNavigation : ContentView
 
     async void OnBackButtonClicked(object sender, EventArgs e)
     {
-        GlobalConstants.MatchMaker.LeavingRoom();
+        GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
         //await Navigation.PopAsync();
         Application.Current.MainPage = new AppShell();
     }

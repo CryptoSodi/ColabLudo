@@ -49,5 +49,7 @@ namespace SharedCode.Constants
                 return true; // Ignore SSL certificate errors for development
             }
         };
+
+        public static string RoomCode { get; internal set; }
     }
 }

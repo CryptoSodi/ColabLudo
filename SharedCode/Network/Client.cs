@@ -156,11 +156,11 @@ namespace SharedCode.Network
         /// <summary>
         /// Sends a Ready state for the given room code.
         /// </summary>
-        public async Task ReadyAsync(string roomCode)
+        public async Task ReadyAsync()
         {
             try
             {
-                string result = await _hubConnection.InvokeAsync<string>("Ready", roomCode).ConfigureAwait(false);
+                string result = await _hubConnection.InvokeAsync<string>("Ready", GlobalConstants.RoomCode).ConfigureAwait(false);
                 Console.WriteLine($"Ready acknowledged for room: {result}");
             }
             catch (Exception ex)
@@ -168,9 +168,10 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error in ReadyAsync: {ex.Message}");
             }
         }
-        public void LeavingRoom()
+        public void LeaveCloseLobby(int playerId)
         {
-            _hubConnection.InvokeAsync("LeaveRoom").ConfigureAwait(false);
+            // = SharedCode.Constants.UserInfo._instance.Id;
+            _ = _hubConnection.InvokeAsync("LeaveCloseLobby", playerId, GlobalConstants.RoomCode).ConfigureAwait(false);
         }
     }
 }

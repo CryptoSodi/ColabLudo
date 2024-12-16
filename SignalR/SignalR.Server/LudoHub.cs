@@ -46,9 +46,36 @@ namespace SignalR.Server
         {
             Clients.Caller.SendAsync("ReceiveMessage", "Server", message);
         }
-        public void LeaveRoom()
+        public async Task LeaveCloseLobby(int playerId, string roomCode)
         {
+            try
+            {
+                // Check if the RoomCode already exists in the database
+                Game existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+                MultiPlayer multiPlayer = existingGame.MultiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
 
+                if (multiPlayer.P1 == playerId)
+                    multiPlayer.P1 = null;
+                else if (multiPlayer.P2 == playerId)
+                    multiPlayer.P2 = null;
+                else if (multiPlayer.P3 == playerId)
+                    multiPlayer.P3 = null;
+                else if (multiPlayer.P4 == playerId)
+                    multiPlayer.P4 = null;
+
+                _context.MultiPlayers.Update(multiPlayer);
+
+                if (multiPlayer.P1 == null && multiPlayer.P2 == null && multiPlayer.P3 == null && multiPlayer.P4 == null)
+                {
+                    existingGame.State = "Terminated";
+                    _context.Games.Update(existingGame);
+                }
+                await _context.SaveChangesAsync();
+                BroadcastPlayersAsync(existingGame);
+            }
+            catch (Exception)
+            {
+            }
         }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
@@ -165,7 +192,6 @@ namespace SignalR.Server
 
             roomCode = existingGame.RoomCode;
             gameType = existingGame.Type;
-            gameCost = existingGame.BetAmount;
 
             // Create or retrieve the room
             var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(roomCode, gameType, gameCost));
@@ -187,22 +213,29 @@ namespace SignalR.Server
             {
                 var P1 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
-            }
+            }else
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P2 != null)
             {
                 var P2 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
             }
+            else
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P3 != null)
             {
                 var P3 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
             }
+            else
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P4 != null)
             {
                 var P4 = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
             }
+            else
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
 
         // Generate a unique 10-digit room ID
