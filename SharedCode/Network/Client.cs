@@ -11,7 +11,7 @@ namespace SharedCode.Network
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string SeatName, int DiceValue)> ReceivedRequest;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
-        public event EventHandler GameStarted;
+        public event EventHandler<(string GameType, string PlayerCount, string PlayerColor)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
 
         public Client()
@@ -35,10 +35,11 @@ namespace SharedCode.Network
             });
 
             // Game start event
-            _hubConnection.On("GameStart", () =>
+            _hubConnection.On<string, string, string>("GameStarted", (GameType, playerCount, PlayerColor) =>
             {
-                Console.WriteLine("Starting Game " + DateTime.Now);
-                GameStarted?.Invoke(this, EventArgs.Empty);
+                Console.WriteLine("Starting Game " + DateTime.Now, GameType, playerCount, PlayerColor);
+                //Game(GameType, playerCount, PlayerColor)
+               GameStarted?.Invoke(this, (GameType, playerCount, PlayerColor));
             });
 
             // Message event
@@ -170,8 +171,11 @@ namespace SharedCode.Network
         }
         public void LeaveCloseLobby(int playerId)
         {
-            // = SharedCode.Constants.UserInfo._instance.Id;
-            _ = _hubConnection.InvokeAsync("LeaveCloseLobby", playerId, GlobalConstants.RoomCode).ConfigureAwait(false);
+            if (GlobalConstants.RoomCode!="")
+            {
+                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", playerId, GlobalConstants.RoomCode).ConfigureAwait(false);
+                GlobalConstants.RoomCode = "";
+            }
         }
     }
 }

@@ -165,8 +165,28 @@ namespace SignalR.Server
 
             if (existingGame.Type == playerCounter + "")
             {
-                await Task.Delay(5000);
-                Clients.Group(existingGame.RoomCode).SendAsync("GameStart");
+                await Task.Delay(2000);
+                
+
+
+
+
+
+
+
+                // Find that player's connection ID from the _users dictionary
+                var ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P1).Key;
+                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Red");
+
+                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P2).Key;
+                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Green");
+
+                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P3).Key;
+                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Yellow");
+
+                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P4).Key;
+                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Blue");
+
                 existingGame.State = "Playing";
                  _context.Games.Update(existingGame);
                 await _context.SaveChangesAsync();
@@ -207,7 +227,7 @@ namespace SignalR.Server
             return roomCode; // Return the room name to the client
         }
         private async Task BroadcastPlayersAsync(Game existingGame)
-        {
+        { 
             // Notify others in the room that a new user has joined
             if (existingGame.MultiPlayer.P1 != null)
             {
@@ -241,7 +261,7 @@ namespace SignalR.Server
         // Generate a unique 10-digit room ID
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
-            string roomId;
+            string roomId = "";
             do
             {
                 // Generate a random 10-digit number

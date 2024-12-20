@@ -1,4 +1,6 @@
-﻿using SharedCode.Constants;
+﻿
+using LudoClient.CoreEngine;
+using SharedCode.Constants;
 using SharedCode.Network;
 using System.Runtime.InteropServices;
 
@@ -43,7 +45,8 @@ namespace LudoClient
                 UserInfo.LoadState();
                 GlobalConstants.MatchMaker = new Client();
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-                
+                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+
                 MainPage = new AppShell();
                 //MainPage = new Game();
             }
@@ -52,7 +55,17 @@ namespace LudoClient
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
         }
-        private void OnRoomJoined(object sender, (string GameType, int GameCost, string RoomCode) args)
+        private void OnGameStarted(object? sender, (string GameType, string PlayerCount, string PlayerColor) args)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var GameType = args.GameType;
+                var playerCount = args.PlayerCount;
+                var PlayerColor = args.PlayerColor;
+                MainPage = new Game(GameType, playerCount, PlayerColor);
+            });
+        }
+        private void OnRoomJoined(object? sender, (string GameType, int GameCost, string RoomCode) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -60,7 +73,7 @@ namespace LudoClient
                 var gameCost = args.GameCost;
                 var roomCode = args.RoomCode;
                 GlobalConstants.RoomCode = roomCode;
-                Application.Current.MainPage = new GameRoom(gameType, gameCost, roomCode);
+                MainPage = new GameRoom(gameType, gameCost, roomCode);
             });
         }
 #if WINDOWS
