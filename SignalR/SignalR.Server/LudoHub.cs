@@ -258,5 +258,73 @@ namespace SignalR.Server
             var message = new Message(_users[Context.ConnectionId].Name, content);
             await Clients.Group(roomName).SendAsync("ReceiveMessage", message);
         }
+
+        //Logic for 4 players game in tournament road to final
+
+        static void RunTournament(List<string> players)
+        {
+            int roundNumber = 1;
+
+            while (players.Count > 4)
+            {
+                Console.WriteLine($"\nRound {roundNumber}: {players.Count} players remaining");
+
+                // Handle cases where player count is not divisible by 4
+                if (players.Count % 4 != 0)
+                {
+                    HandleUnevenPlayers(players);
+                }
+
+                // Divide players into groups of 4 and play matches
+                List<string> winners = new List<string>();
+                for (int i = 0; i < players.Count; i += 4)
+                {
+                    var group = players.Skip(i).Take(4).ToList();
+                    string winner = PlayMatch(group);
+                    winners.Add(winner);
+                }
+
+                players = winners;
+                roundNumber++;
+            }
+
+            // Final round with the last 4 players
+            Console.WriteLine("\nFinal Round:");
+            string tournamentWinner = PlayMatch(players);
+            Console.WriteLine($"\nThe tournament winner is {tournamentWinner}!");
+        }
+
+        static void HandleUnevenPlayers(List<string> players)
+        {
+            int remainder = players.Count % 4;
+
+            if (remainder == 1)
+            {
+                // 1 player left, play against a bot
+                string lonePlayer = players.Last();
+                players.RemoveAt(players.Count - 1);
+                Console.WriteLine($"{lonePlayer} plays against a bot.");
+                string winner = PlayMatch(new List<string> { lonePlayer, "Bot" });
+                players.Add(winner);
+            }
+            else if (remainder == 2 || remainder == 3)
+            {
+                // 2 or 3 players left, play a match among them
+                var group = players.Skip(players.Count - remainder).ToList();
+                players.RemoveRange(players.Count - remainder, remainder);
+                Console.WriteLine($"{string.Join(", ", group)} play a match.");
+                string winner = PlayMatch(group);
+                players.Add(winner);
+            }
+        }
+
+        static string PlayMatch(List<string> players)
+        {
+            Console.WriteLine($"Match: {string.Join(" vs ", players)}");
+            Random rand = new Random();
+            string winner = players[rand.Next(players.Count)];
+            Console.WriteLine($"Winner: {winner}");
+            return winner;
+        }
     }
 }
