@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedCode.CoreEngine;
 using System.Collections.Concurrent;
+using Newtonsoft.Json;
 
 namespace SignalR.Server
 {
@@ -15,9 +16,13 @@ namespace SignalR.Server
         public static Engine eng;// = new Engine("4", "4", "red");
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
-        public LudoHub(LudoDbContext context)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            _context = context;
+            if (_users.TryGetValue(Context.ConnectionId, out var user))
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
+                await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
+            }
         }
         public override async Task OnConnectedAsync()
         {
@@ -26,6 +31,11 @@ namespace SignalR.Server
             // Print the connection message to the console
             Console.WriteLine($"User connected: {connectionId}");
             await base.OnConnectedAsync();
+        }
+
+        public LudoHub(LudoDbContext context)
+        {
+            _context = context;
         }
         public string Send(string name, string message, string commandtype)
         {
@@ -75,14 +85,6 @@ namespace SignalR.Server
             }
             catch (Exception)
             {
-            }
-        }
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {
-            if (_users.TryGetValue(Context.ConnectionId, out var user))
-            {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
-                await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
             }
         }
         public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
@@ -153,39 +155,39 @@ namespace SignalR.Server
         }
         private async Task gameStartAsync(Game existingGame)
         {
-            int playerCounter = 0;
-            if (existingGame.MultiPlayer.P1 != null)
-                playerCounter++;
-            if (existingGame.MultiPlayer.P2 != null)
-                playerCounter++;
-            if (existingGame.MultiPlayer.P3 != null)
-                playerCounter++;
-            if (existingGame.MultiPlayer.P4 != null)
-                playerCounter++;
+            List<PlayerDto> seats = new List<PlayerDto>();
 
-            if (existingGame.Type == playerCounter + "")
+            if (existingGame.MultiPlayer.P1 != null)
+            {
+                LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
+                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor="Red"});
+            }
+            if (existingGame.MultiPlayer.P2 != null)
+            {
+                LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
+                if (existingGame.Type == "2")
+                    seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+                else
+                    seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Green" });
+            }
+            if (existingGame.MultiPlayer.P3 != null)
+            {
+                LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
+                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+            }
+            if (existingGame.MultiPlayer.P4 != null)
+            {
+                LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
+                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Blue" });
+            }
+
+            if (existingGame.Type == seats.Count + "")//add 22
             {
                 await Task.Delay(2000);
+
+                string seatsData = JsonConvert.SerializeObject(seats);
                 
-
-
-
-
-
-
-
-                // Find that player's connection ID from the _users dictionary
-                var ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P1).Key;
-                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Red");
-
-                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P2).Key;
-                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Green");
-
-                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P3).Key;
-                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Yellow");
-
-                ConnectionId = _users.FirstOrDefault(u => u.Value.playerId == existingGame.MultiPlayer.P4).Key;
-                await Clients.Client(ConnectionId).SendAsync("GameStarted", existingGame.Type, playerCounter + "", "Blue");
+                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, seatsData);
 
                 existingGame.State = "Playing";
                  _context.Games.Update(existingGame);
@@ -257,7 +259,6 @@ namespace SignalR.Server
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
-
         // Generate a unique 10-digit room ID
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
@@ -278,9 +279,7 @@ namespace SignalR.Server
             var message = new Message(_users[Context.ConnectionId].Name, content);
             await Clients.Group(roomName).SendAsync("ReceiveMessage", message);
         }
-
         //Logic for 4 players game in tournament road to final
-
         static void RunTournament(List<string> players)
         {
             int roundNumber = 1;
@@ -313,7 +312,6 @@ namespace SignalR.Server
             string tournamentWinner = PlayMatch(players);
             Console.WriteLine($"\nThe tournament winner is {tournamentWinner}!");
         }
-
         static void HandleUnevenPlayers(List<string> players)
         {
             int remainder = players.Count % 4;
@@ -337,7 +335,6 @@ namespace SignalR.Server
                 players.Add(winner);
             }
         }
-
         static string PlayMatch(List<string> players)
         {
             Console.WriteLine($"Match: {string.Join(" vs ", players)}");
@@ -346,5 +343,12 @@ namespace SignalR.Server
             Console.WriteLine($"Winner: {winner}");
             return winner;
         }
+    }
+    public class PlayerDto
+    {
+        public int PlayerId { get; set; }
+        public string? PlayerName { get; set; }
+        public string? PlayerPicture { get; set; }
+        public string? PlayerColor { get; set; }
     }
 }

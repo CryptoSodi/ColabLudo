@@ -55,14 +55,14 @@ namespace LudoClient
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
         }
-        private void OnGameStarted(object? sender, (string GameType, string PlayerCount, string PlayerColor) args)
+        private void OnGameStarted(object? sender, (string GameType, string seatsData) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 var GameType = args.GameType;
-                var playerCount = args.PlayerCount;
-                var PlayerColor = args.PlayerColor;
-                MainPage = new Game(GameType, playerCount, PlayerColor);
+                var seatsData = args.seatsData;
+
+                MainPage = new Game(GameType, seatsData);
             });
         }
         private void OnRoomJoined(object? sender, (string GameType, int GameCost, string RoomCode) args)

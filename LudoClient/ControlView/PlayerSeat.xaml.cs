@@ -4,7 +4,7 @@ namespace LudoClient.ControlView;
 public partial class PlayerSeat : ContentView
 {
     public bool autoPlayFlag = false;
-    private String seatColor = "";
+    public String seatColor = "";
     public EngineHelper EngineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
 

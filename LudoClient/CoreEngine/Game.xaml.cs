@@ -1,10 +1,20 @@
 
 using LudoClient.ControlView;
+using System.Text.Json;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SharedCode.Network;
 using SimpleToolkit.Core;
+using System.Security.AccessControl;
 namespace LudoClient.CoreEngine;
+
+public class PlayerDto
+{
+    public int PlayerId { get; set; }
+    public string? PlayerName { get; set; }
+    public string? PlayerPicture { get; set; }
+    public string? PlayerColor { get; set; }
+}
 public partial class Game : ContentPage
 {
     Engine Engine;
@@ -15,16 +25,41 @@ public partial class Game : ContentPage
     public PlayerSeat BluePlayerSeat;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
-        if (seatColor == "red")
+        if (seatColor == "red" || seatColor == "Red")
             return gui.red;
-        else if (seatColor == "green")
+        else if (seatColor == "green" || seatColor == "Green")
             return gui.green;
-        else if (seatColor == "yellow")
+        else if (seatColor == "yellow" || seatColor == "Yellow")
             return gui.yellow;
         else
             return gui.blue;
     }
+    
+    public Game(string GameType, string seatsData)
+    {
+        seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
+        var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
+        Build("Online", GameType, player.PlayerColor);
+    }
     public Game(string gameType, string playerCount, string playerColor)
+    {
+        Build(gameType, playerCount, playerColor);
+    }
+    List<PlayerDto>? seats;
+    private void updateSeat(PlayerSeat playerSeat)
+    {
+        try
+        {
+            var player = seats?.FirstOrDefault(p => p.PlayerColor.ToLower() == playerSeat.seatColor);
+            if(player!=null)
+            playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
+        }
+        catch (Exception e) { 
+            
+        }
+    }
+
+    private void Build(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
         //GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);//For ggetting msggs from the game server
@@ -59,7 +94,7 @@ public partial class Game : ContentPage
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
-        
+
         switch (playerCount)
         {
             case "2":
@@ -175,7 +210,7 @@ public partial class Game : ContentPage
                 }
                 break;
         }
-        
+
         gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
 
         Alayout.Remove(gui.red1);
@@ -207,11 +242,14 @@ public partial class Game : ContentPage
         var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
         if (gameType == "Online")
         {
-            foreach (var (color, seat) in colors)
-                if (playerColor != color)
-                    seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
-            playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            foreach (var (color, seat) in colors)
+                updateSeat(GetPlayerSeat(color));
+
+            //    if (playerColor != color)
+            //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+
+            //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
         }
         else
         {
@@ -238,15 +276,15 @@ public partial class Game : ContentPage
         Engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
         Engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
 
-    // Set rotation based on player color
-    int rotation = Engine.EngineHelper.SetRotation(playerColor);
+        // Set rotation based on player color
+        int rotation = Engine.EngineHelper.SetRotation(playerColor);
         Glayout.RotateTo(rotation);
 
         foreach (var player in Engine.EngineHelper.players)
             foreach (var piece in player.Pieces)
                 Alayout.Add(gui.getPieceToken(piece));
 
-                // Handle layout size changes
+        // Handle layout size changes
         Alayout.SizeChanged += (sender, e) =>
         {
             Console.WriteLine("The layout has been loaded and rendered.");
@@ -288,10 +326,10 @@ public partial class Game : ContentPage
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
-
-
-
     }
+
+    
+
     public void Pupulate(int rotation)
     {
         for (int i = 0; i < Engine.EngineHelper.players.Count; i++)

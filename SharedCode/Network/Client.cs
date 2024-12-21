@@ -11,7 +11,7 @@ namespace SharedCode.Network
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string SeatName, int DiceValue)> ReceivedRequest;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
-        public event EventHandler<(string GameType, string PlayerCount, string PlayerColor)> GameStarted;
+        public event EventHandler<(string GameType, string seatsData)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
 
         public Client()
@@ -35,11 +35,11 @@ namespace SharedCode.Network
             });
 
             // Game start event
-            _hubConnection.On<string, string, string>("GameStarted", (GameType, playerCount, PlayerColor) =>
+            _hubConnection.On<string, string>("GameStarted", (GameType, seatsData) =>
             {
-                Console.WriteLine("Starting Game " + DateTime.Now, GameType, playerCount, PlayerColor);
+                Console.WriteLine("Starting Game " + DateTime.Now, GameType, seatsData);
                 //Game(GameType, playerCount, PlayerColor)
-               GameStarted?.Invoke(this, (GameType, playerCount, PlayerColor));
+               GameStarted?.Invoke(this, (GameType, seatsData));
             });
 
             // Message event
