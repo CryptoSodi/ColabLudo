@@ -3,9 +3,6 @@ namespace LudoClient;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
-using SharedCode.Constants;
-using SharedCode.Network;
-using System.Net;
 
 public partial class DashboardPage : ContentPage
 {
