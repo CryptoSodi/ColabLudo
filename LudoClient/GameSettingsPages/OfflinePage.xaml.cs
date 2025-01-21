@@ -23,8 +23,6 @@ public partial class OfflinePage : ContentPage
 
         TabP1.SwitchSource = TabP1.SwitchOn;
         TabP2.SwitchSource = TabP2.SwitchOff;
-
-        
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
@@ -43,34 +41,34 @@ public partial class OfflinePage : ContentPage
         if (Tab4 == activeTab)
             playerCount = "22";
     }
-    private void TabRequestedActivateC(object sender, EventArgs e)
+    private void TabRequestedActivateC(object sender, TappedEventArgs e)
     {
-        ImageSwitch activeTab = sender as ImageSwitch;
-        TabC1.SwitchSource = TabC1 == activeTab ? TabC1.SwitchOn : TabC1.SwitchOff;
-        TabC2.SwitchSource = TabC2 == activeTab ? TabC2.SwitchOn : TabC2.SwitchOff;
-        TabC3.SwitchSource = TabC3 == activeTab ? TabC3.SwitchOn : TabC3.SwitchOff;
-        TabC4.SwitchSource = TabC4 == activeTab ? TabC4.SwitchOn : TabC4.SwitchOff;
+        var activeTab = e.Parameter as string;
+        TabC1.SwitchSource = "TabC1" == activeTab ? TabC1.SwitchOn : TabC1.SwitchOff;
+        TabC2.SwitchSource = "TabC2" == activeTab ? TabC2.SwitchOn : TabC2.SwitchOff;
+        TabC3.SwitchSource = "TabC3" == activeTab ? TabC3.SwitchOn : TabC3.SwitchOff;
+        TabC4.SwitchSource = "TabC4" == activeTab ? TabC4.SwitchOn : TabC4.SwitchOff;
         // Add logic here to change the content based on the active tab
-        if (TabC1 == activeTab)
+        if ("TabC1" == activeTab)
             playerColor = "Red";
-        if (TabC2 == activeTab)
+        if ("TabC2" == activeTab)
             playerColor = "Green";
-        if (TabC3 == activeTab)
+        if ("TabC3" == activeTab)
             playerColor = "Blue";
-        if (TabC4 == activeTab)
+        if ("TabC4" == activeTab)
             playerColor = "Yellow";
     }
-    private void TabRequestedActivateP(object sender, EventArgs e)
+    private void TabRequestedActivateP(object sender, TappedEventArgs e)
     {
-        ImageSwitch activeTab = sender as ImageSwitch;
+        var activeTab = e.Parameter as string;
 
-        TabP1.SwitchSource = TabP1 == activeTab ? TabP1.SwitchOn : TabP1.SwitchOff;
-        TabP2.SwitchSource = TabP2 == activeTab ? TabP2.SwitchOn : TabP2.SwitchOff;
+        TabP1.SwitchSource = "TabP1" == activeTab ? TabP1.SwitchOn : TabP1.SwitchOff;
+        TabP2.SwitchSource = "TabP2" == activeTab ? TabP2.SwitchOn : TabP2.SwitchOff;
         
         // Add logic here to change the content based on the active tab
-        if (TabP1 == activeTab)
+        if ("TabP1" == activeTab)
             gametype = "Computer";
-        if (TabP2 == activeTab)
+        if ("TabP2" == activeTab)
             gametype = "Local";
     }
     private void JoinOfflineTapped(object sender, EventArgs e)

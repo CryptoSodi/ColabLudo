@@ -1,29 +1,36 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="LudoClient.CashGame"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local ="clr-namespace:LudoClient.ControlView"
-             x:Class="LudoClient.CashGame"
-             BackgroundImageSource="background_waitingroom.png"
-             Title="CashGame">
-    <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
-       RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
-        <local:Capsule ImageSource="game_setting_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <Grid  HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
-                <StackLayout Grid.Column="1" Spacing="10">
-                    <local:TitleBar Grid.Column="1" TitleImage="round_cashgames.png" Title="" Margin="35,-100,35,0" VerticalOptions="Start" HorizontalOptions="Center"/>
-                    <Image Source="dash_select_players.png"  HorizontalOptions="CenterAndExpand"/>
+             xmlns:constants="clr-namespace:LudoClient.Constants"
+             xmlns:extensions="clr-namespace:LudoClient.Extensions"
+             BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
+    
+    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
+          RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
+
+        <local:Capsule ImageSource="{x:Static constants:Skins.Settings_Background}" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
+                <StackLayout Grid.Column="1" Spacing="20">
+                    <local:TitleBar TitleImage="{x:Static constants:Skins.Title_Cash}" Title="" Margin="35,-100,35,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+                    
+                    <Image Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
+                    
                     <Grid ColumnSpacing="10" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".1*,.1*,.1*,.1*">
                         <local:ImageSwitch x:Name="Tab1" SwitchText="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
+                    
                     <Image Source="dash_choose_bet.png"  HorizontalOptions="CenterAndExpand" VerticalOptions="Start"/>
-                    <local:Capsule ImageSource="controlbox.png" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
-                        <Grid Margin="20,10,20,15" ColumnDefinitions=".1*,.2*,.1*">
-                            <ImageButton Source="btn_minus_large.png" Clicked="BtnMinus" Aspect="AspectFit" Margin="0,0,15,0" BackgroundColor="Transparent"  VerticalOptions="Center" HorizontalOptions="Start"/>
+
+                    <local:Capsule ImageSource="{x:Static constants:Skins.Background_Controlbox_Small}" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
+                        <Grid Margin="10" ColumnDefinitions=".1*,.3*,.1*" ColumnSpacing="5">
+                            <Image Source="{x:Static constants:Skins.MinusBTN}" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".1*,.2*">
-                                <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"></BoxView>
+                                <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
                                 <Grid Margin="5,0,5,5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                                     <StackLayout  Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Entry :" HorizontalOptions="FillAndExpand"/>
@@ -32,15 +39,15 @@
                                     </StackLayout>
                                 </Grid>
                                 <Grid Grid.Row="1" Margin="5,0,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                                    <BoxView CornerRadius="4" BackgroundColor="#572BD5"></BoxView>
+                                    <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
                                     <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Win" Padding="4,0,0,0" HorizontalOptions="FillAndExpand"/>
                                         <Image Source="ic_coin.png" Margin="5,0,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
                                         <Label x:Name="WinLabel" HorizontalOptions="FillAndExpand"/>
-                                        </StackLayout>
+                                    </StackLayout>
                                  </Grid>
                             </Grid>
-                            <ImageButton Grid.Column="2" Margin="15,0,0,0" Source="btn_plus_large.png" Clicked="BtnPlus" Aspect="AspectFit" BackgroundColor="Transparent" HorizontalOptions="End" VerticalOptions="Center"/>
+                            <Image Source="{x:Static constants:Skins.PlusBTN}" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End"/>
                         </Grid>
                     </local:Capsule>
                     <StackLayout Orientation="Horizontal" Spacing="20" Margin="30,0,30,0"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">

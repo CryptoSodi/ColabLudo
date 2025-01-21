@@ -1,27 +1,30 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="LudoClient.PracticePage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local ="clr-namespace:LudoClient.ControlView"
-             x:Class="LudoClient.PracticePage"
-             BackgroundImageSource="background_waitingroom.png"
-             Title="PracticePage">
+             xmlns:constants="clr-namespace:LudoClient.Constants"
+             BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
+    
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
             RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
-        <local:Capsule ImageSource="game_setting_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
-                <StackLayout Grid.Column="1" Spacing="8">
-                    <local:TitleBar Grid.Column="1" TitleImage="round_practice.png" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <local:Capsule ImageSource="{x:Static constants:Skins.Settings_Background}" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*" RowDefinitions="3*,1*">
+                <StackLayout Grid.Column="1" Spacing="20">
+                    <local:TitleBar Grid.Column="1" TitleImage="{x:Static constants:Skins.Title_Practice}" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
+                    
                     <Image Margin="0,20,0,0" Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
+                    
                     <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
-                        <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
                     </Grid>
                     
-                    <Grid Margin="0,20,0,-10" HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*,.07*" ColumnDefinitions=".01*,.1*,.1*,.01*">
-                        <Image Source="btn_play_large.png" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
-                    </Grid>
+                    <local:Capsule HeightRequest="40" ImageSource="{x:Static constants:Skins.PlayBTN}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                        <ImageButton Clicked="JoinPracticeTapped" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                    </local:Capsule>
                 </StackLayout>
             </Grid>
         </local:Capsule>

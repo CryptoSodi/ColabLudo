@@ -1,4 +1,5 @@
 ﻿using LudoClient.Utilities;
+using SharedCode.Constants;
 using SimpleToolkit.Core;
 
 namespace LudoClient
@@ -9,9 +10,9 @@ namespace LudoClient
         {
             InitializeComponent();
 
-            // If user is already logged in, navigate to DashboardPage
             Routing.RegisterRoute(nameof(DashboardPage), typeof(DashboardPage));
             GoToAsync($"//{nameof(DashboardPage)}");
+
             AddTab(typeof(DashboardPage), PageType.HomePage);
             AddTab(typeof(FriendsPage), PageType.FriendsPage);
             AddTab(typeof(WalletPage), PageType.WalletPage);

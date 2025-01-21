@@ -4,36 +4,32 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:LudoClient"
-    BackgroundImageSource="background.png"
+    xmlns:constants="clr-namespace:LudoClient.Constants"
+    xmlns:extensions="clr-namespace:LudoClient.Extensions"
+    BackgroundImageSource="{x:Static constants:Skins.Background}"
     NavigationPage.HasNavigationBar="False">
-    <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <Grid.RowDefinitions>
-            <RowDefinition Height=".8*" />
-            <RowDefinition Height="1.6*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height="1*" />
-            <RowDefinition Height=".8*" />
+
+    <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"><Grid.RowDefinitions>
+            <extensions:GridRowDefinitionExtension RowDefinitionString="{x:Static constants:Skins.DashboardMainGridDefinition}" />
         </Grid.RowDefinitions>
-        <Image Grid.Row="1" Source="logo.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-        <ImageButton Grid.Row="2" Source="cashgame.png" BackgroundColor="Transparent" Clicked="CashGame_Clicked" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-        <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="50*" />
-                <ColumnDefinition Width="50*" />
-            </Grid.ColumnDefinitions>
-            <ImageButton Source="offline.png" Clicked="Offline_Clicked" BackgroundColor="Transparent" Grid.Column="0" Aspect="AspectFit"/>
-            <ImageButton Source="playwithfriends.png" Clicked="PlayWithFriend_Clicked" BackgroundColor="Transparent" Margin="0,0,0,4" Grid.Column="1" Aspect="AspectFit"/>
+
+        <Image Grid.Row="1" Source="{x:Static constants:Skins.Logo}" VerticalOptions="Center" HorizontalOptions="Center"/>
+        
+        <ImageButton Grid.Row="2" Source="{x:Static constants:Skins.Cash}" Clicked="CashGame_Clicked" VerticalOptions="Center" HorizontalOptions="Center"/>
+        
+        <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" 
+              ColumnDefinitions="50*,50*">
+            
+            <ImageButton Source="{x:Static constants:Skins.Offline}" Clicked="Offline_Clicked"/>
+            <ImageButton Source="{x:Static constants:Skins.Play}" Clicked="PlayWithFriend_Clicked" Margin="0,0,0,4" Grid.Column="1"/>
         </Grid>
-        <Grid Grid.Row="4" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="50*" />
-                <ColumnDefinition Width="50*" />
-            </Grid.ColumnDefinitions>
-            <ImageButton Source="practice.png" Clicked="Practice_Clicked" BackgroundColor="Transparent" Margin="0,4,0,0" Grid.Column="0" Aspect="AspectFit"/>
-            <ImageButton Source="tournament.png" Clicked="Tournament_Clicked" BackgroundColor="Transparent" Grid.Column="1" Aspect="AspectFit"/>
+        
+        <Grid Grid.Row="4" Margin="40,0,40,0" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"
+              ColumnDefinitions="50*,50*">
+
+            <ImageButton Source="{x:Static constants:Skins.Practice}" Clicked="Practice_Clicked" Margin="0,4,0,0"/>
+            <ImageButton Source="{x:Static constants:Skins.Tournament}" Clicked="Tournament_Clicked" Grid.Column="1"/>
         </Grid>
-        <ImageButton BackgroundColor="Transparent" Clicked="Bonus_Clicked" Source="daily_bonus.png" Grid.Row="5" Margin="75,0,75,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
+        <ImageButton Source="{x:Static constants:Skins.DailyBonus}" Clicked="Bonus_Clicked" Grid.Row="5" Margin="75,0,75,0" VerticalOptions="Center" HorizontalOptions="CenterAndExpand"/>
     </Grid>
 </ContentPage>

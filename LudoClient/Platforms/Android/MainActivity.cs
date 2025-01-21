@@ -8,10 +8,7 @@ namespace LudoClient
     public class MainActivity : MauiAppCompatActivity
     {
         [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true)]
-        [IntentFilter(
-     new[] { Intent.ActionView },
-     Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-     DataScheme = "xamarinessentials")]
+        [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "xamarinessentials")]
         public class WebAuthenticationCallbackActivity : Microsoft.Maui.Authentication.WebAuthenticatorCallbackActivity
         {
         }

@@ -82,7 +82,6 @@
                                             <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" Opacity=".1"/>
                                         </Grid>
                                     </Grid>
-
                                 </VerticalStackLayout>
                             </acrylic:AcrylicView>
                         </simpleCore:Popover>

@@ -1,5 +1,6 @@
 
 using LudoClient.Models;
+using Microsoft.Maui.Controls;
 using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
 using System.Text.Json;
@@ -13,6 +14,49 @@ namespace LudoClient
         public LoginPage()
         {
             InitializeComponent();
+        }
+        private async void SwitchToSignup_Clicked(object sender, EventArgs e)
+        {
+            if (sender is Label label)
+            {
+                if (label.Text != "Already have an account? Log in")
+                {
+                    
+                    ForgotPasswordLabel.IsVisible = false;
+
+                    UsernameField.IsVisible = true;
+                    ConfirmPasswordField.IsVisible = true;
+                    label.Text = "Already have an account? Log in";
+                    BtnLoginSingup.Source = "abtnsignup.png";
+                }
+                else
+                {
+                    ForgotPasswordLabel.IsVisible = true;
+
+                    UsernameField.IsVisible = false;
+                    ConfirmPasswordField.IsVisible = false;
+                    label.Text = "Don’t have an account? Sign up";
+                    BtnLoginSingup.Source = "abtnlogin.png";
+                }
+            }
+        }
+        private async void LoginSingup_Clicked(object sender, EventArgs e)
+        {
+            String Email = EmailField.entryField.Text;
+            String Password = PasswordField.entryField.Text;
+            if (BtnLoginSingup.Source is FileImageSource fileImageSource && fileImageSource.File == "abtnlogin.png")
+            {
+                //Perform Login
+                
+            }
+            else
+            {
+                String Username = UsernameField.entryField.Text;
+                String ConfirmPassword = ConfirmPasswordField.entryField.Text;
+                //perform Signup
+                //performLoginAsync();
+            }
+            GooleSignup_Clicked(null, null);
         }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {

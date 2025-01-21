@@ -2,6 +2,7 @@ namespace LudoClient.ControlView;
 
 public partial class EditField : ContentView
 {
+    public Entry entryField;
     public BindableProperty TitleLabelProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(EditField), propertyChanged: (bindable, oldValue, newValue) =>
     {
         var control = (EditField)bindable;
@@ -15,5 +16,6 @@ public partial class EditField : ContentView
     public EditField()
     {
         InitializeComponent();
+        this.entryField = EntryField;
     }
 }

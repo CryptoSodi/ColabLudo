@@ -20,6 +20,13 @@
             <simpleCore:PathGeometryExtension x:Key="FolderPathGeometry" Path="{StaticResource ChatPath}"/>
             <simpleCore:PathGeometryExtension x:Key="HomePathGeometry" Path="{StaticResource AboutPath}"/>
             <simpleCore:PathGeometryExtension x:Key="PinPathGeometry" Path="{StaticResource SettingsPath}"/>
+            <Style TargetType="Image">
+                <Setter Property="Aspect" Value="AspectFit" />
+            </Style>
+            <Style TargetType="ImageButton">
+                <Setter Property="Aspect" Value="AspectFit" />
+                <Setter Property="BackgroundColor" Value="Transparent" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

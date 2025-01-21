@@ -1,6 +1,7 @@
 namespace LudoClient;
 
 using CommunityToolkit.Maui.Views;
+using LudoClient.Constants;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 
@@ -10,6 +11,7 @@ public partial class DashboardPage : ContentPage
     OfflinePage     offlinePage = new OfflinePage();
     PlayWithFriends playWithFriends =new PlayWithFriends();
     PracticePage    practicePage = new PracticePage();
+    FriendsPage     friendsPage = new FriendsPage(); 
     public DashboardPage()
     {
         InitializeComponent();
@@ -20,23 +22,27 @@ public partial class DashboardPage : ContentPage
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(offlinePage);
+        Navigation.PushAsync(offlinePage);//Done
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(playWithFriends);
+        Navigation.PushAsync(playWithFriends);//Done
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(new FriendsPage());
+        Navigation.PushAsync(practicePage);//Done
         //Navigation.PushAsync(new AddCash());
-        //Navigation.PushAsync(practicePage);
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
-        TournamentPage tournamentPage = new TournamentPage();
-        Navigation.PushAsync(tournamentPage);
-        _ = tournamentPage.InitializeTournamentsAsync();
+        if(Skins.CurrentSkin==Skins.SkinTypes.Adatiya)
+        Navigation.PushAsync(cashGame);
+        else
+        {
+            TournamentPage tournamentPage = new TournamentPage();
+            Navigation.PushAsync(tournamentPage);
+            _ = tournamentPage.InitializeTournamentsAsync();
+        }
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
