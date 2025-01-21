@@ -17,10 +17,10 @@
                 </Grid>
             </local:Capsule>
             <Grid Padding="30,5,30,5" Grid.Row="6" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" ColumnDefinitions="1*,1*,1*,1*">
-                <ImageButton Source="help.png" Clicked="OnHelpTapped" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="terms.png" Grid.Column="1" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="privacy.png" Grid.Column="2" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Image Source="support.png" Grid.Column="3" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <ImageButton Source="help.png" Clicked="OnHelpTapped" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="terms.png" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="privacy.png" Grid.Column="2" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="support.png" Grid.Column="3" VerticalOptions="Start" HorizontalOptions="Center"/>
             </Grid>
             <!-- Convert btn_green.png button into a button 003-->
             <local:Capsule Grid.Row="7" ImageSource="btn_green.png" VerticalOptions="Start" HorizontalOptions="Center">

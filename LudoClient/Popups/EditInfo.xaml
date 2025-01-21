@@ -22,7 +22,7 @@
                 <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
             </StackLayout>
             <!--Convert these into components-->
-            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,-10" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
+            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,-10" Source="btn_green.png" VerticalOptions="End" HorizontalOptions="Center"/>
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup>

@@ -15,7 +15,7 @@
                             <Label x:Name="shareCode" Text="" TextColor="Black" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                             <!-- Add Copy image icon here -->
                         </Grid>
-                        <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" Aspect="AspectFit" HorizontalOptions="End"/>
+                        <Image Source="btn_share_link.png" Margin="0,3,0,3" Grid.Column="2" HorizontalOptions="End"/>
                     </StackLayout>
                 </Grid>
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
@@ -24,7 +24,7 @@
                             <BoxView CornerRadius="5" BackgroundColor="DarkBlue"/>
                             <Label Text="Share this room code with friends and ask them to join" Margin="3" FontSize="Caption" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                         </Grid>
-                        <Image Source="btn_whatsapp.png" Margin="0,3,0,3" Grid.Column="1" Aspect="AspectFit" HorizontalOptions="End"/>
+                        <Image Source="btn_whatsapp.png" Margin="0,3,0,3" Grid.Column="1" HorizontalOptions="End"/>
                     </StackLayout>
                 </Grid>
             </StackLayout>

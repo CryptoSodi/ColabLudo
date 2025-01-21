@@ -11,7 +11,7 @@
                 <Label Text="ADD YOUR PAN CARD DETAILS" Margin="5,0,0,0" HorizontalOptions="FillAndExpand" />
                 <Grid>
                     <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="5,0,5,0" BackgroundColor="White" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <Image Grid.Row="1" Grid.Column="1" Margin="3" Source="input_inner_pancard.png" Aspect="AspectFit" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HeightRequest="100"/>
+                    <Image Grid.Row="1" Grid.Column="1" Margin="3" Source="input_inner_pancard.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HeightRequest="100"/>
                 </Grid>
                 <!--Convert these into components-->
                 <local:EditField Title="PAN CARD HOLDER NAME" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
@@ -21,7 +21,7 @@
                     <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
             </StackLayout>
-            <Image Grid.Row="2" Grid.Column="1" Margin="8" Source="btn_green.png" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
+            <Image Grid.Row="2" Grid.Column="1" Margin="8" Source="btn_green.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" />
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup>

@@ -14,7 +14,7 @@
                     <local:EditField Title="Redeem your Coupon Code" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                 </StackLayout>
                 <!--Convert these into components-->
-                <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <Image Grid.Row="2" Grid.Column="1" Source="btn_green.png" VerticalOptions="Center" HorizontalOptions="Center"/>
             </Grid>
         </local:Capsule>
     </Grid>

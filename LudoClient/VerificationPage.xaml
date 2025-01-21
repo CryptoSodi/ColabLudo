@@ -10,15 +10,15 @@
 
         <local:Capsule Grid.Row="1" Grid.Column="1" ImageSource="verify_info_bg.png" VerticalOptions="Start" HorizontalOptions="Center">
             <StackLayout Padding="15,0,15,0" Orientation="Horizontal">
-                <Image Source="ic_verify_account.png" Margin="0,0,-5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_right_arr.png" Margin="0,25,0,25" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_verify_mob.png" Margin="-2.5,0,-2.5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_right_arr.png" Margin="0,25,0,25" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_verify_pancard.png" Margin="-2.5,0,-2.5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_right_arr.png" Margin="0,25,0,25" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_verify_bank.png" Margin="-2.5,0,-2.5,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_right_arr.png" Margin="0,25,0,25" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                <Image Source="ic_verify_done.png" Margin="-5,0,0,0" Aspect="AspectFit" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_verify_account.png" Margin="0,0,-5,0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_right_arr.png" Margin="0,25,0,25" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_verify_mob.png" Margin="-2.5,0,-2.5,0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_right_arr.png" Margin="0,25,0,25" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_verify_pancard.png" Margin="-2.5,0,-2.5,0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_right_arr.png" Margin="0,25,0,25" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_verify_bank.png" Margin="-2.5,0,-2.5,0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_right_arr.png" Margin="0,25,0,25" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Image Source="ic_verify_done.png" Margin="-5,0,0,0" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             </StackLayout>
         </local:Capsule>
         <local:Capsule Grid.Row="2" Grid.Column="1" ImageSource="verification_status_main_bg.png" VerticalOptions="Start" HorizontalOptions="Center">

@@ -34,7 +34,7 @@
                                 <Grid Margin="5,0,5,5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                                     <StackLayout  Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Entry :" HorizontalOptions="FillAndExpand"/>
-                                        <Image Source="ic_coin.png" Margin="5,2,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
+                                        <Image Source="ic_coin.png" Margin="5,2,5,0" HorizontalOptions="FillAndExpand" />
                                         <Label x:Name="EntryLabel" />
                                     </StackLayout>
                                 </Grid>
@@ -42,7 +42,7 @@
                                     <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
                                     <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
                                         <Label Text="Win" Padding="4,0,0,0" HorizontalOptions="FillAndExpand"/>
-                                        <Image Source="ic_coin.png" Margin="5,0,5,0" Aspect="AspectFit" HorizontalOptions="FillAndExpand" />
+                                        <Image Source="ic_coin.png" Margin="5,0,5,0" HorizontalOptions="FillAndExpand" />
                                         <Label x:Name="WinLabel" HorizontalOptions="FillAndExpand"/>
                                     </StackLayout>
                                  </Grid>

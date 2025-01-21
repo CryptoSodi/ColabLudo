@@ -13,7 +13,7 @@
                 <Label Margin="0,10,0,0" Text="" TextColor="White" HorizontalTextAlignment="Center"/>
                 <BoxView Margin="5,10,5,0" BackgroundColor="#20000000" HeightRequest="2"/>
                 <local:EditField Title="Enter Redeem Code" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                <Image Grid.Row="3" Grid.Column="1" Margin="40,16,40,16" Source="btn_big.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <Image Grid.Row="3" Grid.Column="1" Margin="40,16,40,16" Source="btn_big.png" VerticalOptions="Center" HorizontalOptions="Center"/>
             </StackLayout>
         </Grid>
     </popup:BasePopup.PopupContent>

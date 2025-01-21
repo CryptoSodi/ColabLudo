@@ -9,31 +9,19 @@
     <!-- StackLayout for the content -->
     <StackLayout VerticalOptions="CenterAndExpand" Spacing="15">
         <!-- Your content here -->
-        <Image Source="alogo2.png" HeightRequest="155" Aspect="AspectFit"/>
+        <Image Source="alogo2.png" HeightRequest="155"/>
 
-        <local:EditField x:Name="UsernameField" IsVisible="False" Title="Username" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        <local:EditField x:Name="EmailField" Title="Email" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        <local:EditField x:Name="PasswordField" Title="Password" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        <local:EditField x:Name="ConfirmPasswordField" IsVisible="False" Title="Confirm Password" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-
-        <Label x:Name="ForgotPasswordLabel" FontSize="16" Margin="15,5,15,5" HorizontalOptions="End" VerticalOptions="Center" FontAttributes="Bold" HorizontalTextAlignment="End"
-               Text="Forgot Password?">
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer Tapped="SwitchToSignup_Clicked" />
-            </Label.GestureRecognizers>
-        </Label>
+        <local:EditField x:Name="NumberField" Title="Number" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+        <local:EditField x:Name="OtpField"    Title="OTP" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+        
 
         <ImageButton x:Name="BtnLoginSingup" Clicked="LoginSingup_Clicked" Source="abtnlogin.png" Padding="0,10,0,0"/>
 
         <local:Capsule x:Name="GoogleLoginPanel" ImageSource="google_login.png" Padding="90,0,90,20" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
             <ImageButton Clicked="GooleSignup_Clicked" />
         </local:Capsule>
-        
-        <Label FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" 
-               Text="Don't have an account? Sign up">
-            <Label.GestureRecognizers>
-                <TapGestureRecognizer Tapped="SwitchToSignup_Clicked" />
-            </Label.GestureRecognizers>
-        </Label>
+
+        <Label HorizontalOptions="Center" VerticalOptions="Center" Text="Version 1.0"/>
+
     </StackLayout>
 </ContentPage>

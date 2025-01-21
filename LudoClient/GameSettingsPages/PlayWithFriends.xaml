@@ -43,7 +43,7 @@
                                         <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                                             <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
                                             <StackLayout Margin="5,2,5,5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                                                <Image Source="ic_coin.png" Margin="2" Aspect="AspectFit" HorizontalOptions="StartAndExpand" />
+                                                <Image Source="ic_coin.png" Margin="2" HorizontalOptions="StartAndExpand" />
                                                 <Label Text="5" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
                                             </StackLayout>
                                         </Grid>
@@ -54,7 +54,7 @@
                                     <BoxView CornerRadius="8" BackgroundColor="#3A1E93"/>
                                     <Grid ColumnDefinitions=".5*,.12*" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" Margin="8,0,8,0" ColumnSpacing="8">
                                         <local:EditField x:Name="RoomId" IsVisible="True" Title="Room Id" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand"/>
-                                        <Image Grid.Column="1" Source="{x:Static constants:Skins.PasteBTN}" Aspect="AspectFit" HorizontalOptions="FillAndExpand"/>
+                                        <Image Grid.Column="1" Source="{x:Static constants:Skins.PasteBTN}" HorizontalOptions="FillAndExpand"/>
                                     </Grid>
                                 </Grid>
                             </Grid>

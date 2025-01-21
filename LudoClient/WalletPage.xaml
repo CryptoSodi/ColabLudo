@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
           RowDefinitions=".01*,1*,.01*" ColumnDefinitions=".02*,1*,.02*">
-        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="wallet_bg.png" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Image Grid.Row="1" Grid.Column="1" x:Name="grid_bg" Source="wallet_bg.png" VerticalOptions="Start" HorizontalOptions="Center"/>
         <Grid Grid.Row="1" Grid.Column="1"  VerticalOptions="Start" HorizontalOptions="FillAndExpand"
            RowDefinitions=".8*,.8*,0.8*,0.8*,0.3*,.6*,2.2*" ColumnDefinitions=".1*,1*,.1*" RowSpacing="10">
             <local:TitleBar Grid.Column="1" TitleImage="title_wallet.png" Title="" Margin="0,-28,0,0" VerticalOptions="Start" HorizontalOptions="Center">
@@ -14,7 +14,7 @@
             <local:Capsule ImageSource="total_ava_bal_bg.png" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="1*,.4*">
                     <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <Image Source="ic_total_wallet.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                        <Image Source="ic_total_wallet.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                         <StackLayout Spacing="5" Orientation="Vertical" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <Label Text="TOTAL BALANCE AVILABLE" TextColor="Black"/>
                             <Label Text="Winnings" TextColor="Black"/>
@@ -23,7 +23,7 @@
                     <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" Margin="0,5,0,5" VerticalOptions="Center" RowDefinitions="1*,1*,1*">
                         <BoxView Grid.Row="0" Margin="-5,-5,8,-5" CornerRadius="5" Color="Gray" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                         <StackLayout Grid.Column="1" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand">
-                            <Image Source="ic_coin.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                            <Image Source="ic_coin.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <Label x:Name="Coins" Text="0.0" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </StackLayout>
                     </Grid>
@@ -32,14 +32,14 @@
             <Grid Grid.Row="2" Grid.Column="1"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                 <BoxView CornerRadius="5" Color="White" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
                 <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
-                    <Image Source="reffer_earn.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Image Source="reffer_earn.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <StackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
                         <Label Text="Reffer and Earn" TextColor="Black" Margin="0,-4,0,-4" VerticalOptions="Start" HorizontalOptions="Start"/>
                         <Label Text="Reffer Friends and Win Cash" Margin="0,-4,0,0" TextColor="Black" VerticalOptions="Start" HorizontalOptions="Start"/>
                         <StackLayout Spacing="5" Orientation="Horizontal" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" >
-                            <Image Source="btn_whatsapp.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="Start"/>
-                            <Image Source="btn_share_link.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="StartAndExpand"/>
-                            <Image Source="btn_info.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="End"/>
+                            <Image Source="btn_whatsapp.png" VerticalOptions="FillAndExpand" HorizontalOptions="Start"/>
+                            <Image Source="btn_share_link.png" VerticalOptions="FillAndExpand" HorizontalOptions="StartAndExpand"/>
+                            <Image Source="btn_info.png" VerticalOptions="FillAndExpand" HorizontalOptions="End"/>
                         </StackLayout>
                     </StackLayout>
                 </StackLayout>
@@ -54,7 +54,7 @@
             </local:Capsule>
             <local:Capsule ImageSource="btn_outer.png" Grid.Row="3" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <Grid Margin="8" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="1*,2*,1*">
-                    <Image Margin="4" Source="ic_yourwinnings.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Image Margin="4" Source="ic_yourwinnings.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <StackLayout Grid.Column="1" Spacing="5" Orientation="Vertical" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
                         <Label Text="YOUR WINNINGS" TextColor="White" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand"/>
                         <Label Text="Total Winnings" TextColor="White" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand"/>
@@ -67,7 +67,7 @@
             </local:Capsule>
             <local:Capsule ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" Padding="0,0,0,-20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                 <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
-                    <Image Source="ic_addmoney.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Image Source="ic_addmoney.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <StackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
                         <Label Text="ADD MONEY" TextColor="White" Margin="0,-4,0,-4" VerticalOptions="Start" HorizontalOptions="Start"/>
                         <Label Text="Credit Card,Jazzcash,Easipaysa" FontSize="10" TextColor="Black" VerticalOptions="Start" HorizontalOptions="Start"/>
@@ -79,7 +79,7 @@
                     <local:Capsule ImageSource="info_4.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
                               RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
-                            <Image Margin="4" Source="subinfo_4.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                            <Image Margin="4" Source="subinfo_4.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="FillAndExpand">
                                 <Label Text="UNUTILIZED" TextColor="White" />
                                 <Label Text="Money you added" TextColor="White" />
@@ -90,7 +90,7 @@
                     <local:Capsule ImageSource="info_2.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
                                 RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
-                            <Image Margin="4" Source="subinfo_2.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                            <Image Margin="4" Source="subinfo_2.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="FillAndExpand">
                                 <Label Text="CASH BONUS" TextColor="White" />
                                 <Label Text="Offer Earned Bonus" TextColor="White" />
@@ -103,7 +103,7 @@
                     <local:Capsule ImageSource="info_3.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
                                 RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
-                            <Image Margin="4" Source="subinfo_3.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                            <Image Margin="4" Source="subinfo_3.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="FillAndExpand">
                                 <Label Text="SURPRICE BONUS" TextColor="White" />
                                 <Label Text="Expires Midnight" TextColor="White" />
@@ -114,7 +114,7 @@
                     <local:Capsule ImageSource="info_1.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"
                                 RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
-                            <Image Margin="4" Source="subinfo_1.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Start"/>
+                            <Image Margin="4" Source="subinfo_1.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="FillAndExpand">
                                 <Label Text="SIGNUP BONUS" TextColor="White" />
                                 <Label Text="Replication Bonus" TextColor="White" />

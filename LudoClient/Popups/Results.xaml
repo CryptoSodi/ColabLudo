@@ -7,7 +7,7 @@
              Size="Infinity, Infinity"
              Color="#10000000">
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >
-        <Image Source="spinner_bk_red_glow.png" Aspect="AspectFit" Margin="-100,-100,-100,-100" />
+        <Image Source="spinner_bk_red_glow.png" Margin="-100" />
         <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
 
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
@@ -20,8 +20,8 @@
                     <local:ResultCardLong PlayerName="Mazhar"/>
                 </StackLayout>
                 <StackLayout Spacing="10" Margin="30,50,30,0" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Start" >
-                    <Image Source="btn_playagain.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-                    <Image Source="btn_exit.png" Aspect="AspectFit" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                    <Image Source="btn_playagain.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                    <Image Source="btn_exit.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
                 </StackLayout>
             </StackLayout>
         </Grid>

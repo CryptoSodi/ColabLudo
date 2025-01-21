@@ -14,7 +14,7 @@
                 <Label x:Name="Message" Text="You have successfully claimed your Spin Bonus." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                 <Label x:Name="SubMessage" Text="Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
             </StackLayout>
-            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,0" Source="btn_green.png" Aspect="AspectFit" VerticalOptions="End" HorizontalOptions="Center"/>
+            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,0" Source="btn_green.png" VerticalOptions="End" HorizontalOptions="Center"/>
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup>

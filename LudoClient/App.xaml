@@ -29,6 +29,10 @@
                 <Setter Property="BorderWidth" Value="0" />
                 <Setter Property="Aspect" Value="AspectFit" />
             </Style>
+            <Style TargetType="Label">
+                <Setter Property="FontAttributes" Value="None" />
+                <Setter Property="FontSize" Value="15" />
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

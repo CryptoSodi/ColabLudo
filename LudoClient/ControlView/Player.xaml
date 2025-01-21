@@ -4,8 +4,8 @@
              x:Class="LudoClient.ControlView.Player">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Grid>
-            <Image x:Name="PlayerImageItem" Margin="0,2,0,2" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
-            <Image Source="profile_user.png" Margin="0,2,0,2" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+            <Image x:Name="PlayerImageItem" Margin="0,2,0,2" VerticalOptions="Center" HorizontalOptions="Center"/>
+            <Image Source="profile_user.png" Margin="0,2,0,2" VerticalOptions="Center" HorizontalOptions="Center"/>
         </Grid>
     </Grid>
 </ContentView>

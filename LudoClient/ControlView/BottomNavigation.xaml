@@ -11,7 +11,7 @@
                     <ColumnDefinition Width="1.2*" />
                     <ColumnDefinition Width=".5*" />
                 </Grid.ColumnDefinitions>
-                <ImageButton Source="btn_back.png" Clicked="OnBackButtonClicked" Margin="5,0,0,0" Aspect="AspectFit" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                <ImageButton Source="btn_back.png" Clicked="OnBackButtonClicked" Margin="5,0,0,0" HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
                 <StackLayout Grid.Column="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <Grid HorizontalOptions="EndAndExpand" VerticalOptions="CenterAndExpand">
                         <Grid.ColumnDefinitions>

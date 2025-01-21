@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.Token">
     <Grid>
-        <Image x:Name="Piece" Source="red_token_large.png" Aspect="AspectFit"/>
+        <Image x:Name="Piece" Source="red_token_large.png"/>
         <ImageButton Clicked="Piece_Clicked"/>
     </Grid>
 </ContentView>

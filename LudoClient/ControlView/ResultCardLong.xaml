@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.ResultCardLong">
     <Grid Margin="25,0,25,0">
-        <Image x:Name="BgImageItem" Aspect="AspectFit" Source="user_main_bg.png" />
+        <Image x:Name="BgImageItem" Source="user_main_bg.png" />
         <Grid HeightRequest="{Binding Source={x:Reference BgImageItem}, Path=Height}"
                RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,2.2*,.2*" >
             <Grid Grid.Row="1" Grid.Column="1">
@@ -19,15 +19,15 @@
                    Padding="0"
                    BorderColor="Gray"
                    Margin="5">
-                    <Image Source="player.png" Aspect="AspectFit"/>
+                    <Image Source="player.png"/>
                 </Frame>
-                <Image x:Name="BorderImageItem" Source="silver_border.png" Aspect="AspectFit"/>
+                <Image x:Name="BorderImageItem" Source="silver_border.png"/>
             </Grid>
             <Label x:Name="PlayerNameItem" Text="Player" TextColor="Black" FontSize="20" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center"/>
             <Grid Grid.Row="1" Grid.Column="4" HorizontalOptions="FillAndExpand">
                 <BoxView x:Name="WinAmountColorItem" CornerRadius="5" Color="Purple" />
                 <StackLayout Margin="5" Spacing="5" Orientation="Horizontal">
-                    <Image Source="ic_chips_spades.png" Aspect="AspectFit" />
+                    <Image Source="ic_chips_spades.png"/>
                     <Label x:Name="ChipCountItem" Text="+1" FontSize="14" FontAttributes="Bold" VerticalTextAlignment="Center"/>
                 </StackLayout>
             </Grid>

@@ -6,7 +6,7 @@
     <Grid>
         <BoxView BackgroundColor="White" CornerRadius="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
         <StackLayout Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <Image Margin="5" Source="{Binding ImageSource}" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Start"/>
+            <Image Margin="5" Source="{Binding ImageSource}" VerticalOptions="Start" HorizontalOptions="Start"/>
             <StackLayout HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand">
                 <Label Margin="-2,10,0,0" Text="{Binding TextHeading}" TextColor="Green" FontSize="8" HorizontalOptions="Start" VerticalOptions="End" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>
                 <Label Margin="-2,4,0,0" Text="{Binding TextSub}" TextColor="Black" FontSize="10" HorizontalOptions="Start" VerticalOptions="Start" HorizontalTextAlignment="End" VerticalTextAlignment="Start"/>

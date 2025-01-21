@@ -6,7 +6,7 @@
         <ControlTemplate>
             <Grid VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand">
                 <!-- Bind Image Source here -->
-                <Image Source="{TemplateBinding ImageSource}" x:Name="ImageSourceContainer" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+                <Image Source="{TemplateBinding ImageSource}" x:Name="ImageSourceContainer" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <Grid VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand"
                      WidthRequest="{Binding Source={x:Reference ImageSourceContainer}, Path=Width}" 
                      HeightRequest="{Binding Source={x:Reference ImageSourceContainer}, Path=Height}">

@@ -15,21 +15,21 @@
                         <Grid Grid.Row="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="6" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                                <Image Source="ic_email.png" Aspect="AspectFit" Margin="6,3,0,3"/>
+                                <Image Source="ic_email.png" Margin="6,3,0,3"/>
                                 <Label x:Name="Email" Text="youraddress@gmail.com" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="8" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                                <Image Source="ic_call.png" Aspect="AspectFit" Margin="6,3,0,3"/>
+                                <Image Source="ic_call.png" Margin="6,3,0,3"/>
                                 <Label x:Name="Number" Text="+923074000106" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                             <BoxView CornerRadius="8" BackgroundColor="#30000000" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                             <StackLayout Orientation="Horizontal" Spacing="8" Grid.Row="3" HorizontalOptions="FillAndExpand">
-                                <Image Source="ic_address.png" Aspect="AspectFit" Margin="6,3,0,3"/>
+                                <Image Source="ic_address.png" Margin="6,3,0,3"/>
                                 <Label x:Name="Location" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
@@ -38,12 +38,12 @@
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Start" HeightRequest="30">
                     <BoxView CornerRadius="8" BackgroundColor="#80000000" Margin="8,3,8,3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                     <StackLayout Orientation="Horizontal" Spacing="2" HorizontalOptions="FillAndExpand">
-                        <Image Source="ic_coin.png" Aspect="AspectFit" HorizontalOptions="Start"/>
+                        <Image Source="ic_coin.png" HorizontalOptions="Start"/>
                         <Label x:Name="Coins" Text="0.0" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                        <Image Source="btn_plus.png" Aspect="AspectFit" HorizontalOptions="End"/>
+                        <Image Source="btn_plus.png" HorizontalOptions="End"/>
                     </StackLayout>
                 </Grid>
-                <Image Source="statistics_info.png" Margin="30,0,30,0" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                <Image Source="statistics_info.png" Margin="30,0,30,0" VerticalOptions="Center" HorizontalOptions="Center"/>
                 <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand" HeightRequest="50">
                     <local:StatisticCard Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
                     <local:StatisticCard Title="GAMES WON" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>

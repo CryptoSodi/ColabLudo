@@ -8,7 +8,7 @@
     <popup:BasePopup.PopupContent>
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".8*,.2*,2*,3*,1*,.6*">
             <local:TitleBar Title="Daily Bonus" Margin="10,-18,10,10" Grid.Column="2" Grid.ColumnSpan="3" Grid.RowSpan="1" VerticalOptions="Start" HorizontalOptions="Center"/>
-            <Image Source="daily_bonus.png" Grid.Row="2" Margin="40,0,40,0" Aspect="AspectFit" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <Image Source="daily_bonus.png" Grid.Row="2" Margin="40,0,40,0" VerticalOptions="Start" HorizontalOptions="Center"/>
             <local:Capsule ImageSource="days_main_bg.png" Grid.Row="3" VerticalOptions="Start" HorizontalOptions="Center">
                 <Grid Grid.Row="3" RowSpacing="2" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".08*,1*,.04*,1*,.08*">
                     <!--Messed up display animation 001-->
@@ -26,8 +26,8 @@
                 </Grid>
             </local:Capsule>
             <!-- Convert this into a button 002-->
-            <Grid Grid.Row="4" Margin="0,10,0,10" BackgroundColor="Transparent" VerticalOptions="End" HorizontalOptions="Center">
-                <Image Source="btn_green.png" Aspect="AspectFit"/>
+            <Grid Grid.Row="4" Margin="0,10,0,10" VerticalOptions="End" HorizontalOptions="Center">
+                <Image Source="btn_green.png"/>
                 <Label Text="CLAIM !" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
             </Grid>
         </Grid>

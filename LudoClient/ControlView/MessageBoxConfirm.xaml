@@ -14,7 +14,7 @@
                 </StackLayout>
                 <Grid Grid.Row="3" Grid.Column="1" Margin="0,16,0,16">
                     <!-- Image -->
-                    <Image Source="btn_green.png" Aspect="AspectFit" VerticalOptions="Center" HorizontalOptions="Center"/>
+                    <Image Source="btn_green.png" VerticalOptions="Center" HorizontalOptions="Center"/>
                     <!-- Text -->
                     <Label Text="Yes" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"  FontSize="Small" TextColor="White"/>
                 </Grid>
