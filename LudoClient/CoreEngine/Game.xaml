@@ -6,8 +6,7 @@
              BackgroundImageSource="background_waitingroom.png"
              xmlns:controls="clr-namespace:LudoClient.ControlView"
              xmlns:simpleCore="clr-namespace:SimpleToolkit.Core;assembly=SimpleToolkit.Core"
-             xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
-             Title="Game">
+             xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView">
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill" RowDefinitions=".3*,.3*,.06*,1.6*,.3*,.4*">
             <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
@@ -37,56 +36,65 @@
             <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             </StackLayout>
         </Grid>
+        
         <local:Capsule ImageSource="footer.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <StackLayout Spacing="5" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked" Source="popover.png" HorizontalOptions="Start" VerticalOptions="FillAndExpand">
-                    <simpleCore:Popover.AttachedPopover>
-                        <simpleCore:Popover>
-                            <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                                <VerticalStackLayout Padding="12,5,10,0" WidthRequest="180" HeightRequest="125">
-                                    <Grid WidthRequest="160" HeightRequest="35">
-                                        <Label Text="Exit to lobby" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                        <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                            <Image Source="btn_exit_to_lobby.png" Margin="0,4,8,4" />
-                                            <ImageButton Clicked="ExitToLobby" />
+            <StackLayout Spacing="5" Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
+                <local:Capsule ImageSource="popover.png" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked" >
+                        <simpleCore:Popover.AttachedPopover>
+                            <simpleCore:Popover>
+                                <Grid>
+                                    <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                                        <VerticalStackLayout Padding="12,5,10,0" WidthRequest="180" HeightRequest="125" >
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Exit to lobby" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Image Source="btn_exit_to_lobby.png" Margin="0,4,8,4" />
+                                                    <ImageButton Clicked="ExitToLobby" />
+                                                </Grid>
+                                            </Grid>
+                                            <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Music"  TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <local:SettingsSwitch x:Name="SoundSwitch" SettingText="" PreferencesKey="IsSoundEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
+                                                </Grid>
+                                            </Grid>
+                                            <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Sound" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <local:SettingsSwitch x:Name="MusicSwitch" SettingText="" PreferencesKey="IsMusicEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
+                                                </Grid>
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </acrylic:AcrylicView>
+                                </Grid>
+                            </simpleCore:Popover>
+                        </simpleCore:Popover.AttachedPopover>
+                    </ImageButton>
+                </local:Capsule>
+                <local:Capsule ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked">
+                        <simpleCore:Popover.AttachedPopover>
+                            <simpleCore:Popover>
+                                <Grid>
+                                <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                                    <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
+                                        <Grid WidthRequest="180" HeightRequest="35">
+                                            <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                            <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                <Image Source="btn_exit_to_lobby.png" Margin="0,8,5,8"/>
+                                                <ImageButton Clicked="ExitToLobby"/>
+                                            </Grid>
                                         </Grid>
-                                    </Grid>
-                                    <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
-                                    <Grid WidthRequest="160" HeightRequest="35">
-                                        <Label Text="Music"  TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                        <Grid HorizontalOptions="End" VerticalOptions="Center">                                       
-                                            <local:SettingsSwitch x:Name="SoundSwitch" SettingText="" PreferencesKey="IsSoundEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
-                                        </Grid>
-                                    </Grid>
-                                    <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
-                                    <Grid WidthRequest="160" HeightRequest="35">
-                                        <Label Text="Sound" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                        <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                            <local:SettingsSwitch x:Name="MusicSwitch" SettingText="" PreferencesKey="IsMusicEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
-                                        </Grid>
-                                    </Grid>
-                                </VerticalStackLayout>
-                            </acrylic:AcrylicView>
-                        </simpleCore:Popover>
-                    </simpleCore:Popover.AttachedPopover>
-                </ImageButton>
-                <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked" Source="btn_help.png" HorizontalOptions="Start" VerticalOptions="FillAndExpand">
-                    <simpleCore:Popover.AttachedPopover>
-                        <simpleCore:Popover>
-                            <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                                <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
-                                    <Grid WidthRequest="180" HeightRequest="35">
-                                        <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                        <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                            <Image Source="btn_exit_to_lobby.png" Margin="0,8,5,8"/>
-                                            <ImageButton Clicked="ExitToLobby"/>
-                                        </Grid>
-                                    </Grid>
-                                </VerticalStackLayout>
-                            </acrylic:AcrylicView>
-                        </simpleCore:Popover>
-                    </simpleCore:Popover.AttachedPopover>
-                </ImageButton>
+                                    </VerticalStackLayout>
+                                </acrylic:AcrylicView>
+                                </Grid>
+                            </simpleCore:Popover>
+                        </simpleCore:Popover.AttachedPopover>
+                    </ImageButton>
+                </local:Capsule>
             </StackLayout>
         </local:Capsule>
     </Grid>
