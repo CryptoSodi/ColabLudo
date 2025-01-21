@@ -51,8 +51,8 @@
                         </Grid>
                     </local:Capsule>
                     <StackLayout Orientation="Horizontal" Spacing="20" Margin="30,0,30,0"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
-                        <ImageButton BackgroundColor="Transparent" Source="btn_join.png" Clicked="JoinRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
-                        <ImageButton BackgroundColor="Transparent" Source="btn_create.png" Clicked="CreateRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                        <ImageButton Source="btn_join.png" Clicked="JoinRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                        <ImageButton Source="btn_create.png" Clicked="CreateRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
                     </StackLayout>
                 </StackLayout>
             </Grid>

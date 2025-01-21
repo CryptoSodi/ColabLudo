@@ -48,7 +48,7 @@
                                         <Label Text="Exit to lobby" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                         <Grid HorizontalOptions="End" VerticalOptions="Center">
                                             <Image Source="btn_exit_to_lobby.png" Aspect="AspectFit" Margin="0,4,8,4" />
-                                            <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" Opacity=".1"/>
+                                            <ImageButton Clicked="ExitToLobby" />
                                         </Grid>
                                     </Grid>
                                     <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
@@ -79,7 +79,7 @@
                                         <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                         <Grid HorizontalOptions="End" VerticalOptions="Center">
                                             <Image Source="btn_exit_to_lobby.png" Aspect="AspectFit" Margin="0,8,5,8" />
-                                            <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" Opacity=".1"/>
+                                            <ImageButton Clicked="ExitToLobby" Aspect="AspectFit" />
                                         </Grid>
                                     </Grid>
                                 </VerticalStackLayout>

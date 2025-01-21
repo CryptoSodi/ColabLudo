@@ -23,10 +23,10 @@
             </Label.GestureRecognizers>
         </Label>
 
-        <ImageButton x:Name="BtnLoginSingup" Clicked="LoginSingup_Clicked" Source="abtnlogin.png" Padding="0,10,0,0" BackgroundColor="Transparent"/>
+        <ImageButton x:Name="BtnLoginSingup" Clicked="LoginSingup_Clicked" Source="abtnlogin.png" Padding="0,10,0,0"/>
 
         <local:Capsule x:Name="GoogleLoginPanel" ImageSource="google_login.png" Padding="90,0,90,20" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
-            <ImageButton BackgroundColor="Transparent" Clicked="GooleSignup_Clicked" />
+            <ImageButton Clicked="GooleSignup_Clicked" />
         </local:Capsule>
         
         <Label FontSize="16" HorizontalOptions="Center" VerticalOptions="Center" FontAttributes="Bold" 

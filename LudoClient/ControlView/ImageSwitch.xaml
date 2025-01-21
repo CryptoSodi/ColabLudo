@@ -7,7 +7,7 @@
         <local:Capsule x:Name="SwitchImage" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid>
                 <Label x:Name="DisplayText" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Margin="0,5,0,0"/>
-                <ImageButton BackgroundColor="Transparent" Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <ImageButton Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </local:Capsule>
     </Grid>

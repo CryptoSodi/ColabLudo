@@ -32,6 +32,6 @@
                 <Image x:Name="SheetDirection" Source="arr_down.png" Grid.Column="2" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             </Grid>
         </local:Capsule>
-        <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+        <ImageButton Grid.ColumnSpan="3" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
     </Grid>
 </ContentView>

@@ -18,8 +18,8 @@
                             <Label x:Name="EndDateLabel" Text=" 07/02/2024 17:20:00" FontSize="10" TextColor="LightGray" VerticalOptions="Center"/>
                         </StackLayout>
                     </StackLayout>
-            <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <ImageButton  BackgroundColor="Transparent"  Grid.Column="1" Margin="0,0,20,0" Source="btn_green.png" Clicked="Join_Clicked" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            <ImageButton Grid.ColumnSpan="3" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    <ImageButton Grid.Column="1" Margin="0,0,20,0" Source="btn_green.png" Clicked="Join_Clicked" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
                 </Grid>
             </local:Capsule>
         </Grid>
@@ -39,7 +39,7 @@
                     </Grid>
                 </StackLayout>
                 <Label x:Name="TournamentId" Text="" TextColor="Transparent" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
-                <ImageButton Grid.ColumnSpan="3" BackgroundColor="Transparent" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <ImageButton Grid.ColumnSpan="3" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </local:Capsule>
     </Grid>
