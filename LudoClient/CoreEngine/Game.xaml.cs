@@ -272,6 +272,7 @@ public partial class Game : ContentPage
             StartProgressAnimation(Engine.EngineHelper.currentPlayer.Color);
 
         Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+        Engine.AnimateDice += new Engine.Callback_AnimateDice_EventHandler(AnimateDice);
         Engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
         Engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
         Engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
@@ -437,6 +438,19 @@ public partial class Game : ContentPage
     {
         GetPlayerSeat(SeatName).StopProgressAnimation();
     }
+    public void AnimateDice(string SeatName){
+        var seat = GreenPlayerSeat;
+        if (SeatName == "red")
+            seat = RedPlayerSeat;
+        if (SeatName == "green")
+            seat = GreenPlayerSeat;
+        if (SeatName == "yellow")
+            seat = YellowPlayerSeat;
+        if (SeatName == "blue")
+            seat = BluePlayerSeat;
+
+        seat.AnimateDice();
+    }
     public void StopDice(string SeatName, int dicevalue)
     {
         var seat = GreenPlayerSeat;
@@ -455,7 +469,6 @@ public partial class Game : ContentPage
             return;
         }
         seat.StopDice(dicevalue);
-
     }
     private void PopOverClicked(object sender, EventArgs e)
     {

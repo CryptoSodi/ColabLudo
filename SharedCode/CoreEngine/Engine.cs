@@ -10,6 +10,9 @@ namespace SharedCode.CoreEngine
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
 
+        public delegate void Callback_AnimateDice_EventHandler(string SeatName);
+        public event Callback_AnimateDice_EventHandler AnimateDice;
+
         public delegate Task CallbackEventHandlerRelocateAsync(Piece piece, Piece pieceClone);
         public event CallbackEventHandlerRelocateAsync RelocateAsync;
 
@@ -168,6 +171,7 @@ namespace SharedCode.CoreEngine
             // Check if it's the correct player's turn and if the game is in the roll state
             if (player.Color == seatName && EngineHelper.gameState == "RollDice")
             {
+                AnimateDice(seatName);
                 // Roll the dice
                 EngineHelper.diceValue = await EngineHelper.RollDice(seatName);
                 tempDice = EngineHelper.diceValue;

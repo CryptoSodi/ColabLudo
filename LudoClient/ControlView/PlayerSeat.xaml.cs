@@ -122,6 +122,7 @@ public partial class PlayerSeat : ContentView
         {
         
         }
+        AnimateDice();
         TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)
@@ -130,8 +131,11 @@ public partial class PlayerSeat : ContentView
     }
     internal void AnimateDice()
     {
-        DiceLayer.Source = "dice_a.gif";
-        DiceLayer.IsAnimationPlaying = true;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            DiceLayer.Source = "dice_a.gif";
+            DiceLayer.IsAnimationPlaying = true;
+        });
     }
     internal void StopDice(int DiceValue)
     {
