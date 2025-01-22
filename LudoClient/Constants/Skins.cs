@@ -16,7 +16,7 @@ namespace LudoClient.Constants
             [Description("Adatiya Skin")]
             Adatiya = 1
         }
-        public static SkinTypes CurrentSkin { get; set; } = SkinTypes.DefaultSkin;
+        public static SkinTypes CurrentSkin { get; set; } = SkinTypes.Adatiya;
         private static string CurrentSkinType => CurrentSkin == SkinTypes.DefaultSkin ? "" : "_a";
 
         //BACKGROUNDS
