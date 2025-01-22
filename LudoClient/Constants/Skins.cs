@@ -53,8 +53,8 @@ namespace LudoClient.Constants
         public static string JoinBTN => $"btn_join_large{CurrentSkinType}.png";
         public static string MinusBTN => $"btn_minus_large{CurrentSkinType}.png";
         public static string PlusBTN => $"btn_plus_large{CurrentSkinType}.png";
-        
-
+        //WAITING ROOM
+        public static string VS => $"vs{CurrentSkinType}.png";
 
     }
 }

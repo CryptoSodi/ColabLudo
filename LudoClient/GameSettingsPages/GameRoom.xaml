@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="LudoClient.GameRoom"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LudoClient.GameRoom"
-             Title="GameRoom"
              xmlns:local ="clr-namespace:LudoClient.ControlView"
-             BackgroundImageSource="background_waitingroom.png"
+             xmlns:constants="clr-namespace:LudoClient.Constants"
+             BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}"
              NavigationPage.HasNavigationBar="False">
+    
     <Grid x:Name="grid" RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".6*,1*,1*,1*,1*,1*,1*,.6*" ColumnDefinitions=".4*,1*,1*,1*,.4*">
         <local:ShareBox x:Name="shareBox" Grid.Row="1" Grid.ColumnSpan="5"/>
         
@@ -14,7 +15,7 @@
 
         <Image x:Name="thunder" IsAnimationPlaying="True" Grid.Row="2" Grid.ColumnSpan="5" Grid.RowSpan="5"/>
         <Image Grid.Row="4" Grid.ColumnSpan="5" Source="vs_bg.png"/>
-        <Image Grid.Row="4" Grid.ColumnSpan="5" Source="vs.png" Margin="15"/>
+        <Image Grid.Row="4" Grid.ColumnSpan="5" Source="{x:Static constants:Skins.VS}" Margin="15"/>
 
         <local:PlayerBox x:Name="player1" Grid.Row="3" Grid.Column="2" PlayerName="Waiting" PlayerImage="user.png" />
         <local:PlayerBox x:Name="player2" Grid.Row="5" Grid.Column="1" PlayerName="Waiting" PlayerImage="user.png"/>

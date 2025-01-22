@@ -32,6 +32,10 @@
             <Style TargetType="Label">
                 <Setter Property="FontAttributes" Value="None" />
                 <Setter Property="FontSize" Value="15" />
+                <Setter Property="VerticalTextAlignment" Value="Center"/>
+                <Setter Property="HorizontalTextAlignment" Value="Center"/>
+                <Setter Property="VerticalOptions" Value="FillAndExpand"/>
+                <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

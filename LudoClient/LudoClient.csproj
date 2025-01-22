@@ -119,6 +119,7 @@
 	  <None Remove="Resources\Images\Adatya\round_offline_a.png" />
 	  <None Remove="Resources\Images\Adatya\round_practice_a.png" />
 	  <None Remove="Resources\Images\Adatya\tournament_a.png" />
+	  <None Remove="Resources\Images\Adatya\vs_a.png" />
 	  <None Remove="Resources\Images\AddCash\addcash_popup_bg.png" />
 	  <None Remove="Resources\Images\AddCash\addmoney_bg.png" />
 	  <None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
@@ -404,6 +405,7 @@
 	  <MauiImage Include="Resources\Images\Adatya\round_offline_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\round_practice_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\tournament_a.png" />
+	  <MauiImage Include="Resources\Images\Adatya\vs_a.png" />
 	  <MauiImage Include="Resources\Images\Components\Header\btn_help.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\blue_token.png" />
