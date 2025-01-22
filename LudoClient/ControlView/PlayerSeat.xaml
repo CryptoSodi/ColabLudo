@@ -4,24 +4,29 @@
              x:Class="LudoClient.ControlView.PlayerSeat"
              xmlns:local="clr-namespace:LudoClient.ControlView">
 
-    <local:Capsule x:Name="playerBG" >
-        <Grid RowDefinitions=".14*,1*,.3*" ColumnDefinitions=".13*,1*,.06*,0.96*,.01*">
+    <local:Capsule x:Name="playerBG">
+        <Grid RowDefinitions=".14*,1*,.3*,.3*" ColumnDefinitions=".13*,1*,.06*,0.96*,.01*">
             <Image x:Name="PlayerImage"  Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
-            <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" VerticalOptions="Center" HorizontalOptions="Start"/>
-            <ImageButton Clicked="Dice_Clicked" Grid.Column="3" Grid.Row="1" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" VerticalOptions="Center" HorizontalOptions="Start">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Dice_Clicked" />
+                </Image.GestureRecognizers>
+            </Image>
 
             <Grid Grid.Row="2" Grid.ColumnSpan="4" >
                 <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="10,0,0,2" TextColor="Black"></Label>
             </Grid>
-            <Grid x:Name="ProgressBoxParentContainer" BackgroundColor="#992B4195" Grid.Row="2" Grid.ColumnSpan="4" Margin="0,20,0,-20" ColumnDefinitions=".2*,1*">
-                <Grid x:Name="ProgressBoxParent" Grid.Column="1" >
-                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111"/>
+
+            <Grid x:Name="ProgressBoxParentContainer" Margin="0,0,0,-5" BackgroundColor="#992B4195" Grid.Row="3" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >
+                <Grid x:Name="ProgressBoxParent" Grid.Column="1" Margin="0,0,20,0">
+                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111" CornerRadius="3" BackgroundColor="Transparent"/>
                     <Label x:Name="ProgressBoxText" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="5,0,0,0">Auto</Label>
                 </Grid>
-                <Grid VerticalOptions="Center" HorizontalOptions="Center">
-                    <Image x:Name="CheckBox" Source="checkbox_red.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-                    <ImageButton VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Clicked="AutoClicked"/>
-                </Grid>
+                <Image x:Name="CheckBox" Source="checkbox_red.png" Margin="-2" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="AutoClicked" />
+                    </Image.GestureRecognizers>
+                </Image>
             </Grid>
         </Grid>
     </local:Capsule>

@@ -48,7 +48,8 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
 
                 MainPage = new AppShell();
-                //MainPage = new Game();
+
+                //MainPage = new Game("local", "2", "Red");
             }
             //MainPage =new LoginPage();
             //
