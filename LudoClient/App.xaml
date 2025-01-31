@@ -22,6 +22,8 @@
             <simpleCore:PathGeometryExtension x:Key="PinPathGeometry" Path="{StaticResource SettingsPath}"/>
             <Style TargetType="Image">
                 <Setter Property="Aspect" Value="AspectFit" />
+                <Setter Property="VerticalOptions" Value="FillAndExpand" />
+                <Setter Property="HorizontalOptions" Value="FillAndExpand" />
             </Style>
             <Style TargetType="ImageButton">
                 <Setter Property="Aspect" Value="AspectFit" />

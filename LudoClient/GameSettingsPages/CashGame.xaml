@@ -50,13 +50,13 @@
                             <Image Source="{x:Static constants:Skins.PlusBTN}" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End"/>
                         </Grid>
                     </local:Capsule>
-                    <StackLayout Orientation="Horizontal" Spacing="20" Margin="30,0,30,0"  HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
-                        <ImageButton Source="btn_join.png" Clicked="JoinRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
-                        <ImageButton Source="btn_create.png" Clicked="CreateRoom_Clicked" Margin="0,12,0,12" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand"/>
+                    <StackLayout Orientation="Horizontal" HeightRequest="40" Spacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <ImageButton Source="btn_join.png" Clicked="JoinRoom_Clicked" HorizontalOptions="EndAndExpand" VerticalOptions="FillAndExpand"/>
+                        <ImageButton Source="btn_create.png" Clicked="CreateRoom_Clicked" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand"/>
                     </StackLayout>
                 </StackLayout>
             </Grid>
         </local:Capsule>
-        <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"></local:BottomNavigation>
+        <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"/>
     </Grid >
 </ContentPage>

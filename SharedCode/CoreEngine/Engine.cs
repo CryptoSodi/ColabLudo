@@ -24,27 +24,27 @@ namespace SharedCode.CoreEngine
 
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
-        string playerColor;
 
         public EngineHelper EngineHelper = new EngineHelper();
-        public void TimerTimeout(String SeatName)
+
+
+        public async void TimerTimeoutAsync(String SeatName)
         {  
            switch(EngineHelper.gameState){
                 case "RollDice":
-                    SeatTurn(SeatName);
+                   await SeatTurn(SeatName);
                     break;
                 case "MovePiece":
                     Player player = EngineHelper.currentPlayer;
                     List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
                     
-                    _ = MovePieceAsync(moveablePieces[GlobalConstants.rnd.Next(0,moveablePieces.Count)].Name);
+                    await MovePieceAsync(moveablePieces[GlobalConstants.rnd.Next(0,moveablePieces.Count)].Name);
                     break;
             }
         }
         public Engine(string gameType, string playerCount, string playerColor)
         {
             gameRecorder = new GameRecorder(this);
-            this.playerColor = playerColor;
             board = new Dictionary<string, List<Piece>>
     {
         { "p0", new List<Piece>() },
@@ -158,7 +158,8 @@ namespace SharedCode.CoreEngine
 
             PlayState = "Active";
             if (EngineHelper.stopAnimate)
-                TimerTimeout(EngineHelper.currentPlayer.Color);
+                TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
+            //EngineHelper.rolls.Add(3);
         }
         public async Task<string> SeatTurn(string seatName)
         {
@@ -178,12 +179,11 @@ namespace SharedCode.CoreEngine
 
                 if (!EngineHelper.stopAnimate)
                     // Simulate server delay
-                    await Task.Delay(400);
+                    await Task.Delay(200);
                 else
                     await Task.Delay(30);
                 // Notify the end of the dice roll
                 StopDice(seatName, tempDice);
-
 
                 // Determine which pieces can move
                 foreach (var piece in player.Pieces)
@@ -352,7 +352,7 @@ namespace SharedCode.CoreEngine
                     //perform turn turn check
                     StartProgressAnimation(EngineHelper.currentPlayer.Color);
                 else
-                    TimerTimeout(EngineHelper.currentPlayer.Color);
+                    TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
             }
         }
         public void cleanGame()

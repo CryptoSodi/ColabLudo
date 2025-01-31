@@ -14,19 +14,19 @@
             </Image>
 
             <Grid Grid.Row="2" Grid.ColumnSpan="4" >
-                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="10,0,0,2" TextColor="Black"></Label>
+                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="10,0,0,2" TextColor="Black"></Label>
             </Grid>
 
             <Grid x:Name="ProgressBoxParentContainer" Margin="0,0,0,-5" BackgroundColor="#992B4195" Grid.Row="3" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >
-                <Grid x:Name="ProgressBoxParent" Grid.Column="1" Margin="0,0,20,0">
-                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111" CornerRadius="3" BackgroundColor="Transparent"/>
-                    <Label x:Name="ProgressBoxText" VerticalTextAlignment="Center" VerticalOptions="Center" Margin="5,0,0,0">Auto</Label>
-                </Grid>
-                <Image x:Name="CheckBox" Source="checkbox_red.png" Margin="-2" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                <Image x:Name="CheckBox" Source="checkbox_red.png" Margin="-2">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Tapped="AutoClicked" />
                     </Image.GestureRecognizers>
                 </Image>
+                <Grid x:Name="ProgressBoxParent" Grid.Column="1">
+                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111" CornerRadius="3" BackgroundColor="Transparent"/>
+                    <Label x:Name="ProgressBoxText" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="5,0,0,0">Auto</Label>
+                </Grid>
             </Grid>
         </Grid>
     </local:Capsule>

@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
+using System.Diagnostics;
 
 public partial class DashboardPage : ContentPage
 {
@@ -18,7 +19,9 @@ public partial class DashboardPage : ContentPage
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
-        Navigation.PushAsync(cashGame);
+        var stopwatch = Stopwatch.StartNew();
+        Navigation.PushAsync(cashGame).Wait(); // For testing only
+        Console.WriteLine($"Navigation took: {stopwatch.ElapsedMilliseconds}ms");
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {

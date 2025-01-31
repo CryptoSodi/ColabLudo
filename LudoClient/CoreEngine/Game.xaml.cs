@@ -296,7 +296,7 @@ public partial class Game : ContentPage
 
 
         foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
-            seat.TimerTimeout += Engine.TimerTimeout;
+            seat.TimerTimeout += Engine.TimerTimeoutAsync;
 
         //Event Handelers
         GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;

@@ -122,7 +122,6 @@ public partial class PlayerSeat : ContentView
         {
         
         }
-        AnimateDice();
         TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)

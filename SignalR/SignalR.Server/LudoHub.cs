@@ -58,6 +58,7 @@ namespace SignalR.Server
         }
         public async Task LeaveCloseLobby(int playerId, string roomCode)
         {
+            if(roomCode!=null)
             try
             {
                 // Check if the RoomCode already exists in the database

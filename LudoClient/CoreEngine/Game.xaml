@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="LudoClient.CoreEngine.Game"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="LudoClient.CoreEngine.Game"
              xmlns:local="clr-namespace:LudoClient.ControlView"
-             BackgroundImageSource="background_waitingroom.png"
              xmlns:controls="clr-namespace:LudoClient.ControlView"
              xmlns:simpleCore="clr-namespace:SimpleToolkit.Core;assembly=SimpleToolkit.Core"
-             xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView">
+             xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
+             xmlns:constants="clr-namespace:LudoClient.Constants"
+             BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
+             
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="Fill" RowDefinitions=".3*,.4*,.06*,1.6*,.4*,.2*">
-            <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="board_game.png" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+            <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
                     <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
-                        <local:Token x:Name="red1" piece="red_token_large.png"/>
-                        <local:Token x:Name="red2" piece="red_token_large.png"/>
-                        <local:Token x:Name="red3" piece="red_token_large.png"/>
-                        <local:Token x:Name="red4" piece="red_token_large.png"/>
-                        <local:Token x:Name="gre1" piece="green_token_large.png"/>
-                        <local:Token x:Name="gre2" piece="green_token_large.png"/>
-                        <local:Token x:Name="gre3" piece="green_token_large.png"/>
-                        <local:Token x:Name="gre4" piece="green_token_large.png"/>
-                        <local:Token x:Name="yel1" piece="yellow_token_large.png"/>
-                        <local:Token x:Name="yel2" piece="yellow_token_large.png"/>
-                        <local:Token x:Name="yel3" piece="yellow_token_large.png"/>
-                        <local:Token x:Name="yel4" piece="yellow_token_large.png"/>
-                        <local:Token x:Name="blu1" piece="blue_token_large.png"/>
-                        <local:Token x:Name="blu2" piece="blue_token_large.png"/>
-                        <local:Token x:Name="blu3" piece="blue_token_large.png"/>
-                        <local:Token x:Name="blu4" piece="blue_token_large.png"/>
+                        <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
+                        <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
+                        <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
+                        <local:Token x:Name="red4" piece="{x:Static constants:Skins.RedToken}"/>
+                        <local:Token x:Name="gre1" piece="{x:Static constants:Skins.GreenToken}"/>
+                        <local:Token x:Name="gre2" piece="{x:Static constants:Skins.GreenToken}"/>
+                        <local:Token x:Name="gre3" piece="{x:Static constants:Skins.GreenToken}"/>
+                        <local:Token x:Name="gre4" piece="{x:Static constants:Skins.GreenToken}"/>
+                        <local:Token x:Name="yel1" piece="{x:Static constants:Skins.YellowToken}"/>
+                        <local:Token x:Name="yel2" piece="{x:Static constants:Skins.YellowToken}"/>
+                        <local:Token x:Name="yel3" piece="{x:Static constants:Skins.YellowToken}"/>
+                        <local:Token x:Name="yel4" piece="{x:Static constants:Skins.YellowToken}"/>
+                        <local:Token x:Name="blu1" piece="{x:Static constants:Skins.BlueToken}"/>
+                        <local:Token x:Name="blu2" piece="{x:Static constants:Skins.BlueToken}"/>
+                        <local:Token x:Name="blu3" piece="{x:Static constants:Skins.BlueToken}"/>
+                        <local:Token x:Name="blu4" piece="{x:Static constants:Skins.BlueToken}"/>
                     </AbsoluteLayout>
                 </Grid>
             </local:Capsule>
