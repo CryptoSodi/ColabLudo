@@ -12,9 +12,9 @@
 
         <local:Capsule ImageSource="{x:Static constants:Skins.Settings_Background}" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
-                <StackLayout Grid.Column="1" Spacing="20">
+                <Grid Grid.Column="1" >
                     <local:TitleBar TitleImage="{x:Static constants:Skins.Title_Cash}" Title="" Margin="35,-100,35,0" VerticalOptions="Start" HorizontalOptions="Center"/>
-                    
+                    <StackLayout Margin="0,80,0,0" Spacing="{x:Static constants:Skins.StackLayoutSpacing}">                    
                     <Image Source="dash_select_players.png" VerticalOptions="Start" />
                     
                     <Grid ColumnSpacing="10" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".1*,.1*,.1*,.1*">
@@ -64,6 +64,7 @@
                         </Image>
                     </StackLayout>
                 </StackLayout>
+                </Grid>
             </Grid>
         </local:Capsule>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"/>

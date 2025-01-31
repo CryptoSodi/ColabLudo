@@ -16,9 +16,10 @@ namespace LudoClient.Constants
             [Description("Adatiya Skin")]
             Adatiya = 1
         }
-        public static SkinTypes CurrentSkin { get; set; } = SkinTypes.Adatiya;
+        public static SkinTypes CurrentSkin { get; set; } = SkinTypes.DefaultSkin;
         private static string CurrentSkinType => CurrentSkin == SkinTypes.DefaultSkin ? "" : "_a";
-
+        //Spacing for the stacklayout in the game setup pages
+        public static double StackLayoutSpacing => CurrentSkin == SkinTypes.DefaultSkin ? 15 : 20;
         //BACKGROUNDS
         public static string Background => $"background{CurrentSkinType}.png";
         public static string Settings_Background => $"game_setting_bg{CurrentSkinType}.png";
