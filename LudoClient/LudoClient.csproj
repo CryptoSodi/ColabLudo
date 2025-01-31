@@ -704,9 +704,6 @@
 	  <MauiXaml Update="Popups\AddCash.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="ControlView\BottomCV.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="ControlView\BottomNavigation.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
