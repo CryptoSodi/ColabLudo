@@ -11,20 +11,21 @@
             RowDefinitions="1.5*,6*,.6*" ColumnDefinitions=".1*,3*,.1*">
 
         <local:Capsule ImageSource="{x:Static constants:Skins.Settings_Background}" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <Grid Margin="0,0,0,-30" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
+            <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*">
                 
-                <StackLayout Grid.Column="1" Spacing="20">
+                <StackLayout Grid.Column="1" Spacing="20" >
                     <local:TitleBar Grid.Column="1" TitleImage="{x:Static constants:Skins.Title_PlayWithFriends}" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
+
+                    <Image Source="dash_select_players.png"  VerticalOptions="Start" />
                     
-                    <Image Source="dash_select_players.png"  Margin="0,20,0,0" HorizontalOptions="CenterAndExpand"/>
                     <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
                         <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
-                    
-                    <Image Source="dash_choose_bet.png" HorizontalOptions="CenterAndExpand" VerticalOptions="Start"/>
+
+                    <Image Source="dash_choose_bet.png" VerticalOptions="Start" />
                     
                     <Grid Margin="0,0,0,-50" HorizontalOptions="CenterAndExpand" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*" ColumnDefinitions=".01*,.2*,.01*">
                         
@@ -60,9 +61,12 @@
                             </Grid>
                         </local:Capsule>
                     </Grid>
-                        <local:Capsule x:Name="actionBtn" HeightRequest="40" ImageSource="{x:Static constants:Skins.CreateBTN}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                            <ImageButton HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        </local:Capsule>
+                    
+                    <Image x:Name="actionBtn" HeightRequest="40" Source="{x:Static constants:Skins.CreateBTN}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="CreateJoinTapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
                 </StackLayout>
             </Grid>
         </local:Capsule>

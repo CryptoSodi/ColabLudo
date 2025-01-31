@@ -33,15 +33,19 @@ public partial class PlayWithFriends : ContentPage
         {
             TabJoin.IsVisible = false;
             TabCreate.IsVisible = true;
-            actionBtn.ImageSource = Skins.CreateBTN; //"btn_create.png";
+            actionBtn.Source = Skins.CreateBTN; //"btn_create.png";
             //public static string CreateBTN => $"btn_create{CurrentSkinType}.png";
         }
         else
         {
             TabJoin.IsVisible = true;
             TabCreate.IsVisible = false;
-            actionBtn.ImageSource = Skins.JoinBTN; //"btn_join_large.png";
+            actionBtn.Source = Skins.JoinBTN; //"btn_join_large.png";
             //public static string JoinBTN => $"btn_join_large{CurrentSkinType}.png";
         }
+    }
+    private void CreateJoinTapped(object sender, EventArgs e)
+    {
+
     }
 }

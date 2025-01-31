@@ -12,8 +12,8 @@
             <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,3*,.2*" RowDefinitions="3*,1*">
                 <StackLayout Grid.Column="1" Spacing="20">
                     <local:TitleBar Grid.Column="1" TitleImage="{x:Static constants:Skins.Title_Practice}" Title="" Margin="35,-100,35,-20" VerticalOptions="Start" HorizontalOptions="Center"/>
-                    
-                    <Image Margin="0,20,0,0" Source="dash_select_players.png" HorizontalOptions="CenterAndExpand"/>
+
+                    <Image Source="dash_select_players.png" VerticalOptions="Start" />
                     
                     <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
                         <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
@@ -22,9 +22,11 @@
                         <local:ImageSwitch x:Name="Tab4" SwitchText="2V2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="ActivateTab" IsIndependent="False"/>
                     </Grid>
                     
-                    <local:Capsule HeightRequest="40" ImageSource="{x:Static constants:Skins.PlayBTN}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                        <ImageButton Clicked="JoinPracticeTapped" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    </local:Capsule>
+                    <Image HeightRequest="40" Source="{x:Static constants:Skins.PlayBTN}" HorizontalOptions="CenterAndExpand" VerticalOptions="EndAndExpand">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="JoinPracticeTapped" />
+                        </Image.GestureRecognizers>                        
+                    </Image>
                 </StackLayout>
             </Grid>
         </local:Capsule>
