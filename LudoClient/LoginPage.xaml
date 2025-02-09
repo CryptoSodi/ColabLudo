@@ -1,27 +1,38 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:LudoClient.ControlView"
-             mc:Ignorable="d"
-             x:Class="LudoClient.LoginPage"
-             BackgroundImageSource="background.png">
-    <!-- StackLayout for the content -->
-    <StackLayout VerticalOptions="CenterAndExpand" Spacing="15">
-        <!-- Your content here -->
-        <Image Source="alogo2.png" HeightRequest="155"/>
+<ContentPage
+    x:Class="LudoClient.LoginPage"
+    xmlns:local="clr-namespace:LudoClient.ControlView"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    BackgroundImageSource="background.png"
+    mc:Ignorable="d">
+    <!--  StackLayout for the content  -->
+    <StackLayout Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" >
+        <!--  Your content here  -->
+        <Image HeightRequest="185" Margin="0,0,0,80" Source="alogo2.png" HorizontalOptions="Center"/>
 
-        <local:EditField x:Name="NumberField" Title="Number" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        <local:EditField x:Name="OtpField"    Title="OTP" Margin="15,0,15,5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-        
+        <local:EditField x:Name="NumberField" Title="Number" Margin="15,15,15,0"  HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
+        <local:EditField x:Name="OtpField" IsVisible="False" Title="OTP" Margin="15,15,15,0" HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
 
-        <ImageButton x:Name="BtnLoginSingup" Clicked="LoginSingup_Clicked" Source="abtnlogin.png" Padding="0,10,0,0"/>
+        <StackLayout Spacing="15" HeightRequest="40" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="EndAndExpand" >
+        <Image x:Name="BtnLoginSingup" Source="abtnlogin.png" >
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="LoginSingup_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
+        <Image x:Name="BtnCancel" Source="abtnlogin.png" IsVisible="False">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="Cancel_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
+        </StackLayout>
+        <Image x:Name="GoogleLoginPanel" Margin="90,0,90,20" HeightRequest="60" Source="google_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="GooleSignup_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
 
-        <local:Capsule x:Name="GoogleLoginPanel" ImageSource="google_login.png" Padding="90,0,90,20" HorizontalOptions="CenterAndExpand" VerticalOptions="FillAndExpand">
-            <ImageButton Clicked="GooleSignup_Clicked" />
-        </local:Capsule>
-
-        <Label HorizontalOptions="Center" VerticalOptions="Center" Text="Version 1.0"/>
-
+        <Label HorizontalOptions="Center" Margin="0,0,0,100" Text="Version 1.0" VerticalOptions="Fill" />
     </StackLayout>
 </ContentPage>

@@ -4,24 +4,41 @@
              x:Class="LudoClient.ControlView.GameDetailList"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid>
-        <local:Capsule ImageSource="total_available_bal_bg.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
-            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".2*,.14*,.09*" Padding="2,0,10,0">
-                <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label x:Name="GameId" Text="" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Label x:Name="TotalPlayersLabel" Text="2" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Label x:Name="JoiningFeeLabel" Text="Entry Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
-                </StackLayout>
-                <StackLayout Margin="0,-12,0,-12" Spacing="5" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label Text="Prize" TextColor="Black" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+        <local:Capsule ImageSource="total_available_bal_bg_a.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="2*,1.2*,2*">
+                
+                <local:Capsule ImageSource="total_available_bal_title_a.png" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                    <Grid Margin="23,0,10,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <Label x:Name="GameId" Text="" FontSize="10" TextColor="Black" HorizontalOptions="Start"/>
+                        <Label x:Name="TotalPlayersLabel" Text="2 Players - 1 Winner" FontSize="10" TextColor="Black" HorizontalOptions="Center"/>
+                        <Label Text="Regular" FontSize="10" TextColor="Black" HorizontalOptions="End"/>
+                    </Grid>
+                </local:Capsule>
+
+                <StackLayout Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label Text="Prize Pool" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
                     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                        <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <Label x:Name="PrizeAmountLabel" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Label x:Name="PrizeAmountLabel" Text="1000$" />
                     </Grid>
                 </StackLayout>
-                <local:Capsule Margin="0,10,0,10" Grid.Column="2" ImageSource="btn_green.png"  HorizontalOptions="Center" VerticalOptions="Center">
-                    <ImageButton Clicked="Join_Tapped" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                </local:Capsule>
-                <Label x:Name="RoomCode" Text="" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+
+                <StackLayout Grid.Column="1" Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label Text="Time Left" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Image Source="timer_a.png" Margin="3" HeightRequest="12" HorizontalOptions="Start"/>
+                        <Label Text="11:22" Margin="0,0,3,0" HorizontalOptions="End"/>
+                    </Grid>
+                </StackLayout>
+
+                <StackLayout Grid.Column="2" Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label Text="Entry Fee" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
+                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                        <Label x:Name="JoiningFeeLabel" Text="1000$" />
+                    </Grid>
+                </StackLayout>
             </Grid>
         </local:Capsule>
     </Grid>

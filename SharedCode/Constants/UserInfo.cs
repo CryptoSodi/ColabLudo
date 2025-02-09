@@ -11,6 +11,8 @@
         public string Number { get; set; }
         public string Location { get; set; }
         public float Coins { get; set; }
+        public float PlayerCryptoCoins { get; set; }
+        public string Country { get; set; }
         public static UserInfo Instance
         {
             get

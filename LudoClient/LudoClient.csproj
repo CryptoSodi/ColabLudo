@@ -105,6 +105,9 @@
 	  <None Remove="Resources\Images\Adatya\btn_paste_a.png" />
 	  <None Remove="Resources\Images\Adatya\btn_play_large_a.png" />
 	  <None Remove="Resources\Images\Adatya\btn_plus_large_a.png" />
+	  <None Remove="Resources\Images\Adatya\Components\Tablets\timer_a.png" />
+	  <None Remove="Resources\Images\Adatya\Components\Tablets\total_available_bal_bg_a.png" />
+	  <None Remove="Resources\Images\Adatya\Components\Tablets\total_available_bal_title_a.png" />
 	  <None Remove="Resources\Images\Adatya\controlbox_a.png" />
 	  <None Remove="Resources\Images\Adatya\controlbox_small_a.png" />
 	  <None Remove="Resources\Images\Adatya\DailyBonus\background_waitingroom_a.png" />
@@ -389,6 +392,9 @@
 	  <MauiImage Include="Resources\Images\Adatya\btn_paste_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\btn_play_large_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\btn_plus_large_a.png" />
+	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\timer_a.png" />
+	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\total_available_bal_bg_a.png" />
+	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\total_available_bal_title_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\controlbox_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\controlbox_small_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\DailyBonus\background_waitingroom_a.png" />

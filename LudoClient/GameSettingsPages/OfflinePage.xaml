@@ -78,7 +78,7 @@
 
                     <Image Source="dash_select_players.png" VerticalOptions="Start" />
                     
-                    <Grid ColumnSpacing="14" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
+                    <Grid ColumnSpacing="14" HorizontalOptions="FillAndExpand" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
                         <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
