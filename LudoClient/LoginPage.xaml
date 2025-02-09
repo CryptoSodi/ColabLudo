@@ -15,7 +15,7 @@
         <local:EditField x:Name="NumberField" Title="Number" Margin="15,15,15,0"  HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
         <local:EditField x:Name="OtpField" IsVisible="False" Title="OTP" Margin="15,15,15,0" HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
 
-        <StackLayout Spacing="15" HeightRequest="40" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="EndAndExpand" >
+        <StackLayout Spacing="15" HeightRequest="40" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="StartAndExpand" >
         <Image x:Name="BtnLoginSingup" Source="abtnlogin.png" >
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="LoginSingup_Clicked" />

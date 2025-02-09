@@ -1,9 +1,12 @@
 using LudoClient.Models;
+using Microsoft.Maui.Controls;
 using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
+using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace LudoClient
 {
@@ -11,33 +14,66 @@ namespace LudoClient
     {
         const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
         const string userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
-        String countryCode = "";
-        String country = "";
+        OtpRequest otpReuest = null;
         public LoginPage()
         {
             InitializeComponent();
             GetCountryByIpAsync();
         }
-        private async Task AddPhoneNumberToQueue(string phoneNumber)
+        private async Task AddPhoneNumberToQueue()
         {
-            var content = new StringContent("{\"phoneNumber\": \"" + phoneNumber + "\"}", Encoding.UTF8, "application/json");
+            if (UserInfo.Instance.Id != null)
+                otpReuest.playerId = UserInfo.Instance.Id+"";
+            var content = new StringContent(JsonSerializer.Serialize(otpReuest), Encoding.UTF8, "application/json");
             try
             {
                 HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync("api/Otp", content);
                 string responseBody = await response.Content.ReadAsStringAsync();
-
-                Console.WriteLine($"Status Code: {response.StatusCode}");
-                Console.WriteLine("Response Body:");
-                Console.WriteLine(responseBody);
-                NumberField.IsVisible = false;
-                OtpField.IsVisible = true;
-                BtnCancel.IsVisible = true;
-                BtnLoginSingup.Source = "abtnsignup.png";
+                if (responseBody.Contains("OTP saved successfully.")) {
+                    Console.WriteLine($"Status Code: {response.StatusCode}");
+                    Console.WriteLine("Response Body:");
+                    Console.WriteLine(responseBody);
+                    NumberField.IsVisible = false;
+                    OtpField.IsVisible = true;
+                    BtnCancel.IsVisible = true;
+                    BtnLoginSingup.Source = "abtnsignup.png";
+                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Request failed: {ex.Message}");
             }
+        }
+       void SetupInstance(Dictionary<string, JsonElement>? result)
+        {
+
+            int playerId                = result["playerId"].GetInt32();
+            string PlayerName           = result["playerName"].GetString();
+            string Email                = result["email"].GetString();
+            string PlayerPicture        = result["playerPicture"].GetString();
+            string phoneNumber          = result["phoneNumber"].GetString();
+            double PlayerLudoCoins      = result["playerLudoCoins"].GetDouble();
+            double PlayerCryptoCoins    = result["playerCryptoCoins"].GetDouble();
+
+
+
+            if (otpReuest.country == "")
+                otpReuest.country = result["country"].GetString();
+
+            UserInfo.Instance.Id = playerId;
+            UserInfo.Instance.Number = phoneNumber;
+            UserInfo.Instance.Country = otpReuest.country;
+            UserInfo.Instance.CountryCode = otpReuest.countryCode;
+            UserInfo.Instance.RegionName = otpReuest.regionName;
+            UserInfo.Instance.City = otpReuest.city;
+            UserInfo.Instance.Lat = (float)otpReuest.lat;
+            UserInfo.Instance.Lon = (float)otpReuest.lon;
+
+            UserInfo.Instance.Name = PlayerName;
+            UserInfo.Instance.Email = Email;
+            UserInfo.Instance.PictureUrl = PlayerPicture;
+            UserInfo.Instance.Coins = (float)PlayerLudoCoins;
+            UserInfo.Instance.PlayerCryptoCoins = (float)PlayerCryptoCoins;
         }
         private async Task VerifyOtpAsync(string phoneNumber, string otp)
         {
@@ -47,26 +83,14 @@ namespace LudoClient
                 if (response.IsSuccessStatusCode)
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
+                    Dictionary<string, JsonElement>? result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
 
-                    var result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
+                    SetupInstance(result);
 
-                    string message              = result["message"].GetString();
-                    int playerId                = result["playerId"].GetInt32();
-                    string PlayerName           = result["playerName"].GetString();
-                    string Email                = result["email"].GetString();
-                    string PlayerPicture        = result["playerPicture"].GetString();
-
-                    if (country == "")
-                        country = result["country"].GetString();
-
-                    UserInfo.Instance.Id = playerId;
-                    UserInfo.Instance.Number = phoneNumber;
-                    UserInfo.Instance.Country = country;
-
-
+                    string message = result["message"].GetString();
                     if (message.Contains("success"))
                     {
-                        if (PlayerName == null)
+                        if (UserInfo.Instance.Name == null)
                         {
                             NumberField.IsVisible = false;
                             OtpField.IsVisible = false;
@@ -76,20 +100,8 @@ namespace LudoClient
                         }
                         else
                         {
-                            double PlayerLudoCoins = result["playerLudoCoins"].GetDouble();
-                            double PlayerCryptoCoins = result["playerCryptoCoins"].GetDouble();
-                            
-
-                            
-                            UserInfo.Instance.Name = PlayerName;
-                            UserInfo.Instance.Email = Email;
-                            UserInfo.Instance.PictureUrl = PlayerPicture;
-                            UserInfo.Instance.Coins = (float)PlayerLudoCoins;
-                            UserInfo.Instance.PlayerCryptoCoins = (float)PlayerCryptoCoins;
-
-                            //Save the user's login state
                             UserInfo.SaveState();
-                            //Hide Loader
+                            //Success Login
                             Application.Current.MainPage = new AppShell();
                         }
                     }
@@ -120,8 +132,9 @@ namespace LudoClient
             String OTP = OtpField.entryField.Text;
             if (BtnLoginSingup.Source is FileImageSource fileImageSource && fileImageSource.File == "abtnlogin.png")
             {
+                otpReuest.phoneNumber = Number;
                 //Perform Login
-                AddPhoneNumberToQueue(Number);
+                AddPhoneNumberToQueue();
             }
             else
             {
@@ -141,7 +154,7 @@ namespace LudoClient
             OtpField.IsVisible = false;
             BtnCancel.IsVisible = false;
             BtnLoginSingup.Source = "abtnlogin.png";
-            NumberField.entryField.Text = countryCode;
+            NumberField.entryField.Text = otpReuest.countryCode;
         }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
@@ -228,54 +241,39 @@ namespace LudoClient
         }
         private async void performLoginAsync()
         {
-            string responseBody = null;
             try
             {
                 if (GlobalConstants.online)
                 {
                     string url = "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl;
                     if (UserInfo.Instance.Id != null)
-                        url = url + "&playerId="+ UserInfo.Instance.Id;
+                        url = url + "&playerId=" + UserInfo.Instance.Id;
 
-                        HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync(url, null);
-                    string responseText = await response.Content.ReadAsStringAsync();
+                    HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync(url, null);
+                    string responseBody = await response.Content.ReadAsStringAsync();
 
+                    Dictionary<string, JsonElement>? result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
 
-                //        var request = new HttpRequestMessage(HttpMethod.Post, GlobalConstants.BaseUrl + "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl);
-                //    var response = await GlobalConstants.httpClient.SendAsync(request);
+                    SetupInstance(result);
+                    string message = result["message"].GetString();
+
                     response.EnsureSuccessStatusCode();
-                    responseBody = await response.Content.ReadAsStringAsync();
-                    if (response.IsSuccessStatusCode)
-                    {
-                        if (responseBody != null)
-                        {
-                            var options = new JsonSerializerOptions
-                            {
-                                PropertyNameCaseInsensitive = true
-                            };
-                            var result = JsonSerializer.Deserialize<VerificationResponse>(responseBody, options);
-                            //string message = result.Message;
-
-                            UserInfo.Instance.Id = result.PlayerId;
-                            //Save the user's login state
-                            UserInfo.SaveState();
-                            //Hide Loader
-                            Application.Current.MainPage = new AppShell();
-                        }
+                    if (message == "Player login successfully." || message == "Player updated successfully.")
+                    { 
+                     //Save the user's login state
+                        UserInfo.SaveState();
+                        //Hide Loader
+                        Application.Current.MainPage = new AppShell();
                     }
-                    else
+                    else if(message == "Player created successfully." || message == "Attach Phone.")
                     {
-                        var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-                        await DisplayAlert("Error", result["message"], "OK");
+                        NumberField.IsVisible = true;
+                        OtpField.IsVisible = false;
+                        BtnLoginSingup.IsVisible = true;
+                        BtnCancel.IsVisible = false;
+                        GoogleLoginPanel.IsVisible = false;
+                        await DisplayAlert("Success", "Please Link a your phone number.", "OK");                        
                     }
-                }
-                else
-                {
-                    //UserInfo.Instance.Id = 1;
-                    //Save the user's login state
-                    //UserInfo.SaveState();
-                    //Hide Loader
-                    //Application.Current.MainPage = new AppShell();
                 }
             }
             catch (Exception ex)
@@ -283,14 +281,18 @@ namespace LudoClient
                 await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
-        public class IpLocationResponse
+        public class OtpRequest
         {
+            public string playerId { get; set; }
+            public string phoneNumber { get; set; }
+            public string countryCode { get; set; }
             public string country { get; set; }
             public string regionName { get; set; }
             public string city { get; set; }
             public double lat { get; set; }
             public double lon { get; set; }
         }
+
         public async void GetCountryByIpAsync()
         {
             try
@@ -300,10 +302,10 @@ namespace LudoClient
                 string url = "http://ip-api.com/json/?token=0cf62c767a1ab9";
 
                 var response = await client.GetStringAsync(url);
-                var result = JsonSerializer.Deserialize<IpLocationResponse>(response);
-                countryCode = result?.country == "Pakistan" ? "+92" : "+91";
-                NumberField.entryField.Text = countryCode;
-                country =  result?.country == "Pakistan"?"+92":"+91";
+                otpReuest = JsonSerializer.Deserialize<OtpRequest>(response);
+                otpReuest.countryCode = otpReuest?.country == "Pakistan" ? "+92" : "+91";
+                NumberField.entryField.Text = otpReuest.countryCode;
+                otpReuest.country = otpReuest?.country;
             }
             catch (Exception ex)
             {

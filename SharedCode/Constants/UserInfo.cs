@@ -13,6 +13,12 @@
         public float Coins { get; set; }
         public float PlayerCryptoCoins { get; set; }
         public string Country { get; set; }
+        public string CountryCode { get; set; }
+        public string RegionName { get; set; }
+        public string City { get; set; }
+        public float Lat { get; set; }
+        public float Lon { get; set; }
+
         public static UserInfo Instance
         {
             get
@@ -52,7 +58,7 @@
         public static void LoadState()
         {
             var instance = Instance;
-            instance.Id = Preferences.Get(nameof(Id), 0);
+            instance.Id = Preferences.Get(nameof(Id), -1);
             instance.Email = Preferences.Get(nameof(Email), string.Empty);
             instance.Name = Preferences.Get(nameof(Name), string.Empty);
             instance.PictureUrl = Preferences.Get(nameof(PictureUrl), string.Empty);
