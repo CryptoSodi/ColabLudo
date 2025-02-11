@@ -13,6 +13,8 @@ namespace LudoClient.ControlView
     {
         public int gameId = 0;
         public string RoomCode = "";
+        public string gameType = "";
+        public int betAmount;
         public GameDetailList()
         {
             InitializeComponent();
@@ -21,6 +23,8 @@ namespace LudoClient.ControlView
         {
             decimal priceamount = 0;
             this.gameId = gameId;
+            this.gameType = gameType;
+            this.betAmount = (int)betAmount;
             // Set the text of the labels
             GameId.Text = "Game : "+ gameId.ToString();
             
@@ -28,11 +32,11 @@ namespace LudoClient.ControlView
             RoomCode = roomCode;
             
             if(gameType == "22")
-                TotalPlayersLabel.Text = "2 vs 2 Players - 2 Winners";
+                TotalPlayersLabel.Text = "2 vs 2 : 4 Players - 2 Winners";
             else if (gameType == "2")
-                TotalPlayersLabel.Text = $"1 vs {gameType} Player - 1 Winners";
+                TotalPlayersLabel.Text = $"1 vs 1 : 2 Players - 1 Winner";
             else
-                TotalPlayersLabel.Text = $"1 vs {gameType} Players - 1 Winners";
+                TotalPlayersLabel.Text = $"1 vs {gameType} Players - 1 Winner";
             
             if (gameType == "22")
                 priceamount = 2 * betAmount;
@@ -45,7 +49,7 @@ namespace LudoClient.ControlView
         {
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
-            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, TotalPlayersLabel.Text.Replace("Total Players : ", ""), int.Parse(JoiningFeeLabel.Text.Replace("Entry Fee : ", "").Replace(".00", "")), RoomCode);
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, betAmount, RoomCode);
         }
     }
 }

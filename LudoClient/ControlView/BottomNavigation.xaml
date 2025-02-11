@@ -4,18 +4,21 @@
              xmlns:local ="clr-namespace:LudoClient.ControlView"
              x:Class="LudoClient.ControlView.BottomNavigation">
     <Grid BackgroundColor="#33344F33" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <local:Capsule ImageSource="footer.png" VerticalOptions="End" HorizontalOptions="FillAndExpand">
+        <local:Capsule ImageSource="footer.png" VerticalOptions="End" HorizontalOptions="Fill">
             <Grid VerticalOptions="End" HorizontalOptions="FillAndExpand" ColumnDefinitions=".3*,1.2*,.6*">
                 <Grid>
-                    <ImageButton Source="btn_back.png" Clicked="OnBackButtonClicked" Margin="0,0,0,0" HorizontalOptions="Start" VerticalOptions="Center"/>
+                    <Image Source="btn_back.png" HorizontalOptions="Start" VerticalOptions="Center">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBackButtonClicked" />
+                        </Image.GestureRecognizers>
+                    </Image>
                 </Grid>
-                <StackLayout Grid.Column="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                    <Grid HorizontalOptions="EndAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions="1*,1*">
-                        
+                <Grid Grid.Column="2" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <Grid HorizontalOptions="End" VerticalOptions="Center" ColumnDefinitions="1*,1*">
                         <local:ImageSwitch x:Name="MusicSwitch" SwitchOn="btn_music.png" SwitchOff="btn_music_off.png" Grid.Column="0"/>
                         <local:ImageSwitch x:Name="SoundSwitch" SwitchOn="btn_sound.png" SwitchOff="btn_sound_off.png" Grid.Column="1"/>
                     </Grid>
-                </StackLayout>
+                </Grid>
             </Grid>
         </local:Capsule>
     </Grid>

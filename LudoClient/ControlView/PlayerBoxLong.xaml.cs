@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Views;
 using LudoClient.Popups;
+using SharedCode.Constants;
 
 namespace LudoClient.ControlView;
 
@@ -20,6 +21,8 @@ public partial class PlayerBoxLong : ContentView
         var control = (PlayerBoxLong)bindable;
         control.PlayerImageItem.Source = (string)newValue;
     });
+    public Image playerImageItem;
+
     public string PlayerImage
     {
         get => GetValue(PlayerImageProperty) as string;
@@ -28,6 +31,7 @@ public partial class PlayerBoxLong : ContentView
     public PlayerBoxLong()
     {
         InitializeComponent();
+        this.playerImageItem = PlayerImageItem;
     }
     private void EditInfoClicked(object sender, EventArgs e)
     {

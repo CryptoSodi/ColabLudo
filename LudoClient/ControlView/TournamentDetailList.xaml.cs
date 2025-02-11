@@ -21,8 +21,8 @@ namespace LudoClient.ControlView
             TournamentNameLabel.Text = tournamentName;
             JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}$";
             PrizeAmountLabel.Text = $"{prizeAmount}$";
-            StartDateLabel.Text = $" {startDate}";
-            EndDateLabel.Text = $" {endDate}";
+            StartDateLabel.Text = $"Start Date : {startDate}";
+            EndDateLabel.Text = $"End Date   : {endDate}";
             // Parse the end date
             if (DateTime.TryParse(endDate, out DateTime parsedEndDate))
             {
@@ -93,8 +93,8 @@ namespace LudoClient.ControlView
             }
             else
             {
-                SheetDirection.Source = "arr_up.png";
                 ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
+                SheetDirection.Source = "arr_up.png";
             }
         }
         private async void Join_Clicked(object sender, EventArgs e)

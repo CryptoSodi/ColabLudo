@@ -7,11 +7,11 @@ public partial class ProfileInfo : BasePopup
     public ProfileInfo()
     {
         InitializeComponent();
-        player.PlayerImage = UserInfo.Instance.PictureUrl;
+        player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
         player.PlayerName = UserInfo.Instance.Name;
         Email.Text = UserInfo.Instance.Email;
-        Number.Text = UserInfo.Instance.Number;
-        Location.Text = UserInfo.Instance.Location;
+        Number.Text = UserInfo.Instance.PhoneNumber;
+        Location.Text = UserInfo.Instance.City;
         Coins.Text = UserInfo.Instance.Coins + "";
     }
 }

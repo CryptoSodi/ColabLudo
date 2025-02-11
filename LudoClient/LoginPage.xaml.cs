@@ -61,7 +61,7 @@ namespace LudoClient
                 otpReuest.country = result["country"].GetString();
 
             UserInfo.Instance.Id = playerId;
-            UserInfo.Instance.Number = phoneNumber;
+            UserInfo.Instance.PhoneNumber = phoneNumber;
             UserInfo.Instance.Country = otpReuest.country;
             UserInfo.Instance.CountryCode = otpReuest.countryCode;
             UserInfo.Instance.RegionName = otpReuest.regionName;
@@ -159,9 +159,9 @@ namespace LudoClient
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
 #if WINDOWS
-            UserInfo.Instance.Email = "tassaduq009@gmail.com";
-            UserInfo.Instance.Name = "Tassaduq";
-            UserInfo.Instance.PictureUrl = "https://lh3.googleusercontent.com/a-/ACNPEu-fBtAhrAaifPGPkP7Z-A9PVY4NxClqxCz50VhJAg=s96-c";
+            UserInfo.Instance.Email = "Sodi@gmail.com";
+            UserInfo.Instance.Name = "Sodi";
+            UserInfo.Instance.PictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";
             performLoginAsync();
 #endif
 #if ANDROID

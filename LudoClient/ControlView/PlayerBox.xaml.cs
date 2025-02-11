@@ -1,5 +1,4 @@
 namespace LudoClient.ControlView;
-
 public partial class PlayerBox : ContentView
 {
     public BindableProperty PlayerNameProperty = BindableProperty.Create(nameof(PlayerName), typeof(string), typeof(PlayerBox), propertyChanged: (bindable, oldValue, newValue) =>

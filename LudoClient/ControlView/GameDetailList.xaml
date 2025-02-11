@@ -4,10 +4,10 @@
              x:Class="LudoClient.ControlView.GameDetailList"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid>
-        <local:Capsule ImageSource="total_available_bal_bg_a.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+        <local:Capsule ImageSource="total_available_bal_bg_a.png" HorizontalOptions="Fill" VerticalOptions="Start">
             <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="2*,1.2*,2*">
-                
-                <local:Capsule ImageSource="total_available_bal_title_a.png" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+
+                <local:Capsule ImageSource="total_available_bal_title_a.png" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Start">
                     <Grid Margin="23,0,10,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Label x:Name="GameId" Text="" FontSize="10" TextColor="Black" HorizontalOptions="Start"/>
                         <Label x:Name="TotalPlayersLabel" Text="2 Players - 1 Winner" FontSize="10" TextColor="Black" HorizontalOptions="Center"/>
@@ -15,30 +15,27 @@
                     </Grid>
                 </local:Capsule>
 
-                <StackLayout Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label Text="Prize Pool" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="Prize Pool" TextColor="White" VerticalOptions="CenterAndExpand"/>
+                    <Grid HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
+                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                         <Label x:Name="PrizeAmountLabel" Text="1000$" />
                     </Grid>
                 </StackLayout>
 
-                <StackLayout Grid.Column="1" Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label Text="Time Left" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                        <Image Source="timer_a.png" Margin="3" HeightRequest="12" HorizontalOptions="Start"/>
-                        <Label Text="11:22" Margin="0,0,3,0" HorizontalOptions="End"/>
-                    </Grid>
-                </StackLayout>
-
-                <StackLayout Grid.Column="2" Spacing="5" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label Text="Entry Fee" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+                <StackLayout Grid.Column="1" Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="Entry Fee" TextColor="White" VerticalOptions="CenterAndExpand"/>
+                    <Grid HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
+                        <BoxView CornerRadius="6" BackgroundColor="DarkSlateBlue" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                         <Label x:Name="JoiningFeeLabel" Text="1000$" />
                     </Grid>
                 </StackLayout>
+
+                <Image Grid.Column="2" Margin="0,11,0,0" Source="btn_join.png" HeightRequest="30">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="Join_Tapped" />
+                    </Image.GestureRecognizers>
+                </Image>
             </Grid>
         </local:Capsule>
     </Grid>

@@ -241,6 +241,7 @@
 	  <None Remove="Resources\Images\GameSettings\round_offline.png" />
 	  <None Remove="Resources\Images\GameSettings\round_practice.png" />
 	  <None Remove="Resources\Images\GameSettings\round_tournaments.png" />
+	  <None Remove="Resources\Images\GameSettings\tournament_btn.png" />
 	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg1.png" />
 	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg2.png" />
 	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg3.png" />
@@ -463,8 +464,8 @@
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
 	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
+	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg1.png" />
-	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg2.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg3.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\yellow_token.png" />
 	  <MauiImage Include="Resources\Images\Game\blue_container.png" />

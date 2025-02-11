@@ -8,6 +8,7 @@ public partial class HeaderCV : ContentView
     public HeaderCV()
     {
         InitializeComponent();
+
         player.PlayerImage = UserInfo.Instance.PictureUrl;
         Coins.Text = UserInfo.Instance.Coins+"";
     }

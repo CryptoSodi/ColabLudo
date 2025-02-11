@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentView x:Class="LudoClient.ControlView.PlayerBoxLong"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:LudoClient.ControlView"
-             x:Class="LudoClient.ControlView.PlayerBoxLong">
+             xmlns:local="clr-namespace:LudoClient.ControlView">
 
     <Grid RowDefinitions="1*" ColumnDefinitions=".3*,1*">
-        
-        <Image x:Name="PlayerImageItem" VerticalOptions="End" HorizontalOptions="End"/>
-        <Image Source="profile_user.png" VerticalOptions="End" HorizontalOptions="End"/>
-        <Image Source="ic_camera.png" VerticalOptions="End" HorizontalOptions="End" WidthRequest="25" HeightRequest="25"/>
-
+        <local:Capsule ImageSource="profile_user.png" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid>
+                <Image x:Name="PlayerImageItem" Margin="2" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                <Image Source="ic_camera.png" Margin="-1" VerticalOptions="End" HorizontalOptions="End" WidthRequest="25" HeightRequest="25"/>
+            </Grid>
+        </local:Capsule>
         <Grid RowDefinitions="1*,1*" ColumnDefinitions="1*" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
 
-            <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand">
+            <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="Fill">
                 <Label Margin="8,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
                 <Image Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>
                 <Grid Margin="2" VerticalOptions="Center" HorizontalOptions="End">
