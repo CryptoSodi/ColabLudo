@@ -13,7 +13,8 @@ namespace SignalR.Server
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
-        public static Engine eng;// = new Engine("4", "4", "red");
+        //public static Engine eng;// = new Engine("4", "4", "red");
+        private static ConcurrentDictionary<string, Engine> eng = new();
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         public override async Task OnDisconnectedAsync(Exception? exception)
@@ -43,11 +44,11 @@ namespace SignalR.Server
             //  Clients.All.SendAsync("addMessage", name, GameID);
             if (commandtype == "MovePiece")
             {
-                eng.MovePieceAsync(message);
+                //eng.MovePieceAsync(message);
             }
             else
             {
-                return eng.SeatTurn(message).GetAwaiter().GetResult();
+                return "";// eng.SeatTurn(message).GetAwaiter().GetResult();
             }
             return "0";
         }
@@ -193,6 +194,8 @@ namespace SignalR.Server
                 existingGame.State = "Playing";
                  _context.Games.Update(existingGame);
                 await _context.SaveChangesAsync();
+
+                eng.TryAdd(existingGame.RoomCode,new Engine(existingGame.Type, seats.Count + "", seats[0].PlayerColor));
             }
         }
         public async Task<string> Ready(string roomCode)

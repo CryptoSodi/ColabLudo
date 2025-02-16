@@ -37,19 +37,22 @@ namespace LudoClient.Constants
                 ? Application.Current.MainPage.Height
                 : DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
 
-
             ForceLayoutPass(cashGame);
             ForceLayoutPass(offlinePage);
             ForceLayoutPass(playWithFriends);
             ForceLayoutPass(practicePage);
             ForceLayoutPass(friendsPage);
 
-            ForceLayoutPass((VisualElement)(object)editInfo);
-            ForceLayoutPass((VisualElement)(object)settings);
-            ForceLayoutPass((VisualElement)(object)helpDesk);
-            ForceLayoutPass((VisualElement)(object)dailyBonus);
-            ForceLayoutPass((VisualElement)(object)profileInfo);
-            
+            if (profileInfo is BasePopup bpProfile && bpProfile.PopupContentContainer is VisualElement veProfile)
+                ForceLayoutPass(veProfile);
+            if (settings is BasePopup bpsettingsProfile && bpsettingsProfile.PopupContentContainer is VisualElement vesettingsProfile)
+                ForceLayoutPass(vesettingsProfile);
+            if (editInfo is BasePopup bpeditInfoProfile && bpeditInfoProfile.PopupContentContainer is VisualElement veeditInfoProfile)
+                ForceLayoutPass(veeditInfoProfile);
+            if (helpDesk is BasePopup bphelpDeskProfile && bphelpDeskProfile.PopupContentContainer is VisualElement vehelpDeskProfile)
+                ForceLayoutPass(vehelpDeskProfile);
+            if (dailyBonus is BasePopup bpdailyBonusProfile && bpdailyBonusProfile.PopupContentContainer is VisualElement vedailyBonusProfile)
+                ForceLayoutPass(vedailyBonusProfile);
         }
         public static void ForceLayoutPass(VisualElement page)
         {

@@ -1,8 +1,10 @@
 ﻿
+using LudoClient.Constants;
 using LudoClient.CoreEngine;
 using SharedCode.Constants;
 using SharedCode.Network;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 
 namespace LudoClient
 {
@@ -63,7 +65,20 @@ namespace LudoClient
                 var GameType = args.GameType;
                 var seatsData = args.seatsData;
 
-                MainPage = new Game(GameType, seatsData);
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new Game(GameType, seatsData));
+                //MainPage = new Game(GameType, seatsData);
+
+                // Retrieve a copy of the current navigation stack.
+                var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+                // Ensure there is at least one page to remove (i.e. the page before the current one).
+                if (existingPages.Count > 1)
+                {
+                    // Remove the page immediately below the current (top) page.
+                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+                    existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+                }
             });
         }
         private void OnRoomJoined(object? sender, (string GameType, int GameCost, string RoomCode) args)
@@ -74,7 +89,17 @@ namespace LudoClient
                 var gameCost = args.GameCost;
                 var roomCode = args.RoomCode;
                 GlobalConstants.RoomCode = roomCode;
-                MainPage = new GameRoom(gameType, gameCost, roomCode);
+
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameType, gameCost, roomCode));
+                // Retrieve a copy of the current navigation stack.
+                var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+                // Ensure there is at least one page to remove (i.e. the page before the current one).
+                if (existingPages.Count > 1)
+                {
+                    // Remove the page immediately below the current (top) page.
+                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+                }
             });
         }
 #if WINDOWS

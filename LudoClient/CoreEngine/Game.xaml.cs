@@ -6,6 +6,7 @@ using SharedCode.CoreEngine;
 using SharedCode.Network;
 using SimpleToolkit.Core;
 using System.Security.AccessControl;
+using LudoClient.Constants;
 namespace LudoClient.CoreEngine;
 
 public class PlayerDto
@@ -58,7 +59,6 @@ public partial class Game : ContentPage
             
         }
     }
-
     private void Build(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
@@ -328,9 +328,6 @@ public partial class Game : ContentPage
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
     }
-
-    
-
     public void Pupulate(int rotation)
     {
         for (int i = 0; i < Engine.EngineHelper.players.Count; i++)
@@ -485,7 +482,7 @@ public partial class Game : ContentPage
         //show pop up for Exit to lobby
         // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
        // GameRecorder.SaveGameHistory();
-        Engine.cleanGame();
-        Application.Current.MainPage = new AppShell();
+        Engine.cleanGame(); 
+        ClientGlobalConstants.dashBoard.Navigation.PopAsync();
     }
 }

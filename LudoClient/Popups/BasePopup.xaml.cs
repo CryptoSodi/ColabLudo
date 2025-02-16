@@ -4,6 +4,7 @@ using LudoClient.ControlView;
 namespace LudoClient.Popups;
 public partial class BasePopup : Popup
 {
+    public ContentView PopupContentContainer => ContentContainer;
     public BasePopup()
 	{
 		InitializeComponent();

@@ -11,10 +11,15 @@ public partial class DashboardPage : ContentPage
     
     public DashboardPage()
     {
-        InitializeComponent();
+        InitializeComponent();        
+        ClientGlobalConstants.dashBoard = this;        
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Delay the heavy initialization to allow the page to render first.
+        await Task.Delay(100); // Adjust delay as needed
         ClientGlobalConstants.Init();
-        ClientGlobalConstants.dashBoard = this;
-        
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
@@ -48,13 +53,6 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-       // dailyBonus.IsVisible = !dailyBonus.IsVisible;
-        // profileInfo.IsVisible = !profileInfo.IsVisible;
-        // Navigation.PushAsync(new Settings());
-        this.ShowPopup(ClientGlobalConstants.dailyBonus());
-        //this.ShowPopup(new EditInfo());
-        //this.ShowPopup(new PanCardVerfication());
-        //this.ShowPopup(new Results());
-        //this.ShowPopup(new AddCash());
+        this.ShowPopup(ClientGlobalConstants.dailyBonus);
     }
 }
