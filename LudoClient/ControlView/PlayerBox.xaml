@@ -5,10 +5,10 @@
              x:Class="LudoClient.ControlView.PlayerBox">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".8*,.3*">
         <Grid>
-            <local:Player Grid.Column="1" x:Name="PlayerImageItem" VerticalOptions="Center" HorizontalOptions="Center"/>
+            <local:Player x:Name="PlayerImageItem" VerticalOptions="Center" HorizontalOptions="Center"/>
         </Grid>
         <Grid Grid.Row="1">
-            <BoxView CornerRadius="6" BackgroundColor="#91111111" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
+            <BoxView CornerRadius="6" BackgroundColor="#91111111" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             <Label x:Name="PlayerNameText"/>
         </Grid>
     </Grid>

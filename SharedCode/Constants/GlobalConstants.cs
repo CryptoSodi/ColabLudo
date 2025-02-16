@@ -16,6 +16,7 @@ namespace SharedCode.Constants
         public static Client MatchMaker;
         public static bool online = true;
         public static Random rnd = new Random();
+
         static GlobalConstants()
         {
 #if WINDOWS

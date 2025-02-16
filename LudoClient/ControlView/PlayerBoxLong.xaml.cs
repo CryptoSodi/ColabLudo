@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using LudoClient.Constants;
 using LudoClient.Popups;
 using SharedCode.Constants;
 
@@ -35,8 +36,9 @@ public partial class PlayerBoxLong : ContentView
     }
     private void EditInfoClicked(object sender, EventArgs e)
     {
+
+        Application.Current.MainPage.ShowPopup(ClientGlobalConstants.editInfo);
         // Handle edit info button click
-        Application.Current.MainPage.ShowPopup(new EditInfo());
         // Close the popup when the background is tapped
         //Close();
     }

@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using LudoClient.Constants;
 using SharedCode.Constants;
 namespace LudoClient.Popups;
 public partial class Settings : BasePopup
@@ -13,9 +14,9 @@ public partial class Settings : BasePopup
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {
-        Application.Current.MainPage.ShowPopup(new HelpDesk());
-        // Close the popup when the background is tapped
         Close();
+        Application.Current.MainPage.ShowPopup(ClientGlobalConstants.helpDesk);
+        // Close the popup when the background is tapped
     }
     private void SignOutTapped(object sender, EventArgs e)
     {

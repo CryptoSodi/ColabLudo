@@ -5,8 +5,11 @@
              x:Class="LudoClient.HeaderCV">
     <local:Capsule ImageSource="hdrbgsharedassets.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
         <Grid ColumnDefinitions=".17*,.6*,.1*">
-            <local:Player x:Name="player" Margin="5,5,-10,-20" VerticalOptions="Start" HorizontalOptions="Start"/>
-            <Grid Margin="0,0,10,-20" VerticalOptions="Fill" HorizontalOptions="Fill">
+
+            <Image x:Name="PlayerImageItem" Margin="7,7,-8,-18" VerticalOptions="Start" HorizontalOptions="Start"/>
+            <Image Source="profile_user.png" Margin="5,5,-10,-20" VerticalOptions="Start" HorizontalOptions="Start"/>
+
+            <Grid Margin="0,0,-20,-35" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <Grid.GestureRecognizers VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                     <TapGestureRecognizer Tapped="OnPlayerTapped"/>
                 </Grid.GestureRecognizers>
