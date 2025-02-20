@@ -5,18 +5,25 @@ using Microsoft.EntityFrameworkCore;
 using SharedCode.CoreEngine;
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using Newtonsoft.Json.Linq;
 
 namespace SignalR.Server
 {
-    public record User(int playerId, string Name, string Room);
+    public record User(string ConnectionId, int playerId, string Name, string Room);
     public record Message(string User, string Text);
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
         //public static Engine eng;// = new Engine("4", "4", "red");
-        private static ConcurrentDictionary<string, Engine> eng = new();
         private static ConcurrentDictionary<string, User> _users = new();
         private static ConcurrentDictionary<string, GameRoom> _rooms = new();
+        private static ConcurrentDictionary<string, GameRoom> _engine = new();
+        public LudoHub(LudoDbContext context)
+        {
+            _context = context;
+        }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             if (_users.TryGetValue(Context.ConnectionId, out var user))
@@ -33,22 +40,45 @@ namespace SignalR.Server
             Console.WriteLine($"User connected: {connectionId}");
             await base.OnConnectedAsync();
         }
-
-        public LudoHub(LudoDbContext context)
+        public string Send(string name, string SeatColor, string commandtype)
         {
-            _context = context;
-        }
-        public string Send(string name, string message, string commandtype)
-        {
-            Console.WriteLine($"{name}: {message}:{commandtype}");
+            Console.WriteLine($"{name}: {SeatColor}:{commandtype}");
             //  Clients.All.SendAsync("addMessage", name, GameID);
+            if (!_users.TryGetValue(Context.ConnectionId, out User user))
+            {
+                Console.WriteLine("User not found for connection: " + Context.ConnectionId);
+                return "Error: User not found.";
+            }
+            // Now use the user's Room property to get the GameRoom.
+            if (!_engine.TryGetValue(user.Room, out GameRoom gameRoom))
+            {
+                Console.WriteLine($"GameRoom not found for room: {user.Room}");
+                return "Error: Room not found.";
+            }
+            // For logging purposes, show which room this command is coming from.
+            Console.WriteLine($"{name} (room {user.Room}): {SeatColor}:{commandtype}");
+            // Ensure the game room's engine is initialized.
+            if (gameRoom.engine == null)
+            {
+                Console.WriteLine($"Engine not initialized for room: {user.Room}");
+                return "Error: Engine not initialized.";
+            }
+            // Process command based on the type.
             if (commandtype == "MovePiece")
             {
-                //eng.MovePieceAsync(message);
+                // Asynchronously process the move (fire-and-forget or await as needed).
+                // For demonstration, we're not awaiting the call.
+                String piece = gameRoom.engine.MovePieceAsync(SeatColor, false).GetAwaiter().GetResult();
+                return piece;
             }
-            else
+            else if (commandtype == "DiceRoll")
             {
-                return "";// eng.SeatTurn(message).GetAwaiter().GetResult();
+                // For other command types, for example, SeatTurn:
+                // If SeatTurn returns a string, you can wait for it.
+                String diveValue = gameRoom.engine.SeatTurn(SeatColor, "", "", false).GetAwaiter().GetResult();
+                  SendMessageToRoom(gameRoom, Context.ConnectionId, SeatColor, diveValue.Split(",")[0], diveValue.Split(",")[1], false);
+                //Sendtoothers(user.Room, diveValue);
+                return diveValue;
             }
             return "0";
         }
@@ -194,8 +224,9 @@ namespace SignalR.Server
                 existingGame.State = "Playing";
                  _context.Games.Update(existingGame);
                 await _context.SaveChangesAsync();
-
-                eng.TryAdd(existingGame.RoomCode,new Engine(existingGame.Type, seats.Count + "", seats[0].PlayerColor));
+                _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
+                    gameRoom.InitializeEngine(seats[0].PlayerColor);
+                _engine.TryAdd(existingGame.RoomCode, gameRoom);
             }
         }
         public async Task<string> Ready(string roomCode)
@@ -220,9 +251,9 @@ namespace SignalR.Server
             gameType = existingGame.Type;
 
             // Create or retrieve the room
-            var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(roomCode, gameType, gameCost));
+            var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(Clients, _context, roomCode, gameType, gameCost));
             // Add the user to the users dictionary
-            var user = new User(playerId, userName, roomCode);
+            var user = new User(Context.ConnectionId, playerId, userName, roomCode);
             _users.TryAdd(Context.ConnectionId, user);
             // Add the user to the room's user list
             room.Users.Add(user);
@@ -263,6 +294,15 @@ namespace SignalR.Server
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
+        public async Task SendMessageToRoom(GameRoom gameRoom, string connectionId, string SeatColor, string messageType, string value, bool sendToSelf = true)
+        {
+            var recipientConnectionIds = gameRoom.Users
+                .Where(u => sendToSelf || u.ConnectionId != connectionId)
+                .Select(u => u.ConnectionId)
+                .ToList();
+            foreach(String ConnectionId in recipientConnectionIds)
+                await Clients.Client(ConnectionId).SendAsync("DiceRoll", SeatColor, messageType, value);
+        }
         // Generate a unique 10-digit room ID
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
@@ -274,14 +314,9 @@ namespace SignalR.Server
             }
             while (_rooms.ContainsKey(roomId)); // Ensure the ID is unique
             // Store the generated room ID with the game type in the games dictionary
-            _rooms.TryAdd(roomId, new GameRoom(roomId, gameType, gameCost));
+            _rooms.TryAdd(roomId, new GameRoom(Clients, _context, roomId, gameType, gameCost));
             //"@Haris ADD this to the database games table"
             return roomId;
-        }
-        public async Task SendMessageToRoom(string roomName, string content)
-        {
-            var message = new Message(_users[Context.ConnectionId].Name, content);
-            await Clients.Group(roomName).SendAsync("ReceiveMessage", message);
         }
         //Logic for 4 players game in tournament road to final
         static void RunTournament(List<string> players)

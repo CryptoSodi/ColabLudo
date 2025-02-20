@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui.Views;
+using LudoClient.CoreEngine;
 using LudoClient.Popups;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,8 @@ namespace LudoClient.Constants
         public static HelpDesk helpDesk = new HelpDesk();
         public static DailyBonus dailyBonus = new DailyBonus();
         public static ProfileInfo profileInfo = new ProfileInfo();
+        internal static Game game;
+
         public static void Init()
         {
             // Optionally, force a layout pass to "warm up" each page.

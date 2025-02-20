@@ -24,7 +24,7 @@ namespace SharedCode.Constants
 #elif ANDROID
                 Debug = true;
 #endif
-                Url = Debug ? "http://192.168.1.5" : "https://localhost";
+                Url = Debug ? "http://192.168.1.13" : "https://localhost";
 #if WINDOWS
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)

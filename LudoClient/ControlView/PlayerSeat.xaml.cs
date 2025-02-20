@@ -8,10 +8,10 @@ public partial class PlayerSeat : ContentView
     public EngineHelper EngineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
 
-    public delegate void DiceClickedHandler(string SeatName);
+    public delegate void DiceClickedHandler(string SeatName, String DiceValue, String Piece, bool SendToServer = true);
     public event DiceClickedHandler OnDiceClicked;
 
-    public delegate void TimerTimeoutHandler(string SeatName);
+    public delegate Task<string> TimerTimeoutHandler(string SeatName);
     public event TimerTimeoutHandler TimerTimeout;
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
@@ -122,11 +122,12 @@ public partial class PlayerSeat : ContentView
         {
         
         }
-        TimerTimeout?.Invoke(seatColor);
+        if(EngineHelper.gameType != "Online")
+            TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {        
-        OnDiceClicked?.Invoke(seatColor);
+        OnDiceClicked?.Invoke(seatColor,"","");
     }
     internal void AnimateDice()
     {

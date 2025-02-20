@@ -1,12 +1,10 @@
 
+using LudoClient.Constants;
 using LudoClient.ControlView;
-using System.Text.Json;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
-using SharedCode.Network;
 using SimpleToolkit.Core;
-using System.Security.AccessControl;
-using LudoClient.Constants;
+using System.Text.Json;
 namespace LudoClient.CoreEngine;
 
 public class PlayerDto
@@ -62,10 +60,6 @@ public partial class Game : ContentPage
     private void Build(string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
-        //GlobalConstants.MatchMaker.RecievedRequest += new Client.CallbackRecievedRequest(RecievedRequest);//For ggetting msggs from the game server
-        //Grid.SetRow(GameView, 0);
-        //Grid.SetColumn(GameView, 0);
-
         // Create RedPlayerSeat
         RedPlayerSeat = new PlayerSeat("red")
         {
@@ -242,7 +236,6 @@ public partial class Game : ContentPage
         var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
         if (gameType == "Online")
         {
-
             foreach (var (color, seat) in colors)
                 updateSeat(GetPlayerSeat(color));
 
@@ -250,6 +243,7 @@ public partial class Game : ContentPage
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
             //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            Engine = new Engine(gameType, playerCount, "Red");
         }
         else
         {
@@ -261,9 +255,9 @@ public partial class Game : ContentPage
                         seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
             playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            Engine = new Engine(gameType, playerCount, playerColor);
         }
-
-        Engine = new Engine(gameType, playerCount, playerColor);
+        
         gui.red.EngineHelper = Engine.EngineHelper;
         gui.green.EngineHelper = Engine.EngineHelper;
         gui.yellow.EngineHelper = Engine.EngineHelper;
@@ -395,9 +389,9 @@ public partial class Game : ContentPage
         _ = Engine.MovePieceAsync(PieceName);
         //stop animmation
     }
-    private void PlayerDiceClicked(String SeatName)
+    public void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
-        if (Engine.EngineHelper.checkTurn(SeatName, "RollDice"))
+        if (Engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             gui.red.reset();
             gui.green.reset();
@@ -407,17 +401,18 @@ public partial class Game : ContentPage
             // Handle the dice click for the green player
             //check turn
             var seat = gui.red;
-            if (SeatName == "red")
+            if (SeatColor == "red")
                 seat = gui.red;
-            if (SeatName == "green")
+            if (SeatColor == "green")
                 seat = gui.green;
-            if (SeatName == "yellow")
+            if (SeatColor == "yellow")
                 seat = gui.yellow;
-            if (SeatName == "blue")
+            if (SeatColor == "blue")
                 seat = gui.blue;
 
             seat.AnimateDice();
-            Engine.SeatTurn(SeatName);
+
+            Engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
         }
         foreach (var piece in Engine.EngineHelper.currentPlayer.Pieces)
         {

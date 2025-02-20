@@ -9,10 +9,12 @@ namespace SharedCode.Network
         private string _messages;
 
         // Event Definitions using standard .NET event patterns
-        public event EventHandler<(string SeatName, int DiceValue)> ReceivedRequest;
-        public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
+        
+        public event EventHandler<(string SeatColor, string DiceValue, string Piece)> DiceRoll;
+        public event EventHandler<(string DiceValue, string Piece)> PieceMove;
         public event EventHandler<(string GameType, string seatsData)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
+        public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
 
         public Client()
         {
@@ -33,22 +35,31 @@ namespace SharedCode.Network
                 _messages = $"{playerType}: {userName} has joined.";
                 Console.WriteLine(_messages);
             });
-
             // Game start event
             _hubConnection.On<string, string>("GameStarted", (GameType, seatsData) =>
             {
-                Console.WriteLine("Starting Game " + DateTime.Now, GameType, seatsData);
+                Console.WriteLine("Starting Game : " + DateTime.Now, GameType, seatsData);
                 //Game(GameType, playerCount, PlayerColor)
                GameStarted?.Invoke(this, (GameType, seatsData));
             });
-
+            _hubConnection.On<string, string, string>("DiceRoll", (SeatColor, DiceValue, Piece) =>
+            {
+                Console.WriteLine("DiceRoll : " + DateTime.Now, DiceValue, Piece);
+                //Game(GameType, playerCount, PlayerColor)
+                DiceRoll?.Invoke(this, (SeatColor, DiceValue, Piece));
+            });
+            _hubConnection.On<string, string>("PieceMove", (DiveValue, Piece) =>
+            {
+                Console.WriteLine("PieceMove : " + DateTime.Now, DiveValue, Piece);
+                //Game(GameType, playerCount, PlayerColor)
+                PieceMove?.Invoke(this, (DiveValue, Piece));
+            });
             // Message event
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
                 _messages = $"{user} says {message}";
                 Console.WriteLine(_messages);
             });
-
             // Connection lifecycle events
             _hubConnection.Reconnecting += error =>
             {
@@ -59,13 +70,11 @@ namespace SharedCode.Network
                 }
                 return Task.CompletedTask;
             };
-
             _hubConnection.Reconnected += connectionId =>
             {
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
-
             _hubConnection.Closed += async error =>
             {
                 Console.WriteLine("Connection closed.");
@@ -77,7 +86,6 @@ namespace SharedCode.Network
                 // await ConnectAsync();
             };
         }
-
         /// <summary>
         /// Establish the connection to the server asynchronously.
         /// </summary>
@@ -88,7 +96,6 @@ namespace SharedCode.Network
                 Console.WriteLine("Already connected.");
                 return;
             }
-
             try
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
@@ -100,7 +107,6 @@ namespace SharedCode.Network
                 // Consider retry logic here if desired
             }
         }
-
         /// <summary>
         /// Disconnect from the server.
         /// </summary>
@@ -119,7 +125,6 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error while disconnecting: {ex.Message}");
             }
         }
-
         /// <summary>
         /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
         /// </summary>
@@ -136,7 +141,6 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error in CreateJoinLobbyAsync: {ex.Message}");
             }
         }
-
         /// <summary>
         /// Send a message to the server.
         /// </summary>
@@ -153,7 +157,6 @@ namespace SharedCode.Network
                 return string.Empty;
             }
         }
-
         /// <summary>
         /// Sends a Ready state for the given room code.
         /// </summary>

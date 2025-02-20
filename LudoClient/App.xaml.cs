@@ -48,6 +48,8 @@ namespace LudoClient
                 GlobalConstants.MatchMaker = new Client();
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+                GlobalConstants.MatchMaker.DiceRoll += OnDiceRoll;
+                GlobalConstants.MatchMaker.PieceMove += OnPieceMove;
 
                 MainPage = new AppShell();
 
@@ -58,14 +60,32 @@ namespace LudoClient
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
         }
+
+        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece) args)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var SeatColor = args.SeatColor;
+                var DiceValue = args.DiceValue;
+                var Piece = args.Piece;
+                ClientGlobalConstants.game.PlayerDiceClicked(SeatColor, DiceValue, Piece, false);
+            });
+        }
+
+        private void OnPieceMove(object? sender, (string DiveValue, string Piece) args)
+        {
+            throw new NotImplementedException();
+        }
+
         private void OnGameStarted(object? sender, (string GameType, string seatsData) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 var GameType = args.GameType;
                 var seatsData = args.seatsData;
-
-                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new Game(GameType, seatsData));
+                Game game = new Game(GameType, seatsData);
+                ClientGlobalConstants.game = game;
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
                 //MainPage = new Game(GameType, seatsData);
 
                 // Retrieve a copy of the current navigation stack.
@@ -77,7 +97,8 @@ namespace LudoClient
                     // Remove the page immediately below the current (top) page.
                     ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
                     existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+                    if(existingPages.Count!=2)
+                        ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
                 }
             });
         }

@@ -154,7 +154,7 @@ namespace SharedCode.CoreEngine
                 case "RollDice":
                     Console.WriteLine($"{action.PlayerColor} rolled a {action.DiceValue}");
                     DiceValue = action.DiceValue;
-                    engine.SeatTurn(action.PlayerColor);
+                    engine.SeatTurn(action.PlayerColor, action.DiceValue+"", "");
                     break;
                 case "MovePiece":
                     Console.WriteLine($" moved  to {action.PieceName}");
