@@ -72,9 +72,13 @@ namespace LudoClient
             });
         }
 
-        private void OnPieceMove(object? sender, (string DiveValue, string Piece) args)
+        private void OnPieceMove(object? sender, string Piece)
         {
-            throw new NotImplementedException();
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
+
+            });
         }
 
         private void OnGameStarted(object? sender, (string GameType, string seatsData) args)

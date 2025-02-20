@@ -267,7 +267,7 @@ namespace SharedCode.CoreEngine
                             tempPiece = Piece;
                         else
                             tempPiece = moveablePieces.First(p => p.Moveable).Name;
-                        await MovePieceAsync(tempPiece, false);       // Move the only moveable piece
+                        tempPiece = await MovePieceAsync(tempPiece, false);       // Move the only moveable piece
                     }
                 }
                 else
@@ -283,6 +283,7 @@ namespace SharedCode.CoreEngine
         }
         public async Task<string> MovePieceAsync(String pieceName, bool SendToServer=true)
         {
+            String tempPiece = "";
             if (PlayState == "Stop")
                 return "";
             Player player = EngineHelper.currentPlayer;
@@ -301,15 +302,15 @@ namespace SharedCode.CoreEngine
                 if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
                     piece.Jump(this, EngineHelper.diceValue);
-                    if(RelocateAsync!=null)
+                    tempPiece = pieceName;
+                    if (RelocateAsync != null)
                         RelocateAsync(piece, piece.Clone());
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
-                    
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
                     piece.Jump(this, EngineHelper.diceValue);
-
+                    tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
                     List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     // Check if an opponent’s piece is in the new position
@@ -323,9 +324,9 @@ namespace SharedCode.CoreEngine
                         board[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
                     }
 
-                    if(RelocateAsync!=null)
+                    if (RelocateAsync != null)
                         await RelocateAsync(piece, pieceClone);
-                    if(killed && RelocateAsync != null)
+                    if (killed && RelocateAsync != null)
                         await RelocateAsync(kilablePieces[0], kilablePieces[0]);
 
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
@@ -349,8 +350,8 @@ namespace SharedCode.CoreEngine
 
                 StopProgressAnimation(EngineHelper.currentPlayer.Color);
                 //checkKills(player,piece);
-                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue); 
-                
+                EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
+
                 if (!EngineHelper.stopAnimate)
                     StartProgressAnimation(EngineHelper.currentPlayer.Color);
 
@@ -360,13 +361,13 @@ namespace SharedCode.CoreEngine
                     Console.WriteLine($"{player.Color} has won the game!");
                     EngineHelper.players.Remove(player);
                     if (EngineHelper.checkGameOver())
-                    { 
+                    {
                         cleanGame();
 
                         gameRecorder.SaveGameHistory();
                         //Application.Current.MainPage = new AppShell();
-                      //  Application.Current.MainPage = new Game("Computer", "4", "Red");
-                        return "";
+                        //  Application.Current.MainPage = new Game("Computer", "4", "Red");
+                        return tempPiece;
                     }
                 }
 
@@ -376,7 +377,9 @@ namespace SharedCode.CoreEngine
                 else
                     TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
             }
-            return "";
+            else 
+                return "";
+            return tempPiece;
         }
         public void cleanGame()
         {

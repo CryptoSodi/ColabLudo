@@ -4,7 +4,7 @@ public partial class Token : ContentView
 {
     public String name = "";
 
-    public delegate void PieceClickedHandler(String PieceName);
+    public delegate void PieceClickedHandler(String PieceName,bool SendToServer);
     public event PieceClickedHandler OnPieceClicked;
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(piece), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
@@ -23,6 +23,6 @@ public partial class Token : ContentView
     }
     private void Piece_Clicked(object sender, EventArgs e)
     {
-        OnPieceClicked?.Invoke(name);
+        OnPieceClicked?.Invoke(name,true);
     }
 }

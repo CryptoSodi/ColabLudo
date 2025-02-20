@@ -11,7 +11,7 @@ namespace SharedCode.Network
         // Event Definitions using standard .NET event patterns
         
         public event EventHandler<(string SeatColor, string DiceValue, string Piece)> DiceRoll;
-        public event EventHandler<(string DiceValue, string Piece)> PieceMove;
+        public event EventHandler<string> PieceMove;
         public event EventHandler<(string GameType, string seatsData)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
@@ -48,11 +48,11 @@ namespace SharedCode.Network
                 //Game(GameType, playerCount, PlayerColor)
                 DiceRoll?.Invoke(this, (SeatColor, DiceValue, Piece));
             });
-            _hubConnection.On<string, string>("PieceMove", (DiveValue, Piece) =>
+            _hubConnection.On<string>("PieceMove", piece =>
             {
-                Console.WriteLine("PieceMove : " + DateTime.Now, DiveValue, Piece);
+                Console.WriteLine("PieceMove : " + DateTime.Now, piece);
                 //Game(GameType, playerCount, PlayerColor)
-                PieceMove?.Invoke(this, (DiveValue, Piece));
+                PieceMove?.Invoke(this, piece);
             });
             // Message event
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>

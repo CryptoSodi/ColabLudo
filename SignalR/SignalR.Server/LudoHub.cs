@@ -40,9 +40,9 @@ namespace SignalR.Server
             Console.WriteLine($"User connected: {connectionId}");
             await base.OnConnectedAsync();
         }
-        public string Send(string name, string SeatColor, string commandtype)
+        public string Send(string name, string commandValue, string commandtype)
         {
-            Console.WriteLine($"{name}: {SeatColor}:{commandtype}");
+            Console.WriteLine($"{name}: {commandValue}:{commandtype}");
             //  Clients.All.SendAsync("addMessage", name, GameID);
             if (!_users.TryGetValue(Context.ConnectionId, out User user))
             {
@@ -56,7 +56,7 @@ namespace SignalR.Server
                 return "Error: Room not found.";
             }
             // For logging purposes, show which room this command is coming from.
-            Console.WriteLine($"{name} (room {user.Room}): {SeatColor}:{commandtype}");
+            Console.WriteLine($"{name} (room {user.Room}): {commandValue}:{commandtype}");
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
@@ -68,15 +68,16 @@ namespace SignalR.Server
             {
                 // Asynchronously process the move (fire-and-forget or await as needed).
                 // For demonstration, we're not awaiting the call.
-                String piece = gameRoom.engine.MovePieceAsync(SeatColor, false).GetAwaiter().GetResult();
+                String piece = gameRoom.engine.MovePieceAsync(commandValue, false).GetAwaiter().GetResult();
+                    SendMessageToRoom(gameRoom, Context.ConnectionId, "PieceMove", piece, "", "", false);
                 return piece;
             }
             else if (commandtype == "DiceRoll")
             {
                 // For other command types, for example, SeatTurn:
                 // If SeatTurn returns a string, you can wait for it.
-                String diveValue = gameRoom.engine.SeatTurn(SeatColor, "", "", false).GetAwaiter().GetResult();
-                  SendMessageToRoom(gameRoom, Context.ConnectionId, SeatColor, diveValue.Split(",")[0], diveValue.Split(",")[1], false);
+                String diveValue = gameRoom.engine.SeatTurn(commandValue, "", "", false).GetAwaiter().GetResult();
+                  SendMessageToRoom(gameRoom, Context.ConnectionId, "DiceRoll", commandValue, diveValue.Split(",")[0], diveValue.Split(",")[1], false);
                 //Sendtoothers(user.Room, diveValue);
                 return diveValue;
             }
@@ -294,14 +295,17 @@ namespace SignalR.Server
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
-        public async Task SendMessageToRoom(GameRoom gameRoom, string connectionId, string SeatColor, string messageType, string value, bool sendToSelf = true)
+        public async Task SendMessageToRoom(GameRoom gameRoom, string connectionId, string SendToClientFunctionName, string SeatColor, string messageType, string value, bool sendToSelf = true)
         {
             var recipientConnectionIds = gameRoom.Users
                 .Where(u => sendToSelf || u.ConnectionId != connectionId)
                 .Select(u => u.ConnectionId)
                 .ToList();
             foreach(String ConnectionId in recipientConnectionIds)
-                await Clients.Client(ConnectionId).SendAsync("DiceRoll", SeatColor, messageType, value);
+                if(SendToClientFunctionName == "DiceRoll")
+                    await Clients.Client(ConnectionId).SendAsync(SendToClientFunctionName, SeatColor, messageType, value);
+                else
+                    await Clients.Client(ConnectionId).SendAsync(SendToClientFunctionName, SeatColor);
         }
         // Generate a unique 10-digit room ID
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)

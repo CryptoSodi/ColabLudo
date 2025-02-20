@@ -381,12 +381,11 @@ public partial class Game : ContentPage
             await Task.Delay(20);
         }
     }
-    private void PlayerPieceClicked(String PieceName)
+    public void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
         //start animation
         // Handle the dice click for the green player
-
-        _ = Engine.MovePieceAsync(PieceName);
+        _ = Engine.MovePieceAsync(PieceName, SendToServer);
         //stop animmation
     }
     public void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
