@@ -15,8 +15,9 @@ public class PlayerDto
     public string? PlayerColor { get; set; }
 }
 public partial class Game : ContentPage
-{
-    Engine Engine;
+{//For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
+    public string playerColor = "";
+    public Engine engine;
     Gui gui;
     public PlayerSeat RedPlayerSeat; 
     public PlayerSeat GreenPlayerSeat; 
@@ -33,11 +34,11 @@ public partial class Game : ContentPage
         else
             return gui.blue;
     }
-    
     public Game(string GameType, string seatsData)
     {
         seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
         var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
+        playerColor = player.PlayerColor;
         Build("Online", GameType, player.PlayerColor);
     }
     public Game(string gameType, string playerCount, string playerColor)
@@ -243,7 +244,7 @@ public partial class Game : ContentPage
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
             //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            Engine = new Engine(gameType, playerCount, "Red");
+            engine = new Engine(gameType, playerCount, "Red");
         }
         else
         {
@@ -254,28 +255,28 @@ public partial class Game : ContentPage
                     else
                         seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
-            playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            Engine = new Engine(gameType, playerCount, playerColor);
+            playerSeat?.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            engine = new Engine(gameType, playerCount, playerColor);
         }
         
-        gui.red.EngineHelper = Engine.EngineHelper;
-        gui.green.EngineHelper = Engine.EngineHelper;
-        gui.yellow.EngineHelper = Engine.EngineHelper;
-        gui.blue.EngineHelper = Engine.EngineHelper;
-        if (!Engine.EngineHelper.stopAnimate)
-            StartProgressAnimation(Engine.EngineHelper.currentPlayer.Color);
+        gui.red.EngineHelper = engine.EngineHelper;
+        gui.green.EngineHelper = engine.EngineHelper;
+        gui.yellow.EngineHelper = engine.EngineHelper;
+        gui.blue.EngineHelper = engine.EngineHelper;
+        if (!engine.EngineHelper.stopAnimate)
+            StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
 
-        Engine.StopDice += new Engine.CallbackEventHandler(StopDice);
-        Engine.AnimateDice += new Engine.Callback_AnimateDice_EventHandler(AnimateDice);
-        Engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
-        Engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
-        Engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
+        engine.StopDice += new Engine.CallbackEventHandler(StopDice);
+        engine.AnimateDice += new Engine.Callback_AnimateDice_EventHandler(AnimateDice);
+        engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
+        engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
+        engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
 
         // Set rotation based on player color
-        int rotation = Engine.EngineHelper.SetRotation(playerColor);
+        int rotation = engine.EngineHelper.SetRotation(playerColor);
         Glayout.RotateTo(rotation);
 
-        foreach (var player in Engine.EngineHelper.players)
+        foreach (var player in engine.EngineHelper.players)
             foreach (var piece in player.Pieces)
                 Alayout.Add(gui.getPieceToken(piece));
 
@@ -287,10 +288,8 @@ public partial class Game : ContentPage
         };
 
         // Pupulate(rotation);
-
-
         foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
-            seat.TimerTimeout += Engine.TimerTimeoutAsync;
+            seat.TimerTimeout += engine.TimerTimeoutAsync;
 
         //Event Handelers
         GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;
@@ -324,35 +323,35 @@ public partial class Game : ContentPage
     }
     public void Pupulate(int rotation)
     {
-        for (int i = 0; i < Engine.EngineHelper.players.Count; i++)
-            for (int j = 0; j < Engine.EngineHelper.players[i].Pieces.Count; j++)
+        for (int i = 0; i < engine.EngineHelper.players.Count; i++)
+            for (int j = 0; j < engine.EngineHelper.players[i].Pieces.Count; j++)
             {
-                gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]).RotateTo(-rotation);
-                AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(Engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
-                _ = RelocateAsync(Engine.EngineHelper.players[i].Pieces[j], Engine.EngineHelper.players[i].Pieces[j]);
+                gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]).RotateTo(-rotation);
+                AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
+                _ = RelocateAsync(engine.EngineHelper.players[i].Pieces[j], engine.EngineHelper.players[i].Pieces[j]);
             }
     }
     public async Task RelocateAsync(Piece piece, Piece pieceClone)
     {
-        Engine.EngineHelper.animationBlock = true;
+        engine.EngineHelper.animationBlock = true;
 
         uint animTime = 200;
-        if (Engine.EngineHelper.stopAnimate)
+        if (engine.EngineHelper.stopAnimate)
         {
             animTime = 40;
             pieceClone = piece.Clone();
         }
         //piece.Position
         //player.StartPosition
-        string PB = Engine.EngineHelper.getPieceBox(piece);
+        string PB = engine.EngineHelper.getPieceBox(piece);
 
         if (pieceClone.Location < piece.Location)
         {
-            pieceClone.Jump(Engine, 1, true);
-            string PBC = Engine.EngineHelper.getPieceBox(pieceClone);
+            pieceClone.Jump(engine, 1, true);
+            string PBC = engine.EngineHelper.getPieceBox(pieceClone);
 
-            double x = Engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
-            double y = Engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
+            double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
+            double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
 
             _ = gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn).ContinueWith(t =>
             {
@@ -361,7 +360,7 @@ public partial class Game : ContentPage
                     if (pieceClone.Location != piece.Location)
                         _ = RelocateAsync(piece, pieceClone);
                     else
-                        Engine.EngineHelper.animationBlock = false;
+                        engine.EngineHelper.animationBlock = false;
                 }
                 else if (t.IsFaulted)
                 {
@@ -371,12 +370,12 @@ public partial class Game : ContentPage
         }
         else
         {
-            double x = Engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
-            double y = Engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
+            double x = engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
+            double y = engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
             _ = gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn);
-            Engine.EngineHelper.animationBlock = false;
+            engine.EngineHelper.animationBlock = false;
         }
-        while (Engine.EngineHelper.animationBlock)
+        while (engine.EngineHelper.animationBlock)
         {
             await Task.Delay(20);
         }
@@ -385,12 +384,12 @@ public partial class Game : ContentPage
     {
         //start animation
         // Handle the dice click for the green player
-        _ = Engine.MovePieceAsync(PieceName, SendToServer);
+        _ = engine.MovePieceAsync(PieceName, SendToServer);
         //stop animmation
     }
     public void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
-        if (Engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
+        if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             gui.red.reset();
             gui.green.reset();
@@ -411,9 +410,9 @@ public partial class Game : ContentPage
 
             seat.AnimateDice();
 
-            Engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
+            engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
         }
-        foreach (var piece in Engine.EngineHelper.currentPlayer.Pieces)
+        foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
         {
             // Safely update the UI
             Alayout.Remove(gui.getPieceToken(piece));
@@ -476,7 +475,7 @@ public partial class Game : ContentPage
         //show pop up for Exit to lobby
         // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
        // GameRecorder.SaveGameHistory();
-        Engine.cleanGame(); 
+        engine.cleanGame(); 
         ClientGlobalConstants.dashBoard.Navigation.PopAsync();
     }
 }

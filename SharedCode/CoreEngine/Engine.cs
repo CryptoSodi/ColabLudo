@@ -26,8 +26,6 @@ namespace SharedCode.CoreEngine
         public static Dictionary<string, List<Piece>>? board;
 
         public EngineHelper EngineHelper = new EngineHelper();
-
-
         public async Task<string> TimerTimeoutAsync(String SeatName)
         {
             string result = "";
@@ -176,7 +174,8 @@ namespace SharedCode.CoreEngine
             // Check if it's the correct player's turn and if the game is in the roll state
             if (player.Color == seatName && EngineHelper.gameState == "RollDice")
             {
-                if(AnimateDice!=null)
+                EngineHelper.gameState = "RollingDice";
+                if (AnimateDice!=null)
                     AnimateDice(seatName);
                 String DiceServerValueHolder = "";
                 // Roll the dice
@@ -206,7 +205,7 @@ namespace SharedCode.CoreEngine
                     //piece.Moveable = (piece.Location == 0 && EngineHelper.diceValue == 6) ||
                     // (piece.Location != 0 && piece.Location + EngineHelper.diceValue <= 57);
 
-                    if (piece.Location == 0 && EngineHelper.diceValue == 6)                             // Open the token if it's in base and dice shows a 6
+                    if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
                     else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
                         piece.Moveable = true;
@@ -291,8 +290,9 @@ namespace SharedCode.CoreEngine
             if (piece == null || EngineHelper.diceValue == 0)
                 return ""; // Exit if not the current player's piece or no dice roll
 
-            if (EngineHelper.gameState == "MovePiece" && piece.Moveable)
+            if (piece.Moveable && EngineHelper.gameState == "MovePiece")
             {
+                EngineHelper.gameState = "MovingPiece";
                 if (EngineHelper.gameType == "Online" && SendToServer)
                     pieceName = await GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "MovePiece");
 

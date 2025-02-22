@@ -1,3 +1,5 @@
+using LudoClient.Constants;
+
 namespace LudoClient.ControlView;
 
 public partial class Token : ContentView
@@ -23,6 +25,17 @@ public partial class Token : ContentView
     }
     private void Piece_Clicked(object sender, EventArgs e)
     {
-        OnPieceClicked?.Invoke(name,true);
+        if (ClientGlobalConstants.game == null)
+            OnPieceClicked?.Invoke(name, true);
+        else
+        {
+            if (ClientGlobalConstants.game.engine.EngineHelper.gameType == "Online")
+            {
+                if (ClientGlobalConstants.game.playerColor.ToLower().Contains(name.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                    OnPieceClicked?.Invoke(name, true);
+            }
+            else
+                OnPieceClicked?.Invoke(name, true);
+        }
     }
 }
