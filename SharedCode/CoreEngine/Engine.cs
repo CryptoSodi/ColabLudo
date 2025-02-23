@@ -163,6 +163,13 @@ namespace SharedCode.CoreEngine
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(5);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(5);
         }
         public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece, bool SendToServer=true)
         {

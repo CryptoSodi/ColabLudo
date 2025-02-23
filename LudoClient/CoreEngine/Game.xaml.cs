@@ -4,6 +4,7 @@ using LudoClient.ControlView;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
+using System.IO.Pipelines;
 using System.Text.Json;
 namespace LudoClient.CoreEngine;
 
@@ -387,7 +388,137 @@ public partial class Game : ContentPage
     private void ResizePieces()
     {
         Console.WriteLine("Perform Resize");
+        List<Piece> allPieces = new List<Piece>();
+        foreach (var player in engine.EngineHelper.players)
+            foreach (var piece in player.Pieces)
+                allPieces.Add(piece);
+
+        // Group pieces by their board key from getPieceBox.
+        var boardGroups = allPieces.GroupBy(piece => engine.EngineHelper.getPieceBox(piece));
+        foreach (var boardGroup in boardGroups)
+        {
+            string boxKey = boardGroup.Key;
+            var piecesInBox = boardGroup.ToList();
+
+            // Retrieve the center coordinates from originalPath.
+            if (!engine.EngineHelper.originalPath.TryGetValue(boxKey, out int[] boardCoords))
+            {
+                continue;
+            }
+            double centerX = boardCoords[1] * (Alayout.Width / 15.0);
+            double centerY = boardCoords[0] * (Alayout.Height / 15.0);
+
+            // Group pieces by player (using first letter of piece.Name, case-insensitive).
+            var playerGroups = piecesInBox
+                               .GroupBy(piece => piece.Name.Substring(0, 1).ToLower())
+                               .ToList();
+            int numPlayerGroups = playerGroups.Count;
+
+            // If only one player's tokens are in the cell, place them centered.
+            if (numPlayerGroups == 1)
+            {
+                foreach (var piece in playerGroups[0])
+                {
+                    var token = gui.getPieceToken(piece);
+                    _ = token.TranslateTo(centerX, centerY, 100, Easing.Linear);
+                    token.ScaleTo(1.0, 100);
+                }
+            }
+            else
+            {
+                // Define the offset distance.
+                double groupSpacing = 5.0; // adjust as needed
+                int index = 0;
+                // Order groups by key for consistency.
+                foreach (var pg in playerGroups.OrderBy(g => g.Key))
+                {
+                    double subCenterX = centerX;
+                    double subCenterY = centerY;
+
+                    if (numPlayerGroups == 2)
+                    {
+                        // For 2 players:
+                        // Group 0: Top Left; Group 1: Bottom Right.
+                        if (index == 0)
+                        {
+                            subCenterX = centerX - groupSpacing;
+                            subCenterY = centerY - groupSpacing+4;
+                        }
+                        else if (index == 1)
+                        {
+                            subCenterX = centerX + groupSpacing;
+                            subCenterY = centerY + groupSpacing;
+                        }
+                    }
+                    else if (numPlayerGroups == 3)
+                    {
+                        // For 3 players:
+                        // Group 0: Top Left; Group 1: Top Right; Group 2: Bottom Center.
+                        if (index == 0)
+                        {
+                            subCenterX = centerX - groupSpacing;
+                            subCenterY = centerY - groupSpacing + 4;
+                        }
+                        else if (index == 1)
+                        {
+                            subCenterX = centerX + groupSpacing;
+                            subCenterY = centerY - groupSpacing + 4;
+                        }
+                        else if (index == 2)
+                        {
+                            subCenterX = centerX;
+                            subCenterY = centerY + groupSpacing;
+                        }
+                    }
+                    else if (numPlayerGroups >= 4)
+                    {
+                        // For 4 or more players:
+                        // Group 0: Top Left; Group 1: Top Right; Group 2: Bottom Left; Group 3: Bottom Right.
+                        if (index == 0)
+                        {
+                            subCenterX = centerX - groupSpacing;
+                            subCenterY = centerY - groupSpacing + 4;
+                        }
+                        else if (index == 1)
+                        {
+                            subCenterX = centerX + groupSpacing;
+                            subCenterY = centerY - groupSpacing + 4;
+                        }
+                        else if (index == 2)
+                        {
+                            subCenterX = centerX - groupSpacing;
+                            subCenterY = centerY + groupSpacing;
+                        }
+                        else if (index == 3)
+                        {
+                            subCenterX = centerX + groupSpacing;
+                            subCenterY = centerY + groupSpacing;
+                        }
+                        else
+                        {
+                            // For extra groups beyond 4, default to center or add more custom placements.
+                            subCenterX = centerX;
+                            subCenterY = centerY;
+                        }
+                    }
+
+                    // Place all tokens for this player's group at the computed sub-center.
+                    foreach (var piece in pg)
+                    {
+                        var token = gui.getPieceToken(piece);
+                        _ = token.TranslateTo(subCenterX, subCenterY, 100, Easing.Linear);
+                        token.ScaleTo(1.0, 100);
+                    }
+                    index++;
+                }
+            }
+        }
     }
+
+
+
+
+
 
     public void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
