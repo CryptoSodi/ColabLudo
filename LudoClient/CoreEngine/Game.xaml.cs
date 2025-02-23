@@ -360,7 +360,10 @@ public partial class Game : ContentPage
                     if (pieceClone.Location != piece.Location)
                         _ = RelocateAsync(piece, pieceClone);
                     else
+                    {
                         engine.EngineHelper.animationBlock = false;
+                        ResizePieces();
+                    }   
                 }
                 else if (t.IsFaulted)
                 {
@@ -374,12 +377,18 @@ public partial class Game : ContentPage
             double y = engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
             _ = gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn);
             engine.EngineHelper.animationBlock = false;
+            ResizePieces();
         }
         while (engine.EngineHelper.animationBlock)
         {
             await Task.Delay(20);
         }
     }
+    private void ResizePieces()
+    {
+        Console.WriteLine("Perform Resize");
+    }
+
     public void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
         //start animation

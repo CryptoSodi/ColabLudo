@@ -30,7 +30,7 @@ namespace SignalR.Server
             engine = new Engine(GameType, Users.Count.ToString(), initialPlayerColor);
 
             engine.StartProgressAnimation += StartProgressAnimation;
-            engine.StopProgressAnimation += StopProgressAnimation;            
+            engine.StopProgressAnimation += StopProgressAnimation;
             TimerTimeout += engine.TimerTimeoutAsync;
             StartProgressAnimation("");
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);

@@ -55,7 +55,7 @@ namespace LudoClient.ControlView
             TimeSpan timeRemaining = endDateTime - DateTime.Now;
 
             // Update the label on the UI thread
-            Device.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
                 if (timeRemaining.TotalSeconds > 0)
                 {

@@ -1,4 +1,5 @@
 ﻿using SharedCode.Constants;
+using System.Drawing;
 
 namespace SharedCode.CoreEngine
 {
@@ -395,9 +396,6 @@ namespace SharedCode.CoreEngine
             EngineHelper.gameType = "";
             EngineHelper.gameState = "RollDice";
         }
-        public void RecievedRequest(String name, int val)
-        {
-        }
     }
     public class EngineHelper
     {
@@ -405,7 +403,7 @@ namespace SharedCode.CoreEngine
         public List<int> rolls = new List<int>();
         public bool replay = !true;
         public bool stopAnimate = !true;
-        public Player currentPlayer;
+        public Player currentPlayer = null;
         public int currentPlayerIndex = 0;
         public string gameType = "";
         // Game logic helpers
@@ -417,7 +415,15 @@ namespace SharedCode.CoreEngine
         // Constants or configuration lists
         public readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-        
+        public void playerLeft(String playerColor)
+        {
+            players.RemoveAll(p => p.Color == playerColor);
+            if (players.Count == 1)
+            {
+                Console.WriteLine($"{players[0].Color} has won the game!");
+                players.Clear();
+            }
+        }
         public bool animationBlock = false;
         public Player getPlayer(String color)
         {

@@ -2,16 +2,19 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using SharedCode.CoreEngine;
-using System.Collections.Concurrent;
 using Newtonsoft.Json;
-using System.Collections.Generic;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {
-    public record User(string ConnectionId, int playerId, string Name, string Room);
+    public class PlayerDto
+    {
+        public int PlayerId { get; set; }
+        public string? PlayerName { get; set; }
+        public string? PlayerPicture { get; set; }
+        public string? PlayerColor { get; set; }
+    }
+    public record User(string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor);
     public record Message(string User, string Text);
     public class LudoHub : Hub
     {
@@ -29,7 +32,7 @@ namespace SignalR.Server
             if (_users.TryGetValue(Context.ConnectionId, out var user))
             {
                 await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
-                await Clients.Group(user.Room).SendAsync("UserLeft", user.Name);
+                await Clients.Group(user.Room).SendAsync("UserLeft", user.PlayerName);
             }
         }
         public override async Task OnConnectedAsync()
@@ -253,8 +256,8 @@ namespace SignalR.Server
 
             // Create or retrieve the room
             var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(Clients, _context, roomCode, gameType, gameCost));
-            // Add the user to the users dictionary
-            var user = new User(Context.ConnectionId, playerId, userName, roomCode);
+            // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
+            var user = new User(Context.ConnectionId, roomCode, playerId, userName, "Color");
             _users.TryAdd(Context.ConnectionId, user);
             // Add the user to the room's user list
             room.Users.Add(user);
@@ -386,12 +389,5 @@ namespace SignalR.Server
             Console.WriteLine($"Winner: {winner}");
             return winner;
         }
-    }
-    public class PlayerDto
-    {
-        public int PlayerId { get; set; }
-        public string? PlayerName { get; set; }
-        public string? PlayerPicture { get; set; }
-        public string? PlayerColor { get; set; }
     }
 }

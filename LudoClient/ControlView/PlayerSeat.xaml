@@ -6,7 +6,8 @@
 
     <local:Capsule x:Name="playerBG">
         <Grid RowDefinitions=".14*,1*,.3*,.3*" ColumnDefinitions=".13*,1*,.06*,0.96*,.01*">
-            <Image x:Name="PlayerImage"  Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+            <Image x:Name="PlayerImage" Margin="4.15" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+            <Image Source="profile_user.png" Margin="1" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" VerticalOptions="Center" HorizontalOptions="Start">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Dice_Clicked" />

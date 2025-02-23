@@ -6,7 +6,6 @@ public partial class GameRoom : ContentPage
 {
     string GameType = "0";
 
-    [Obsolete]
     public GameRoom(string GameType, int GameCost, string roomCode)
     {
         InitializeComponent();
@@ -61,9 +60,9 @@ public partial class GameRoom : ContentPage
         GlobalConstants.MatchMaker.PlayerSeated += (sender, args) =>
         {
             var (playerType, playerId, userName, pictureUrl) = args;
-            Device.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                if(playerType=="P1")
+                if (playerType=="P1")
                 {
                     player1.PlayerImage = pictureUrl;
                     player1.PlayerName = userName;
