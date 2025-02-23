@@ -144,7 +144,6 @@ namespace SharedCode.CoreEngine
     };
             
             EngineHelper.gameType = gameType;
-            EngineHelper.currentPlayerIndex = 0;
 
             EngineHelper.InitializePlayers(playerCount, playerColor);
            
@@ -156,7 +155,7 @@ namespace SharedCode.CoreEngine
                 _ = gameRecorder.ReplayGameAsync("GameHistory.json");
             }
 
-            EngineHelper.currentPlayer = EngineHelper.players[EngineHelper.currentPlayerIndex];
+            EngineHelper.currentPlayer = EngineHelper.players[0];
 
             PlayState = "Active";
             if (EngineHelper.stopAnimate)
@@ -399,7 +398,6 @@ namespace SharedCode.CoreEngine
             PlayState = "Stop";
             EngineHelper.players.Clear();
             EngineHelper.rolls.Clear();
-            EngineHelper.currentPlayerIndex = 0;
             EngineHelper.gameType = "";
             EngineHelper.gameState = "RollDice";
         }
@@ -411,7 +409,6 @@ namespace SharedCode.CoreEngine
         public bool replay = !true;
         public bool stopAnimate = !true;
         public Player currentPlayer = null;
-        public int currentPlayerIndex = 0;
         public string gameType = "";
         // Game logic helpers
         public int diceValue = 0;
@@ -683,8 +680,7 @@ namespace SharedCode.CoreEngine
         }
         public bool checkTurn(String SeatName, String GameState)
         {
-            Player player = players[currentPlayerIndex];
-            if (player.Color == SeatName && gameState == GameState)
+            if (currentPlayer.Color == SeatName && gameState == GameState)
             {
                 return true;
             }
@@ -713,9 +709,10 @@ namespace SharedCode.CoreEngine
         }
         public void ChangeTurn()
         {
-            currentPlayerIndex = (currentPlayerIndex + 1) % players.Count;
-            currentPlayer = players[currentPlayerIndex];
-            Console.WriteLine("Current Player : " + currentPlayer.Color);
+            int currentIndex = players.IndexOf(currentPlayer);
+            int nextIndex = (currentIndex + 1) % players.Count;
+            currentPlayer = players[nextIndex];
+            Console.WriteLine("Current Player: " + currentPlayer.Color);
         }
         public Piece GetPiece(List<Piece> pieces, string name)
         {
@@ -735,7 +732,7 @@ namespace SharedCode.CoreEngine
         }
         public bool checkGameOver()
         {
-            if (players.Count == 0)
+            if (players.Count == 1)
             {
                 //Show results page
                 return true;
