@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<mct:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<ContentPage x:Class="LudoClient.Popups.Results"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient.ControlView"
-             xmlns:mct="clr-namespace:CommunityToolkit.Maui.Views;assembly=CommunityToolkit.Maui" 
-             x:Class="LudoClient.Popups.Results"
-             Size="Infinity, Infinity"
-             Color="#10000000">
+             BackgroundImageSource="spinner_bk_red_glow.png">
     <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >
         <Image Source="spinner_bk_red_glow.png" Margin="-100" />
         <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
@@ -26,4 +24,4 @@
             </StackLayout>
         </Grid>
     </Grid>
-</mct:Popup>
+</ContentPage>

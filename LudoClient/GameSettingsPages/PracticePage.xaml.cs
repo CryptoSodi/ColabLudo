@@ -1,4 +1,5 @@
 using LudoClient.ControlView;
+using SharedCode.Constants;
 namespace LudoClient;
 public partial class PracticePage : ContentPage
 {
@@ -22,7 +23,18 @@ public partial class PracticePage : ContentPage
     }
     private void JoinPracticeTapped(object sender, EventArgs e)
     {
+        int gameType = 2;
+        if (Tab1.IsActive)
+            gameType = 2;
+        if (Tab2.IsActive)
+            gameType = 3;
+        if (Tab3.IsActive)
+            gameType = 4;
+        if (Tab4.IsActive)
+            gameType = 22;
+
         // Add logic here to join an offline game
         //Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType + "", 0, "");
     }
 }

@@ -1,5 +1,7 @@
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.CoreEngine;
+using System.Security.AccessControl;
 
 namespace LudoClient;
 
@@ -73,7 +75,18 @@ public partial class OfflinePage : ContentPage
     }
     private void JoinOfflineTapped(object sender, EventArgs e)
     {
+        Game game = new Game(gametype, playerCount, playerColor);
+        ClientGlobalConstants.game = game;
+        ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
+
         // Add logic here to join an offline game
-        Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
+        var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+        // Ensure there is at least one page to remove (i.e. the page before the current one).
+        if (existingPages.Count > 1)
+        {
+            // Remove the page immediately below the current (top) page.
+            ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+        }
     }
 }

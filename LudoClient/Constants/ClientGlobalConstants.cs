@@ -26,6 +26,8 @@ namespace LudoClient.Constants
         public static HelpDesk helpDesk = new HelpDesk();
         public static DailyBonus dailyBonus = new DailyBonus();
         public static ProfileInfo profileInfo = new ProfileInfo();
+        public static Results results = new Results();
+
         internal static Game game;
 
         public static void Init()

@@ -2,7 +2,7 @@ using CommunityToolkit.Maui.Views;
 
 namespace LudoClient.Popups;
 
-public partial class Results : Popup
+public partial class Results : ContentPage
 {
     public Results()
     {

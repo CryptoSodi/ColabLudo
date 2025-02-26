@@ -23,6 +23,8 @@ namespace SharedCode.CoreEngine
         public delegate void CallbackEventHandlerStopProgressAnimation(string SeatColor);
         public event CallbackEventHandlerStopProgressAnimation StopProgressAnimation;
 
+        public delegate Task CallbackEventHandlerShowResults(string SeatColor);
+        public event CallbackEventHandlerShowResults ShowResults;
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
 
@@ -367,13 +369,11 @@ namespace SharedCode.CoreEngine
                 {
                     Console.WriteLine($"{player.Color} has won the game!");
                     EngineHelper.players.Remove(player);
-                    if (EngineHelper.checkGameOver())
-                    {
-                        cleanGame();
 
-                        gameRecorder.SaveGameHistory();
-                        //Application.Current.MainPage = new AppShell();
-                        //  Application.Current.MainPage = new Game("Computer", "4", "Red");
+                    if (EngineHelper.gameType == "Computer" || EngineHelper.checkGameOver())
+                    {
+                        //GANE OVER
+                        GameOver(player);
                         return tempPiece;
                     }
                 }
@@ -387,6 +387,22 @@ namespace SharedCode.CoreEngine
             else 
                 return "";
             return tempPiece;
+        }
+
+        private void GameOver(Player player)
+        {
+            if (EngineHelper.gameType == "Computer" || EngineHelper.gameType == "Local")
+            {
+                // Show game over dialog
+                ShowResults(player.Color);
+            }
+            else if (EngineHelper.gameType != "Online")
+            {
+                // Send game over message to server
+                ShowResults(player.Color);
+            }
+            cleanGame();
+            gameRecorder.SaveGameHistory();
         }
         public void cleanGame()
         {
@@ -680,12 +696,7 @@ namespace SharedCode.CoreEngine
         }
         public bool checkTurn(String SeatName, String GameState)
         {
-            if (currentPlayer.Color == SeatName && gameState == GameState)
-            {
-                return true;
-            }
-            else
-                return false;
+            return (currentPlayer.Color == SeatName && gameState == GameState);
         }
         public async Task<String> RollDice(string seatName = "")
         {

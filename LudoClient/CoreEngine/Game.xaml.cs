@@ -1,13 +1,13 @@
 
+using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
-using System.IO.Pipelines;
 using System.Text.Json;
-namespace LudoClient.CoreEngine;
 
+namespace LudoClient.CoreEngine;
 public class PlayerDto
 {
     public int PlayerId { get; set; }
@@ -272,6 +272,7 @@ public partial class Game : ContentPage
         engine.StartProgressAnimation += new Engine.CallbackEventHandlerStartProgressAnimation(StartProgressAnimation);
         engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
         engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
+        engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
         // Set rotation based on player color
         int rotation = engine.EngineHelper.SetRotation(playerColor);
@@ -321,6 +322,11 @@ public partial class Game : ContentPage
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
+    }
+    public async Task ShowResults(string SeatColor)
+    {
+        ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
+       // this.ShowPopup(ClientGlobalConstants.results);
     }
     public void Pupulate(int rotation)
     {
@@ -514,12 +520,6 @@ public partial class Game : ContentPage
             }
         }
     }
-
-
-
-
-
-
     public void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
         //start animation
@@ -615,7 +615,7 @@ public partial class Game : ContentPage
         //show pop up for Exit to lobby
         // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
        // GameRecorder.SaveGameHistory();
-        engine.cleanGame(); 
+        engine.cleanGame();
         ClientGlobalConstants.dashBoard.Navigation.PopAsync();
     }
 }

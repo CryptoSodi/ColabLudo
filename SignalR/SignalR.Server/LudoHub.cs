@@ -125,13 +125,27 @@ namespace SignalR.Server
         }
         public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
         {
-            //Generate a new room name if roomName is empty
-            if (string.IsNullOrWhiteSpace(roomCode))
-                // Generates a unique room name
-                roomCode = GenerateUniqueRoomId(gameType, gameCost);
-
-            // Check if the RoomCode already exists in the database
-            var existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+            Game existingGame;
+            if (gameCost == 0 && string.IsNullOrWhiteSpace(roomCode))
+            {
+                existingGame = await _context.Games.FirstOrDefaultAsync(g => g.BetAmount == gameCost && g.State == "Active");
+                if (existingGame == null)
+                {
+                    if (string.IsNullOrWhiteSpace(roomCode))
+                        // Generates a unique room name
+                        roomCode = GenerateUniqueRoomId(gameType, gameCost);
+                    // Check if the RoomCode already exists in the database
+                    existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+                }   
+            }
+            else {
+                //Generate a new room name if roomName is empty
+                if (string.IsNullOrWhiteSpace(roomCode))
+                    // Generates a unique room name
+                    roomCode = GenerateUniqueRoomId(gameType, gameCost);
+                // Check if the RoomCode already exists in the database
+                existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
+            }
 
             MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
            
@@ -217,17 +231,15 @@ namespace SignalR.Server
                 seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Blue" });
             }
 
-            if (existingGame.Type == seats.Count + "")//add 22
+            if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
             {
-                await Task.Delay(2000);
-
                 string seatsData = JsonConvert.SerializeObject(seats);
-                
                 await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, seatsData);
-
                 existingGame.State = "Playing";
                  _context.Games.Update(existingGame);
                 await _context.SaveChangesAsync();
+
+                await Task.Delay(2000);
                 _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
                     gameRoom.InitializeEngine(seats[0].PlayerColor);
                 _engine.TryAdd(existingGame.RoomCode, gameRoom);
