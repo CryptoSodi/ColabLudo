@@ -17,9 +17,8 @@
                     <local:ResultCardLong x:Name="player3" PlayerName="Eliya"/>
                     <local:ResultCardLong x:Name="player4" PlayerName="Mazhar"/>
                 </StackLayout>
-                <StackLayout HeightRequest="40" Spacing="10" Margin="0,50,0,0" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" >
-                    <Image Source="btn_playagain.png" VerticalOptions="Fill" HorizontalOptions="Fill"/>
-                    <Image Source="btn_exit.png" VerticalOptions="Fill" HorizontalOptions="Fill">
+                <StackLayout HeightRequest="40" Spacing="10" Margin="0,50,0,0" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" >                    
+                    <Image Source="btn_playagain.png" VerticalOptions="Fill" HorizontalOptions="Fill">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="BtnExit"/>
                         </Image.GestureRecognizers>

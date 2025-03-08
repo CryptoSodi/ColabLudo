@@ -1,3 +1,4 @@
+
 namespace LudoClient.ControlView;
 
 public partial class ResultCardLong : ContentView
@@ -61,5 +62,13 @@ public partial class ResultCardLong : ContentView
     public ResultCardLong()
     {
         InitializeComponent();
+    }
+
+    internal void init(string? playerName, string? playerPicture, string Amount, string Position)
+    {
+        PlayerNameItem.Text = playerName;
+        PlayerImageItem.Source = playerPicture;
+        StarNumberItem.Text = Position;
+        ChipCountItem.Text = Amount;
     }
 }
