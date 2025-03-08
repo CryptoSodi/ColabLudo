@@ -24,7 +24,7 @@ namespace SharedCode.Constants
 #elif ANDROID
                 Debug = true;
 #endif
-                Url = Debug ? "http://192.168.1.4" : "https://localhost";
+                Url = Debug ? "http://192.168.1.101" : "https://localhost";
 #if WINDOWS
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
@@ -51,5 +51,6 @@ namespace SharedCode.Constants
             }
         };
         public static string RoomCode { get; internal set; }
+        public static int GameCost { get; internal set; }
     }
 }

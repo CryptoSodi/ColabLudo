@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using LudoClient.Popups;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
@@ -35,12 +36,12 @@ public partial class Game : ContentPage
         else
             return gui.blue;
     }
-    public Game(string GameType, string seatsData)
+    public Game(string playerCount, string seatsData)
     {
         seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
         var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
         playerColor = player.PlayerColor;
-        Build("Online", GameType, player.PlayerColor);
+        Build("Online", playerCount, player.PlayerColor);
     }
     public Game(string gameType, string playerCount, string playerColor)
     {
@@ -55,7 +56,7 @@ public partial class Game : ContentPage
             if(player!=null)
             playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
         }
-        catch (Exception e) { 
+        catch (Exception) { 
             
         }
     }
@@ -273,7 +274,7 @@ public partial class Game : ContentPage
         engine.StopProgressAnimation += new Engine.CallbackEventHandlerStopProgressAnimation(StopProgressAnimation);
         engine.RelocateAsync += new Engine.CallbackEventHandlerRelocateAsync(RelocateAsync);
         engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
-
+        engine.PlayerLeftSeat += new Engine.CallbackEventHandlerPlayerLeft(PlayerLeftSeat);
         // Set rotation based on player color
         int rotation = engine.EngineHelper.SetRotation(playerColor);
         Glayout.RotateTo(rotation);
@@ -324,9 +325,24 @@ public partial class Game : ContentPage
         MusicSwitch.init(".png");
     }
     public async Task ShowResults(string SeatColor)
-    {
+    {// Retrieve a copy of the current navigation stack.
+        var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+        // Ensure there is at least one page to remove (i.e. the page before the current one).
+        if (existingPages.Count > 1)
+        {
+            // Remove the page immediately below the current (top) page.
+            ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
+            existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+            if (existingPages.Count != 1)
+                ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
+        }
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
        // this.ShowPopup(ClientGlobalConstants.results);
+    }
+    public void PlayerLeftSeat(string SeatColor, bool SendToServer = true)
+    {
+        GetPlayerSeat(SeatColor).PlayerLeft();
     }
     public void Pupulate(int rotation)
     {
@@ -608,14 +624,35 @@ public partial class Game : ContentPage
     {
         PopoverButton.ShowAttachedPopover();
     } 
-    private void ExitToLobby(object sender, EventArgs e)
+    MessageBox mb;
+    private async void ExitToLobby(object sender, EventArgs e)
     {
-        //this.ShowPopup(new MessageBox());
         PopoverButton.HideAttachedPopover();
-        //show pop up for Exit to lobby
-        // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
-       // GameRecorder.SaveGameHistory();
-        engine.cleanGame();
-        ClientGlobalConstants.dashBoard.Navigation.PopAsync();
+        if (engine.EngineHelper.gameType == "Online")
+        {
+            if (GlobalConstants.GameCost == 0)
+                mb = new MessageBox("Exit", "Are you sure you want to exit?", "Your ranking will be affected!");
+            else
+                mb = new MessageBox("Exit", "Are you sure you want to exit?", "You will lose your bet amount!");
+        }
+        else
+        {
+            mb = new MessageBox("Exit", "Are you sure you want to exit?", "");            
+        }
+       String result = await this.ShowPopupAsync(mb)+"";
+        if (result == "Approve")
+        {
+            if (engine.EngineHelper.gameType == "Online")
+                GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
+            else
+            {
+                PopoverButton.HideAttachedPopover();
+                //show pop up for Exit to lobby
+                // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
+                // GameRecorder.SaveGameHistory();
+                engine.cleanGame();
+                ClientGlobalConstants.dashBoard.Navigation.PopAsync();
+            }
+        }
     }
 }

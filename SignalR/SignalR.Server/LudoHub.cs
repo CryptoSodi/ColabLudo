@@ -7,14 +7,6 @@ using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {
-    public class PlayerDto
-    {
-        public int PlayerId { get; set; }
-        public string? PlayerName { get; set; }
-        public string? PlayerPicture { get; set; }
-        public string? PlayerColor { get; set; }
-    }
-    public record User(string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor);
     public record Message(string User, string Text);
     public class LudoHub : Hub
     {
@@ -31,8 +23,8 @@ namespace SignalR.Server
         {
             if (_users.TryGetValue(Context.ConnectionId, out var user))
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.Room);
-                await Clients.Group(user.Room).SendAsync("UserLeft", user.PlayerName);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.roomCode);
+                await Clients.Group(user.roomCode).SendAsync("UserLeft", user.PlayerName);
             }
         }
         public override async Task OnConnectedAsync()
@@ -53,17 +45,17 @@ namespace SignalR.Server
                 return "Error: User not found.";
             }
             // Now use the user's Room property to get the GameRoom.
-            if (!_engine.TryGetValue(user.Room, out GameRoom gameRoom))
+            if (!_engine.TryGetValue(user.roomCode, out GameRoom gameRoom))
             {
-                Console.WriteLine($"GameRoom not found for room: {user.Room}");
+                Console.WriteLine($"GameRoom not found for room: {user.roomCode}");
                 return "Error: Room not found.";
             }
             // For logging purposes, show which room this command is coming from.
-            Console.WriteLine($"{name} (room {user.Room}): {commandValue}:{commandtype}");
+            Console.WriteLine($"{name} (room {user.roomCode}): {commandValue}:{commandtype}");
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
-                Console.WriteLine($"Engine not initialized for room: {user.Room}");
+                Console.WriteLine($"Engine not initialized for room: {user.roomCode}");
                 return "Error: Engine not initialized.";
             }
             // Process command based on the type.
@@ -110,7 +102,15 @@ namespace SignalR.Server
                     multiPlayer.P4 = null;
 
                 _context.MultiPlayers.Update(multiPlayer);
-
+                    if (!_engine.TryGetValue(roomCode, out GameRoom gameRoom))
+                    {
+                        Console.WriteLine($"GameRoom not found for room: {roomCode}");
+                    }
+                    if (!_users.TryGetValue(Context.ConnectionId, out User user))
+                    {
+                        Console.WriteLine("User not found for connection: " + Context.ConnectionId);
+                    }
+                    gameRoom.PlayerLeft(Context.ConnectionId, roomCode);
                 if (multiPlayer.P1 == null && multiPlayer.P2 == null && multiPlayer.P3 == null && multiPlayer.P4 == null)
                 {
                     existingGame.State = "Terminated";
@@ -118,7 +118,7 @@ namespace SignalR.Server
                 }
                 await _context.SaveChangesAsync();
                 BroadcastPlayersAsync(existingGame);
-            }
+            } 
             catch (Exception)
             {
             }
@@ -233,15 +233,19 @@ namespace SignalR.Server
 
             if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
             {
-                string seatsData = JsonConvert.SerializeObject(seats);
-                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, seatsData);
                 existingGame.State = "Playing";
-                 _context.Games.Update(existingGame);
+                _context.Games.Update(existingGame);
                 await _context.SaveChangesAsync();
 
                 await Task.Delay(2000);
+
+                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats));
                 _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
-                    gameRoom.InitializeEngine(seats[0].PlayerColor);
+                gameRoom.InitializeEngine(seats[0].PlayerColor);
+                for (int i = 0; i < gameRoom.Users.Count; i++)
+                {
+                    gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
+                }
                 _engine.TryAdd(existingGame.RoomCode, gameRoom);
             }
         }
@@ -401,5 +405,30 @@ namespace SignalR.Server
             Console.WriteLine($"Winner: {winner}");
             return winner;
         }
+    }
+    public class PlayerDto
+    {
+        public int PlayerId { get; set; }
+        public string? PlayerName { get; set; }
+        public string? PlayerPicture { get; set; }
+        public string? PlayerColor { get; set; }
+    }
+    public class User
+    {
+
+        public User(string connectionId, string roomCode, int playerId, string userName, string playerColor)
+        {
+            ConnectionId = connectionId;
+            this.roomCode = roomCode;
+            PlayerId = playerId;
+            this.PlayerName = userName;
+            this.PlayerColor = playerColor;
+        }
+
+        public string ConnectionId { get; init; }
+        public string roomCode { get; init; }
+        public int PlayerId { get; init; }
+        public string PlayerName { get; init; }
+        public string PlayerColor { get; set; }  // Now mutable
     }
 }

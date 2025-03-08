@@ -1,16 +1,20 @@
-﻿using SharedCode.CoreEngine;
+﻿using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
+using SharedCode.CoreEngine;
 
 namespace SignalR.Server
 {
     public class GameRoom
     {
         Microsoft.AspNetCore.SignalR.IHubCallerClients Clients;
+
         LudoServer.Data.LudoDbContext _context;
         public string RoomName { get; set; }
         public string GameType { get; set; }
         public decimal GameCost { get; set; }
         public List<User> Users { get; set; }
         public Engine engine { get; set; }  // The Engine instance for this room
+
         public GameRoom(Microsoft.AspNetCore.SignalR.IHubCallerClients clients, LudoServer.Data.LudoDbContext _context, string roomName, string gameType, decimal gameCost)
         {
             this.Clients = clients;
@@ -28,12 +32,39 @@ namespace SignalR.Server
         {
             // For example, using GameType and number of users (or connection count)
             engine = new Engine(GameType, Users.Count.ToString(), initialPlayerColor);
+            engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
             engine.StartProgressAnimation += StartProgressAnimation;
             engine.StopProgressAnimation += StopProgressAnimation;
             TimerTimeout += engine.TimerTimeoutAsync;
             StartProgressAnimation("");
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+        }
+        private async Task ShowResults(string SeatColor)
+        {
+            Clients.Group(RoomName).SendAsync("ShowResults", SeatColor);
+        }
+        public async Task<User> PlayerLeft(string connectionId,string roomCode)
+        {
+            // Try to find the user in the game room's user list using the connection ID.
+            var user = Users.FirstOrDefault(u => u.ConnectionId == connectionId);
+            if (user != null)
+            {
+                // Remove the user from the room.
+                Users.Remove(user);
+
+                // Optionally, perform additional cleanup or update the game engine state.
+                // For example: engine.RemoveUser(user); // if your engine supports this
+                await Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
+                // Notify all connected clients that a user has left.
+                engine.PlayerLeft(user.PlayerColor);
+                Console.WriteLine("User removed: " + user.PlayerColor);
+            }
+            else
+            {
+                Console.WriteLine("User not found for connection: " + connectionId);
+            }
+            return user;
         }
         public async Task StartProgressAnimationAsync(string SeatName)
         {

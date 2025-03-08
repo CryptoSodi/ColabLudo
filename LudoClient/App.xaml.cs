@@ -49,6 +49,8 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.DiceRoll += OnDiceRoll;
                 GlobalConstants.MatchMaker.PieceMove += OnPieceMove;
+                GlobalConstants.MatchMaker.PlayerLeft += OnPlayerLeft;
+                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
 
                 MainPage = new AppShell();
 
@@ -77,6 +79,20 @@ namespace LudoClient
             {
                 ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
 
+            });
+        }
+        private void OnPlayerLeft(object? sender, string PlayerColor)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
+            });
+        }
+        private void OnShowResults(object? sender, string PlayerColor)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClientGlobalConstants.game.ShowResults(PlayerColor);
             });
         }
 
@@ -113,6 +129,7 @@ namespace LudoClient
                 var gameCost = args.GameCost;
                 var roomCode = args.RoomCode;
                 GlobalConstants.RoomCode = roomCode;
+                GlobalConstants.GameCost = gameCost;
 
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameType, gameCost, roomCode));
                 // Retrieve a copy of the current navigation stack.

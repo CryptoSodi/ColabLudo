@@ -6,15 +6,27 @@
              x:Class="LudoClient.Popups.MessageBox"
              ImageSource="signin_inner_bg.png">
     <popup:BasePopup.PopupContent>
-        <Grid RowSpacing="20" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
-            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="0,20,0,60" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-            <local:TitleBar x:Name="Title" Grid.Row="1" Grid.Column="1" Title="SPIN BONUS" Margin="20,-58,20,0" HorizontalOptions="FillAndExpand" VerticalOptions="Start"/>
-            
-            <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="0,40,0,60" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+        <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
+            <local:TitleBar x:Name="Title" Grid.Row="1" Grid.Column="1" Title="SPIN BONUS" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
+
+            <BoxView Grid.Row="1" Grid.Column="1" CornerRadius="10" Margin="0,20,0,60" BackgroundColor="#2C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+            <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="0,40,0,60" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Label x:Name="Message" Text="You have successfully claimed your Spin Bonus." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                 <Label x:Name="SubMessage" Text="Come back later for more." TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
             </StackLayout>
-            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,0" Source="btn_green.png" VerticalOptions="End" HorizontalOptions="Center"/>
+
+            <StackLayout HeightRequest="40" Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Spacing="10" HorizontalOptions="Center" VerticalOptions="End">
+                <Image Source="btn_playagain.png" VerticalOptions="End" HorizontalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="BTNClose" />
+                    </Image.GestureRecognizers>
+                </Image>
+                <Image Source="btn_exit.png" VerticalOptions="End" HorizontalOptions="Center">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="BTNApprove" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </StackLayout>
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup>

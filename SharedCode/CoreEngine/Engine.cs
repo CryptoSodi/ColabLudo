@@ -25,6 +25,9 @@ namespace SharedCode.CoreEngine
 
         public delegate Task CallbackEventHandlerShowResults(string SeatColor);
         public event CallbackEventHandlerShowResults ShowResults;
+
+        public delegate void CallbackEventHandlerPlayerLeft(string SeatColor, bool SendToServer = true);
+        public event CallbackEventHandlerPlayerLeft PlayerLeftSeat;
         // Game logic helpers
         public static Dictionary<string, List<Piece>>? board;
 
@@ -388,21 +391,37 @@ namespace SharedCode.CoreEngine
                 return "";
             return tempPiece;
         }
-
+        public void PlayerLeft(String playerColor, bool SendToServer = true)
+        {
+            EngineHelper.players.RemoveAll(p => p.Color == playerColor);
+            if (EngineHelper.currentPlayer.Color == playerColor)
+                EngineHelper.ChangeTurn();
+            if (PlayerLeftSeat != null)
+                PlayerLeftSeat(playerColor);
+            if (EngineHelper.checkGameOver())
+            {
+                //GANE OVER
+                GameOver(EngineHelper.players[0]);
+            }
+        }
         private void GameOver(Player player)
         {
-            if (EngineHelper.gameType == "Computer" || EngineHelper.gameType == "Local")
+            if ((EngineHelper.gameType == "Computer" || EngineHelper.gameType == "Local") && EngineHelper.gameType != "Online")
             {
-                // Show game over dialog
-                ShowResults(player.Color);
+                if (ShowResults != null)
+                    // Show game over dialog if the game is not in online mode
+                    ShowResults(player.Color);
             }
             else if (EngineHelper.gameType != "Online")
             {
-                // Send game over message to server
-                ShowResults(player.Color);
+                if (ShowResults != null)
+                    // Send game over message to server
+                    ShowResults(player.Color);
             }
             cleanGame();
+#if WINDOWS
             gameRecorder.SaveGameHistory();
+#endif
         }
         public void cleanGame()
         {
@@ -435,15 +454,7 @@ namespace SharedCode.CoreEngine
         // Constants or configuration lists
         public readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-        public void playerLeft(String playerColor)
-        {
-            players.RemoveAll(p => p.Color == playerColor);
-            if (players.Count == 1)
-            {
-                Console.WriteLine($"{players[0].Color} has won the game!");
-                players.Clear();
-            }
-        }
+       
         public bool animationBlock = false;
         public Player getPlayer(String color)
         {

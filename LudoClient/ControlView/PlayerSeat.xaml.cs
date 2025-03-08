@@ -122,7 +122,6 @@ public partial class PlayerSeat : ContentView
         }
         catch (Exception)
         {
-        
         }
         if(EngineHelper.gameType != "Online")
             TimerTimeout?.Invoke(seatColor);
@@ -163,5 +162,14 @@ public partial class PlayerSeat : ContentView
         //HARIS FIX THIS THE SOURCE FILE NEEDS TO BE MATCHED WITH dice_0.png only then we have to reset //0001
         if (DiceLayer.Source + "" != "dice_0.png")
             DiceLayer.Source = "dice_0.png";
+    }
+
+    internal void PlayerLeft()
+    {
+        reset();
+        PlayerNameText.Text = "Left";
+        PlayerImage.Source = "user.png";
+        ProgressBoxParentContainer.IsVisible = false;
+        playerBG.ImageSource = "gray_container.png";
     }
 }
