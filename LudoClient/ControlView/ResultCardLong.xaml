@@ -10,21 +10,14 @@
                 <Image x:Name="StarTypeItem" Source="star_silver.png" />
                 <Label x:Name="StarNumberItem" Text="1" FontSize="14" TextColor="Black" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
-            <Grid Margin="0,-4,0,-4" Grid.Column="2" Grid.RowSpan="3">
-                <Frame 
-                   HorizontalOptions="CenterAndExpand"
-                   VerticalOptions="CenterAndExpand"
-                   CornerRadius="90"
-                   IsClippedToBounds="True"
-                   Padding="0"
-                   BorderColor="Gray"
-                   Margin="5">
-                    <Image Source="player.png"/>
+            <Grid Margin="0,-4,0,-4" Grid.Column="2" Grid.RowSpan="3" HorizontalOptions="Start">
+                <Frame HorizontalOptions="Center" VerticalOptions="Center" CornerRadius="90" IsClippedToBounds="True" Padding="0" BorderColor="Gray" Margin="5">
+                    <Image x:Name="PlayerImageItem" Source="player.png"/>
                 </Frame>
                 <Image x:Name="BorderImageItem" Source="silver_border.png"/>
             </Grid>
-            <Label x:Name="PlayerNameItem" Text="Player" TextColor="Black" FontSize="20" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center"/>
-            <Grid Grid.Row="1" Grid.Column="4" HorizontalOptions="FillAndExpand">
+            <Label x:Name="PlayerNameItem" Text="Player" TextColor="Black" FontSize="20" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Start"/>
+            <Grid Grid.Row="1" Grid.Column="4" HorizontalOptions="Fill">
                 <BoxView x:Name="WinAmountColorItem" CornerRadius="5" Color="Purple" />
                 <StackLayout Margin="5" Spacing="5" Orientation="Horizontal">
                     <Image Source="ic_chips_spades.png"/>

@@ -3,27 +3,22 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Popups;
+using SharedCode;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
 using System.Text.Json;
 
 namespace LudoClient.CoreEngine;
-public class PlayerDto
-{
-    public int PlayerId { get; set; }
-    public string? PlayerName { get; set; }
-    public string? PlayerPicture { get; set; }
-    public string? PlayerColor { get; set; }
-}
+
 public partial class Game : ContentPage
 {//For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
     public string playerColor = "";
     public Engine engine;
     Gui gui;
-    public PlayerSeat RedPlayerSeat; 
-    public PlayerSeat GreenPlayerSeat; 
-    public PlayerSeat YellowPlayerSeat; 
+    public PlayerSeat RedPlayerSeat;
+    public PlayerSeat GreenPlayerSeat;
+    public PlayerSeat YellowPlayerSeat;
     public PlayerSeat BluePlayerSeat;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
@@ -36,16 +31,16 @@ public partial class Game : ContentPage
         else
             return gui.blue;
     }
-    public Game(string playerCount, string seatsData)
+    public Game(string gameType, string seatsOrPlayerCount, string playerColor = "")
     {
-        seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
-        var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
-        playerColor = player.PlayerColor;
-        Build("Online", playerCount, player.PlayerColor);
-    }
-    public Game(string gameType, string playerCount, string playerColor)
-    {
-        Build(gameType, playerCount, playerColor);
+        if (playerColor == "")
+        {
+            seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsOrPlayerCount);
+            var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
+            Build("Online", gameType, player.PlayerColor);
+        }
+        else
+            Build(gameType, seatsOrPlayerCount, playerColor);
     }
     List<PlayerDto>? seats;
     private void updateSeat(PlayerSeat playerSeat)
@@ -56,9 +51,7 @@ public partial class Game : ContentPage
             if(player!=null)
             playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
         }
-        catch (Exception) { 
-            
-        }
+        catch (Exception) {}
     }
     private void Build(string gameType, string playerCount, string playerColor)
     {
@@ -324,20 +317,11 @@ public partial class Game : ContentPage
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
     }
-    public async Task ShowResults(string SeatColor)
-    {// Retrieve a copy of the current navigation stack.
-        var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-
-        // Ensure there is at least one page to remove (i.e. the page before the current one).
-        if (existingPages.Count > 1)
-        {
-            // Remove the page immediately below the current (top) page.
-            ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
-            existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-            if (existingPages.Count != 1)
-                ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
-        }
+    public async Task ShowResults(string seats)
+    {
+        ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats));
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
+        ClientGlobalConstants.FlushOld();
        // this.ShowPopup(ClientGlobalConstants.results);
     }
     public void PlayerLeftSeat(string SeatColor, bool SendToServer = true)
@@ -624,22 +608,23 @@ public partial class Game : ContentPage
     {
         PopoverButton.ShowAttachedPopover();
     } 
-    MessageBox mb;
+    MessageBox mb = null;
     private async void ExitToLobby(object sender, EventArgs e)
     {
-        PopoverButton.HideAttachedPopover();
+        try{PopoverButton.HideAttachedPopover();}catch (Exception){}
+
+        if (mb != null)
+            return;
         if (engine.EngineHelper.gameType == "Online")
-        {
             if (GlobalConstants.GameCost == 0)
                 mb = new MessageBox("Exit", "Are you sure you want to exit?", "Your ranking will be affected!");
             else
                 mb = new MessageBox("Exit", "Are you sure you want to exit?", "You will lose your bet amount!");
-        }
         else
-        {
-            mb = new MessageBox("Exit", "Are you sure you want to exit?", "");            
-        }
-       String result = await this.ShowPopupAsync(mb)+"";
+            mb = new MessageBox("Exit", "Are you sure you want to exit?", "");
+
+        String result = await this.ShowPopupAsync(mb) + "";
+        mb = null;
         if (result == "Approve")
         {
             if (engine.EngineHelper.gameType == "Online")
@@ -654,5 +639,15 @@ public partial class Game : ContentPage
                 ClientGlobalConstants.dashBoard.Navigation.PopAsync();
             }
         }
+    }
+    protected override bool OnBackButtonPressed()
+    {
+        // Insert your custom logic here
+        // For example, display a confirmation dialog (note: async work must be handled carefully since this method is synchronous)
+        ExitToLobby(null, null);
+        // Prevent back navigation:
+        return true;
+        // Or to allow it:
+        // return base.OnBackButtonPressed();
     }
 }

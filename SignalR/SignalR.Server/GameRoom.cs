@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using SharedCode;
 using SharedCode.CoreEngine;
 
 namespace SignalR.Server
@@ -13,6 +14,8 @@ namespace SignalR.Server
         public string GameType { get; set; }
         public decimal GameCost { get; set; }
         public List<User> Users { get; set; }
+
+        public List<PlayerDto> seats = new List<PlayerDto>();
         public Engine engine { get; set; }  // The Engine instance for this room
 
         public GameRoom(Microsoft.AspNetCore.SignalR.IHubCallerClients clients, LudoServer.Data.LudoDbContext _context, string roomName, string gameType, decimal gameCost)
@@ -37,12 +40,22 @@ namespace SignalR.Server
             engine.StartProgressAnimation += StartProgressAnimation;
             engine.StopProgressAnimation += StopProgressAnimation;
             TimerTimeout += engine.TimerTimeoutAsync;
+            
             StartProgressAnimation("");
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
-        private async Task ShowResults(string SeatColor)
+        private async Task ShowResults(string PlayerColor)
         {
-            Clients.Group(RoomName).SendAsync("ShowResults", SeatColor);
+            // Instead of Thread.Sleep, use Task.Delay for async waiting.
+            await Task.Delay(2000);
+            // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
+            // Order the list so that seats whose SeatColor equals the provided seatColor come first.
+            var sortedSeats = seats
+                .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Send the rearranged list to your clients (make sure your client is set up to handle this list)
+            await Clients.Group(RoomName).SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats));
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {

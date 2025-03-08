@@ -16,6 +16,7 @@
     <Compile Include="..\..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
     <Compile Include="..\..\SharedCode\Network\Client.cs" Link="Network\Client.cs" />
+    <Compile Include="..\..\SharedCode\SharedClasses.cs" Link="SharedClasses.cs" />
   </ItemGroup>
 
   <ItemGroup>

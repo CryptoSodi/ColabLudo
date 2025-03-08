@@ -34,9 +34,9 @@
                                     </Image.GestureRecognizers>
                                 </Image>
                                 <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".1*,.2*">
-                                <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
-                                    <Grid Margin="2" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">                                        
-                                            <Label Text="Entry Fee" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
+                                    <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
+                                    <Grid Margin="2" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
+                                        <Label Text="Entry Fee" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
                                     </Grid>
                                     <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="Fill">
                                         <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>

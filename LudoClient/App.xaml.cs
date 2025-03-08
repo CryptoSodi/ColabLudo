@@ -78,7 +78,6 @@ namespace LudoClient
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
-
             });
         }
         private void OnPlayerLeft(object? sender, string PlayerColor)
@@ -88,11 +87,11 @@ namespace LudoClient
                 ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
             });
         }
-        private void OnShowResults(object? sender, string PlayerColor)
+        private void OnShowResults(object? sender, string seats)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                ClientGlobalConstants.game.ShowResults(PlayerColor);
+                ClientGlobalConstants.game.ShowResults(seats);
             });
         }
 
@@ -106,19 +105,7 @@ namespace LudoClient
                 ClientGlobalConstants.game = game;
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
                 //MainPage = new Game(GameType, seatsData);
-
-                // Retrieve a copy of the current navigation stack.
-                var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-
-                // Ensure there is at least one page to remove (i.e. the page before the current one).
-                if (existingPages.Count > 1)
-                {
-                    // Remove the page immediately below the current (top) page.
-                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
-                    existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-                    if(existingPages.Count!=2)
-                        ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
-                }
+                ClientGlobalConstants.FlushOld();
             });
         }
         private void OnRoomJoined(object? sender, (string GameType, int GameCost, string RoomCode) args)
@@ -132,15 +119,7 @@ namespace LudoClient
                 GlobalConstants.GameCost = gameCost;
 
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameType, gameCost, roomCode));
-                // Retrieve a copy of the current navigation stack.
-                var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-
-                // Ensure there is at least one page to remove (i.e. the page before the current one).
-                if (existingPages.Count > 1)
-                {
-                    // Remove the page immediately below the current (top) page.
-                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
-                }
+                ClientGlobalConstants.FlushOld();
             });
         }
 #if WINDOWS

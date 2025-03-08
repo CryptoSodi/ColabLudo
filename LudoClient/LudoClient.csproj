@@ -251,7 +251,6 @@
 	  <None Remove="Resources\Images\Game\blue_token_large.png" />
 	  <None Remove="Resources\Images\Game\blue_user.png" />
 	  <None Remove="Resources\Images\Game\board_game.png" />
-	  <None Remove="Resources\Images\Game\board_gameCopy.png" />
 	  <None Remove="Resources\Images\Game\board_game_1.jpg" />
 	  <None Remove="Resources\Images\Game\board_game_2.png" />
 	  <None Remove="Resources\Images\Game\dice_0.png" />
@@ -270,7 +269,6 @@
 	  <None Remove="Resources\Images\Game\dice_5.png" />
 	  <None Remove="Resources\Images\Game\dice_6.png" />
 	  <None Remove="Resources\Images\Game\Dice_A.gif" />
-	  <None Remove="Resources\Images\Game\gray_container.png" />
 	  <None Remove="Resources\Images\Game\green_container.png" />
 	  <None Remove="Resources\Images\Game\green_token.png" />
 	  <None Remove="Resources\Images\Game\green_token_large.png" />
@@ -382,6 +380,7 @@
 	  <Compile Include="..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
 	  <Compile Include="..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
 	  <Compile Include="..\SharedCode\Network\Client.cs" Link="Network\Client.cs" />
+	  <Compile Include="..\SharedCode\SharedClasses.cs" Link="SharedClasses.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -474,7 +473,6 @@
 	  <MauiImage Include="Resources\Images\Game\blue_token_large.png" />
 	  <MauiImage Include="Resources\Images\Game\blue_user.png" />
 	  <MauiImage Include="Resources\Images\Game\board_game.png" />
-	  <MauiImage Include="Resources\Images\Game\board_gameCopy.png" />
 	  <MauiImage Include="Resources\Images\Game\board_game_1.jpg" />
 	  <MauiImage Include="Resources\Images\Game\board_game_2.png" />
 	  <MauiImage Include="Resources\Images\Game\dice_00.png" />

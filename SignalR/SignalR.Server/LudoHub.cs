@@ -3,6 +3,7 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using SharedCode;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -241,11 +242,11 @@ namespace SignalR.Server
 
                 await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats));
                 _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
+                gameRoom.seats = seats;
                 gameRoom.InitializeEngine(seats[0].PlayerColor);
                 for (int i = 0; i < gameRoom.Users.Count; i++)
-                {
                     gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
-                }
+
                 _engine.TryAdd(existingGame.RoomCode, gameRoom);
             }
         }
@@ -406,16 +407,9 @@ namespace SignalR.Server
             return winner;
         }
     }
-    public class PlayerDto
-    {
-        public int PlayerId { get; set; }
-        public string? PlayerName { get; set; }
-        public string? PlayerPicture { get; set; }
-        public string? PlayerColor { get; set; }
-    }
+   
     public class User
     {
-
         public User(string connectionId, string roomCode, int playerId, string userName, string playerColor)
         {
             ConnectionId = connectionId;

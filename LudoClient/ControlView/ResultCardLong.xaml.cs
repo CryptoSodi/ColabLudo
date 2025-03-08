@@ -46,7 +46,17 @@ public partial class ResultCardLong : ContentView
         set => SetValue(PlayerNameProperty, value);
     }
 
-
+    public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerImage), typeof(string), typeof(ResultCardLong), propertyChanged: (bindable, oldValue, newValue) =>
+    {
+        var control = (ResultCardLong)bindable;
+        control.PlayerImageItem.Source = (string)newValue;
+    });
+    public string PlayerImage
+    {
+        get => GetValue(PlayerImageProperty) as string;
+        set => SetValue(PlayerImageProperty, value);
+    }
+    
 
     public ResultCardLong()
     {

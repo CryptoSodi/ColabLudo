@@ -4,22 +4,26 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient.ControlView"
              BackgroundImageSource="spinner_bk_red_glow.png">
-    <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" >
+    <Grid VerticalOptions="Fill" HorizontalOptions="Fill" >
         <Image Source="spinner_bk_red_glow.png" Margin="-100" />
-        <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+        <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
 
-        <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
-            <StackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="FillAndExpand">
-                <Image Margin="0,100,0,0"  Source="ttl_results.png" VerticalOptions="End" HorizontalOptions="FillAndExpand"/>
-                <StackLayout Margin="0,-80,0,0" Spacing="6" VerticalOptions="Start" HorizontalOptions="FillAndExpand">
-                    <local:ResultCardLong Margin="0,2,0,0" BackGroundImage="user_main_bg_gold.png" BorderImage="gold_border.png" StarImage="star_gold.png" PlayerName="Tassaduq"/>
-                    <local:ResultCardLong PlayerName="Haris"/>
-                    <local:ResultCardLong PlayerName="Eliya"/>
-                    <local:ResultCardLong PlayerName="Mazhar"/>
+        <Grid VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
+            <StackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Fill">
+                <Image Margin="0,100,0,0"  Source="ttl_results.png" VerticalOptions="End" HorizontalOptions="Fill"/>
+                <StackLayout Margin="0,-80,0,0" Spacing="6" VerticalOptions="Start" HorizontalOptions="Fill">
+                    <local:ResultCardLong x:Name="player1" Margin="0,2,0,0" BackGroundImage="user_main_bg_gold.png" BorderImage="gold_border.png" StarImage="star_gold.png" PlayerName="Tassaduq"/>
+                    <local:ResultCardLong x:Name="player2" PlayerName="Haris"/>
+                    <local:ResultCardLong x:Name="player3" PlayerName="Eliya"/>
+                    <local:ResultCardLong x:Name="player4" PlayerName="Mazhar"/>
                 </StackLayout>
-                <StackLayout Spacing="10" Margin="30,50,30,0" Orientation="Horizontal" HorizontalOptions="FillAndExpand" VerticalOptions="Start" >
-                    <Image Source="btn_playagain.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
-                    <Image Source="btn_exit.png" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+                <StackLayout HeightRequest="40" Spacing="10" Margin="0,50,0,0" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" >
+                    <Image Source="btn_playagain.png" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                    <Image Source="btn_exit.png" VerticalOptions="Fill" HorizontalOptions="Fill">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="BtnExit"/>
+                        </Image.GestureRecognizers>
+                    </Image>
                 </StackLayout>
             </StackLayout>
         </Grid>

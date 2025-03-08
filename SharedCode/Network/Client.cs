@@ -62,11 +62,11 @@ namespace SharedCode.Network
                 //Game(GameType, playerCount, PlayerColor)
                 PlayerLeft?.Invoke(this, SeatColor);
             }); 
-            _hubConnection.On<string>("ShowResults", SeatColor =>
+            _hubConnection.On<string>("ShowResults", seats =>
             {
-                Console.WriteLine("PlayerLeft : " + DateTime.Now, SeatColor);
+                Console.WriteLine("ShowResults : " + DateTime.Now, seats);
                 //Game(GameType, playerCount, PlayerColor)
-                ShowResults?.Invoke(this, SeatColor);
+                ShowResults?.Invoke(this, seats);
             });
 
             // Message event

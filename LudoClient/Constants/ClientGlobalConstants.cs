@@ -72,5 +72,36 @@ namespace LudoClient.Constants
             page.Measure(width, height);
             page.Layout(new Rect(0, 0, width, height));
         }
+
+        internal static void GoBack()
+        {
+            var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+            // Ensure there is at least one page to remove (i.e. the page before the current one).
+            if (existingPages.Count > 1)
+            {
+                // Remove the page immediately below the current (top) page.
+                ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
+                existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+                if (existingPages.Count != 1)
+                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
+            }
+        }
+
+        internal static void FlushOld()
+        {
+            // Retrieve a copy of the current navigation stack.
+            var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+
+            // Ensure there is at least one page to remove (i.e. the page before the current one).
+            if (existingPages.Count > 1)
+            {
+                // Remove the page immediately below the current (top) page.
+                ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+                existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+                if (existingPages.Count != 2)
+                    ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
+            }
+        }
     }
 }
