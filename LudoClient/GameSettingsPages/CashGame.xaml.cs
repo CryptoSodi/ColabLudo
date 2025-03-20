@@ -78,18 +78,18 @@ public partial class CashGame : ContentPage
     }
     private void CreateRoom_Clicked(object sender, EventArgs e)
     {
-        int gameType = 2;
+        string gameType = "2";
         if (Tab1.IsActive)
-            gameType = 2;
+            gameType = "2";
         if (Tab2.IsActive)
-            gameType = 3;
+            gameType = "3";
         if (Tab3.IsActive)
-            gameType = 4;
+            gameType = "4";
         if (Tab4.IsActive)
-            gameType = 22;
+            gameType = "22";
 
         //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType + "", entry, "");
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, entry, "");
 
     }
 }

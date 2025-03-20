@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace SharedCode
 {
-    class SharedClasses
-    {
-    }
     public class PlayerDto
     {
         public int PlayerId { get; set; }

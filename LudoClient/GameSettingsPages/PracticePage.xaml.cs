@@ -12,6 +12,7 @@ public partial class PracticePage : ContentPage
         Tab4.SwitchSource = Tab4.SwitchOff;
 
     }
+    string gameType = "2";
     private void ActivateTab(object sender, EventArgs e)
     {
         ImageSwitch activeTab = sender as ImageSwitch;
@@ -20,21 +21,20 @@ public partial class PracticePage : ContentPage
         Tab3.SwitchSource = Tab3 == activeTab ? Tab3.SwitchOn : Tab3.SwitchOff;
         Tab4.SwitchSource = Tab4 == activeTab ? Tab4.SwitchOn : Tab4.SwitchOff;
         // Add logic here to change the content based on the active tab
+        gameType = "2";
+        if (Tab1 == activeTab)
+            gameType = "2";
+        if (Tab2 == activeTab)
+            gameType = "3";
+        if (Tab3 == activeTab)
+            gameType = "4";
+        if (Tab4 == activeTab)
+            gameType = "22"; 
     }
     private void JoinPracticeTapped(object sender, EventArgs e)
     {
-        int gameType = 2;
-        if (Tab1.IsActive)
-            gameType = 2;
-        if (Tab2.IsActive)
-            gameType = 3;
-        if (Tab3.IsActive)
-            gameType = 4;
-        if (Tab4.IsActive)
-            gameType = 22;
-
         // Add logic here to join an offline game
         //Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType + "", 0, "");
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, 0, "");
     }
 }

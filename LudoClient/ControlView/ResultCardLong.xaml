@@ -17,7 +17,7 @@
                 <Image x:Name="BorderImageItem" Source="silver_border.png"/>
             </Grid>
             <Label x:Name="PlayerNameItem" Text="Player" TextColor="Black" FontSize="14" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Start"/>
-            <Grid Grid.Row="1" Grid.Column="4" HorizontalOptions="Fill">
+            <Grid x:Name="ChipCountHolder" Grid.Row="1" Grid.Column="4" HorizontalOptions="Fill">
                 <BoxView x:Name="WinAmountColorItem" CornerRadius="5" Color="Purple" />
                 <StackLayout Margin="5" Spacing="5" Orientation="Horizontal">
                     <Image Source="ic_chips_spades.png"/>

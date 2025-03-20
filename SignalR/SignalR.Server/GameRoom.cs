@@ -34,7 +34,7 @@ namespace SignalR.Server
         public void InitializeEngine(string initialPlayerColor)
         {
             // For example, using GameType and number of users (or connection count)
-            engine = new Engine(GameType, Users.Count.ToString(), initialPlayerColor);
+            engine = new Engine("Server", GameType, Users.Count.ToString(), initialPlayerColor);
             engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
             engine.StartProgressAnimation += StartProgressAnimation;
@@ -55,7 +55,7 @@ namespace SignalR.Server
                 .ToList();
 
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
-            await Clients.Group(RoomName).SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats));
+            await Clients.Group(RoomName).SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {

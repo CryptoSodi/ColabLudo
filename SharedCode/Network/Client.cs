@@ -13,9 +13,9 @@ namespace SharedCode.Network
         public event EventHandler<(string SeatColor, string DiceValue, string Piece)> DiceRoll;
         public event EventHandler<string> PieceMove;
         public event EventHandler<string> PlayerLeft;
-        public event EventHandler<string> ShowResults;
         public event EventHandler<(string GameType, string seatsData)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
+        public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
 
         public Client()
@@ -62,11 +62,11 @@ namespace SharedCode.Network
                 //Game(GameType, playerCount, PlayerColor)
                 PlayerLeft?.Invoke(this, SeatColor);
             }); 
-            _hubConnection.On<string>("ShowResults", seats =>
+            _hubConnection.On<string, string, string> ("ShowResults", (seats, GameType, GameCost) =>
             {
-                Console.WriteLine("ShowResults : " + DateTime.Now, seats);
+                Console.WriteLine("ShowResults : " + DateTime.Now, seats, GameType, GameCost);
                 //Game(GameType, playerCount, PlayerColor)
-                ShowResults?.Invoke(this, seats);
+                ShowResults?.Invoke(this, (seats, GameType, GameCost));
             });
 
             // Message event

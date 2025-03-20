@@ -22,27 +22,45 @@ public partial class Game : ContentPage
     public PlayerSeat BluePlayerSeat;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
-        if (seatColor == "red" || seatColor == "Red")
+        if (seatColor.ToLower() == "red")
             return gui.red;
-        else if (seatColor == "green" || seatColor == "Green")
+        else if (seatColor.ToLower() == "green")
             return gui.green;
-        else if (seatColor == "yellow" || seatColor == "Yellow")
+        else if (seatColor.ToLower() == "yellow")
             return gui.yellow;
         else
             return gui.blue;
     }
-    public Game(string gameType, string seatsOrPlayerCount, string playerColor = "")
+    List<PlayerDto>? seats;
+    public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "")
     {
-        if (playerColor == "")
+        seats = null;
+        //new List<PlayerDto>();
+        //PlayerDto red = new PlayerDto();
+        //red.PlayerColor = "Red";
+        //PlayerDto gre = new PlayerDto();
+        //gre.PlayerColor = "Green";
+        //PlayerDto yel = new PlayerDto();
+        //yel.PlayerColor = "Yellow";
+        //PlayerDto blu = new PlayerDto();
+        //blu.PlayerColor = "Blue";
+        //seats.Add(red);
+        //seats.Add(gre);
+        //seats.Add(yel);
+        //seats.Add(blu);
+        if (seatsData != "")
         {
-            seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsOrPlayerCount);
+            seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
             var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
-            Build("Online", gameType, player.PlayerColor);
+            this.playerColor = player.PlayerColor;
+            Build("Client", gameType, seats.Count + "", player.PlayerColor);
         }
         else
-            Build(gameType, seatsOrPlayerCount, playerColor);
+        {
+            this.playerColor = playerColor;
+            Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor);
+        }   
     }
-    List<PlayerDto>? seats;
     private void updateSeat(PlayerSeat playerSeat)
     {
         try
@@ -53,7 +71,7 @@ public partial class Game : ContentPage
         }
         catch (Exception) {}
     }
-    private void Build(string gameType, string playerCount, string playerColor)
+    private void Build(string gameMode, string gameType, string playerCount, string playerColor)
     {
         InitializeComponent();
         // Create RedPlayerSeat
@@ -85,123 +103,201 @@ public partial class Game : ContentPage
             VerticalOptions = LayoutOptions.End
         };
 
-        switch (playerCount)
-        {
-            case "2":
-                switch (playerColor)
-                {
-                    case "Red":
-                        Row1.Children.Add(YellowPlayerSeat);
-                        Row2.Children.Add(RedPlayerSeat);
-                        break;
-                    case "Yellow":
-                        Row2.Children.Add(YellowPlayerSeat);
-                        Row1.Children.Add(RedPlayerSeat);
-                        break;
-                    case "Green":
-                        Row1.Children.Add(BluePlayerSeat);
-                        Row2.Children.Add(GreenPlayerSeat);
-                        break;
-                    case "Blue":
-                        Row2.Children.Add(BluePlayerSeat);
-                        Row1.Children.Add(GreenPlayerSeat);
-                        break;
-                }
-                break;
-            case "3":
-                switch (playerColor)
-                {
-                    case "Red":
-                        Row1.Children.Add(GreenPlayerSeat);
-                        Row1.Children.Add(YellowPlayerSeat);
-                        Row2.Children.Add(RedPlayerSeat);
-                        break;
-                    case "Yellow":
-                        Row1.Children.Add(BluePlayerSeat);
-                        Row1.Children.Add(RedPlayerSeat);
-                        Row2.Children.Add(YellowPlayerSeat);
-                        break;
-                    case "Green":
-                        Row1.Children.Add(YellowPlayerSeat);
-                        Row1.Children.Add(BluePlayerSeat);
-                        Row2.Children.Add(GreenPlayerSeat);
-                        break;
-                    case "Blue":
-                        Row1.Children.Add(RedPlayerSeat);
-                        Row1.Children.Add(GreenPlayerSeat);
-                        Row2.Children.Add(BluePlayerSeat);
-                        break;
-                }
-                break;
-            case "4":
-                switch (playerColor)
-                {
-                    case "Red":
-                        Row2.Children.Add(RedPlayerSeat);
-                        Row2.Children.Add(BluePlayerSeat);
-
-                        Row1.Children.Add(GreenPlayerSeat);
-                        Row1.Children.Add(YellowPlayerSeat);
-                        break;
-                    case "Green":
-                        Row2.Children.Add(GreenPlayerSeat);
-                        Row2.Children.Add(RedPlayerSeat);
-
-                        Row1.Children.Add(YellowPlayerSeat);
-                        Row1.Children.Add(BluePlayerSeat);
-                        break;
-                    case "Yellow":
-                        Row1.Children.Add(BluePlayerSeat);
-                        Row1.Children.Add(RedPlayerSeat);
-
-                        Row2.Children.Add(YellowPlayerSeat);
-                        Row2.Children.Add(GreenPlayerSeat);
-                        break;
-                    case "Blue":
-                        Row2.Children.Add(BluePlayerSeat);
-                        Row2.Children.Add(YellowPlayerSeat);
-
-                        Row1.Children.Add(RedPlayerSeat);
-                        Row1.Children.Add(GreenPlayerSeat);
-                        break;
-                }
-                break;
-            case "22":
-                switch (playerColor)
-                {
-                    case "Red":
-                        Row2.Children.Add(RedPlayerSeat);
-                        Row2.Children.Add(BluePlayerSeat);
-
-                        Row1.Children.Add(GreenPlayerSeat);
-                        Row1.Children.Add(YellowPlayerSeat);
-                        break;
-                    case "Green":
-                        Row2.Children.Add(GreenPlayerSeat);
-                        Row2.Children.Add(RedPlayerSeat);
-
-                        Row1.Children.Add(YellowPlayerSeat);
-                        Row1.Children.Add(BluePlayerSeat);
-                        break;
-                    case "Yellow":
-                        Row1.Children.Add(BluePlayerSeat);
-                        Row1.Children.Add(RedPlayerSeat);
-
-                        Row2.Children.Add(YellowPlayerSeat);
-                        Row2.Children.Add(GreenPlayerSeat);
-                        break;
-                    case "Blue":
-                        Row2.Children.Add(BluePlayerSeat);
-                        Row2.Children.Add(YellowPlayerSeat);
-
-                        Row1.Children.Add(GreenPlayerSeat);
-                        Row1.Children.Add(RedPlayerSeat);
-                        break;
-                }
-                break;
-        }
-
         gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
+        // Ensure the player's color is always in Row2
+        Row1.Children.Clear();
+        Row2.Children.Clear();
+
+        if (gameMode == "Client")
+        {
+            // Get the received colors from the server
+            List<string> availableSeats = seats.Select(s => s.PlayerColor).ToList(); // Extract received colors
+            // Place player at bottom (Row2)
+            Row2.Children.Add(GetPlayerSeat(playerColor));
+            availableSeats.Remove(playerColor); // Remove player from the list
+            switch (availableSeats.Count)
+            {
+                // Now distribute remaining seats based on count
+                case 1: // 2-player game
+                    Row1.Children.Add(GetPlayerSeat(availableSeats[0])); // Place the other player in Row2
+                    break;
+                case 2:
+                    string firstOpponent = availableSeats[0];  // First color in received order
+                    string secondOpponent = availableSeats[1]; // Second color in received order
+
+                    if (playerColor == "Yellow")
+                    {
+                        // Yellow should have Green in Row2 and Red in Row1
+                        Row2.Children.Add(GetPlayerSeat(secondOpponent)); // Green at bottom
+                        Row1.Children.Add(GetPlayerSeat(firstOpponent));  // Red at top
+                    }
+                    else if (playerColor == "Red")
+                    {
+                        // Red should be alone in Row2, Green & Yellow in Row1
+                        Row1.Children.Add(GetPlayerSeat(firstOpponent));  // Green at top
+                        Row1.Children.Add(GetPlayerSeat(secondOpponent)); // Yellow at top
+                    }
+                    else
+                    {
+                        // Default case: playerColor is Green
+                        Row2.Children.Add(GetPlayerSeat(firstOpponent)); // Red at bottom
+                        Row1.Children.Add(GetPlayerSeat(secondOpponent)); // Yellow at top
+                    }
+                    break;
+                case 3:
+                    string bottomOpponent = "";
+                    List<string> topOpponents = new List<string>();
+
+                    if (playerColor == "Red")
+                    {
+                        bottomOpponent = "Blue";
+                        topOpponents.Add("Green");
+                        topOpponents.Add("Yellow");
+                    }
+                    else if (playerColor == "Blue")
+                    {
+                        bottomOpponent = "Yellow";
+                        topOpponents.Add("Red");
+                        topOpponents.Add("Green");
+                    }
+                    else if (playerColor == "Yellow")
+                    {
+                        bottomOpponent = "Green";
+                        topOpponents.Add("Blue");
+                        topOpponents.Add("Red");
+                    }
+                    else if (playerColor == "Green")
+                    {
+                        bottomOpponent = "Red";
+                        topOpponents.Add("Yellow");
+                        topOpponents.Add("Blue");
+                    }
+
+                    // Place the bottom row: player's seat was already added; now add the bottom opponent.
+                    Row2.Children.Add(GetPlayerSeat(bottomOpponent));
+                    // Place the top row with the two opponents in the desired order.
+                    Row1.Children.Add(GetPlayerSeat(topOpponents[0]));
+                    Row1.Children.Add(GetPlayerSeat(topOpponents[1]));
+                    break;
+            }
+        }
+        else
+            switch (gameType)
+            {
+                case "2":
+                    switch (playerColor)
+                    {
+                        case "Red":
+                            Row1.Children.Add(YellowPlayerSeat);
+                            Row2.Children.Add(RedPlayerSeat);
+                            break;
+                        case "Yellow":
+                            Row2.Children.Add(YellowPlayerSeat);
+                            Row1.Children.Add(RedPlayerSeat);
+                            break;
+                        case "Green":
+                            Row1.Children.Add(BluePlayerSeat);
+                            Row2.Children.Add(GreenPlayerSeat);
+                            break;
+                        case "Blue":
+                            Row2.Children.Add(BluePlayerSeat);
+                            Row1.Children.Add(GreenPlayerSeat);
+                            break;
+                    }
+                    break;
+                case "3":
+                    switch (playerColor)
+                    {
+                        case "Red":
+                            Row1.Children.Add(GreenPlayerSeat);
+                            Row1.Children.Add(YellowPlayerSeat);
+                            Row2.Children.Add(RedPlayerSeat);
+                            break;
+                        case "Yellow":
+                            Row1.Children.Add(BluePlayerSeat);
+                            Row1.Children.Add(RedPlayerSeat);
+                            Row2.Children.Add(YellowPlayerSeat);
+                            break;
+                        case "Green":
+                            Row1.Children.Add(YellowPlayerSeat);
+                            Row1.Children.Add(BluePlayerSeat);
+                            Row2.Children.Add(GreenPlayerSeat);
+                            break;
+                        case "Blue":
+                            Row1.Children.Add(RedPlayerSeat);
+                            Row1.Children.Add(GreenPlayerSeat);
+                            Row2.Children.Add(BluePlayerSeat);
+                            break;
+                    }
+                    break;
+                case "4":
+                    switch (playerColor)
+                    {
+                        case "Red":
+                            Row2.Children.Add(RedPlayerSeat);
+                            Row2.Children.Add(BluePlayerSeat);
+
+                            Row1.Children.Add(GreenPlayerSeat);
+                            Row1.Children.Add(YellowPlayerSeat);
+                            break;
+                        case "Green":
+                            Row2.Children.Add(GreenPlayerSeat);
+                            Row2.Children.Add(RedPlayerSeat);
+
+                            Row1.Children.Add(YellowPlayerSeat);
+                            Row1.Children.Add(BluePlayerSeat);
+                            break;
+                        case "Yellow":
+                            Row1.Children.Add(BluePlayerSeat);
+                            Row1.Children.Add(RedPlayerSeat);
+
+                            Row2.Children.Add(YellowPlayerSeat);
+                            Row2.Children.Add(GreenPlayerSeat);
+                            break;
+                        case "Blue":
+                            Row2.Children.Add(BluePlayerSeat);
+                            Row2.Children.Add(YellowPlayerSeat);
+
+                            Row1.Children.Add(RedPlayerSeat);
+                            Row1.Children.Add(GreenPlayerSeat);
+                            break;
+                    }
+                    break;
+                case "22":
+                    switch (playerColor)
+                    {
+                        case "Red":
+                            Row2.Children.Add(RedPlayerSeat);
+                            Row2.Children.Add(BluePlayerSeat);
+
+                            Row1.Children.Add(GreenPlayerSeat);
+                            Row1.Children.Add(YellowPlayerSeat);
+                            break;
+                        case "Green":
+                            Row2.Children.Add(GreenPlayerSeat);
+                            Row2.Children.Add(RedPlayerSeat);
+
+                            Row1.Children.Add(YellowPlayerSeat);
+                            Row1.Children.Add(BluePlayerSeat);
+                            break;
+                        case "Yellow":
+                            Row1.Children.Add(BluePlayerSeat);
+                            Row1.Children.Add(RedPlayerSeat);
+
+                            Row2.Children.Add(YellowPlayerSeat);
+                            Row2.Children.Add(GreenPlayerSeat);
+                            break;
+                        case "Blue":
+                            Row2.Children.Add(BluePlayerSeat);
+                            Row2.Children.Add(YellowPlayerSeat);
+
+                            Row1.Children.Add(GreenPlayerSeat);
+                            Row1.Children.Add(RedPlayerSeat);
+                            break;
+                    }
+                    break;
+            }
+
 
         Alayout.Remove(gui.red1);
         Alayout.Remove(gui.red2);
@@ -220,17 +316,8 @@ public partial class Game : ContentPage
         Alayout.Remove(gui.blu3);
         Alayout.Remove(gui.blu4);
 
-        PlayerSeat playerSeat = playerColor switch
-        {
-            "Red" => gui.red,
-            "Green" => gui.green,
-            "Yellow" => gui.yellow,
-            "Blue" => gui.blue,
-            _ => null
-        };
-
         var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
-        if (gameType == "Online")
+        if (gameMode == "Client")
         {
             foreach (var (color, seat) in colors)
                 updateSeat(GetPlayerSeat(color));
@@ -239,21 +326,21 @@ public partial class Game : ContentPage
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
             //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            engine = new Engine(gameType, playerCount, "Red");
+            engine = new Engine(gameMode, gameType, playerCount, "Red");
         }
         else
         {
             foreach (var (color, seat) in colors)
                 if (playerColor != color)
-                    if (gameType == "Computer")
+                    if (gameMode == "Computer")
                         seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
                     else
                         seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
-            playerSeat?.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            engine = new Engine(gameType, playerCount, playerColor);
+            GetPlayerSeat(playerColor)?.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            engine = new Engine(gameMode, gameType, playerCount, playerColor);
         }
-        
+
         gui.red.EngineHelper = engine.EngineHelper;
         gui.green.EngineHelper = engine.EngineHelper;
         gui.yellow.EngineHelper = engine.EngineHelper;
@@ -319,7 +406,11 @@ public partial class Game : ContentPage
     }
     public async Task ShowResults(string seats)
     {
-        ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats));
+        ShowResults(seats, engine.EngineHelper.gameType, GlobalConstants.GameCost+"");
+    }
+    public async Task ShowResults(string seats, string GameType, string GameCost)
+    {
+        ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
         ClientGlobalConstants.FlushOld();
        // this.ShowPopup(ClientGlobalConstants.results);
@@ -615,7 +706,7 @@ public partial class Game : ContentPage
 
         if (mb != null)
             return;
-        if (engine.EngineHelper.gameType == "Online")
+        if (engine.EngineHelper.gameMode == "Client")
             if (GlobalConstants.GameCost == 0)
                 mb = new MessageBox("Exit", "Are you sure you want to exit?", "Your ranking will be affected!");
             else
@@ -627,7 +718,7 @@ public partial class Game : ContentPage
         mb = null;
         if (result == "Approve")
         {
-            if (engine.EngineHelper.gameType == "Online")
+            if (engine.EngineHelper.gameMode == "Client")
                 GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
             else
             {

@@ -137,7 +137,7 @@ namespace SignalR.Server
                         roomCode = GenerateUniqueRoomId(gameType, gameCost);
                     // Check if the RoomCode already exists in the database
                     existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
-                }   
+                }
             }
             else {
                 //Generate a new room name if roomName is empty

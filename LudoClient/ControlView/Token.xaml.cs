@@ -6,7 +6,7 @@ public partial class Token : ContentView
 {
     public String name = "";
 
-    public delegate void PieceClickedHandler(String PieceName,bool SendToServer);
+    public delegate void PieceClickedHandler(String PieceName, bool SendToServer);
     public event PieceClickedHandler OnPieceClicked;
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(piece), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
@@ -25,17 +25,12 @@ public partial class Token : ContentView
     }
     private void Piece_Clicked(object sender, EventArgs e)
     {
-        if (ClientGlobalConstants.game == null)
-            OnPieceClicked?.Invoke(name, true);
-        else
+        if (ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client")
         {
-            if (ClientGlobalConstants.game.engine.EngineHelper.gameType == "Online")
-            {
-                if (ClientGlobalConstants.game.playerColor.ToLower().Contains(name.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                    OnPieceClicked?.Invoke(name, true);
-            }
-            else
+            if (ClientGlobalConstants.game.playerColor.ToLower().Contains(name.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
                 OnPieceClicked?.Invoke(name, true);
         }
+        else
+            OnPieceClicked?.Invoke(name, true);
     }
 }

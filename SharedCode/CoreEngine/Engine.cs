@@ -1,5 +1,4 @@
 ﻿using SharedCode.Constants;
-using System.Drawing;
 
 namespace SharedCode.CoreEngine
 {
@@ -49,7 +48,7 @@ namespace SharedCode.CoreEngine
             }
             return "";
         }
-        public Engine(string gameType, string playerCount, string playerColor)
+        public Engine(string gameMode, string gameType, string playerCount, string playerColor)
         {
             gameRecorder = new GameRecorder(this);
             board = new Dictionary<string, List<Piece>>
@@ -149,6 +148,7 @@ namespace SharedCode.CoreEngine
     };
             
             EngineHelper.gameType = gameType;
+            EngineHelper.gameMode = gameMode;
 
             EngineHelper.InitializePlayers(playerCount, playerColor);
            
@@ -305,7 +305,7 @@ namespace SharedCode.CoreEngine
             if (piece.Moveable && EngineHelper.gameState == "MovePiece")
             {
                 EngineHelper.gameState = "MovingPiece";
-                if (EngineHelper.gameType == "Online" && SendToServer)
+                if (EngineHelper.gameMode == "Client" && SendToServer)
                     pieceName = await GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "MovePiece");
 
                 bool killed = false;
@@ -373,10 +373,10 @@ namespace SharedCode.CoreEngine
                     Console.WriteLine($"{player.Color} has won the game!");
                     EngineHelper.players.Remove(player);
 
-                    if (EngineHelper.gameType == "Computer" || EngineHelper.checkGameOver())
+                    if (EngineHelper.checkGameOver())
                     {
                         //GANE OVER
-                        GameOver(player);
+                        GameOver(player.Color);
                         return tempPiece;
                     }
                 }
@@ -401,24 +401,17 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.checkGameOver())
             {
                 //GANE OVER
-                GameOver(EngineHelper.players[0]);
+                GameOver(EngineHelper.players[0].Color);
             }
         }
-        private void GameOver(Player player)
+        private void GameOver(string Color)
         {
-            if ((EngineHelper.gameType == "Computer" || EngineHelper.gameType == "Local") && EngineHelper.gameType != "Online")
+            if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
             {
-                if (ShowResults != null)
-                    // Show game over dialog if the game is not in online mode
-                    ShowResults(player.Color);
+                cleanGame();
+                // Show game over dialog if the game is not in online mode
+                ShowResults(Color);
             }
-            else if (EngineHelper.gameType != "Online")
-            {
-                if (ShowResults != null)
-                    // Send game over message to server
-                    ShowResults(player.Color);
-            }
-            cleanGame();
 #if WINDOWS
             gameRecorder.SaveGameHistory();
 #endif
@@ -434,6 +427,7 @@ namespace SharedCode.CoreEngine
             EngineHelper.players.Clear();
             EngineHelper.rolls.Clear();
             EngineHelper.gameType = "";
+            EngineHelper.gameMode = "";
             EngineHelper.gameState = "RollDice";
         }
     }
@@ -445,6 +439,7 @@ namespace SharedCode.CoreEngine
         public bool stopAnimate = !true;
         public Player currentPlayer = null;
         public string gameType = "";
+        public string gameMode = "";
         // Game logic helpers
         public int diceValue = 0;
         public string gameState = "RollDice";
@@ -715,7 +710,7 @@ namespace SharedCode.CoreEngine
             {
                 return Engine.gameRecorder.RequestDice()+"";
             }
-            if (gameType == "Online")
+            if (gameMode == "Client")
                 return await GlobalConstants.MatchMaker?.SendMessageAsync(seatName, "DiceRoll");
             else
             if (rolls.Count != 0)
@@ -754,11 +749,21 @@ namespace SharedCode.CoreEngine
         }
         public bool checkGameOver()
         {
-            if (players.Count == 1)
+            if(gameMode != "Client")
             {
-                //Show results page
-                return true;
+                if (gameMode == "Computer")
+                    return true;
+                if (gameType == "2" || gameType == "3" || gameType == "4")
+                {
+                    return players.Count == 1;
+                }
+                else
+                if (gameType == "22")
+                {
+
+                }
             }
+                
             return false;
         }
     }

@@ -7,9 +7,9 @@ namespace LudoClient;
 
 public partial class OfflinePage : ContentPage
 {
-    String gametype = "Computer";
     String playerColor = "Red";
-    String playerCount = "2";
+    String gameMode = "Computer";
+    String gameType = "2";
     public OfflinePage()
     {
         InitializeComponent();
@@ -35,13 +35,13 @@ public partial class OfflinePage : ContentPage
         Tab4.SwitchSource = Tab4 == activeTab ? Tab4.SwitchOn : Tab4.SwitchOff;
         // Add logic here to change the content based on the active tab
         if (Tab1 == activeTab)
-            playerCount = "2";
+            gameType = "2";
         if (Tab2 == activeTab)
-            playerCount = "3";
+            gameType = "3";
         if (Tab3 == activeTab)
-            playerCount = "4";
+            gameType = "4";
         if (Tab4 == activeTab)
-            playerCount = "22";
+            gameType = "22";
     }
     private void TabRequestedActivateC(object sender, TappedEventArgs e)
     {
@@ -69,24 +69,16 @@ public partial class OfflinePage : ContentPage
         
         // Add logic here to change the content based on the active tab
         if ("TabP1" == activeTab)
-            gametype = "Computer";
+            gameMode = "Computer";
         if ("TabP2" == activeTab)
-            gametype = "Local";
+            gameMode = "Local";
     }
     private void JoinOfflineTapped(object sender, EventArgs e)
     {
-        Game game = new Game(gametype, playerCount, playerColor);
+        Game game = new Game(gameMode, gameType, playerColor);
         ClientGlobalConstants.game = game;
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
 
-        // Add logic here to join an offline game
-        var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
-
-        // Ensure there is at least one page to remove (i.e. the page before the current one).
-        if (existingPages.Count > 1)
-        {
-            // Remove the page immediately below the current (top) page.
-            ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
-        }
+        ClientGlobalConstants.FlushOld();
     }
 }

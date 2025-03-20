@@ -1,3 +1,5 @@
+using Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific;
+
 namespace LudoClient.ControlView;
 
 public partial class ImageSwitch : ContentView

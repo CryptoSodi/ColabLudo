@@ -1,5 +1,4 @@
 using LudoClient.Constants;
-using SharedCode.Constants;
 using SharedCode.CoreEngine;
 
 namespace LudoClient.ControlView;
@@ -123,23 +122,18 @@ public partial class PlayerSeat : ContentView
         catch (Exception)
         {
         }
-        if(EngineHelper.gameType != "Online")
+        if(EngineHelper.gameMode != "Client")
             TimerTimeout?.Invoke(seatColor);
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {
-        if (ClientGlobalConstants.game == null)
-            OnDiceClicked?.Invoke(seatColor, "", "");
-        else
+        if (ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client")
         {
-            if (ClientGlobalConstants.game.engine.EngineHelper.gameType == "Online")
-            {
-                if (ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
-                    OnDiceClicked?.Invoke(seatColor, "", "");
-            }
-            else
+            if (ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
                 OnDiceClicked?.Invoke(seatColor, "", "");
         }
+        else
+            OnDiceClicked?.Invoke(seatColor, "", "");
     }
     internal void AnimateDice()
     {
@@ -163,7 +157,6 @@ public partial class PlayerSeat : ContentView
         if (DiceLayer.Source + "" != "dice_0.png")
             DiceLayer.Source = "dice_0.png";
     }
-
     internal void PlayerLeft()
     {
         reset();

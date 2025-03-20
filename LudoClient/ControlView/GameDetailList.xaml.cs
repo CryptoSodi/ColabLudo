@@ -1,20 +1,13 @@
-
-using LudoClient.Models;
 using SharedCode.Constants;
-using System.Security.AccessControl;
-using System.Text;
-using System.Text.Json;
-using System.Timers;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace LudoClient.ControlView
 {
     public partial class GameDetailList : ContentView
     {
         public int gameId = 0;
-        public string RoomCode = "";
-        public string gameType = "";
-        public int betAmount;
+        int betAmount;
+        string RoomCode;
+        string gameType;
         public GameDetailList()
         {
             InitializeComponent();
