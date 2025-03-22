@@ -5,6 +5,7 @@
         public string Color { get; private set; }
         public List<Piece> Pieces { get; private set; }
         public int StartPosition { get; private set; }
+        public string playState = "Playing";
         public Player(string color)
         {
             Color = color;

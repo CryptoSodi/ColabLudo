@@ -80,6 +80,7 @@ public partial class PlayerSeat : ContentView
         StopProgressAnimation();
         _animationCancellationTokenSource = new CancellationTokenSource();
         await AnimateProgress(_animationCancellationTokenSource.Token);
+        
     }
     public void StopProgressAnimation()
     {
@@ -127,12 +128,10 @@ public partial class PlayerSeat : ContentView
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {
-        if (ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client")
-        {
-            if (ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
-                OnDiceClicked?.Invoke(seatColor, "", "");
-        }
+        if ((ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Computer" || ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
+            OnDiceClicked?.Invoke(seatColor, "", "");
         else
+            if (ClientGlobalConstants.game.engine.EngineHelper.gameMode != "Computer" && ClientGlobalConstants.game.engine.EngineHelper.gameMode != "Client")
             OnDiceClicked?.Invoke(seatColor, "", "");
     }
     internal void AnimateDice()

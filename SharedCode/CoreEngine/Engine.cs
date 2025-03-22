@@ -1,4 +1,5 @@
 ﻿using SharedCode.Constants;
+using System.IO.Pipelines;
 
 namespace SharedCode.CoreEngine
 {
@@ -36,7 +37,7 @@ namespace SharedCode.CoreEngine
             string result = "";
            switch (EngineHelper.gameState){
                 case "RollDice":
-                    result = await SeatTurn(SeatName,"","");
+                    result = await SeatTurn(SeatName, "", "");
                     return result;
                 case "MovePiece":
                     Player player = EngineHelper.currentPlayer;
@@ -180,11 +181,10 @@ namespace SharedCode.CoreEngine
             if (PlayState == "Stop")
                 return "";
 
-            Player player = EngineHelper.currentPlayer;
             int tempDice = -1;
             string tempPiece = "";
             // Check if it's the correct player's turn and if the game is in the roll state
-            if (player.Color == seatName && EngineHelper.gameState == "RollDice")
+            if (EngineHelper.checkTurn(seatName, "RollDice"))
             {
                 EngineHelper.gameState = "RollingDice";
                 if (AnimateDice!=null)
@@ -212,7 +212,7 @@ namespace SharedCode.CoreEngine
                     StopDice(seatName, tempDice);
 
                 // Determine which pieces can move
-                foreach (var piece in player.Pieces)
+                foreach (var piece in EngineHelper.currentPlayer.Pieces)
                 {
                     //piece.Moveable = (piece.Location == 0 && EngineHelper.diceValue == 6) ||
                     // (piece.Location != 0 && piece.Location + EngineHelper.diceValue <= 57);
@@ -225,10 +225,10 @@ namespace SharedCode.CoreEngine
                         piece.Moveable = false;
                 }
 
-                List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-                Console.WriteLine($"{player.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} pieces.");
+                List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
+                Console.WriteLine($"{EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} pieces.");
 
-                gameRecorder.RecordDiceRoll(player, EngineHelper.diceValue);
+                gameRecorder.RecordDiceRoll(EngineHelper.currentPlayer, EngineHelper.diceValue);
 
                 // Handle possible scenarios based on the number of moveable pieces
                 bool moveSeat = false;
@@ -259,7 +259,7 @@ namespace SharedCode.CoreEngine
                 else
                 {
                     EngineHelper.animationBlock = false;
-                    Console.WriteLine($"{player.Color} could not move any piece.");
+                    Console.WriteLine($"{EngineHelper.currentPlayer.Color} could not move any piece.");
                     if(StopProgressAnimation!=null)
                         StopProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
@@ -302,7 +302,7 @@ namespace SharedCode.CoreEngine
             if (piece == null || EngineHelper.diceValue == 0)
                 return ""; // Exit if not the current player's piece or no dice roll
 
-            if (piece.Moveable && EngineHelper.gameState == "MovePiece")
+            if (piece.Moveable && EngineHelper.checkTurn(pieceName, "MovePiece"))
             {
                 EngineHelper.gameState = "MovingPiece";
                 if (EngineHelper.gameMode == "Client" && SendToServer)
@@ -324,9 +324,11 @@ namespace SharedCode.CoreEngine
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
-                    List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
-                    // Check if an opponent’s piece is in the new position
-                    if (kilablePieces.Count != 0 && kilablePieces.Count < 2 && !EngineHelper.safeZone.Contains(piece.Position))
+                   // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
+                    List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+
+                    // Prevent killing if there are two or more opponent pieces
+                    if (kilablePieces.Count == 1 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         killed = true;
                         Piece killedPiece = kilablePieces[0];
@@ -370,13 +372,14 @@ namespace SharedCode.CoreEngine
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
                 {
+                    player.playState = "Home";
                     Console.WriteLine($"{player.Color} has won the game!");
-                    EngineHelper.players.Remove(player);
-
-                    if (EngineHelper.checkGameOver())
+                    // EngineHelper.players.Remove(player);
+                    List<Player> winners = EngineHelper.checkGameOver();
+                    if (winners.Count > 0)
                     {
                         //GANE OVER
-                        GameOver(player.Color);
+                        GameOver(winners);
                         return tempPiece;
                     }
                 }
@@ -391,26 +394,32 @@ namespace SharedCode.CoreEngine
                 return "";
             return tempPiece;
         }
+
+        
+
         public void PlayerLeft(String playerColor, bool SendToServer = true)
         {
-            EngineHelper.players.RemoveAll(p => p.Color == playerColor);
+            Player player = EngineHelper.getPlayer(playerColor);
+            player.playState = "Left";
+            //EngineHelper.players.RemoveAll(p => p.Color == playerColor);
             if (EngineHelper.currentPlayer.Color == playerColor)
                 EngineHelper.ChangeTurn();
             if (PlayerLeftSeat != null)
                 PlayerLeftSeat(playerColor);
-            if (EngineHelper.checkGameOver())
+            List<Player> winners = EngineHelper.checkGameOver();
+            if (winners.Count>0)
             {
                 //GANE OVER
-                GameOver(EngineHelper.players[0].Color);
+                GameOver(winners);
             }
         }
-        private void GameOver(string Color)
+        private void GameOver(List<Player> winners)
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
             {
                 cleanGame();
                 // Show game over dialog if the game is not in online mode
-                ShowResults(Color);
+                ShowResults(winners[0].Color);
             }
 #if WINDOWS
             gameRecorder.SaveGameHistory();
@@ -700,9 +709,9 @@ namespace SharedCode.CoreEngine
             }
             diceValue = 0;  // Reset dice value for the next turn
         }
-        public bool checkTurn(String SeatName, String GameState)
+        public bool checkTurn(String SeatNameOrPiece, String GameState)
         {
-            return (currentPlayer.Color == SeatName && gameState == GameState);
+            return ((currentPlayer.Color == SeatNameOrPiece || currentPlayer.Color.ToLower().Contains(SeatNameOrPiece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", ""))) && gameState == GameState);
         }
         public async Task<String> RollDice(string seatName = "")
         {
@@ -724,12 +733,26 @@ namespace SharedCode.CoreEngine
                 return GlobalConstants.rnd.Next(1, 7) + ",";
             }
         }
-        public void ChangeTurn()
+        public void ChangeTurn(int retry = 0)
         {
             int currentIndex = players.IndexOf(currentPlayer);
             int nextIndex = (currentIndex + 1) % players.Count;
             currentPlayer = players[nextIndex];
+            if (retry >= players.Count || currentPlayer.playState != "Playing")
+                return;
+            retry++;
+            ChangeTurn(retry);
             Console.WriteLine("Current Player: " + currentPlayer.Color);
+        }
+        public bool IsTeammate(string playerColor, string targetColor)
+        {
+            if ((playerColor == "Red" && targetColor == "Yellow") || (playerColor == "Yellow" && targetColor == "Red"))
+                return true;
+
+            if ((playerColor == "Green" && targetColor == "Blue") || (playerColor == "Blue" && targetColor == "Green"))
+                return true;
+
+            return false;
         }
         public Piece GetPiece(List<Piece> pieces, string name)
         {
@@ -747,24 +770,68 @@ namespace SharedCode.CoreEngine
             }
             return null;
         }
-        public bool checkGameOver()
+        public List<Player> checkGameOver()
         {
-            if(gameMode != "Client")
+            List<Player> winners = new List<Player>();
+
+            List<Player> playersHome = players.Where(p => p.playState == "Home").ToList();
+            List<Player> playersActive = players.Where(p => p.playState == "Playing").ToList();
+            List<Player> playersLeft = players.Where(p => p.playState == "Left").ToList();
+            
+            if (gameMode != "Client")
             {
-                if (gameMode == "Computer")
-                    return true;
+                if (gameMode == "Computer") {
+                    //If the game mode is computer, the game is over when any player reaches home
+                    //If any player leaves the game is over and the rest of the players win
+                    // If any player reaches home, they win
+                    if (playersHome.Count > 0)
+                        return playersHome;
+
+                    // If any player leaves, the remaining players win
+                    if (playersLeft.Count > 0)
+                        return playersActive;
+                }
+                else
                 if (gameType == "2" || gameType == "3" || gameType == "4")
                 {
-                    return players.Count == 1;
+                    //The game is over when any player reaches home he is the winner and the rest are losers
+                    //If all players leaves the game and only 1 player is left he is the winner
+                    // If any player reaches "Home", they are the winner
+                    if (playersHome.Count > 0)
+                        return playersHome;
+
+                    // If only one player is left playing, they are the winner
+                    if (playersActive.Count == 1 && playersLeft.Count == players.Count - 1)
+                        return playersActive;
                 }
                 else
                 if (gameType == "22")
                 {
+                    //The game is over when any player reaches home and also his partenr is also in home the they both win the other team loses
+                    //If the player leaves and his partner also leaves the other team wins
+                    //team config is red yellow, green blue
 
+                    // In team mode (Red-Yellow & Green-Blue)
+                    var redYellowTeam = players.Where(p => p.Color == "Red" || p.Color == "Yellow").ToList();
+                    var greenBlueTeam = players.Where(p => p.Color == "Green" || p.Color == "Blue").ToList();
+
+                    // If both Red & Yellow are Home, they win
+                    if (redYellowTeam.All(p => p.playState == "Home"))
+                        return redYellowTeam;
+
+                    // If both Green & Blue are Home, they win
+                    if (greenBlueTeam.All(p => p.playState == "Home"))
+                        return greenBlueTeam;
+
+                    // If one team leaves, the other team wins
+                    if (redYellowTeam.All(p => p.playState == "Left"))
+                        return greenBlueTeam;
+
+                    if (greenBlueTeam.All(p => p.playState == "Left"))
+                        return redYellowTeam;
                 }
             }
-                
-            return false;
+            return winners;
         }
     }
 }

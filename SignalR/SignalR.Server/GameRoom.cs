@@ -41,7 +41,7 @@ namespace SignalR.Server
             engine.StopProgressAnimation += StopProgressAnimation;
             TimerTimeout += engine.TimerTimeoutAsync;
             
-            StartProgressAnimation("");
+            StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
         private async Task ShowResults(string PlayerColor)
@@ -79,17 +79,13 @@ namespace SignalR.Server
             }
             return user;
         }
-        public async Task StartProgressAnimationAsync(string SeatName)
+        public async void StartProgressAnimation(string SeatName)
         {
             // Wait until the component has rendered
             // Cancel any previous animation
             StopProgressAnimation("");
             _animationCancellationTokenSource = new CancellationTokenSource();
             await AnimateProgress(_animationCancellationTokenSource.Token);
-        }
-        public void StartProgressAnimation(string SeatName)
-        {
-            StartProgressAnimationAsync(engine.EngineHelper.currentPlayer.Color);
         }
         public void StopProgressAnimation(string SeatName)
         {
