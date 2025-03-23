@@ -23,7 +23,7 @@ namespace SharedCode.CoreEngine
         public delegate void CallbackEventHandlerStopProgressAnimation(string SeatColor);
         public event CallbackEventHandlerStopProgressAnimation StopProgressAnimation;
 
-        public delegate Task CallbackEventHandlerShowResults(string SeatColor);
+        public delegate Task CallbackEventHandlerShowResults(string SeatColor, string GameType, string GameCost);
         public event CallbackEventHandlerShowResults ShowResults;
 
         public delegate void CallbackEventHandlerPlayerLeft(string SeatColor, bool SendToServer = true);
@@ -377,7 +377,7 @@ namespace SharedCode.CoreEngine
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
                     if (winners.Count > 0)
-                    {
+                    { 
                         //GANE OVER
                         GameOver(winners);
                         return tempPiece;
@@ -417,9 +417,14 @@ namespace SharedCode.CoreEngine
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
             {
+                string GameType = EngineHelper.gameType;
+                //, string GameCost
                 cleanGame();
                 // Show game over dialog if the game is not in online mode
-                ShowResults(winners[0].Color);
+                if (GameType == "22")
+                    ShowResults(winners[0].Color + "," + winners[1].Color, GameType, "0");
+                else
+                    ShowResults(winners[0].Color + ",", GameType, "0");
             }
 #if WINDOWS
             gameRecorder.SaveGameHistory();
@@ -757,17 +762,14 @@ namespace SharedCode.CoreEngine
         public Piece GetPiece(List<Piece> pieces, string name)
         {
             foreach (var piece in pieces)
-            {
                 if (piece.Moveable && piece.Name == name)
                 {
-                    // If the piece is at start (-1) and dice roll is not 6, it's not eligible for selection
-                    if (piece.Position == -1 && diceValue != 6)
+                    if (piece.Position == -1 && diceValue != 6) // If the piece is at start (-1) and dice roll is not 6, it's not eligible for selection
                     {
                         return null;
                     }
                     return piece;
                 }
-            }
             return null;
         }
         public List<Player> checkGameOver()

@@ -6,6 +6,8 @@ public partial class PlayerSeat : ContentView
 {
     public bool autoPlayFlag = false;
     public String seatColor = "";
+    public String PlayerName = "";
+    public String PlayerImageSource = "";
     public EngineHelper EngineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
 
@@ -28,6 +30,9 @@ public partial class PlayerSeat : ContentView
 
     public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
     {
+        this.PlayerName = PlayerName;
+        PlayerImageSource = PictureUrl;
+
         PlayerImage.Source = PictureUrl;
         PlayerNameText.Text = PlayerName;
         this.autoPlayFlag = autoPlayFlag;
@@ -39,6 +44,9 @@ public partial class PlayerSeat : ContentView
     }
     public void hideAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
     {
+        this.PlayerName = PlayerName;
+        PlayerImageSource = PictureUrl;
+
         PlayerImage.Source = PictureUrl;
         PlayerNameText.Text = PlayerName;
         this.autoPlayFlag = autoPlayFlag;

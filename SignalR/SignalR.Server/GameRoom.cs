@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
+using System.Collections.Generic;
 
 namespace SignalR.Server
 {
@@ -44,16 +45,27 @@ namespace SignalR.Server
             StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
-        private async Task ShowResults(string PlayerColor)
+        private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(2000);
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
-            var sortedSeats = seats
-                .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
+            List<PlayerDto> sortedSeats;
+            if (GameType == "22")
+            {
+                String winner1 = PlayerColor.Split(",")[0];
+                String winner2 = PlayerColor.Split(",")[1];
+                sortedSeats = seats.OrderByDescending(
+                               seat => seat.PlayerColor.Equals(winner1, StringComparison.OrdinalIgnoreCase)
+                                   || seat.PlayerColor.Equals(winner2, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+            else
+            {
+                sortedSeats = seats
+                    .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor.Split(",")[0], StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await Clients.Group(RoomName).SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
         }

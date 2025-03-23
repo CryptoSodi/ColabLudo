@@ -20,6 +20,7 @@ public partial class Game : ContentPage
     public PlayerSeat GreenPlayerSeat;
     public PlayerSeat YellowPlayerSeat;
     public PlayerSeat BluePlayerSeat;
+    string gameMode;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
         if (seatColor.ToLower() == "red")
@@ -31,10 +32,10 @@ public partial class Game : ContentPage
         else
             return gui.blue;
     }
-    List<PlayerDto>? seats;
+    List<PlayerDto>? seats = new List<PlayerDto>();
     public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "")
     {
-        seats = null;
+        this.gameMode = gameMode;
         //new List<PlayerDto>();
         //PlayerDto red = new PlayerDto();
         //red.PlayerColor = "Red";
@@ -60,16 +61,6 @@ public partial class Game : ContentPage
             this.playerColor = playerColor;
             Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor);
         }   
-    }
-    private void updateSeat(PlayerSeat playerSeat)
-    {
-        try
-        {
-            var player = seats?.FirstOrDefault(p => p.PlayerColor.ToLower() == playerSeat.seatColor);
-            if(player!=null)
-            playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
-        }
-        catch (Exception) {}
     }
     private void Build(string gameMode, string gameType, string playerCount, string playerColor)
     {
@@ -320,8 +311,14 @@ public partial class Game : ContentPage
         if (gameMode == "Client")
         {
             foreach (var (color, seat) in colors)
-                updateSeat(GetPlayerSeat(color));
-
+                try
+                {
+                    var playerSeat = GetPlayerSeat(color);
+                    PlayerDto player = seats?.FirstOrDefault(p => p.PlayerColor.ToLower() == playerSeat.seatColor);
+                    if (player != null)
+                        playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
+                }
+                catch (Exception) { }
             //    if (playerColor != color)
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
@@ -363,6 +360,7 @@ public partial class Game : ContentPage
             foreach (var piece in player.Pieces)
                 Alayout.Add(gui.getPieceToken(piece));
 
+     
         // Handle layout size changes
         Alayout.SizeChanged += (sender, e) =>
         {
@@ -403,17 +401,54 @@ public partial class Game : ContentPage
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
-    }
-    public async Task ShowResults(string seats)
-    {
-        ShowResults(seats, engine.EngineHelper.gameType, GlobalConstants.GameCost+"");
+        
+        if (gameMode != "Client")//If local game init the seats so that results can be built later on
+            foreach (var player in engine.EngineHelper.players)
+            {
+                var playerp = GetPlayerSeat(player.Color);
+                seats.Add(new PlayerDto
+                {
+                    PlayerColor = playerp.seatColor,
+                    PlayerName = playerp.PlayerName,
+                    PlayerPicture = playerp.PlayerImageSource
+                });
+            }
     }
     public async Task ShowResults(string seats, string GameType, string GameCost)
     {
-        ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
-        ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
-        ClientGlobalConstants.FlushOld();
-       // this.ShowPopup(ClientGlobalConstants.results);
+        if (gameMode == "Client")
+        {
+            ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
+            ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
+            ClientGlobalConstants.FlushOld();
+        }
+        else
+        {
+            // Get seat details for both winners and add them to the list
+            List<PlayerDto> playerDtos = new List<PlayerDto>();
+            string winner1 = seats.Split(",")[0];
+            string winner2 = seats.Split(",")[1];
+            //public String seatColor = "";
+            //public String PlayerName = "";
+            //public String PlayerImageSource = "";
+            // Separate winners and losers
+            var winners = this.seats.Where(p => p.PlayerColor == winner1 || p.PlayerColor == winner2).ToList();
+            var losers = this.seats.Where(p => p.PlayerColor != winner1 && p.PlayerColor != winner2).ToList();
+
+            // Add winners first
+            foreach (var winner in winners)
+                if (winner != null)
+                    playerDtos.Add(winner);
+
+            // Add losers next
+            foreach (var loser in losers)
+                if (loser != null)
+                    playerDtos.Add(loser);
+            // Pass the list to the UI for displaying results
+            ClientGlobalConstants.results.init(playerDtos, GameType, GameCost);
+            ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
+        }
+        // this.ShowPopup(ClientGlobalConstants.results);
     }
     public void PlayerLeftSeat(string SeatColor, bool SendToServer = true)
     {
