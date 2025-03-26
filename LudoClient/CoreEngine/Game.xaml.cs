@@ -33,7 +33,7 @@ public partial class Game : ContentPage
             return gui.blue;
     }
     List<PlayerDto>? seats = new List<PlayerDto>();
-    public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "")
+    public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "", string rollsString = "")
     {
         this.gameMode = gameMode;
         //new List<PlayerDto>();
@@ -54,15 +54,15 @@ public partial class Game : ContentPage
             seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
             var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
             this.playerColor = player.PlayerColor;
-            Build("Client", gameType, seats.Count + "", player.PlayerColor);
+            Build("Client", gameType, seats.Count + "", player.PlayerColor, rollsString);
         }
         else
         {
             this.playerColor = playerColor;
-            Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor);
+            Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor, rollsString);
         }   
     }
-    private void Build(string gameMode, string gameType, string playerCount, string playerColor)
+    private void Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
     {
         InitializeComponent();
         // Create RedPlayerSeat
@@ -322,8 +322,8 @@ public partial class Game : ContentPage
             //    if (playerColor != color)
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
-            //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            engine = new Engine(gameMode, gameType, playerCount, "Red");
+            //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);            
+            playerColor = "Red";
         }
         else
         {
@@ -335,8 +335,8 @@ public partial class Game : ContentPage
                         seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
             GetPlayerSeat(playerColor)?.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
-            engine = new Engine(gameMode, gameType, playerCount, playerColor);
         }
+            engine = new Engine(gameMode, gameType, playerCount, playerColor, rollsString);
 
         gui.red.EngineHelper = engine.EngineHelper;
         gui.green.EngineHelper = engine.EngineHelper;

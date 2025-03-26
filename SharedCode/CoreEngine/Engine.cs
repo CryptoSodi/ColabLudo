@@ -49,7 +49,7 @@ namespace SharedCode.CoreEngine
             }
             return "";
         }
-        public Engine(string gameMode, string gameType, string playerCount, string playerColor)
+        public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
         {
             gameRecorder = new GameRecorder(this);
             board = new Dictionary<string, List<Piece>>
@@ -147,12 +147,12 @@ namespace SharedCode.CoreEngine
         { "hb2", new List<Piece>() },
         { "hb3", new List<Piece>() }
     };
-            
+
             EngineHelper.gameType = gameType;
             EngineHelper.gameMode = gameMode;
 
             EngineHelper.InitializePlayers(playerCount, playerColor);
-           
+
             // Initialize original path
             EngineHelper.InitializeOriginalPath();
             if (EngineHelper.replay)
@@ -166,12 +166,14 @@ namespace SharedCode.CoreEngine
             PlayState = "Active";
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
-            if(gameMode=="Client")
-                for (int i = 0; i < 1000; i++)
-                {
+
+            if (gameMode == "Server")
+                for (int i = 0; i < 5000; i++)
                     EngineHelper.rolls.Add(GlobalConstants.rnd.Next(1, 7));
-                }
-            string rollsString = string.Join("", EngineHelper.rolls);
+            if (gameMode == "Client")
+                EngineHelper.rolls = rollsString.Select(c => int.Parse(c.ToString())).ToList();
+
+            EngineHelper.rollsString = string.Join("", EngineHelper.rolls);
         }
         public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece, bool SendToServer=true)
         {
@@ -186,26 +188,50 @@ namespace SharedCode.CoreEngine
                 EngineHelper.gameState = "RollingDice";
                 if (AnimateDice!=null)
                     AnimateDice(seatName);
-                String DiceServerValueHolder = "";
+
+                int localDiceChecker = -1;
+                if (EngineHelper.gameMode == "Client")
+                {
+                    localDiceChecker = EngineHelper.rolls[0];
+                    EngineHelper.rolls.RemoveAt(0);
+                    _ = Task.Run(async () =>
+                    {
+                        // Notify the end of the dice roll
+                        if (StopDice != null && EngineHelper.rolls.Count > 0)
+                        {
+                            await Task.Delay(100);
+                            StopDice(seatName, localDiceChecker);
+                        }
+                    });
+                }
                 // Roll the dice
-                if(DiceValue != "")
+                if (DiceValue != "")
                     EngineHelper.diceValue = Int32.Parse(DiceValue);
                 else
                 {
-                    DiceServerValueHolder = await EngineHelper.RollDice(seatName);
+                    String DiceServerValueHolder = await EngineHelper.RollDice(seatName);
                     EngineHelper.diceValue = Int32.Parse(DiceServerValueHolder.Split(",")[0]);
                     Piece = DiceServerValueHolder.Split(",")[1];
                 }
                 
                 tempDice = EngineHelper.diceValue;
 
-                if (!EngineHelper.stopAnimate)
-                    // Simulate server delay
-                    await Task.Delay(200);
-                else
-                    await Task.Delay(30);
-                // Notify the end of the dice roll
-                if(StopDice!=null)
+                if (EngineHelper.gameMode != "Client" && EngineHelper.gameMode != "Server")
+                {
+                    if (!EngineHelper.stopAnimate)
+                        // Simulate server delay
+                        await Task.Delay(200);
+                    else
+                        await Task.Delay(30);
+                    // Notify the end of the dice roll
+                }
+
+                if(EngineHelper.gameMode == "Client" && localDiceChecker != EngineHelper.diceValue)
+                {
+                    Console.WriteLine("ERROR SERVER OUT OF SYNC");
+                }
+
+                if (StopDice!=null && EngineHelper.gameMode != "Client")
                     StopDice(seatName, tempDice);
 
                 // Determine which pieces can move
@@ -213,7 +239,6 @@ namespace SharedCode.CoreEngine
                 {
                     //piece.Moveable = (piece.Location == 0 && EngineHelper.diceValue == 6) ||
                     // (piece.Location != 0 && piece.Location + EngineHelper.diceValue <= 57);
-
                     if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
                     else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
@@ -301,10 +326,30 @@ namespace SharedCode.CoreEngine
 
             if (piece.Moveable && EngineHelper.checkTurn(pieceName, "MovePiece"))
             {
+                String ServerpieceName = pieceName;
                 EngineHelper.gameState = "MovingPiece";
                 if (EngineHelper.gameMode == "Client" && SendToServer)
-                    pieceName = await GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "MovePiece");
+                {
+                    GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "MovePiece").ContinueWith(t =>
+                        {
+                            if (t.Status == TaskStatus.RanToCompletion)
+                            {
+                                ServerpieceName = t.Result;
+                                if (EngineHelper.gameMode == "Client" && ServerpieceName != pieceName)
+                                {
+                                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                                }
+                            }
+                            else
+                            {
+                                ServerpieceName = "Error"; // Handle failure
+                            }
+                        });
+                }
 
+                
+                
+                pieceName = ServerpieceName;
                 bool killed = false;
                 Piece pieceClone = piece.Clone();
 
@@ -446,6 +491,7 @@ namespace SharedCode.CoreEngine
     {
         // Game logic helpers
         public List<int> rolls = new List<int>();
+        public string rollsString;
         public bool replay = !true;
         public bool stopAnimate = !true;
         public Player currentPlayer = null;
@@ -462,6 +508,7 @@ namespace SharedCode.CoreEngine
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
        
         public bool animationBlock = false;
+
         public Player getPlayer(String color)
         {
             return players.FirstOrDefault(p => p.Color == color);
@@ -737,13 +784,17 @@ namespace SharedCode.CoreEngine
         }
         public void ChangeTurn(int retry = 0)
         {
-            int currentIndex = players.IndexOf(currentPlayer);
-            int nextIndex = (currentIndex + 1) % players.Count;
-            currentPlayer = players[nextIndex];
-            if (retry >= players.Count || currentPlayer.playState != "Playing")
+            if (retry >= players.Count)
                 return;
-            retry++;
-            ChangeTurn(retry);
+
+            currentPlayer = players[(players.IndexOf(currentPlayer) + 1) % players.Count];
+
+            if (currentPlayer.playState != "Playing")
+            {
+                ChangeTurn(retry + 1);
+                return;
+            }
+
             Console.WriteLine("Current Player: " + currentPlayer.Color);
         }
         public bool IsTeammate(string playerColor, string targetColor)

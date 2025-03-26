@@ -9,7 +9,7 @@ namespace SharedCode.Constants
         public static int GameHistorySaveIndex = 0;
         public static readonly HttpClient httpClient;
         public static readonly int initialEntry = 5;
-        public static readonly bool Debug = false;
+        public static readonly bool Debug = true;
         public static readonly string Url;
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
@@ -19,12 +19,7 @@ namespace SharedCode.Constants
 
         static GlobalConstants()
         {
-#if WINDOWS
-                Debug = false;
-#elif ANDROID
-                Debug = true;
-#endif
-                Url = Debug ? "http://192.168.1.101" : "https://localhost";
+                Url = Debug ? "http://192.168.1.101" : "https://3.143.14.201";
 #if WINDOWS
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)

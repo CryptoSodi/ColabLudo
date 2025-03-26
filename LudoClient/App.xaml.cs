@@ -94,13 +94,11 @@ namespace LudoClient
                 ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
             });
         }
-        private void OnGameStarted(object? sender, (string GameType, string seatsData) args)
+        private void OnGameStarted(object? sender, (string GameType, string seatsData, string rollsString) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var GameType = args.GameType;
-                var seatsData = args.seatsData;
-                Game game = new Game("Client", GameType, "", seatsData);
+                Game game = new Game("Client", args.GameType, "", args.seatsData, args.rollsString);
                 ClientGlobalConstants.game = game;
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
                 //MainPage = new Game(GameType, seatsData);

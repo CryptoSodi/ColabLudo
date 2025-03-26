@@ -240,14 +240,14 @@ namespace SignalR.Server
 
                 await Task.Delay(2000);
 
-                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats));
                 _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
                 gameRoom.seats = seats;
                 gameRoom.InitializeEngine(seats[0].PlayerColor);
                 for (int i = 0; i < gameRoom.Users.Count; i++)
                     gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
-
                 _engine.TryAdd(existingGame.RoomCode, gameRoom);
+
+                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
             }
         }
         public async Task<string> Ready(string roomCode)
