@@ -207,30 +207,30 @@ namespace SignalR.Server
         }
         private async Task gameStartAsync(Game existingGame)
         {
-            List<PlayerDto> seats = new List<PlayerDto>();
+            List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
 
             if (existingGame.MultiPlayer.P1 != null)
             {
                 LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor="Red"});
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor="Red"});
             }
             if (existingGame.MultiPlayer.P2 != null)
             {
                 LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
                 if (existingGame.Type == "2")
-                    seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
                 else
-                    seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Green" });
+                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Green" });
             }
             if (existingGame.MultiPlayer.P3 != null)
             {
                 LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
             }
             if (existingGame.MultiPlayer.P4 != null)
             {
                 LudoServer.Models.Player P = await _context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-                seats.Add(new PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Blue" });
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Blue" });
             }
 
             if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
