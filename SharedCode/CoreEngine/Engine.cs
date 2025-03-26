@@ -166,15 +166,12 @@ namespace SharedCode.CoreEngine
             PlayState = "Active";
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(5);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(5);
+            if(gameMode=="Client")
+                for (int i = 0; i < 1000; i++)
+                {
+                    EngineHelper.rolls.Add(GlobalConstants.rnd.Next(1, 7));
+                }
+            string rollsString = string.Join("", EngineHelper.rolls);
         }
         public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece, bool SendToServer=true)
         {
