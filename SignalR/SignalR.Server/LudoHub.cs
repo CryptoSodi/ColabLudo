@@ -111,7 +111,8 @@ namespace SignalR.Server
                     {
                         Console.WriteLine("User not found for connection: " + Context.ConnectionId);
                     }
-                    gameRoom.PlayerLeft(Context.ConnectionId, roomCode);
+                    if (gameRoom != null)
+                        gameRoom.PlayerLeft(Context.ConnectionId, roomCode);
                 if (multiPlayer.P1 == null && multiPlayer.P2 == null && multiPlayer.P3 == null && multiPlayer.P4 == null)
                 {
                     existingGame.State = "Terminated";
