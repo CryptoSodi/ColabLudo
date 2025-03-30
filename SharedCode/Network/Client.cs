@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
+using System.Diagnostics;
 
 namespace SharedCode.Network
 {
@@ -147,8 +148,13 @@ namespace SharedCode.Network
         {
             try
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
                 var roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ConfigureAwait(false);
                 Console.WriteLine($"Joined room: {roomCode}");
+                stopwatch.Stop(); // Stop timing
+
+                Console.WriteLine($"Execution Time: {stopwatch.ElapsedMilliseconds} ms");
                 RoomJoined?.Invoke(this, (gameType, gameCost, roomCode));
             }
             catch (Exception ex)

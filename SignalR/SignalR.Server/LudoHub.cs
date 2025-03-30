@@ -5,20 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SignalR.Server
 {
-    public record Message(string User, string Text);
     public class LudoHub : Hub
     {
         private readonly LudoDbContext _context;
         //public static Engine eng;// = new Engine("4", "4", "red");
         private static ConcurrentDictionary<string, User> _users = new();
-        private static ConcurrentDictionary<string, GameRoom> _rooms = new();
         private static ConcurrentDictionary<string, GameRoom> _engine = new();
+        DatabaseManager BM;
         public LudoHub(LudoDbContext context)
         {
             _context = context;
+            BM = new DatabaseManager(Clients, context);
         }
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
@@ -125,86 +126,7 @@ namespace SignalR.Server
             {
             }
         }
-        public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
-        {
-            Game existingGame;
-            if (gameCost == 0 && string.IsNullOrWhiteSpace(roomCode))
-            {
-                existingGame = await _context.Games.FirstOrDefaultAsync(g => g.BetAmount == gameCost && g.State == "Active");
-                if (existingGame == null)
-                {
-                    if (string.IsNullOrWhiteSpace(roomCode))
-                        // Generates a unique room name
-                        roomCode = GenerateUniqueRoomId(gameType, gameCost);
-                    // Check if the RoomCode already exists in the database
-                    existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
-                }
-            }
-            else {
-                //Generate a new room name if roomName is empty
-                if (string.IsNullOrWhiteSpace(roomCode))
-                    // Generates a unique room name
-                    roomCode = GenerateUniqueRoomId(gameType, gameCost);
-                // Check if the RoomCode already exists in the database
-                existingGame = await _context.Games.FirstOrDefaultAsync(g => g.RoomCode == roomCode);
-            }
-
-            MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
-           
-            if (multiPlayer == null)
-                return null;//All Player Seats taken
-            if (existingGame == null)
-            {
-                // RoomCode does not exist, create a new game entry
-                existingGame = new Game
-                {
-                    MultiPlayerId = multiPlayer.MultiPlayerId,
-                    Type = gameType,
-                    BetAmount = gameCost,
-                    RoomCode = roomCode,
-                    State = "Active"
-                };
-                existingGame.MultiPlayer = multiPlayer;
-                _context.Games.Add(existingGame);
-                await _context.SaveChangesAsync(); // Save the game entry to the database
-            }
-            return existingGame;
-        }
-        private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
-        {
-            MultiPlayer multiPlayer;
-            if (existingGame == null)
-            {
-                multiPlayer = new MultiPlayer
-                {
-                    P1 = playerId
-                };
-                // Add the MultiPlayer and save changes to get the MultiPlayerId
-                _context.MultiPlayers.Add(multiPlayer);
-                await _context.SaveChangesAsync(); // This will save the newly added MultiPlayer and assign it an Id
-                return multiPlayer;
-            }
-            else
-            {
-                existingGame.MultiPlayer = multiPlayer = await _context.MultiPlayers.FirstOrDefaultAsync(m => m.MultiPlayerId == existingGame.MultiPlayerId);
-                
-                if (multiPlayer.P1 == null)
-                    multiPlayer.P1 = playerId;
-                else if (multiPlayer.P2 == null)
-                    multiPlayer.P2 = playerId;
-                else if (multiPlayer.P3 == null)
-                    multiPlayer.P3 = playerId;
-                else if (multiPlayer.P4 == null)
-                    multiPlayer.P4 = playerId;
-                else
-                    // All player slots are full
-                    return null;
-                // Save the updated multiplayer record
-                _context.MultiPlayers.Update(multiPlayer);
-                await _context.SaveChangesAsync();
-            }
-            return multiPlayer;
-        }
+       
         private async Task gameStartAsync(Game existingGame)
         {
             List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
@@ -241,7 +163,7 @@ namespace SignalR.Server
 
                 await Task.Delay(2000);
 
-                _rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
+                BM._rooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
                 gameRoom.seats = seats;
                 gameRoom.InitializeEngine(seats[0].PlayerColor);
                 for (int i = 0; i < gameRoom.Users.Count; i++)
@@ -262,7 +184,9 @@ namespace SignalR.Server
         }
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
-            var existingGame = await GetGameLobby(playerId, roomCode, gameType, gameCost);
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start(); // Start timing
+            Game existingGame = await BM.GetGameLobby(playerId, roomCode, gameType, gameCost);
 
             if (existingGame == null)
             {
@@ -273,7 +197,7 @@ namespace SignalR.Server
             gameType = existingGame.Type;
 
             // Create or retrieve the room
-            var room = _rooms.GetOrAdd(roomCode, _ => new GameRoom(Clients, _context, roomCode, gameType, gameCost));
+            var room = BM._rooms.GetOrAdd(roomCode, _ => new GameRoom(Clients, _context, roomCode, gameType, gameCost));
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
             var user = new User(Context.ConnectionId, roomCode, playerId, userName, "Color");
             _users.TryAdd(Context.ConnectionId, user);
@@ -282,7 +206,10 @@ namespace SignalR.Server
             // Add the user to the specified group (room)
             await Groups.AddToGroupAsync(Context.ConnectionId, roomCode);
 
+            stopwatch.Stop(); // Stop timing
+            Console.WriteLine($"Execution Time: {stopwatch.ElapsedMilliseconds} ms");
             BroadcastPlayersAsync(existingGame);
+
             return roomCode; // Return the room name to the client
         }
         private async Task BroadcastPlayersAsync(Game existingGame)
@@ -329,20 +256,7 @@ namespace SignalR.Server
                     await Clients.Client(ConnectionId).SendAsync(SendToClientFunctionName, SeatColor);
         }
         // Generate a unique 10-digit room ID
-        private string GenerateUniqueRoomId(string gameType, decimal gameCost)
-        {
-            string roomId = "";
-            do
-            {
-                // Generate a random 10-digit number
-                roomId = new Random().Next(10000000, 99999999).ToString();
-            }
-            while (_rooms.ContainsKey(roomId)); // Ensure the ID is unique
-            // Store the generated room ID with the game type in the games dictionary
-            _rooms.TryAdd(roomId, new GameRoom(Clients, _context, roomId, gameType, gameCost));
-            //"@Haris ADD this to the database games table"
-            return roomId;
-        }
+       
         //Logic for 4 players game in tournament road to final
         static void RunTournament(List<string> players)
         {

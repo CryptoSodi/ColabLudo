@@ -24,12 +24,10 @@ namespace LudoClient
         public App()
         {
 #if WINDOWS
-#if DEBUG
             AllocConsole();
             IntPtr consoleWindow = GetConsoleWindow();
             SetWindowPos(consoleWindow, HWND_TOP, 490, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
             Console.WriteLine("Console started alongside MAUI app at custom position.");
-#endif
 #endif
             InitializeComponent();
            // Preferences.Clear();

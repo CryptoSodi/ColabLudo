@@ -19,8 +19,9 @@ namespace SharedCode.Constants
 
         static GlobalConstants()
         {
-                Url = Debug ? "http://192.168.1.101" : "https://3.143.14.201";
+                Url = Debug ? "http://192.168.1.101" : "http://3.143.14.201";
 #if WINDOWS
+if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());
             foreach (var ip in host.AddressList)
                 if (ip.AddressFamily == AddressFamily.InterNetwork) // IPv4 address
@@ -28,6 +29,7 @@ namespace SharedCode.Constants
                     Console.WriteLine( ip.ToString());
                     Url = "http://"+ip.ToString();
                 }
+            }
 #endif
             BaseUrl = Url.Replace("http:", "https:") + ":7255/";
             HubUrl  = Url + ":8085/";

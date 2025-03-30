@@ -32,16 +32,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="LudoServer">
-      <HintPath>..\..\..\LudoServer\bin\Debug\net8.0\LudoServer.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Interfaces\" />
     <Folder Include="CoreEngine\" />
     <Folder Include="Constants\" />
     <Folder Include="Network\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\LudoServer\LudoServer.csproj" />
   </ItemGroup>
 
 </Project>
