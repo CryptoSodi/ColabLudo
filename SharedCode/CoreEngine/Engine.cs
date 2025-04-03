@@ -1,5 +1,4 @@
 ﻿using SharedCode.Constants;
-using System.IO.Pipelines;
 
 namespace SharedCode.CoreEngine
 {
@@ -167,6 +166,13 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
+
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
                     EngineHelper.rolls.Add(GlobalConstants.rnd.Next(1, 7));
@@ -185,6 +191,7 @@ namespace SharedCode.CoreEngine
             // Check if it's the correct player's turn and if the game is in the roll state
             if (EngineHelper.checkTurn(seatName, "RollDice"))
             {
+                EngineHelper.index++;
                 EngineHelper.gameState = "RollingDice";
                 if (AnimateDice!=null)
                     AnimateDice(seatName);
@@ -248,7 +255,7 @@ namespace SharedCode.CoreEngine
                 }
 
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
-                Console.WriteLine($"{EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} pieces.");
+                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} pieces.");
 
                 gameRecorder.RecordDiceRoll(EngineHelper.currentPlayer, EngineHelper.diceValue);
 
@@ -257,7 +264,6 @@ namespace SharedCode.CoreEngine
 
                 if (moveablePieces.Count == 1)
                 {
-                    Console.WriteLine("Turn Animation of the moveable piece;");
                     moveSeat = true;
                 }
                 else if (moveablePieces.Count > 0)
@@ -268,7 +274,6 @@ namespace SharedCode.CoreEngine
                         moveSeat = true;
                     else
                     {
-                        Console.WriteLine("Turn Animation of the moveable pieces;");
                         if (!EngineHelper.stopAnimate)
                             // Start timer for auto play or prompt for user action
                             StartProgressAnimation(EngineHelper.currentPlayer.Color);
@@ -281,7 +286,6 @@ namespace SharedCode.CoreEngine
                 else
                 {
                     EngineHelper.animationBlock = false;
-                    Console.WriteLine($"{EngineHelper.currentPlayer.Color} could not move any piece.");
                     if(StopProgressAnimation!=null)
                         StopProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
@@ -301,6 +305,7 @@ namespace SharedCode.CoreEngine
                         else
                             tempPiece = moveablePieces.First(p => p.Moveable).Name;
                         tempPiece = await MovePieceAsync(tempPiece, false);       // Move the only moveable piece
+                        //EngineHelper.index--;
                     }
                 }
                 else
@@ -326,6 +331,10 @@ namespace SharedCode.CoreEngine
 
             if (piece.Moveable && EngineHelper.checkTurn(pieceName, "MovePiece"))
             {
+                EngineHelper.index++;
+                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {pieceName} with dicevalue{EngineHelper.diceValue}.");
+                
+
                 String ServerpieceName = pieceName;
                 EngineHelper.gameState = "MovingPiece";
                 if (EngineHelper.gameMode == "Client" && SendToServer)
@@ -347,8 +356,6 @@ namespace SharedCode.CoreEngine
                         });
                 }
 
-                
-                
                 pieceName = ServerpieceName;
                 bool killed = false;
                 Piece pieceClone = piece.Clone();
@@ -363,21 +370,22 @@ namespace SharedCode.CoreEngine
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
+
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
                    // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
-                    List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+                    List<Piece> kilablePieces = board?[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
 
                     // Prevent killing if there are two or more opponent pieces
-                    if (kilablePieces.Count == 1 && !EngineHelper.safeZone.Contains(piece.Position))
+                    if (kilablePieces?.Count == 1 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         killed = true;
                         Piece killedPiece = kilablePieces[0];
                         killedPiece.Position = -1; // Send opponent's piece back to base
                         killedPiece.Location = 0;
-                        board[pj].Remove(killedPiece);
-                        board[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
+                        board?[pj].Remove(killedPiece);
+                        board?[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
                     }
 
                     if (RelocateAsync != null)
@@ -390,7 +398,6 @@ namespace SharedCode.CoreEngine
                     {
                         killed = true;
                         player.Pieces.Remove(piece);
-                        Console.WriteLine($"{player.Color} piece has reached home!");
 
                         if (player.Pieces.Count == 0)
                         {
@@ -436,9 +443,6 @@ namespace SharedCode.CoreEngine
                 return "";
             return tempPiece;
         }
-
-        
-
         public void PlayerLeft(String playerColor, bool SendToServer = true)
         {
             Player player = EngineHelper.getPlayer(playerColor);
@@ -489,6 +493,7 @@ namespace SharedCode.CoreEngine
     }
     public class EngineHelper
     {
+        public int index = 0;
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString;
@@ -508,7 +513,6 @@ namespace SharedCode.CoreEngine
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
        
         public bool animationBlock = false;
-
         public Player getPlayer(String color)
         {
             return players.FirstOrDefault(p => p.Color == color);

@@ -3,12 +3,18 @@ using LudoClient.Constants;
 using LudoClient.CoreEngine;
 using SharedCode.Constants;
 using SharedCode.Network;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace LudoClient
 {
     public partial class App : Application
     {
+        // Static command queue for processing commands sequentially.
+        private static readonly ConcurrentQueue<GameCommand> _commandQueue = new ConcurrentQueue<GameCommand>();
+        private static bool _processingQueue = false;
+        private static bool _processstopper = false;
+
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
@@ -41,7 +47,7 @@ namespace LudoClient
             }
             else
             {
-                UserInfo.LoadState();
+                
                 GlobalConstants.MatchMaker = new Client();
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
@@ -50,6 +56,7 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.PlayerLeft += OnPlayerLeft;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
 
+                UserInfo.LoadState();
                 MainPage = new AppShell();
 
                 //MainPage = new Game("local", "2", "Red");
@@ -59,24 +66,44 @@ namespace LudoClient
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
         }
-
         private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece) args)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            GameCommand command = new GameCommand
             {
-                var SeatColor = args.SeatColor;
-                var DiceValue = args.DiceValue;
-                var Piece = args.Piece;
-                ClientGlobalConstants.game.PlayerDiceClicked(SeatColor, DiceValue, Piece, false);
-            });
-        }
+                CommandType = "DiceRoll",
+                SeatColor = args.SeatColor,
+                DiceValue = args.DiceValue,
+                Piece = args.Piece,
+                index = 0
+            };
 
+            // Enqueue the command.
+            _commandQueue.Enqueue(command);
+            // If not already processing, start the process queue.
+            if (!_processingQueue)
+            {
+                _processingQueue = true;
+                _ = ProcessQueue(); // Fire-and-forget the queue processor.
+            }
+        }
         private void OnPieceMove(object? sender, string Piece)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            GameCommand command = new GameCommand
             {
-                ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
-            });
+                CommandType = "MovePiece",
+                SeatColor = "",
+                DiceValue = "",
+                Piece = Piece,
+                index = 0
+            };
+            // Enqueue the command.
+            _commandQueue.Enqueue(command);
+            // If not already processing, start the process queue.
+            if (!_processingQueue)
+            {
+                _processingQueue = true;
+                _ = ProcessQueue(); // Fire-and-forget the queue processor.
+            }
         }
         private void OnPlayerLeft(object? sender, string PlayerColor)
         {
@@ -117,6 +144,48 @@ namespace LudoClient
                 ClientGlobalConstants.FlushOld();
             });
         }
+        private async Task ProcessQueue()
+        {
+            while (_commandQueue.TryDequeue(out GameCommand command))
+            {
+                _processstopper = true;
+                // Optional: add a delay before processing each command.
+                await Task.Delay(250); // e.g., 250ms delay
+                string result = "0";
+                try
+                {
+                    if (command.CommandType == "MovePiece")
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            ClientGlobalConstants.game.PlayerPieceClicked(command.Piece, false);
+                            _processstopper = false;
+                        }); 
+                    }
+                    if (command.CommandType == "DiceRoll")
+                    {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
+                            ClientGlobalConstants.game.PlayerDiceClicked(command.SeatColor, command.DiceValue, command.Piece, false);
+                            _processstopper = false;
+                        });
+                    }
+                    while (_processstopper)
+                    {
+                        await Task.Delay(50); // e.g., 50ms delay
+                    }
+                }
+                catch (Exception ex)
+                {
+                    result = "Error: " + ex.Message;
+                }
+                await Task.Delay(250); // e.g., 250ms delay
+                // Complete the task so the waiting client can continue.
+                command.Tcs.SetResult(result);
+            }
+            _processingQueue = false;
+        }
+
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
         {
@@ -143,5 +212,15 @@ namespace LudoClient
             FreeConsole();
         }
 #endif
+    }
+    public class GameCommand
+    {
+        public string CommandType { get; set; }  // e.g., "MovePiece" or "DiceRoll"
+        public string SeatColor { get; set; }
+        public string DiceValue { get; set; }
+        public string Piece { get; set; }
+        public int index { get; set; }
+        // TaskCompletionSource allows the sender to await the result.
+        public TaskCompletionSource<string> Tcs { get; set; } = new TaskCompletionSource<string>();
     }
 }

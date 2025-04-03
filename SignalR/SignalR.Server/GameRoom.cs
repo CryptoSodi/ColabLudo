@@ -1,29 +1,30 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using LudoServer.Data;
+using LudoServer.Models;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
-using SharedCode;
 using SharedCode.CoreEngine;
-using System.Collections.Generic;
 
 namespace SignalR.Server
 {
     public class GameRoom
     {
-        Microsoft.AspNetCore.SignalR.IHubCallerClients Clients;
-
-        LudoServer.Data.LudoDbContext _context;
-        public string RoomName { get; set; }
+        public string RoomCode { get; set; }
         public string GameType { get; set; }
         public decimal GameCost { get; set; }
         public List<User> Users { get; set; }
-
-        public List<PlayerDto> seats = new List<PlayerDto>();
+        public List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
         public Engine engine { get; set; }  // The Engine instance for this room
 
-        public GameRoom(Microsoft.AspNetCore.SignalR.IHubCallerClients clients, LudoServer.Data.LudoDbContext _context, string roomName, string gameType, decimal gameCost)
+        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
+        private readonly IHubContext<LudoHub> _hubContext;
+
+        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, string roomCode, string gameType, decimal gameCost)
         {
-            this.Clients = clients;
-            this._context = _context;
-            RoomName = roomName;
+            _hubContext = hubContext;
+            _contextFactory = contextFactory;
+            RoomCode = roomCode;
             GameType = gameType;
             GameCost = gameCost;
             Users = new List<User>();
@@ -51,7 +52,7 @@ namespace SignalR.Server
             await Task.Delay(2000);
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
-            List<PlayerDto> sortedSeats;
+            List<SharedCode.PlayerDto> sortedSeats;
             if (GameType == "22")
             {
                 String winner1 = PlayerColor.Split(",")[0];
@@ -66,8 +67,18 @@ namespace SignalR.Server
                     .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor.Split(",")[0], StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
+
+            using var context = _contextFactory.CreateDbContext();
+            Game existingGame = await context.Games.FirstOrDefaultAsync(g => g.RoomCode == RoomCode);
+            existingGame.Winner = sortedSeats[0].PlayerId + "";
+            existingGame.State = "Completed";
+
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
-            await Clients.Group(RoomName).SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
+            await _hubContext.Clients.Group(RoomCode)
+            .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
+
+            context.Games.Update(existingGame);
+            await context.SaveChangesAsync();            
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {
@@ -80,7 +91,7 @@ namespace SignalR.Server
 
                 // Optionally, perform additional cleanup or update the game engine state.
                 // For example: engine.RemoveUser(user); // if your engine supports this
-                await Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
+                await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
                 // Notify all connected clients that a user has left.
                 engine.PlayerLeft(user.PlayerColor);
                 Console.WriteLine("User removed: " + user.PlayerColor);

@@ -1,12 +1,8 @@
-using LudoClient.Models;
-using Microsoft.Maui.Controls;
 using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
-using System.Diagnostics.Metrics;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using static Microsoft.Maui.ApplicationModel.Permissions;
 
 namespace LudoClient
 {

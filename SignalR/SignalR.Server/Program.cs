@@ -1,6 +1,7 @@
 using LudoServer.Data;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,14 +17,14 @@ builder.Services.AddCors(o =>
 // Add SignalR services
 builder.Services.AddSignalR();
 
-// Configure DbContext with SQL Server
-builder.Services.AddDbContext<LudoDbContext>(options =>
+builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false) );// Turn off verbose logging
 
 
 // Build the app
 var app = builder.Build();
+
 
 // Use CORS policy
 app.UseCors("AllowAnyOrigin");

@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -11,15 +12,16 @@ namespace SignalR.Server
         List<Game> games = new List<Game>();
         List<MultiPlayer> multiPlayers = new List<MultiPlayer>();
 
-        private readonly LudoDbContext _context;
+        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
+        private readonly IHubContext<LudoHub> _hubContext;
         public ConcurrentDictionary<string, GameRoom> _rooms = new();
         private IHubCallerClients Clients;
 
-        public DatabaseManager(IHubCallerClients clients, LudoDbContext context)
+        public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory)
         {
-            this.Clients = clients;
-            _context = context;
-            LoadData().Wait(); // Load all data on startup
+            _hubContext = hubContext;
+            _contextFactory = contextFactory;
+            Task.Run(LoadData); // Run async without blocking constructor
         }
 
         public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
@@ -61,6 +63,7 @@ namespace SignalR.Server
                     Type = gameType,
                     BetAmount = gameCost,
                     RoomCode = roomCode,
+                    Owner = playerId.ToString(),
                     State = "Active"
                 };
                 existingGame.MultiPlayer = multiPlayer;
@@ -73,16 +76,14 @@ namespace SignalR.Server
         }
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
-            string roomId = "";
+            string roomId;
             do
             {
-                // Generate a random 10-digit number
                 roomId = new Random().Next(10000000, 99999999).ToString();
             }
-            while (_rooms.ContainsKey(roomId)); // Ensure the ID is unique
-            // Store the generated room ID with the game type in the games dictionary
-            _rooms.TryAdd(roomId, new GameRoom(Clients, _context, roomId, gameType, gameCost));
-            //"@Haris ADD this to the database games table"
+            while (_rooms.ContainsKey(roomId));
+
+            _rooms.TryAdd(roomId, new GameRoom(_hubContext, _contextFactory, roomId, gameType, gameCost));
             return roomId;
         }
         private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
@@ -122,46 +123,46 @@ namespace SignalR.Server
                 return multiPlayer;
             }
         }
-        private async void SaveData()
+        private async Task SaveData()
         {
             try
             {
-                // Update all modified multiplayer records in the database
+                using var context = _contextFactory.CreateDbContext();
+
                 foreach (var multiPlayer in multiPlayers)
                 {
-                    _context.MultiPlayers.Update(multiPlayer);
+                    context.MultiPlayers.Update(multiPlayer);
                 }
-                // Update all modified games in the database
+
                 foreach (var game in games)
                 {
-                    _context.Games.Update(game);
+                    context.Games.Update(game);
                 }
-                await _context.SaveChangesAsync(); // Push all changes to the database
-                Console.WriteLine("Old data saved successfully!");
+
+                await context.SaveChangesAsync();
+                Console.WriteLine("Data saved successfully!");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error saving data: {ex.Message}");
             }
         }
+
         private async Task LoadData()
         {
             try
             {
-                // Fetch all games and multiPlayers from the database
-                games = await _context.Games.AsNoTracking().ToListAsync();
-                multiPlayers = await _context.MultiPlayers.AsNoTracking().ToListAsync();
+                using var context = _contextFactory.CreateDbContext();
+                games = await context.Games.ToListAsync();
+                multiPlayers = await context.MultiPlayers.ToListAsync();
 
-                // Map MultiPlayer to its respective Game
                 foreach (var game in games)
                 {
                     game.MultiPlayer = multiPlayers.FirstOrDefault(mp => mp.MultiPlayerId == game.MultiPlayerId);
-
-                    // Add to _rooms for tracking active game sessions
-                    _rooms.TryAdd(game.RoomCode, new GameRoom(Clients, _context, game.RoomCode, game.Type, game.BetAmount));
+                    _rooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, game.RoomCode, game.Type, game.BetAmount));
                 }
 
-                Console.WriteLine("New data loaded successfully!");
+                Console.WriteLine("Data loaded successfully!");
             }
             catch (Exception ex)
             {

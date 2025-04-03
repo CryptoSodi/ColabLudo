@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 
 namespace SharedCode.Network
@@ -41,21 +42,21 @@ namespace SharedCode.Network
             // Game start event
             _hubConnection.On<string, string, string>("GameStarted", (GameType, seatsData, rollsString) =>
             {
-                Console.WriteLine("Starting Game : " + DateTime.Now, GameType, seatsData);
                 //Game(GameType, playerCount, PlayerColor)
-               GameStarted?.Invoke(this, (GameType, seatsData, rollsString));
+                GameStarted?.Invoke(this, (GameType, seatsData, rollsString));
+                Console.WriteLine("Starting Game : " + DateTime.Now, GameType, seatsData);
             });
-            _hubConnection.On<string, string, string>("DiceRoll", (SeatColor, DiceValue, Piece) =>
+            _hubConnection.On<string, string, string, string>("DiceRoll", (SeatColor, DiceValue, Piece, index) =>
             {
-                Console.WriteLine("DiceRoll : " + DateTime.Now, DiceValue, Piece);
                 //Game(GameType, playerCount, PlayerColor)
                 DiceRoll?.Invoke(this, (SeatColor, DiceValue, Piece));
+                Console.WriteLine($"CLIENT :{index}: DiceRoll : " + DateTime.Now, DiceValue, Piece);
             });
-            _hubConnection.On<string>("PieceMove", piece =>
+            _hubConnection.On<string, string>("MovePiece", (piece, index)=>
             {
-                Console.WriteLine("PieceMove : " + DateTime.Now, piece);
                 //Game(GameType, playerCount, PlayerColor)
                 PieceMove?.Invoke(this, piece);
+                Console.WriteLine($"CLIENT :{index}: MovePiece : " + DateTime.Now, piece);
             });
             _hubConnection.On<string>("PlayerLeft", SeatColor =>
             {

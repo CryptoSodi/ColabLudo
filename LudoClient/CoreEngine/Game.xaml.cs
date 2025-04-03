@@ -646,14 +646,14 @@ public partial class Game : ContentPage
             }
         }
     }
-    public void PlayerPieceClicked(String PieceName, bool SendToServer=true)
+    public async void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
         //start animation
         // Handle the dice click for the green player
-        _ = engine.MovePieceAsync(PieceName, SendToServer);
+        await engine.MovePieceAsync(PieceName, SendToServer);
         //stop animmation
     }
-    public void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
+    public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
         if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
@@ -676,7 +676,7 @@ public partial class Game : ContentPage
 
             seat.AnimateDice();
 
-            engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
+           await engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
         }
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
         {
