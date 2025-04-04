@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
-using System.Collections.Concurrent;
+using System;
+using System.Data;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace SharedCode.Network
 {
@@ -11,7 +13,7 @@ namespace SharedCode.Network
         private string _messages;
 
         // Event Definitions using standard .NET event patterns
-        
+
         public event EventHandler<(string SeatColor, string DiceValue, string Piece)> DiceRoll;
         public event EventHandler<string> PieceMove;
         public event EventHandler<string> PlayerLeft;
@@ -52,7 +54,7 @@ namespace SharedCode.Network
                 DiceRoll?.Invoke(this, (SeatColor, DiceValue, Piece));
                 Console.WriteLine($"CLIENT :{index}: DiceRoll : " + DateTime.Now, DiceValue, Piece);
             });
-            _hubConnection.On<string, string>("MovePiece", (piece, index)=>
+            _hubConnection.On<string, string>("MovePiece", (piece, index) =>
             {
                 //Game(GameType, playerCount, PlayerColor)
                 PieceMove?.Invoke(this, piece);
@@ -63,8 +65,8 @@ namespace SharedCode.Network
                 Console.WriteLine("PlayerLeft : " + DateTime.Now, SeatColor);
                 //Game(GameType, playerCount, PlayerColor)
                 PlayerLeft?.Invoke(this, SeatColor);
-            }); 
-            _hubConnection.On<string, string, string> ("ShowResults", (seats, GameType, GameCost) =>
+            });
+            _hubConnection.On<string, string, string>("ShowResults", (seats, GameType, GameCost) =>
             {
                 Console.WriteLine("ShowResults : " + DateTime.Now, seats, GameType, GameCost);
                 //Game(GameType, playerCount, PlayerColor)
@@ -182,6 +184,7 @@ namespace SharedCode.Network
         /// <summary>
         /// Sends a Ready state for the given room code.
         /// </summary>
+
         public async Task ReadyAsync()
         {
             try
@@ -196,11 +199,16 @@ namespace SharedCode.Network
         }
         public void LeaveCloseLobby(int playerId)
         {
-            if (GlobalConstants.RoomCode!="")
+            if (GlobalConstants.RoomCode != "")
             {
                 _ = _hubConnection.InvokeAsync("LeaveCloseLobby", playerId, GlobalConstants.RoomCode).ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
             }
+        }
+
+        public async Task<List<GameCommand>> PullCommands(int lastSeenIndex)
+        {
+            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex);
         }
     }
 }

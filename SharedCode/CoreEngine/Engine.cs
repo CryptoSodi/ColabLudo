@@ -31,6 +31,9 @@ namespace SharedCode.CoreEngine
         public static Dictionary<string, List<Piece>>? board;
 
         public EngineHelper EngineHelper = new EngineHelper();
+        
+        public bool processing = false;
+
         public async Task<string> TimerTimeoutAsync(String SeatName)
         {
             string result = "";
@@ -50,6 +53,7 @@ namespace SharedCode.CoreEngine
         }
         public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
         {
+            processing = false;
             gameRecorder = new GameRecorder(this);
             board = new Dictionary<string, List<Piece>>
     {
@@ -191,7 +195,7 @@ namespace SharedCode.CoreEngine
             // Check if it's the correct player's turn and if the game is in the roll state
             if (EngineHelper.checkTurn(seatName, "RollDice"))
             {
-                EngineHelper.index++;
+                processing = true;
                 EngineHelper.gameState = "RollingDice";
                 if (AnimateDice!=null)
                     AnimateDice(seatName);
@@ -206,7 +210,7 @@ namespace SharedCode.CoreEngine
                         // Notify the end of the dice roll
                         if (StopDice != null && EngineHelper.rolls.Count > 0)
                         {
-                            await Task.Delay(100);
+                            await Task.Delay(200);
                             StopDice(seatName, localDiceChecker);
                         }
                     });
@@ -317,6 +321,7 @@ namespace SharedCode.CoreEngine
             {
                 Console.WriteLine("Not the turn of the player");
             }
+            processing = false;
             return $"{tempDice},{tempPiece}";
         }
         public async Task<string> MovePieceAsync(String pieceName, bool SendToServer=true)
@@ -331,9 +336,8 @@ namespace SharedCode.CoreEngine
 
             if (piece.Moveable && EngineHelper.checkTurn(pieceName, "MovePiece"))
             {
-                EngineHelper.index++;
+                processing = true;
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {pieceName} with dicevalue{EngineHelper.diceValue}.");
-                
 
                 String ServerpieceName = pieceName;
                 EngineHelper.gameState = "MovingPiece";
@@ -374,7 +378,7 @@ namespace SharedCode.CoreEngine
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
-                   // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
+                    // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     List<Piece> kilablePieces = board?[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
 
                     // Prevent killing if there are two or more opponent pieces
@@ -429,6 +433,7 @@ namespace SharedCode.CoreEngine
                     { 
                         //GANE OVER
                         GameOver(winners);
+                        processing = false;
                         return tempPiece;
                     }
                 }
@@ -439,8 +444,13 @@ namespace SharedCode.CoreEngine
                 else
                     TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
             }
-            else 
+            else
+            {
+                processing = false;
                 return "";
+            }
+
+            processing = false;
             return tempPiece;
         }
         public void PlayerLeft(String playerColor, bool SendToServer = true)

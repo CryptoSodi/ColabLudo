@@ -3,30 +3,21 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using SharedCode;
 using System.Collections.Concurrent;
 using System.Data;
 using System.Diagnostics;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
-    public class GameCommand
-    {
-        public GameRoom gameRoom { get; set; }
-        public List<string> recipientConnectionIds { get; set; }
-        public string SendToClientFunctionName { get; set; }  // e.g., "MovePiece" or "DiceRoll"
-        public string commandValue1 { get; set; }
-        public string commandValue2 { get; set; }
-        public string commandValue3 { get; set; }
-        public int index { get; set; }
-        // TaskCompletionSource allows the sender to await the result.
-        public TaskCompletionSource<string> Tcs { get; set; } = new TaskCompletionSource<string>();
-    }
+    
     public class LudoHub : Hub
     {
-        // Static command queue for processing commands sequentially.
-        private static readonly ConcurrentQueue<GameCommand> _commandQueue = new ConcurrentQueue<GameCommand>();
-        private static bool _processingQueue = true;
-        
+        // A simple persistent store for commands.
+        // In production, this might be a database or distributed log.
+        private static readonly List<GameCommand> _commandStore = new List<GameCommand>();
+        private static readonly object _commandStoreLock = new object();
+
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;// Better to use IHubContext if needed outside hub instances
         //public static Engine eng;// = new Engine("4", "4", "red");
@@ -87,20 +78,20 @@ namespace SignalR.Server
             // Process command based on the type.
             if (commandtype == "MovePiece")
             {
+                String piece = gameRoom.engine.MovePieceAsync(commandValue, false).GetAwaiter().GetResult();
+
                 GameCommand command = new GameCommand
                 {
-                    gameRoom = gameRoom,
-                    recipientConnectionIds = gameRoom.Users.Where(u => false || u.ConnectionId != Context.ConnectionId).Select(u => u.ConnectionId).ToList(),
                     SendToClientFunctionName = "MovePiece",
                     commandValue1 = commandValue,
                     commandValue2 = "",
                     commandValue3 = "",
-                    index = gameRoom.engine.EngineHelper.index
+                    Index = gameRoom.engine.EngineHelper.index++
                 };
-                // Enqueue the command.
-                _commandQueue.Enqueue(command);
-                // If not already processing, start the process queue.
-                _ = ProcessQueue(); // Fire-and-forget the queue processor.
+                lock (_commandStoreLock)
+                {
+                    _commandStore.Add(command);
+                }
                 return commandValue;
             }
             else if (commandtype == "DiceRoll")
@@ -111,57 +102,33 @@ namespace SignalR.Server
 
                 GameCommand command = new GameCommand
                 {
-                    gameRoom = gameRoom,
-                    recipientConnectionIds = gameRoom.Users.Where(u => false || u.ConnectionId != Context.ConnectionId).Select(u => u.ConnectionId).ToList(),
                     SendToClientFunctionName = "DiceRoll",
                     commandValue1 = commandValue,
                     commandValue2 = diveValue.Split(",")[0],
                     commandValue3 = diveValue.Split(",")[1],
-                    index = gameRoom.engine.EngineHelper.index
+                    Index = gameRoom.engine.EngineHelper.index++
                 };
-
-                // Enqueue the command.
-                _commandQueue.Enqueue(command);
-                // If not already processing, start the process queue.
-                _ = ProcessQueue(); // Fire-and-forget the queue processor.
-
+                lock (_commandStoreLock)
+                {
+                    _commandStore.Add(command);
+                }
+                
                 //Sendtoothers(user.Room, diveValue);
                 return diveValue;
             }
             return "0";
         }
-        private async Task ProcessQueue()
+        // This hub method lets a client pull new commands.
+        // The client sends its last received index, and the server returns all commands with a higher index.
+        public Task<List<GameCommand>> PullCommands(int lastSeenIndex)
         {
-            if (!_processingQueue)
-                return;
-            _processingQueue = false;
-            while (_commandQueue.TryDequeue(out GameCommand command))
+            List<GameCommand> newCommands;
+            lock (_commandStoreLock)
             {
-                // Optional: add a delay before processing each command.
-                await Task.Delay(100); // e.g., 250ms delay
-                string result = "0";
-                try
-                {
-                    if (command.SendToClientFunctionName == "MovePiece")
-                    {
-                        String piece = command.gameRoom.engine.MovePieceAsync(command.commandValue1, false).GetAwaiter().GetResult();
-                    }
-                    if (command.SendToClientFunctionName == "DiceRoll")
-                    {
-                    }
-                    // Optionally, send a message to the room:
-                    await SendMessageToRoom(command.recipientConnectionIds, command.SendToClientFunctionName, command.commandValue1, command.commandValue2, command.commandValue3, command.index);
-                    
-                }
-                catch (Exception ex)
-                {
-                    result = "Error: " + ex.Message;
-                }
-                await Task.Delay(250); // e.g., 200ms delay
-                // Complete the task so the waiting client can continue.
-                command.Tcs.SetResult(result);
+                // Get all commands with index greater than lastSeenIndex.
+                newCommands = _commandStore.Where(cmd => cmd.Index > lastSeenIndex).ToList();
             }
-            _processingQueue = true;
+            return Task.FromResult(newCommands);
         }
         // Example method to send a message from the server to a specific client
         public void SendServerMessage(string message)
@@ -330,16 +297,7 @@ namespace SignalR.Server
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
-        public async Task SendMessageToRoom(List<string> recipientConnectionIds, string SendToClientFunctionName, string SeatColor, string messageType, string value, int index)
-        {
-            foreach (String ConnectionId in recipientConnectionIds)
-                if (SendToClientFunctionName == "DiceRoll")
-                    await _hubContext.Clients.Client(ConnectionId).SendAsync(SendToClientFunctionName, SeatColor, messageType, value, index+"");
-                else
-                    await _hubContext.Clients.Client(ConnectionId).SendAsync(SendToClientFunctionName, SeatColor, index+"");
-        }
-        // Generate a unique 10-digit room ID
-
+       
         //Logic for 4 players game in tournament road to final
         static void RunTournament(List<string> players)
         {

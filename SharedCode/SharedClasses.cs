@@ -13,4 +13,14 @@ namespace SharedCode
         public string? PlayerPicture { get; set; }
         public string? PlayerColor { get; set; }
     }
+    public class GameCommand
+    {
+        // Your command properties
+        public string SendToClientFunctionName { get; set; }
+        public string commandValue1 { get; set; }
+        public string commandValue2 { get; set; }
+        public string commandValue3 { get; set; }
+        // Index to uniquely identify the command order
+        public int Index { get; set; }
+    }
 }

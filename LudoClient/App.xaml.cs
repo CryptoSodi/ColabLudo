@@ -1,6 +1,9 @@
 ﻿
 using LudoClient.Constants;
 using LudoClient.CoreEngine;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Maui.Controls;
+using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
 using System.Collections.Concurrent;
@@ -10,11 +13,6 @@ namespace LudoClient
 {
     public partial class App : Application
     {
-        // Static command queue for processing commands sequentially.
-        private static readonly ConcurrentQueue<GameCommand> _commandQueue = new ConcurrentQueue<GameCommand>();
-        private static bool _processingQueue = false;
-        private static bool _processstopper = false;
-
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
@@ -65,44 +63,71 @@ namespace LudoClient
             //
             //MainPage = new DashboardPage();
             //MainPage = new TabHandeler();
+            // Start polling in a background thread using Task.Run.
+            Task.Run(async () =>
+            {
+                await PollForCommandsAsync();
+            });
         }
         private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece) args)
         {
-            GameCommand command = new GameCommand
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                CommandType = "DiceRoll",
-                SeatColor = args.SeatColor,
-                DiceValue = args.DiceValue,
-                Piece = args.Piece,
-                index = 0
-            };
-
-            // Enqueue the command.
-            _commandQueue.Enqueue(command);
-            // If not already processing, start the process queue.
-            if (!_processingQueue)
-            {
-                _processingQueue = true;
-                _ = ProcessQueue(); // Fire-and-forget the queue processor.
-            }
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
+                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece, false);
+            });
         }
         private void OnPieceMove(object? sender, string Piece)
         {
-            GameCommand command = new GameCommand
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                CommandType = "MovePiece",
-                SeatColor = "",
-                DiceValue = "",
-                Piece = Piece,
-                index = 0
-            };
-            // Enqueue the command.
-            _commandQueue.Enqueue(command);
-            // If not already processing, start the process queue.
-            if (!_processingQueue)
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                    ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
+            });
+        }
+
+        private int _lastSeenIndex = -1; // Start at -1 so that the first poll returns all commands.
+        private async Task PollForCommandsAsync()
+        {
+            while (true)
             {
-                _processingQueue = true;
-                _ = ProcessQueue(); // Fire-and-forget the queue processor.
+                try
+                {
+                    // Invoke the hub method to pull commands newer than _lastSeenIndex.
+                    List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(_lastSeenIndex);
+                    {
+                        if (commands != null && commands.Count > 0)
+                            foreach (var command in commands)
+                            {
+                                while (ClientGlobalConstants.game.engine.processing)
+                                {
+                                    await Task.Delay(100);
+                                }
+                                Console.WriteLine($"Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
+                                // Process the command here (e.g., call a local method based on the command type).
+                                // Update _lastSeenIndex with the highest received index.
+                                _lastSeenIndex = command.Index;
+                                if (command.SendToClientFunctionName == "MovePiece")
+                                {
+                                    OnPieceMove(this, command.commandValue1);
+                                }
+                                else if (command.SendToClientFunctionName == "DiceRoll")
+                                {
+                                    // For other command types, for example, SeatTurn:
+                                    // If SeatTurn returns a string, you can wait for it.
+                                    OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                }
+                            }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error pulling commands: {ex.Message}");
+                }
+                // Wait a bit before polling again.
+                await Task.Delay(500);
             }
         }
         private void OnPlayerLeft(object? sender, string PlayerColor)
@@ -144,48 +169,6 @@ namespace LudoClient
                 ClientGlobalConstants.FlushOld();
             });
         }
-        private async Task ProcessQueue()
-        {
-            while (_commandQueue.TryDequeue(out GameCommand command))
-            {
-                _processstopper = true;
-                // Optional: add a delay before processing each command.
-                await Task.Delay(250); // e.g., 250ms delay
-                string result = "0";
-                try
-                {
-                    if (command.CommandType == "MovePiece")
-                    {
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            ClientGlobalConstants.game.PlayerPieceClicked(command.Piece, false);
-                            _processstopper = false;
-                        }); 
-                    }
-                    if (command.CommandType == "DiceRoll")
-                    {
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            ClientGlobalConstants.game.PlayerDiceClicked(command.SeatColor, command.DiceValue, command.Piece, false);
-                            _processstopper = false;
-                        });
-                    }
-                    while (_processstopper)
-                    {
-                        await Task.Delay(50); // e.g., 50ms delay
-                    }
-                }
-                catch (Exception ex)
-                {
-                    result = "Error: " + ex.Message;
-                }
-                await Task.Delay(250); // e.g., 250ms delay
-                // Complete the task so the waiting client can continue.
-                command.Tcs.SetResult(result);
-            }
-            _processingQueue = false;
-        }
-
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
         {
@@ -212,15 +195,5 @@ namespace LudoClient
             FreeConsole();
         }
 #endif
-    }
-    public class GameCommand
-    {
-        public string CommandType { get; set; }  // e.g., "MovePiece" or "DiceRoll"
-        public string SeatColor { get; set; }
-        public string DiceValue { get; set; }
-        public string Piece { get; set; }
-        public int index { get; set; }
-        // TaskCompletionSource allows the sender to await the result.
-        public TaskCompletionSource<string> Tcs { get; set; } = new TaskCompletionSource<string>();
     }
 }

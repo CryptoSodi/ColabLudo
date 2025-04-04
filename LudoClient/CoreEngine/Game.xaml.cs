@@ -364,7 +364,6 @@ public partial class Game : ContentPage
         // Handle layout size changes
         Alayout.SizeChanged += (sender, e) =>
         {
-            Console.WriteLine("The layout has been loaded and rendered.");
             Pupulate(rotation);
         };
 
@@ -519,7 +518,6 @@ public partial class Game : ContentPage
     }
     private void ResizePieces()
     {
-        Console.WriteLine("Perform Resize");
         List<Piece> allPieces = new List<Piece>();
         foreach (var player in engine.EngineHelper.players)
             foreach (var piece in player.Pieces)
