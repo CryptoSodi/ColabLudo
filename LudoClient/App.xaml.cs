@@ -95,31 +95,34 @@ namespace LudoClient
             {
                 try
                 {
-                    // Invoke the hub method to pull commands newer than _lastSeenIndex.
-                    List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(_lastSeenIndex);
+                    if (GlobalConstants.MatchMaker != null)
                     {
-                        if (commands != null && commands.Count > 0)
-                            foreach (var command in commands)
-                            {
-                                while (ClientGlobalConstants.game.engine.processing)
+                        // Invoke the hub method to pull commands newer than _lastSeenIndex.
+                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(_lastSeenIndex);
+                        {
+                            if (commands != null && commands.Count > 0)
+                                foreach (var command in commands)
                                 {
-                                    await Task.Delay(100);
+                                    while (ClientGlobalConstants.game.engine.processing)
+                                    {
+                                        await Task.Delay(100);
+                                    }
+                                    Console.WriteLine($"Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
+                                    // Process the command here (e.g., call a local method based on the command type).
+                                    // Update _lastSeenIndex with the highest received index.
+                                    _lastSeenIndex = command.Index;
+                                    if (command.SendToClientFunctionName == "MovePiece")
+                                    {
+                                        OnPieceMove(this, command.commandValue1);
+                                    }
+                                    else if (command.SendToClientFunctionName == "DiceRoll")
+                                    {
+                                        // For other command types, for example, SeatTurn:
+                                        // If SeatTurn returns a string, you can wait for it.
+                                        OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                    }
                                 }
-                                Console.WriteLine($"Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
-                                // Process the command here (e.g., call a local method based on the command type).
-                                // Update _lastSeenIndex with the highest received index.
-                                _lastSeenIndex = command.Index;
-                                if (command.SendToClientFunctionName == "MovePiece")
-                                {
-                                    OnPieceMove(this, command.commandValue1);
-                                }
-                                else if (command.SendToClientFunctionName == "DiceRoll")
-                                {
-                                    // For other command types, for example, SeatTurn:
-                                    // If SeatTurn returns a string, you can wait for it.
-                                    OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
-                                }
-                            }
+                        }
                     }
                 }
                 catch (Exception ex)

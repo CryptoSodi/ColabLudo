@@ -4,12 +4,17 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
+using SharedCode;
 using SharedCode.CoreEngine;
 
 namespace SignalR.Server
 {
     public class GameRoom
     {
+        // A simple persistent store for commands.
+        // In production, this might be a database or distributed log.
+        private static readonly List<GameCommand> _commandStore = new List<GameCommand>();
+        private static readonly object _commandStoreLock = new object();
         public string RoomCode { get; set; }
         public string GameType { get; set; }
         public decimal GameCost { get; set; }
@@ -45,6 +50,17 @@ namespace SignalR.Server
             
             StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+        }
+
+        public Task<List<GameCommand>> PullCommands(int lastSeenIndex)
+        {
+            List<GameCommand> newCommands;
+            lock (_commandStoreLock)
+            {
+                // Get all commands with index greater than lastSeenIndex.
+                newCommands = _commandStore.Where(cmd => cmd.Index > lastSeenIndex).ToList();
+            }
+            return Task.FromResult(newCommands);
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
@@ -89,11 +105,19 @@ namespace SignalR.Server
                 // Remove the user from the room.
                 Users.Remove(user);
 
-                // Optionally, perform additional cleanup or update the game engine state.
-                // For example: engine.RemoveUser(user); // if your engine supports this
-                await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
-                // Notify all connected clients that a user has left.
                 engine.PlayerLeft(user.PlayerColor);
+                
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "PlayerLeft",
+                    commandValue1 = user.PlayerColor,
+                    commandValue2 = "",
+                    commandValue3 = "",
+                    Index = engine.EngineHelper.index++
+                };
+                lock (_commandStoreLock)
+                    _commandStore.Add(command);
+
                 Console.WriteLine("User removed: " + user.PlayerColor);
             }
             else
@@ -151,6 +175,39 @@ namespace SignalR.Server
             }
            // result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
             Console.WriteLine($"TIMEOUT : {result}");
+        }
+        internal async Task<string> MovePieceAsync(string commandValue)
+        {
+          String piece = await engine.MovePieceAsync(commandValue, false);
+            GameCommand command = new GameCommand
+            {
+                SendToClientFunctionName = "MovePiece",
+                commandValue1 = commandValue,
+                commandValue2 = "",
+                commandValue3 = "",
+                Index = engine.EngineHelper.index++
+            };
+            lock (_commandStoreLock)
+                _commandStore.Add(command);
+
+            return piece;
+        }
+        internal async Task<string> SeatTurn(string commandValue)
+        {
+            String diveValue = await engine.SeatTurn(commandValue, "", "", false);
+
+            GameCommand command = new GameCommand
+            {
+                SendToClientFunctionName = "DiceRoll",
+                commandValue1 = commandValue,
+                commandValue2 = diveValue.Split(",")[0],
+                commandValue3 = diveValue.Split(",")[1],
+                Index = engine.EngineHelper.index++
+            };
+            lock (_commandStoreLock)
+                _commandStore.Add(command);
+
+            return diveValue;
         }
     }
 }

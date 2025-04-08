@@ -1,5 +1,6 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
+using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
@@ -9,12 +10,14 @@ namespace SignalR.Server
 {
     public class DatabaseManager
     {
-        List<Game> games = new List<Game>();
+        public List<Game> games = new List<Game>();
+        public ConcurrentDictionary<string, GameRoom> _gameRooms = new();
+
         List<MultiPlayer> multiPlayers = new List<MultiPlayer>();
+        public ConcurrentDictionary<string, User> _users = new();
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
-        public ConcurrentDictionary<string, GameRoom> _rooms = new();
         private IHubCallerClients Clients;
 
         public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory)
@@ -23,8 +26,7 @@ namespace SignalR.Server
             _contextFactory = contextFactory;
             Task.Run(LoadData); // Run async without blocking constructor
         }
-
-        public async Task<Game> GetGameLobby(int playerId, string roomCode, string gameType, decimal gameCost)
+        public async Task<Game> JoinGameLobby(string ConnectionId, int playerId, string userName, string roomCode, string gameType, decimal gameCost)
         {
             Game existingGame;
             if (gameCost == 0 && string.IsNullOrWhiteSpace(roomCode))
@@ -52,7 +54,10 @@ namespace SignalR.Server
             MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
 
             if (multiPlayer == null)
+            {
+
                 return null;//All Player Seats taken
+            }
             if (existingGame == null)
             {
                 multiPlayer.RoomCode = int.Parse(roomCode);
@@ -68,11 +73,55 @@ namespace SignalR.Server
                 };
                 existingGame.MultiPlayer = multiPlayer;
                 games.Add(existingGame);
-               // await _context.SaveChangesAsync(); // Save the game entry to the database
+                // await _context.SaveChangesAsync(); // Save the game entry to the database
             }
-             SaveData(); // Run save in a background thread (non-blocking)
+
+            // Create or retrieve the room
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, roomCode, gameType, gameCost));
+
+            // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
+            var user = new User(ConnectionId, existingGame.RoomCode, playerId, userName, "Color");
+            _users.GetOrAdd(ConnectionId, user);
+            // Add the user to the room's user list
+            gameRoom.Users.Add(user);
+            // Add the user to the specified group (room)
+
+
+
+            SaveData(); // Run save in a background thread (non-blocking)
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
             return existingGame;
+        }
+        public async Task<(Game game, User user)> LeaveGameLobby(string ConnectionId, int playerId, string roomCode)
+        {
+            Game existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
+            if (existingGame! == null && (existingGame.State!="Playing"|| existingGame.State != "Completed"))
+            {
+                if (existingGame?.MultiPlayer.P1 == playerId)
+                    existingGame.MultiPlayer.P1 = null;
+                else if (existingGame?.MultiPlayer.P2 == playerId)
+                    existingGame.MultiPlayer.P2 = null;
+                else if (existingGame?.MultiPlayer.P3 == playerId)
+                    existingGame.MultiPlayer.P3 = null;
+                else if (existingGame?.MultiPlayer.P4 == playerId)
+                    existingGame.MultiPlayer.P4 = null;
+
+                if (existingGame.MultiPlayer.P1 == null && existingGame.MultiPlayer.P2 == null && existingGame.MultiPlayer.P3 == null && existingGame.MultiPlayer.P4 == null)
+                {
+                    existingGame.State = "Terminated";
+                }
+            }
+
+            if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+            {
+                gameRoom.PlayerLeft(ConnectionId, roomCode);
+            }
+            if (_users.TryRemove(ConnectionId, out User user))
+            {
+                Console.WriteLine("User not removed for connection: " + ConnectionId);
+            }
+            SaveData(); // Run save in a background thread (non-blocking)
+            return (existingGame, user);
         }
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
@@ -81,14 +130,13 @@ namespace SignalR.Server
             {
                 roomId = new Random().Next(10000000, 99999999).ToString();
             }
-            while (_rooms.ContainsKey(roomId));
+            while (_gameRooms.ContainsKey(roomId));
 
-            _rooms.TryAdd(roomId, new GameRoom(_hubContext, _contextFactory, roomId, gameType, gameCost));
+            _gameRooms.TryAdd(roomId, new GameRoom(_hubContext, _contextFactory, roomId, gameType, gameCost));
             return roomId;
         }
         private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
         {
-
             if (existingGame == null)
             {
                 MultiPlayer multiPlayer = new MultiPlayer
@@ -98,6 +146,7 @@ namespace SignalR.Server
                 // Add the MultiPlayer and save changes to get the MultiPlayerId
                 multiPlayers.Add(multiPlayer);//_context.MultiPlayers
                 //await _context.SaveChangesAsync(); // This will save the newly added MultiPlayer and assign it an Id
+                
                 return multiPlayer;
             }
             else
@@ -147,7 +196,6 @@ namespace SignalR.Server
                 Console.WriteLine($"Error saving data: {ex.Message}");
             }
         }
-
         private async Task LoadData()
         {
             try
@@ -159,7 +207,7 @@ namespace SignalR.Server
                 foreach (var game in games)
                 {
                     game.MultiPlayer = multiPlayers.FirstOrDefault(mp => mp.MultiPlayerId == game.MultiPlayerId);
-                    _rooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, game.RoomCode, game.Type, game.BetAmount));
+                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, game.RoomCode, game.Type, game.BetAmount));
                 }
 
                 Console.WriteLine("Data loaded successfully!");
