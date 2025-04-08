@@ -14,9 +14,6 @@ namespace SharedCode.Network
 
         // Event Definitions using standard .NET event patterns
 
-        public event EventHandler<(string SeatColor, string DiceValue, string Piece)> DiceRoll;
-        public event EventHandler<string> PieceMove;
-        public event EventHandler<string> PlayerLeft;
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
@@ -47,24 +44,6 @@ namespace SharedCode.Network
                 //Game(GameType, playerCount, PlayerColor)
                 GameStarted?.Invoke(this, (GameType, seatsData, rollsString));
                 Console.WriteLine("Starting Game : " + DateTime.Now, GameType, seatsData);
-            });
-            _hubConnection.On<string, string, string, string>("DiceRoll", (SeatColor, DiceValue, Piece, index) =>
-            {
-                //Game(GameType, playerCount, PlayerColor)
-                DiceRoll?.Invoke(this, (SeatColor, DiceValue, Piece));
-                Console.WriteLine($"CLIENT :{index}: DiceRoll : " + DateTime.Now, DiceValue, Piece);
-            });
-            _hubConnection.On<string, string>("MovePiece", (piece, index) =>
-            {
-                //Game(GameType, playerCount, PlayerColor)
-                PieceMove?.Invoke(this, piece);
-                Console.WriteLine($"CLIENT :{index}: MovePiece : " + DateTime.Now, piece);
-            });
-            _hubConnection.On<string>("PlayerLeft", SeatColor =>
-            {
-                Console.WriteLine("PlayerLeft : " + DateTime.Now, SeatColor);
-                //Game(GameType, playerCount, PlayerColor)
-                PlayerLeft?.Invoke(this, SeatColor);
             });
             _hubConnection.On<string, string, string>("ShowResults", (seats, GameType, GameCost) =>
             {
@@ -184,7 +163,6 @@ namespace SharedCode.Network
         /// <summary>
         /// Sends a Ready state for the given room code.
         /// </summary>
-
         public async Task ReadyAsync()
         {
             try
@@ -205,7 +183,6 @@ namespace SharedCode.Network
                 GlobalConstants.RoomCode = "";
             }
         }
-
         public async Task<List<GameCommand>> PullCommands(int lastSeenIndex)
         {
             return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex);

@@ -353,7 +353,7 @@ public partial class Game : ContentPage
         engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
         engine.PlayerLeftSeat += new Engine.CallbackEventHandlerPlayerLeft(PlayerLeftSeat);
         // Set rotation based on player color
-        int rotation = engine.EngineHelper.SetRotation(playerColor);
+        int rotation = engine.EngineHelper.SetRotation(this.playerColor);
         Glayout.RotateTo(rotation);
 
         foreach (var player in engine.EngineHelper.players)

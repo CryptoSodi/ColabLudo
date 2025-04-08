@@ -109,8 +109,7 @@ namespace SignalR.Server
             if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
             {
                 existingGame.State = "Playing";
-                context.Games.Update(existingGame);
-                await context.SaveChangesAsync();
+                DM.SaveData();
 
                 await Task.Delay(2000);
 
@@ -120,8 +119,8 @@ namespace SignalR.Server
                 for (int i = 0; i < gameRoom.Users.Count; i++)
                     gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
 
-               // _engine.TryAdd(existingGame.RoomCode, gameRoom);
-
+                // _engine.TryAdd(existingGame.RoomCode, gameRoom);
+                
                 await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
             }
         }

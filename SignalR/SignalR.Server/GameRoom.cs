@@ -64,8 +64,6 @@ namespace SignalR.Server
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
-            // Instead of Thread.Sleep, use Task.Delay for async waiting.
-            await Task.Delay(2000);
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> sortedSeats;
@@ -83,24 +81,24 @@ namespace SignalR.Server
                     .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor.Split(",")[0], StringComparison.OrdinalIgnoreCase))
                     .ToList();
             }
-
-            using var context = _contextFactory.CreateDbContext();
-            Game existingGame = await context.Games.FirstOrDefaultAsync(g => g.RoomCode == RoomCode);
+            
+            Game existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == RoomCode);
             existingGame.Winner = sortedSeats[0].PlayerId + "";
             existingGame.State = "Completed";
 
+            LudoHub.DM.SaveData();
+            // Instead of Thread.Sleep, use Task.Delay for async waiting.
+            await Task.Delay(2000);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await _hubContext.Clients.Group(RoomCode)
             .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
-
-            context.Games.Update(existingGame);
-            await context.SaveChangesAsync();            
+            
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {
             // Try to find the user in the game room's user list using the connection ID.
             var user = Users.FirstOrDefault(u => u.ConnectionId == connectionId);
-            if (user != null)
+            if (user != null && engine != null)
             {
                 // Remove the user from the room.
                 Users.Remove(user);

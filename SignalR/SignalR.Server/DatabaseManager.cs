@@ -95,7 +95,7 @@ namespace SignalR.Server
         public async Task<(Game game, User user)> LeaveGameLobby(string ConnectionId, int playerId, string roomCode)
         {
             Game existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
-            if (existingGame! == null && (existingGame.State!="Playing"|| existingGame.State != "Completed"))
+            if (existingGame != null && existingGame.State == "Active")
             {
                 if (existingGame?.MultiPlayer.P1 == playerId)
                     existingGame.MultiPlayer.P1 = null;
@@ -172,7 +172,7 @@ namespace SignalR.Server
                 return multiPlayer;
             }
         }
-        private async Task SaveData()
+        public async Task SaveData()
         {
             try
             {
@@ -196,7 +196,7 @@ namespace SignalR.Server
                 Console.WriteLine($"Error saving data: {ex.Message}");
             }
         }
-        private async Task LoadData()
+        public async Task LoadData()
         {
             try
             {

@@ -49,9 +49,6 @@ namespace LudoClient
                 GlobalConstants.MatchMaker = new Client();
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                GlobalConstants.MatchMaker.DiceRoll += OnDiceRoll;
-                GlobalConstants.MatchMaker.PieceMove += OnPieceMove;
-                GlobalConstants.MatchMaker.PlayerLeft += OnPlayerLeft;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
 
                 UserInfo.LoadState();
@@ -111,15 +108,19 @@ namespace LudoClient
                                     // Process the command here (e.g., call a local method based on the command type).
                                     // Update _lastSeenIndex with the highest received index.
                                     _lastSeenIndex = command.Index;
-                                    if (command.SendToClientFunctionName == "MovePiece")
+                                    switch (command.SendToClientFunctionName)
                                     {
-                                        OnPieceMove(this, command.commandValue1);
-                                    }
-                                    else if (command.SendToClientFunctionName == "DiceRoll")
-                                    {
-                                        // For other command types, for example, SeatTurn:
-                                        // If SeatTurn returns a string, you can wait for it.
-                                        OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                        case "MovePiece":
+                                            OnPieceMove(this, command.commandValue1);
+                                            break;
+                                        case "DiceRoll":
+                                            // For other command types, for example, SeatTurn:
+                                            // If SeatTurn returns a string, you can wait for it.
+                                            OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                            break;
+                                        case "PlayerLeft":
+                                            OnPlayerLeft(this, command.commandValue1);
+                                            break;
                                     }
                                 }
                         }
@@ -137,7 +138,9 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                if (ClientGlobalConstants.game != null)
+                    ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
             });
         }
         private void OnShowResults(object? sender, (string seats, string GameType, string GameCost) e)
