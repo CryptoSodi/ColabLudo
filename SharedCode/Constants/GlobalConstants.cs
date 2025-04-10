@@ -19,7 +19,7 @@ namespace SharedCode.Constants
 
         static GlobalConstants()
         {
-                Url = Debug ? "http://192.168.215.65" : "http://3.143.14.201";
+                Url = Debug ? "http://192.168.1.101" : "http://3.143.14.201";
 #if WINDOWS
 if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -45,6 +45,8 @@ if(Debug){
                 return true; // Ignore SSL certificate errors for development
             }
         };
+
+        public static int lastSeenIndex = -1;
         public static string RoomCode { get; internal set; }
         public static int GameCost { get; internal set; }
     }

@@ -268,7 +268,7 @@ namespace LudoClient
                         BtnLoginSingup.IsVisible = true;
                         BtnCancel.IsVisible = false;
                         GoogleLoginPanel.IsVisible = false;
-                        await DisplayAlert("Success", "Please Link a your phone number.", "OK");                        
+                        await DisplayAlert("Success", "Please Link a your phone number.", "OK");
                     }
                 }
             }

@@ -38,6 +38,7 @@ namespace SignalR.Server
                         // Generates a unique room name
                         roomCode = GenerateUniqueRoomId(gameType, gameCost);
                     // Check if the RoomCode already exists in the database
+
                     existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
                 }
             }
@@ -55,7 +56,6 @@ namespace SignalR.Server
 
             if (multiPlayer == null)
             {
-
                 return null;//All Player Seats taken
             }
             if (existingGame == null)
@@ -125,15 +125,16 @@ namespace SignalR.Server
         }
         private string GenerateUniqueRoomId(string gameType, decimal gameCost)
         {
-            string roomId;
+            string roomCode;
             do
             {
-                roomId = new Random().Next(10000000, 99999999).ToString();
+                roomCode = new Random().Next(10000000, 99999999).ToString();
             }
-            while (_gameRooms.ContainsKey(roomId));
+            while (_gameRooms.ContainsKey(roomCode));
 
-            _gameRooms.TryAdd(roomId, new GameRoom(_hubContext, _contextFactory, roomId, gameType, gameCost));
-            return roomId;
+            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, roomCode, gameType, gameCost));
+
+            return roomCode;
         }
         private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
         {

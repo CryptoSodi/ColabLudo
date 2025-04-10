@@ -1,14 +1,9 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
@@ -46,16 +41,11 @@ namespace SignalR.Server
             Console.WriteLine($"User connected: {connectionId}");
             await base.OnConnectedAsync();
         }
-        public Task<List<GameCommand>> PullCommands(int lastSeenIndex)
+        public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {
-            if (!DM._users.TryGetValue(Context.ConnectionId, out User user))
+            if (!DM._gameRooms.TryGetValue(RoomCode, out GameRoom gameRoom))
             {
-                Console.WriteLine("User not found for connection: " + Context.ConnectionId);
-                return Task.FromResult(new List<GameCommand>());
-            }
-            if (!DM._gameRooms.TryGetValue(user.roomCode, out GameRoom gameRoom))
-            {
-                Console.WriteLine($"GameRoom not found for room: {user.roomCode}");
+                Console.WriteLine($"GameRoom not found for room: {RoomCode}");
                 return Task.FromResult(new List<GameCommand>());
             }
             
@@ -71,7 +61,7 @@ namespace SignalR.Server
                     // For example: engine.RemoveUser(user); // if your engine supports this
                     await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
                     // Notify all connected clients that a user has left.
-                    BroadcastPlayersAsync(existingGame);
+                    await BroadcastPlayersAsync(existingGame);
                 }
                 catch (Exception)
                 {
@@ -109,7 +99,7 @@ namespace SignalR.Server
             if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
             {
                 existingGame.State = "Playing";
-                DM.SaveData();
+                await DM.SaveData();
 
                 await Task.Delay(2000);
 
@@ -133,27 +123,21 @@ namespace SignalR.Server
             //await BroadcastPlayersAsync(existingGame, roomCode);
             return "ready";
         }
-        public string Send(string name, string commandValue, string commandtype)
+        public string Send(string name, string commandValue, string commandtype, string roomCode)
         {
             Console.WriteLine($"{name}: {commandValue}:{commandtype}");
-            //  Clients.All.SendAsync("addMessage", name, GameID);
-            if (!DM._users.TryGetValue(Context.ConnectionId, out User user))
-            {
-                Console.WriteLine("User not found for connection: " + Context.ConnectionId);
-                return "Error: User not found.";
-            }
             // Now use the user's Room property to get the GameRoom.
-            if (!DM._gameRooms.TryGetValue(user.roomCode, out GameRoom gameRoom))
+            if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
             {
-                Console.WriteLine($"GameRoom not found for room: {user.roomCode}");
+                Console.WriteLine($"GameRoom not found for room: {roomCode}");
                 return "Error: Room not found.";
             }
             // For logging purposes, show which room this command is coming from.
-            Console.WriteLine($"{name} (room {user.roomCode}): {commandValue}:{commandtype}");
+            Console.WriteLine($"{name} (room {roomCode}): {commandValue}:{commandtype}");
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
-                Console.WriteLine($"Engine not initialized for room: {user.roomCode}");
+                Console.WriteLine($"Engine not initialized for room: {roomCode}");
                 return "Error: Engine not initialized.";
             }
 

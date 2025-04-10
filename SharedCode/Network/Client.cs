@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
-using System;
-using System.Data;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace SharedCode.Network
 {
@@ -51,7 +48,6 @@ namespace SharedCode.Network
                 //Game(GameType, playerCount, PlayerColor)
                 ShowResults?.Invoke(this, (seats, GameType, GameCost));
             });
-
             // Message event
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
@@ -126,13 +122,13 @@ namespace SharedCode.Network
         /// <summary>
         /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
         /// </summary>
-        public async Task CreateJoinLobbyAsync(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomName)
+        public async Task CreateJoinLobbyAsync(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomCode)
         {
             try
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
-                var roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomName).ConfigureAwait(false);
+                roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", playerId, userName, pictureUrl, gameType, gameCost, roomCode).ConfigureAwait(false);
                 Console.WriteLine($"Joined room: {roomCode}");
                 stopwatch.Stop(); // Stop timing
 
@@ -151,7 +147,7 @@ namespace SharedCode.Network
         {
             try
             {
-                string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, command).ConfigureAwait(false);
+                string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, command, GlobalConstants.RoomCode).ConfigureAwait(false);
                 return result;
             }
             catch (Exception ex)
@@ -183,9 +179,9 @@ namespace SharedCode.Network
                 GlobalConstants.RoomCode = "";
             }
         }
-        public async Task<List<GameCommand>> PullCommands(int lastSeenIndex)
+        public async Task<List<GameCommand>> PullCommands(int lastSeenIndex, string RoomCode)
         {
-            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex);
+            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode);
         }
     }
 }

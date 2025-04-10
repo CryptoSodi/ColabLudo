@@ -2,7 +2,6 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
@@ -13,8 +12,8 @@ namespace SignalR.Server
     {
         // A simple persistent store for commands.
         // In production, this might be a database or distributed log.
-        private static readonly List<GameCommand> _commandStore = new List<GameCommand>();
-        private static readonly object _commandStoreLock = new object();
+        private readonly List<GameCommand> _commandStore = new List<GameCommand>();
+        private readonly object _commandStoreLock = new object();
         public string RoomCode { get; set; }
         public string GameType { get; set; }
         public decimal GameCost { get; set; }

@@ -1,12 +1,9 @@
 ﻿
 using LudoClient.Constants;
 using LudoClient.CoreEngine;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
-using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 
 namespace LudoClient
@@ -85,17 +82,17 @@ namespace LudoClient
             });
         }
 
-        private int _lastSeenIndex = -1; // Start at -1 so that the first poll returns all commands.
+      
         private async Task PollForCommandsAsync()
         {
             while (true)
             {
                 try
                 {
-                    if (GlobalConstants.MatchMaker != null)
+                    if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null)
                     {
                         // Invoke the hub method to pull commands newer than _lastSeenIndex.
-                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(_lastSeenIndex);
+                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(GlobalConstants.lastSeenIndex, GlobalConstants.RoomCode);
                         {
                             if (commands != null && commands.Count > 0)
                                 foreach (var command in commands)
@@ -104,10 +101,10 @@ namespace LudoClient
                                     {
                                         await Task.Delay(100);
                                     }
-                                    Console.WriteLine($"Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
+                                    Console.WriteLine($"Room {GlobalConstants.RoomCode} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
                                     // Process the command here (e.g., call a local method based on the command type).
                                     // Update _lastSeenIndex with the highest received index.
-                                    _lastSeenIndex = command.Index;
+                                    GlobalConstants.lastSeenIndex = command.Index;
                                     switch (command.SendToClientFunctionName)
                                     {
                                         case "MovePiece":
@@ -145,19 +142,23 @@ namespace LudoClient
         }
         private void OnShowResults(object? sender, (string seats, string GameType, string GameCost) e)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            MainThread.BeginInvokeOnMainThread(async () =>
             {
-                ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
+                await ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
+
+                ClientGlobalConstants.game.engine.cleanGame();
+                ClientGlobalConstants.game = null;
+                GlobalConstants.RoomCode = "";
+                GlobalConstants.GameCost = 0;
             });
         }
         private void OnGameStarted(object? sender, (string GameType, string seatsData, string rollsString) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Game game = new Game("Client", args.GameType, "", args.seatsData, args.rollsString);
-                ClientGlobalConstants.game = game;
-                ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
-                //MainPage = new Game(GameType, seatsData);
+                GlobalConstants.lastSeenIndex = -1;
+                ClientGlobalConstants.game = new Game("Client", args.GameType, "", args.seatsData, args.rollsString);
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
                 ClientGlobalConstants.FlushOld();
             });
         }
@@ -165,13 +166,10 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var gameType = args.GameType;
-                var gameCost = args.GameCost;
-                var roomCode = args.RoomCode;
-                GlobalConstants.RoomCode = roomCode;
-                GlobalConstants.GameCost = gameCost;
+                GlobalConstants.RoomCode = args.RoomCode;
+                GlobalConstants.GameCost = args.GameCost;
 
-                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameType, gameCost, roomCode));
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(args.GameType, args.GameCost, args.RoomCode));
                 ClientGlobalConstants.FlushOld();
             });
         }
