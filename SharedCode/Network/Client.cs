@@ -6,7 +6,7 @@ namespace SharedCode.Network
 {
     public class Client
     {
-        private HubConnection _hubConnection;
+        public HubConnection _hubConnection;
         private string _messages;
 
         // Event Definitions using standard .NET event patterns

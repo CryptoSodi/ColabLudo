@@ -91,35 +91,38 @@ namespace LudoClient
                 {
                     if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null)
                     {
-                        // Invoke the hub method to pull commands newer than _lastSeenIndex.
-                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(GlobalConstants.lastSeenIndex, GlobalConstants.RoomCode);
+                        if (GlobalConstants.MatchMaker._hubConnection.State+"" != "Disconnected")
                         {
-                            if (commands != null && commands.Count > 0)
-                                foreach (var command in commands)
-                                {
-                                    while (ClientGlobalConstants.game.engine.processing)
+                            // Invoke the hub method to pull commands newer than _lastSeenIndex.
+                            List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(GlobalConstants.lastSeenIndex, GlobalConstants.RoomCode);
+                            {
+                                if (commands != null && commands.Count > 0)
+                                    foreach (var command in commands)
                                     {
-                                        await Task.Delay(100);
+                                        while (ClientGlobalConstants.game.engine.processing)
+                                        {
+                                            await Task.Delay(100);
+                                        }
+                                        Console.WriteLine($"Room {GlobalConstants.RoomCode} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
+                                        // Process the command here (e.g., call a local method based on the command type).
+                                        // Update _lastSeenIndex with the highest received index.
+                                        GlobalConstants.lastSeenIndex = command.Index;
+                                        switch (command.SendToClientFunctionName)
+                                        {
+                                            case "MovePiece":
+                                                OnPieceMove(this, command.commandValue1);
+                                                break;
+                                            case "DiceRoll":
+                                                // For other command types, for example, SeatTurn:
+                                                // If SeatTurn returns a string, you can wait for it.
+                                                OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                                break;
+                                            case "PlayerLeft":
+                                                OnPlayerLeft(this, command.commandValue1);
+                                                break;
+                                        }
                                     }
-                                    Console.WriteLine($"Room {GlobalConstants.RoomCode} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
-                                    // Process the command here (e.g., call a local method based on the command type).
-                                    // Update _lastSeenIndex with the highest received index.
-                                    GlobalConstants.lastSeenIndex = command.Index;
-                                    switch (command.SendToClientFunctionName)
-                                    {
-                                        case "MovePiece":
-                                            OnPieceMove(this, command.commandValue1);
-                                            break;
-                                        case "DiceRoll":
-                                            // For other command types, for example, SeatTurn:
-                                            // If SeatTurn returns a string, you can wait for it.
-                                            OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
-                                            break;
-                                        case "PlayerLeft":
-                                            OnPlayerLeft(this, command.commandValue1);
-                                            break;
-                                    }
-                                }
+                            }
                         }
                     }
                 }

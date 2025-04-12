@@ -252,7 +252,7 @@ namespace SharedCode.CoreEngine
                     // (piece.Location != 0 && piece.Location + EngineHelper.diceValue <= 57);
                     if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
-                    else if (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0)
+                    else if ((piece.Location + EngineHelper.diceValue <= 51 && piece.Location != 0) || (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0 && EngineHelper.currentPlayer.CanEnterGoal))
                         piece.Moveable = true;
                     else
                         piece.Moveable = false;
@@ -374,7 +374,6 @@ namespace SharedCode.CoreEngine
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
@@ -385,6 +384,7 @@ namespace SharedCode.CoreEngine
                     if (kilablePieces?.Count == 1 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         killed = true;
+                        EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
                         Piece killedPiece = kilablePieces[0];
                         killedPiece.Position = -1; // Send opponent's piece back to base
                         killedPiece.Location = 0;

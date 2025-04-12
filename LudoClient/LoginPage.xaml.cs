@@ -19,13 +19,14 @@ namespace LudoClient
         private async Task AddPhoneNumberToQueue()
         {
             if (UserInfo.Instance.Id != null)
-                otpReuest.playerId = UserInfo.Instance.Id+"";
+                otpReuest.playerId = UserInfo.Instance.Id + "";
             var content = new StringContent(JsonSerializer.Serialize(otpReuest), Encoding.UTF8, "application/json");
             try
             {
                 HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync("api/Otp", content);
                 string responseBody = await response.Content.ReadAsStringAsync();
-                if (responseBody.Contains("OTP saved successfully.")) {
+                if (responseBody.Contains("OTP saved successfully."))
+                {
                     Console.WriteLine($"Status Code: {response.StatusCode}");
                     Console.WriteLine("Response Body:");
                     Console.WriteLine(responseBody);
@@ -40,16 +41,16 @@ namespace LudoClient
                 Console.WriteLine($"Request failed: {ex.Message}");
             }
         }
-       void SetupInstance(Dictionary<string, JsonElement>? result)
+        void SetupInstance(Dictionary<string, JsonElement>? result)
         {
 
-            int playerId                = result["playerId"].GetInt32();
-            string PlayerName           = result["playerName"].GetString();
-            string Email                = result["email"].GetString();
-            string PlayerPicture        = result["playerPicture"].GetString();
-            string phoneNumber          = result["phoneNumber"].GetString();
-            double PlayerLudoCoins      = result["playerLudoCoins"].GetDouble();
-            double PlayerCryptoCoins    = result["playerCryptoCoins"].GetDouble();
+            int playerId = result["playerId"].GetInt32();
+            string PlayerName = result["playerName"].GetString();
+            string Email = result["email"].GetString();
+            string PlayerPicture = result["playerPicture"].GetString();
+            string phoneNumber = result["phoneNumber"].GetString();
+            double PlayerLudoCoins = result["playerLudoCoins"].GetDouble();
+            double PlayerCryptoCoins = result["playerCryptoCoins"].GetDouble();
 
 
 
@@ -237,8 +238,8 @@ namespace LudoClient
         }
         private async void performLoginAsync()
         {
-            try
-            {
+         try
+            {    
                 if (GlobalConstants.online)
                 {
                     string url = "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl;
@@ -255,13 +256,13 @@ namespace LudoClient
 
                     response.EnsureSuccessStatusCode();
                     if (message == "Player login successfully." || message == "Player updated successfully.")
-                    { 
-                     //Save the user's login state
+                    {
+                        //Save the user's login state
                         UserInfo.SaveState();
                         //Hide Loader
                         Application.Current.MainPage = new AppShell();
                     }
-                    else if(message == "Player created successfully." || message == "Attach Phone.")
+                    else if (message == "Player created successfully." || message == "Attach Phone.")
                     {
                         NumberField.IsVisible = true;
                         OtpField.IsVisible = false;
@@ -271,7 +272,7 @@ namespace LudoClient
                         await DisplayAlert("Success", "Please Link a your phone number.", "OK");
                     }
                 }
-            }
+           }
             catch (Exception ex)
             {
                 await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
