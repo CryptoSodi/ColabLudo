@@ -94,7 +94,7 @@ public partial class Game : ContentPage
             VerticalOptions = LayoutOptions.End
         };
 
-        gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
+        gui = new Gui(red1, red2, red3, red4, gre1, gre2, gre3, gre4, blu1, blu2, blu3, blu4, yel1, yel2, yel3, yel4, LockHome1, LockHome2, LockHome3, LockHome4, RedPlayerSeat, GreenPlayerSeat, YellowPlayerSeat, BluePlayerSeat);
         // Ensure the player's color is always in Row2
         Row1.Children.Clear();
         Row2.Children.Clear();
@@ -307,6 +307,11 @@ public partial class Game : ContentPage
         Alayout.Remove(gui.blu3);
         Alayout.Remove(gui.blu4);
 
+        Alayout.Remove(gui.LockHome1);
+        Alayout.Remove(gui.LockHome2);
+        Alayout.Remove(gui.LockHome3);
+        Alayout.Remove(gui.LockHome4);
+
         var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
         if (gameMode == "Client")
         {
@@ -360,7 +365,10 @@ public partial class Game : ContentPage
             foreach (var piece in player.Pieces)
                 Alayout.Add(gui.getPieceToken(piece));
 
-     
+        SetHomeBlock(gui.LockHome1, "red");
+        SetHomeBlock(gui.LockHome2, "green");
+        SetHomeBlock(gui.LockHome3, "yellow");
+        SetHomeBlock(gui.LockHome4, "blue");
         // Handle layout size changes
         Alayout.SizeChanged += (sender, e) =>
         {
@@ -413,6 +421,34 @@ public partial class Game : ContentPage
                 });
             }
     }
+
+    private void SetHomeBlock(Token lockHome, string color)
+    {
+        var player = engine.EngineHelper.getPlayer(color);
+        // If player is null OR the player exists and cannot enter the goal, add the block.
+        if (player == null || player.CanEnterGoal == false)
+        {
+            if (!Alayout.Contains(lockHome))
+            {
+                Alayout.Add(lockHome);
+            }
+            AbsoluteLayout.SetLayoutBounds(lockHome, new Rect(0, 0, (Alayout.Width / 15) - 6, (Alayout.Height / 15) - 6));
+            string PB = color.Substring(0, 1) + 51;
+            double x = engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
+            double y = engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
+            _ = lockHome.TranslateTo(x + 3, y + 3, 10, Easing.CubicIn);
+        }
+        else
+        {
+            if (Alayout.Contains(lockHome))
+            {
+                lockHome.TranslateTo(-300, -300, 10, Easing.CubicIn);
+                Alayout.Remove(lockHome);
+            }
+        }
+    }
+
+
     public async Task ShowResults(string seats, string GameType, string GameCost)
     {
         if (gameMode == "Client")
@@ -462,6 +498,11 @@ public partial class Game : ContentPage
                 AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
                 _ = RelocateAsync(engine.EngineHelper.players[i].Pieces[j], engine.EngineHelper.players[i].Pieces[j]);
             }
+
+        SetHomeBlock(gui.LockHome1, "red");
+        SetHomeBlock(gui.LockHome2, "green");
+        SetHomeBlock(gui.LockHome3, "yellow");
+        SetHomeBlock(gui.LockHome4, "blue");
     }
     public async Task RelocateAsync(Piece piece, Piece pieceClone)
     {
@@ -643,6 +684,11 @@ public partial class Game : ContentPage
                 }
             }
         }
+
+        SetHomeBlock(gui.LockHome1, "red");
+        SetHomeBlock(gui.LockHome2, "green");
+        SetHomeBlock(gui.LockHome3, "yellow");
+        SetHomeBlock(gui.LockHome4, "blue");
     }
     public async void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {

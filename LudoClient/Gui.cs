@@ -21,13 +21,17 @@ namespace LudoClient
         public Token yel2;
         public Token yel3;
         public Token yel4;
+        public Token LockHome1;
+        public Token LockHome2;
+        public Token LockHome3;
+        public Token LockHome4;
 
         public PlayerSeat red;
         public PlayerSeat green;
         public PlayerSeat yellow;
         public PlayerSeat blue;
 
-        public Gui(Token red1, Token red2, Token red3, Token red4, Token gre1, Token gre2, Token gre3, Token gre4, Token blu1, Token blu2, Token blu3, Token blu4, Token yel1, Token yel2, Token yel3, Token yel4, PlayerSeat red, PlayerSeat green, PlayerSeat yellow, PlayerSeat blue)
+        public Gui(Token red1, Token red2, Token red3, Token red4, Token gre1, Token gre2, Token gre3, Token gre4, Token blu1, Token blu2, Token blu3, Token blu4, Token yel1, Token yel2, Token yel3, Token yel4, Token LockHome1, Token LockHome2, Token LockHome3, Token LockHome4, PlayerSeat red, PlayerSeat green, PlayerSeat yellow, PlayerSeat blue)
         {
             this.red = red;
             this.green = green;
@@ -66,6 +70,14 @@ namespace LudoClient
             this.yel3.name = "yel3";
             this.yel4 = yel4;
             this.yel4.name = "yel4";
+            this.LockHome1 = LockHome1;
+            this.LockHome1.name = "LockHome1";
+            this.LockHome2 = LockHome2;
+            this.LockHome2.name = "LockHome2";
+            this.LockHome3 = LockHome3;
+            this.LockHome3.name = "LockHome3";
+            this.LockHome4 = LockHome4;
+            this.LockHome4.name = "LockHome4";
         }
 
         public Token getPieceToken(Piece piece)

@@ -30,6 +30,11 @@
                         <local:Token x:Name="blu2" piece="{x:Static constants:Skins.BlueToken}"/>
                         <local:Token x:Name="blu3" piece="{x:Static constants:Skins.BlueToken}"/>
                         <local:Token x:Name="blu4" piece="{x:Static constants:Skins.BlueToken}"/>
+
+                        <local:Token x:Name="LockHome1" piece="{x:Static constants:Skins.LockHome}"/>
+                        <local:Token x:Name="LockHome2" piece="{x:Static constants:Skins.LockHome}"/>
+                        <local:Token x:Name="LockHome3" piece="{x:Static constants:Skins.LockHome}"/>
+                        <local:Token x:Name="LockHome4" piece="{x:Static constants:Skins.LockHome}"/>
                     </AbsoluteLayout>
                 </Grid>
             </local:Capsule>

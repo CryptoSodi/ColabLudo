@@ -62,5 +62,6 @@ namespace LudoClient.Constants
         public static string GreenToken => $"green_token_large.png";
         public static string YellowToken => $"yellow_token_large.png";
         public static string BlueToken => $"blue_token_large.png";
+        public static string LockHome => $"ludoLockHome.png";
     }
 }
