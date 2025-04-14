@@ -57,7 +57,7 @@ namespace LudoClient.Constants
         //WAITING ROOM
         public static string VS => $"vs{CurrentSkinType}.png";
         //GAME BOARD
-        public static string GameBoard => $"board_game.png";
+        public static string GameBoard => $"ludoboard.png";
         public static string RedToken => $"red_token_large.png";
         public static string GreenToken => $"green_token_large.png";
         public static string YellowToken => $"yellow_token_large.png";

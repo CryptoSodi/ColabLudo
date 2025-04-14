@@ -273,6 +273,9 @@
 	  <None Remove="Resources\Images\Game\green_token.png" />
 	  <None Remove="Resources\Images\Game\green_token_large.png" />
 	  <None Remove="Resources\Images\Game\green_user.png" />
+	  <None Remove="Resources\Images\Game\ludoboard.png" />
+	  <None Remove="Resources\Images\Game\pawnIndicator.png" />
+	  <None Remove="Resources\Images\Game\pawnIndicatortarget.png" />
 	  <None Remove="Resources\Images\Game\red_container.png" />
 	  <None Remove="Resources\Images\Game\red_token.png" />
 	  <None Remove="Resources\Images\Game\red_token_large.png" />
@@ -495,7 +498,10 @@
 	  <MauiImage Include="Resources\Images\Game\green_container.png" />
 	  <MauiImage Include="Resources\Images\Game\green_token_large.png" />
 	  <MauiImage Include="Resources\Images\Game\green_user.png" />
+	  <MauiImage Include="Resources\Images\Game\ludoboard.png" />
 	  <MauiImage Include="Resources\Images\Game\ludolockhome.png" />
+	  <MauiImage Include="Resources\Images\Game\pawnindicator.png" />
+	  <MauiImage Include="Resources\Images\Game\pawnindicatortarget.png" />
 	  <MauiImage Include="Resources\Images\Game\red_container.png" />
 	  <MauiImage Include="Resources\Images\Game\red_token_large.png" />
 	  <MauiImage Include="Resources\Images\Game\red_user.png" />

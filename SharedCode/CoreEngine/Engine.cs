@@ -36,7 +36,9 @@ namespace SharedCode.CoreEngine
 
         public async Task<string> TimerTimeoutAsync(String SeatName)
         {
-            string result = "";
+           if (StartProgressAnimation != null)
+                StartProgressAnimation(SeatName);
+           string result = "";
            switch (EngineHelper.gameState){
                 case "RollDice":
                     result = await SeatTurn(SeatName, "", "");

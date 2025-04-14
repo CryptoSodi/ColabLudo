@@ -426,7 +426,7 @@ public partial class Game : ContentPage
     {
         var player = engine.EngineHelper.getPlayer(color);
         // If player is null OR the player exists and cannot enter the goal, add the block.
-        if (player == null || player.CanEnterGoal == false)
+        if (player == null || player?.CanEnterGoal == false)
         {
             if (!Alayout.Contains(lockHome))
             {
@@ -506,6 +506,13 @@ public partial class Game : ContentPage
     }
     public async Task RelocateAsync(Piece piece, Piece pieceClone)
     {
+        List<Piece> allPieces = GetAllPieces();
+        foreach (Piece p in allPieces)
+        {
+            var token = gui.getPieceToken(p);
+            token.ShowHideIndicator(false);
+        }
+
         engine.EngineHelper.animationBlock = true;
 
         uint animTime = 200;
@@ -559,10 +566,7 @@ public partial class Game : ContentPage
     }
     private void ResizePieces()
     {
-        List<Piece> allPieces = new List<Piece>();
-        foreach (var player in engine.EngineHelper.players)
-            foreach (var piece in player.Pieces)
-                allPieces.Add(piece);
+        List<Piece> allPieces = GetAllPieces();
 
         // Group pieces by their board key from getPieceBox.
         var boardGroups = allPieces.GroupBy(piece => engine.EngineHelper.getPieceBox(piece));
@@ -690,6 +694,14 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
     }
+    public List<Piece> GetAllPieces()
+    {
+        List<Piece> allPieces = new List<Piece>();
+        foreach (var player in engine.EngineHelper.players)
+            foreach (var piece in player.Pieces)
+                allPieces.Add(piece);
+        return allPieces;
+    }
     public async void PlayerPieceClicked(String PieceName, bool SendToServer=true)
     {
         //start animation
@@ -732,6 +744,22 @@ public partial class Game : ContentPage
     }
     public void StartProgressAnimation(string SeatName)
     {
+        List<Piece> allPieces = GetAllPieces();
+        foreach (Piece p in allPieces)
+        {
+            var token = gui.getPieceToken(p);
+            token.ShowHideIndicator(false);
+        }
+        List<Piece> moveablePieces = engine.EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
+        Console.WriteLine("AnimatePawns"+ moveablePieces.Count);
+        foreach(Piece p in moveablePieces)
+        {
+            if(engine.EngineHelper.gameState == "MovePiece")
+            {
+                var token = gui.getPieceToken(p);
+                token.ShowHideIndicator(true);
+            }
+        }
         GetPlayerSeat(SeatName).StartProgressAnimation();
     }
     public void StopProgressAnimation(string SeatName)

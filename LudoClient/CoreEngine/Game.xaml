@@ -12,7 +12,7 @@
     <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".3*,.4*,.06*,1.6*,.4*,.2*">
             <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand">
-                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*">
+                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" Margin="12">
                     <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
                         <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
                         <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>

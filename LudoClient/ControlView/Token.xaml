@@ -3,6 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.Token">
     <Grid>
+        <Image x:Name="TokenIndicatorglow" Source="pawnindicator.png"/>
+        <Image x:Name="TokenIndicator" Source="pawnindicatortarget.png"/>
+        
         <Image x:Name="Piece" Source="red_token_large.png"/>
         <ImageButton Clicked="Piece_Clicked"/>
     </Grid>
