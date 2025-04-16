@@ -249,10 +249,12 @@
 	  <None Remove="Resources\Images\Game\blue_container.png" />
 	  <None Remove="Resources\Images\Game\blue_token.png" />
 	  <None Remove="Resources\Images\Game\blue_token_large.png" />
+	  <None Remove="Resources\Images\Game\blue_token_round.png" />
 	  <None Remove="Resources\Images\Game\blue_user.png" />
 	  <None Remove="Resources\Images\Game\board_game.png" />
 	  <None Remove="Resources\Images\Game\board_game_1.jpg" />
 	  <None Remove="Resources\Images\Game\board_game_2.png" />
+	  <None Remove="Resources\Images\Game\bonus_token_round.png" />
 	  <None Remove="Resources\Images\Game\dice_0.png" />
 	  <None Remove="Resources\Images\Game\dice_00.png" />
 	  <None Remove="Resources\Images\Game\dice_01.png" />
@@ -272,6 +274,7 @@
 	  <None Remove="Resources\Images\Game\green_container.png" />
 	  <None Remove="Resources\Images\Game\green_token.png" />
 	  <None Remove="Resources\Images\Game\green_token_large.png" />
+	  <None Remove="Resources\Images\Game\green_token_round.png" />
 	  <None Remove="Resources\Images\Game\green_user.png" />
 	  <None Remove="Resources\Images\Game\ludoboard.png" />
 	  <None Remove="Resources\Images\Game\pawnIndicator.png" />
@@ -279,10 +282,14 @@
 	  <None Remove="Resources\Images\Game\red_container.png" />
 	  <None Remove="Resources\Images\Game\red_token.png" />
 	  <None Remove="Resources\Images\Game\red_token_large.png" />
+	  <None Remove="Resources\Images\Game\red_token_round.png" />
 	  <None Remove="Resources\Images\Game\red_user.png" />
+	  <None Remove="Resources\Images\Game\star_token_round.png" />
+	  <None Remove="Resources\Images\Game\token_round.png" />
 	  <None Remove="Resources\Images\Game\yellow_container.png" />
 	  <None Remove="Resources\Images\Game\yellow_token.png" />
 	  <None Remove="Resources\Images\Game\yellow_token_large.png" />
+	  <None Remove="Resources\Images\Game\yellow_token_round.png" />
 	  <None Remove="Resources\Images\Game\yellow_user.png" />
 	  <None Remove="Resources\Images\Game\yelow_container.png" />
 	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
@@ -474,10 +481,12 @@
 	  <MauiImage Include="Resources\Images\GameSettings\yellow_token.png" />
 	  <MauiImage Include="Resources\Images\Game\blue_container.png" />
 	  <MauiImage Include="Resources\Images\Game\blue_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\blue_token_large_2.png" />
 	  <MauiImage Include="Resources\Images\Game\blue_user.png" />
 	  <MauiImage Include="Resources\Images\Game\board_game.png" />
 	  <MauiImage Include="Resources\Images\Game\board_game_1.jpg" />
 	  <MauiImage Include="Resources\Images\Game\board_game_2.png" />
+	  <MauiImage Include="Resources\Images\Game\bonus_token_round.png" />
 	  <MauiImage Include="Resources\Images\Game\dice_00.png" />
 	  <MauiImage Include="Resources\Images\Game\dice_01.png" />
 	  <MauiImage Include="Resources\Images\Game\dice_03.png" />
@@ -497,6 +506,7 @@
 	  <MauiImage Include="Resources\Images\Game\gray_container.png" />
 	  <MauiImage Include="Resources\Images\Game\green_container.png" />
 	  <MauiImage Include="Resources\Images\Game\green_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\green_token_large_2.png" />
 	  <MauiImage Include="Resources\Images\Game\green_user.png" />
 	  <MauiImage Include="Resources\Images\Game\ludoboard.png" />
 	  <MauiImage Include="Resources\Images\Game\ludolockhome.png" />
@@ -504,9 +514,13 @@
 	  <MauiImage Include="Resources\Images\Game\pawnindicatortarget.png" />
 	  <MauiImage Include="Resources\Images\Game\red_container.png" />
 	  <MauiImage Include="Resources\Images\Game\red_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\red_token_large_2.png" />
 	  <MauiImage Include="Resources\Images\Game\red_user.png" />
+	  <MauiImage Include="Resources\Images\Game\star_token_round.png" />
+	  <MauiImage Include="Resources\Images\Game\token_round.png" />
 	  <MauiImage Include="Resources\Images\Game\yellow_container.png" />
 	  <MauiImage Include="Resources\Images\Game\yellow_token_large.png" />
+	  <MauiImage Include="Resources\Images\Game\yellow_token_large_2.png" />
 	  <MauiImage Include="Resources\Images\Game\yellow_user.png" />
 	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.png" />
 	</ItemGroup>
