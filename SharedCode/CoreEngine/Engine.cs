@@ -185,6 +185,13 @@ namespace SharedCode.CoreEngine
             EngineHelper.rolls.Add(3);
             EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(3);
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
@@ -400,7 +407,7 @@ namespace SharedCode.CoreEngine
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     if (RelocateAsync != null)
-                        RelocateAsync(piece, piece.Clone());
+                       await RelocateAsync(piece, piece.Clone());
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
@@ -409,13 +416,15 @@ namespace SharedCode.CoreEngine
                     var oldBox = EngineHelper.getPieceBox(piece);
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
-                    string pj = EngineHelper.getPieceBox(piece);
-                    // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
-                    List<Piece> kilablePieces = board?[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
-                    var tokensInOldBox = board?[oldBox];
-                    //Add logic if the killer is 2 pieces and target has 2 killables then kill both
+                    string newBox = EngineHelper.getPieceBox(piece);
+                    int ownAtDest = board?[newBox].Count(x => x.Color == piece.Color) ?? 0;
 
-                    if (tokensInOldBox != null && tokensInOldBox.Count!=0 && !EngineHelper.safeZone.Contains(oldPosition))
+                    // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
+                    List<Piece> kilablePieces = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+                    
+                    var tokensInOldBox = board?[oldBox];
+
+                    if (tokensInOldBox != null && tokensInOldBox.Count != 0 && !EngineHelper.safeZone.Contains(oldPosition))
                     {
                         int ownCount = tokensInOldBox.Count(p => p.Color == piece.Color);
                         int enemyCount = tokensInOldBox.Count(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color)));
@@ -430,28 +439,45 @@ namespace SharedCode.CoreEngine
                             board?[oldBox].Remove(ownTrapped);
                             board?[EngineHelper.getPieceBox(ownTrapped)].Add(ownTrapped);
 
-                            await RelocateAsync(ownTrapped, pieceClone);
+                            RelocateAsync(ownTrapped, pieceClone);
                         }
                     }
 
-                    // Prevent killing if there are two or more opponent pieces
-
-                    if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece.Position))
+                    //Add logic if the killer is 2 pieces and target has 2 killables then kill both
+                    // If 2 enemies and after move 2 own tokens => kill both enemies
+                    if (kilablePieces.Count == 2 && ownAtDest == 2 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
+                        if (RelocateAsync != null)
+                            await RelocateAsync(piece, pieceClone);
+                        foreach (var enemy in kilablePieces)
+                        {
+                            enemy.Position = -1;
+                            enemy.Location = 0;
+                            board?[newBox].Remove(enemy);
+                            board?[EngineHelper.getPieceBox(enemy)].Add(enemy);
+                            RelocateAsync(enemy, enemy);
+                        }
                         killed = true;
+                        EngineHelper.currentPlayer.CanEnterGoal = true;
+                    }
+                    else if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece.Position))
+                    {// Prevent killing if there are two or more opponent pieces
+                        
                         EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
                         Piece killedPiece = kilablePieces[0];
                         killedPiece.Position = -1; // Send opponent's piece back to base
                         killedPiece.Location = 0;
-                        board?[pj].Remove(killedPiece);
+                        board?[newBox].Remove(killedPiece);
                         board?[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
+                        killed = true;
+
+                        if (RelocateAsync != null)
+                            await RelocateAsync(piece, pieceClone);
+                        if (RelocateAsync != null)
+                            await RelocateAsync(kilablePieces[0], kilablePieces[0]);
                     }
-
-                    if (RelocateAsync != null)
+                    if (!killed && RelocateAsync != null)
                         await RelocateAsync(piece, pieceClone);
-                    if (killed && RelocateAsync != null)
-                        await RelocateAsync(kilablePieces[0], kilablePieces[0]);
-
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
                     if (piece.Location == 57)
                     {
