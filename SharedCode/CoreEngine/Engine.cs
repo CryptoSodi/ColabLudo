@@ -283,7 +283,7 @@ namespace SharedCode.CoreEngine
                             string newBox = EngineHelper.getPieceBox(Stepperpiece);
                             List<Piece> tokensAtIntermediate = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
 
-                            if (tokensAtIntermediate.Count == 2 && !EngineHelper.safeZone.Contains(Stepperpiece.Position))
+                            if (tokensAtIntermediate.Count > 1 && !EngineHelper.safeZone.Contains(Stepperpiece.Position))
                             {
                                 pathBlocked = true;
                                 break;
