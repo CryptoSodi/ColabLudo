@@ -268,29 +268,28 @@ namespace SharedCode.CoreEngine
                     // (piece.Location != 0 && piece.Location + EngineHelper.diceValue <= 57);
                     if (piece.Location == 0 && EngineHelper.diceValue == 6)// Open the token if it's in base and dice shows a 6
                         piece.Moveable = true;
+
                     else if ((piece.Location + EngineHelper.diceValue <= 51 && piece.Location != 0) || (piece.Location + EngineHelper.diceValue <= 57 && piece.Location != 0 && EngineHelper.currentPlayer.CanEnterGoal))
                     {
                         int targetPosition = (piece.Position + EngineHelper.diceValue) % 52;
                         bool pathBlocked = false;
-                        foreach (var opponent in EngineHelper.players.Where(p => p != EngineHelper.currentPlayer))
-                        {
-                            for (int step = 1; step < EngineHelper.diceValue ; step++)
-                            {
-                                int Position = (piece.Position + step) % 52;
-                                
-                                //Engine.board[EngineHelper.getPieceBox(piece)]
-                                var tokensAtIntermediate = opponent.Pieces.Where(p => p.Position == Position).ToList();
+                        var Stepperpiece = piece.Clone();
 
-                                if (tokensAtIntermediate.Count == 2 && !EngineHelper.safeZone.Contains(Position))
-                                {
-                                    pathBlocked = true;
-                                    break;
-                                }
+                        for (int step = 1; step < EngineHelper.diceValue; step++)
+                        {
+                            Stepperpiece.Jump(this, 1, true);
+                            //Engine.board[EngineHelper.getPieceBox(piece)]
+
+                            string newBox = EngineHelper.getPieceBox(Stepperpiece);
+                            List<Piece> tokensAtIntermediate = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+
+                            if (tokensAtIntermediate.Count == 2 && !EngineHelper.safeZone.Contains(Stepperpiece.Position))
+                            {
+                                pathBlocked = true;
+                                break;
                             }
                         }
-
                         piece.Moveable = !pathBlocked;
-
                     }
                     else
                         piece.Moveable = false;
