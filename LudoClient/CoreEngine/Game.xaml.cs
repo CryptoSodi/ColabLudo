@@ -598,7 +598,7 @@ public partial class Game : ContentPage
         foreach (var boardGroup in boardGroups)
         {
             // Determine suffix: if more than one piece is on the same cell, use the double image.
-            string suffix = boardGroup.Count() > 1 ? "_2" : "";
+            string suffix = boardGroup.Count() > 1 ? "_" + boardGroup.Count() : "";
             string imagePath = GetDefaultImage(colorKey, suffix);
 
             // Process each group.
