@@ -180,10 +180,11 @@ namespace SharedCode.CoreEngine
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(5);
             EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(3);
+            EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(1);
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
@@ -280,7 +281,6 @@ namespace SharedCode.CoreEngine
                                 }
                             }
                         }
-
 
                         piece.Moveable = !pathBlocked;
 
@@ -410,9 +410,12 @@ namespace SharedCode.CoreEngine
                     string pj = EngineHelper.getPieceBox(piece);
                     // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     List<Piece> kilablePieces = board?[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+                    
+                    //Add logic if the killer is 2 pieces and target has 2 killables then kill both
 
                     // Prevent killing if there are two or more opponent pieces
-                    if (kilablePieces?.Count == 1 && !EngineHelper.safeZone.Contains(piece.Position))
+                    //if target 
+                    if (kilablePieces?.Count == 1 || kilablePieces?.Count == 3 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
