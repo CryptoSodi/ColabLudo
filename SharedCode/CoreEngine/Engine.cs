@@ -183,7 +183,7 @@ namespace SharedCode.CoreEngine
             EngineHelper.rolls.Add(5);
             EngineHelper.rolls.Add(1);
             EngineHelper.rolls.Add(3);
-            EngineHelper.rolls.Add(1);
+            EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(1);
 
             if (gameMode == "Server")
@@ -405,17 +405,38 @@ namespace SharedCode.CoreEngine
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
+                    var oldPosition = piece.Position;
+                    var oldBox = EngineHelper.getPieceBox(piece);
                     piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
                     string pj = EngineHelper.getPieceBox(piece);
                     // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     List<Piece> kilablePieces = board?[pj].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
-                    
+                    var tokensInOldBox = board?[oldBox];
                     //Add logic if the killer is 2 pieces and target has 2 killables then kill both
 
+                    if (tokensInOldBox != null && tokensInOldBox.Count!=0 && !EngineHelper.safeZone.Contains(oldPosition))
+                    {
+                        int ownCount = tokensInOldBox.Count(p => p.Color == piece.Color);
+                        int enemyCount = tokensInOldBox.Count(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color)));
+
+                        if (ownCount == 1 && enemyCount == 1)
+                        {
+                            // Kill the remaining own piece in the old box
+                            var ownTrapped = tokensInOldBox.First(p => p.Color == piece.Color && p != piece);
+                            var ownTrappedClone = ownTrapped.Clone();
+                            ownTrapped.Position = -1;
+                            ownTrapped.Location = 0;
+                            board?[oldBox].Remove(ownTrapped);
+                            board?[EngineHelper.getPieceBox(ownTrapped)].Add(ownTrapped);
+
+                            await RelocateAsync(ownTrapped, pieceClone);
+                        }
+                    }
+
                     // Prevent killing if there are two or more opponent pieces
-                    //if target 
-                    if (kilablePieces?.Count == 1 || kilablePieces?.Count == 3 && !EngineHelper.safeZone.Contains(piece.Position))
+
+                    if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
