@@ -41,6 +41,11 @@ namespace LudoClient.Constants
         public static string Play => $"playwithfriends{CurrentSkinType}.png";
         public static string Practice => $"practice{CurrentSkinType}.png";
         public static string Tournament => $"tournament{CurrentSkinType}.png";
+        public static string Cash_Gray => $"cashgame{CurrentSkinType}_gray.png";
+        public static string Play_Gray => $"playwithfriends{CurrentSkinType}_gray.png";
+        public static string Practice_Gray => $"practice{CurrentSkinType}_gray.png";
+        public static string Tournament_Gray => $"tournament{CurrentSkinType}_gray.png";
+
         public static string DailyBonus => $"daily_bonus{CurrentSkinType}.png";
         //OFFLINE
         public static string Title_Offline => $"round_offline{CurrentSkinType}.png";

@@ -1,11 +1,13 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace SharedCode.Network
 {
     public class Client
     {
+        private bool _connected;
         public HubConnection _hubConnection;
         private string _messages;
 
@@ -15,9 +17,20 @@ namespace SharedCode.Network
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
-
+        public event PropertyChangedEventHandler PropertyChanged;
+        public bool Connected
+        {
+            get => _connected;
+            set
+            {
+                if (_connected == value) return;
+                _connected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Connected)));
+            }
+        }
         public Client()
         {
+            Connected = false;
             // Build connection with automatic reconnect
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(GlobalConstants.HubUrl + "LudoHub")
@@ -57,6 +70,7 @@ namespace SharedCode.Network
             // Connection lifecycle events
             _hubConnection.Reconnecting += error =>
             {
+                Connected = false;
                 Console.WriteLine("Connection lost. Reconnecting...");
                 if (error != null)
                 {
@@ -66,11 +80,13 @@ namespace SharedCode.Network
             };
             _hubConnection.Reconnected += connectionId =>
             {
+                Connected = true;
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
             _hubConnection.Closed += async error =>
             {
+                Connected = false;
                 Console.WriteLine("Connection closed.");
                 if (error != null)
                 {
@@ -87,16 +103,20 @@ namespace SharedCode.Network
         {
             if (_hubConnection.State == HubConnectionState.Connected)
             {
+                Connected = true;
                 Console.WriteLine("Already connected.");
                 return;
             }
             try
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
+
+                Connected = true;
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
             {
+                Connected = false;
                 Console.WriteLine($"Failed to start the connection: {ex.Message}");
                 // Consider retry logic here if desired
             }

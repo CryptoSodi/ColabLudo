@@ -15,20 +15,20 @@
 
         <Image Grid.Row="1" Source="{x:Static constants:Skins.Logo}" VerticalOptions="Center" HorizontalOptions="Center"/>
 
-        <Image Grid.Row="2" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
+        <Image x:Name="CashImage" Grid.Row="2" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="CashGame_Clicked" />
             </Image.GestureRecognizers>
-            </Image>
+        </Image>
 
-            <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="50*,50*">
+       <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="50*,50*">
 
             <Image Source="{x:Static constants:Skins.Offline}">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Offline_Clicked" />
                 </Image.GestureRecognizers>
             </Image>
-            <Image Source="{x:Static constants:Skins.Play}" Margin="0,0,0,4" Grid.Column="1">
+            <Image x:Name="PlayWithFriendsImage" Source="{x:Static constants:Skins.Play}" Margin="0,0,0,4" Grid.Column="1">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="PlayWithFriend_Clicked" />
                 </Image.GestureRecognizers>
@@ -37,12 +37,12 @@
         
         <Grid Grid.Row="4" Margin="40,0,40,0" HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="50*,50*">
 
-            <Image Source="{x:Static constants:Skins.Practice}" Margin="0,4,0,0">
+            <Image x:Name="PracticeImage" Source="{x:Static constants:Skins.Practice}" Margin="0,4,0,0">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Practice_Clicked" />
                 </Image.GestureRecognizers>
             </Image>
-            <Image Grid.Column="1" Source="{x:Static constants:Skins.Tournament}">
+            <Image x:Name="TournamentImage" Grid.Column="1" Source="{x:Static constants:Skins.Tournament}">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Tournament_Clicked" />
                 </Image.GestureRecognizers>

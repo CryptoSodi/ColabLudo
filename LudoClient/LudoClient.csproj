@@ -55,7 +55,7 @@
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Images\dashboard\splashlogo.png" Color="#512BD4" BaseSize="128,128" />
+		<MauiImage Include="Resources\Images\dashboard\splashlogo.png" Color="#512BD4" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -188,11 +188,15 @@
 	  <None Remove="Resources\Images\DailyBonus\daily_bonus.png" />
 	  <None Remove="Resources\Images\DailyBonus\days_main_bg.png" />
 	  <None Remove="Resources\Images\DashBoard\cashgame.png" />
+	  <None Remove="Resources\Images\DashBoard\cashgame_gray.png" />
 	  <None Remove="Resources\Images\DashBoard\logo.png" />
 	  <None Remove="Resources\Images\DashBoard\offline.png" />
 	  <None Remove="Resources\Images\DashBoard\playwithfriends.png" />
+	  <None Remove="Resources\Images\DashBoard\playwithfriends_gray.png" />
 	  <None Remove="Resources\Images\DashBoard\practice.png" />
+	  <None Remove="Resources\Images\DashBoard\practice_gray.png" />
 	  <None Remove="Resources\Images\DashBoard\tournament.png" />
+	  <None Remove="Resources\Images\DashBoard\tournament_gray.png" />
 	  <None Remove="Resources\Images\GameRoom\chips_entry_bg.png" />
 	  <None Remove="Resources\Images\GameRoom\player2_00.png" />
 	  <None Remove="Resources\Images\GameRoom\player3_00.png" />
@@ -433,6 +437,10 @@
 	  <MauiImage Include="Resources\Images\Adatya\tournament_a.png" />
 	  <MauiImage Include="Resources\Images\Adatya\vs_a.png" />
 	  <MauiImage Include="Resources\Images\Components\Header\btn_help.png" />
+	  <MauiImage Include="Resources\Images\DashBoard\cashgame_gray.png" />
+	  <MauiImage Include="Resources\Images\DashBoard\playwithfriends_gray.png" />
+	  <MauiImage Include="Resources\Images\DashBoard\practice_gray.png" />
+	  <MauiImage Include="Resources\Images\DashBoard\tournament_gray.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\blue_token.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_create.png" />

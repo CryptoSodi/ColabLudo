@@ -89,9 +89,9 @@ namespace LudoClient
             {
                 try
                 {
-                    if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null)
+                    if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null && GlobalConstants.RoomCode != null && GlobalConstants.RoomCode != "")
                     {
-                        if (GlobalConstants.MatchMaker._hubConnection.State+"" != "Disconnected")
+                        if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State + "" != "Disconnected")
                         {
                             // Invoke the hub method to pull commands newer than _lastSeenIndex.
                             List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(GlobalConstants.lastSeenIndex, GlobalConstants.RoomCode);
@@ -131,7 +131,7 @@ namespace LudoClient
                     Console.WriteLine($"Error pulling commands: {ex.Message}");
                 }
                 // Wait a bit before polling again.
-                await Task.Delay(500);
+                await Task.Delay(1000);
             }
         }
         private void OnPlayerLeft(object? sender, string PlayerColor)

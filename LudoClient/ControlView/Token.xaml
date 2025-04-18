@@ -6,7 +6,6 @@
         <Image x:Name="TokenIndicatorglow" Source="pawnindicator.png"/>
         <Image x:Name="TokenIndicator" Source="pawnindicatortarget.png"/>
 
-
         <Image x:Name="TokenBase" Source="token_round.png"/>
         
         <Image x:Name="Piece1" Source="red_token_large.png"/>
