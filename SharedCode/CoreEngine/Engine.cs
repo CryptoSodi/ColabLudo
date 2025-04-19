@@ -174,7 +174,7 @@ namespace SharedCode.CoreEngine
 
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(1);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
@@ -312,7 +312,22 @@ namespace SharedCode.CoreEngine
                     EngineHelper.gameState = "MovePiece";
                     int firstLocation = moveablePieces[0].Location;
                     if (moveablePieces.All(p => p.Location == firstLocation))
-                        moveSeat = true;
+                    {
+                        // Check if pieces are not at the Home Zone
+                        if (EngineHelper.diceValue != 2 && EngineHelper.diceValue != 4 && EngineHelper.diceValue != 6 || firstLocation == 0)
+                            moveSeat = true;
+                        else if (firstLocation > 51)
+                            moveSeat = true;
+
+                        if (!moveSeat)
+                        {
+                            EngineHelper.animationBlock = false;
+                            if (StopProgressAnimation != null)
+                                StopProgressAnimation(EngineHelper.currentPlayer.Color);                            
+                            if (!EngineHelper.stopAnimate && StartProgressAnimation != null)
+                                StartProgressAnimation(EngineHelper.currentPlayer.Color);
+                        }
+                    }
                     else
                     {
                         if (!EngineHelper.stopAnimate)

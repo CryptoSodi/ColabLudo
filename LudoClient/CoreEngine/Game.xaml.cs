@@ -588,30 +588,25 @@ public partial class Game : ContentPage
             Alayout.Remove(DoubleToken);
             DoubleToken.IsVisible = false;
         }
-
-        
-
-        // **Pre-move Phase:**
-        // Update the moving token explicitly to use the single image version.
+        // **Pre-move Phase:**        
         if (piece.Count == 1)
+        {
+            // Update the moving token explicitly to use the single image version.
             movingToken.UpdateView(GetDefaultImage(colorKey, ""));
-        // Update the source cell by excluding the moving piece.
-        if (piece.Count == 1)
+            // Update the source cell by excluding the moving piece.
             adjustPiceImage(piece[0], allPieces, excludeMoving: true);
-
+        }
         // Perform the relocation animation.
         await RelocateHelper(piece[0], pieceClone);
 
         // **Post-move Phase:**
         // Now update the board normally, including the moving piece in the grouping.
-        
-            adjustPiceImage(piece[0], allPieces, excludeMoving: false);
+        adjustPiceImage(piece[0], allPieces, excludeMoving: false);
         if (piece.Count == 2)
         {
             _ = Task.Run(async () =>
           {
-              await Task.Delay(400); // Introduce a 20-millisecond delay
-
+              await Task.Delay(300); // Introduce a 20-millisecond delay
               // Ensure UI updates are performed on the main thread
               MainThread.BeginInvokeOnMainThread(() =>
               {
