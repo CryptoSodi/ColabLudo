@@ -568,6 +568,9 @@ public partial class Game : ContentPage
     }
     public async Task RelocateAsync(List<Piece> piece, Piece pieceClone)
     {
+        string colorKey = char.ToLower(piece[0].Name[0]).ToString();
+        var movingToken = gui.getPieceToken(piece[0]);
+
         List<Piece> allPieces = GetAllPieces();
         Token DoubleToken = null;
         // Hide indicators on all tokens.
@@ -579,12 +582,14 @@ public partial class Game : ContentPage
         if (piece.Count == 2)
         {
             DoubleToken = gui.getPieceToken(piece[1]);
+            adjustPiceImage(piece[0], allPieces, excludeMoving: true);
+            DoubleToken.UpdateView(GetDefaultImage(colorKey, "_2"));
+            movingToken.UpdateView(GetDefaultImage(colorKey, "_2"));
             Alayout.Remove(DoubleToken);
             DoubleToken.IsVisible = false;
         }
 
-        string colorKey = char.ToLower(piece[0].Name[0]).ToString();
-        var movingToken = gui.getPieceToken(piece[0]);
+        
 
         // **Pre-move Phase:**
         // Update the moving token explicitly to use the single image version.
@@ -599,7 +604,7 @@ public partial class Game : ContentPage
 
         // **Post-move Phase:**
         // Now update the board normally, including the moving piece in the grouping.
-        if (piece.Count == 1)
+        
             adjustPiceImage(piece[0], allPieces, excludeMoving: false);
         if (piece.Count == 2)
         {
