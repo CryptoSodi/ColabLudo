@@ -13,7 +13,7 @@ namespace SharedCode.CoreEngine
         public delegate void Callback_AnimateDice_EventHandler(string SeatName);
         public event Callback_AnimateDice_EventHandler AnimateDice;
 
-        public delegate Task CallbackEventHandlerRelocateAsync(Piece piece, Piece pieceClone);
+        public delegate Task CallbackEventHandlerRelocateAsync(List<Piece> piece, Piece pieceClone);
         public event CallbackEventHandlerRelocateAsync RelocateAsync;
 
         public delegate void CallbackEventHandlerStartProgressAnimation(string SeatColor);
@@ -28,7 +28,7 @@ namespace SharedCode.CoreEngine
         public delegate void CallbackEventHandlerPlayerLeft(string SeatColor, bool SendToServer = true);
         public event CallbackEventHandlerPlayerLeft PlayerLeftSeat;
         // Game logic helpers
-        public static Dictionary<string, List<Piece>>? board;
+        public Dictionary<string, List<Piece>>? board;
 
         public EngineHelper EngineHelper = new EngineHelper();
         
@@ -361,12 +361,20 @@ namespace SharedCode.CoreEngine
             processing = false;
             return $"{tempDice},{tempPiece}";
         }
-        public async Task<string> MovePieceAsync(String pieceName, bool SendToServer=true)
+        public async Task<string> MovePieceAsync(String pieceName, bool SendToServer = true)
         {
             String tempPiece = "";
             if (PlayState == "Stop")
                 return "";
             Player player = EngineHelper.currentPlayer;
+            Piece piece2 = null;
+            Piece piece2Clone = null;
+            if (pieceName.Contains(","))
+            {
+                piece2 = EngineHelper.GetPiece(player.Pieces, pieceName.Split(",")[1]);
+                piece2Clone = piece2.Clone();
+                pieceName = pieceName.Split(",")[0];                
+            }
             Piece piece = EngineHelper.GetPiece(player.Pieces, pieceName);
             if (piece == null || EngineHelper.diceValue == 0)
                 return ""; // Exit if not the current player's piece or no dice roll
@@ -401,20 +409,31 @@ namespace SharedCode.CoreEngine
                 bool killed = false;
                 Piece pieceClone = piece.Clone();
 
+                List<Piece> pieces = new List<Piece>();
+
                 if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    piece.Jump(this, EngineHelper.diceValue);
+                    piece.Jump(this, EngineHelper.diceValue);                    
+                    pieces.Add(piece);
                     tempPiece = pieceName;
                     if (RelocateAsync != null)
-                       await RelocateAsync(piece, piece.Clone());
+                       await RelocateAsync(pieces, piece.Clone());
+
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
                 }
                 else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    var oldPosition = piece.Position;
-                    var oldBox = EngineHelper.getPieceBox(piece);
-                    piece.Jump(this, EngineHelper.diceValue);
+                    int oldPosition = piece.Position;
+                    string oldBox = EngineHelper.getPieceBox(piece);
+                    if (piece2 != null)
+                    {
+                        piece2.Jump(this, EngineHelper.diceValue/2);
+                        piece.Jump(this, EngineHelper.diceValue/2);
+                    }
+                    else
+                        piece.Jump(this, EngineHelper.diceValue);
                     tempPiece = pieceName;
+                    
                     string newBox = EngineHelper.getPieceBox(piece);
                     int ownAtDest = board?[newBox].Count(x => x.Color == piece.Color) ?? 0;
 
@@ -438,23 +457,37 @@ namespace SharedCode.CoreEngine
                             board?[oldBox].Remove(ownTrapped);
                             board?[EngineHelper.getPieceBox(ownTrapped)].Add(ownTrapped);
 
-                            RelocateAsync(ownTrapped, pieceClone);
+                            if (RelocateAsync != null) {
+                                pieces.Add(ownTrapped);
+                                RelocateAsync(pieces, pieceClone);
+                            
+                            }
                         }
                     }
-
+                    pieces = new List<Piece>();
                     //Add logic if the killer is 2 pieces and target has 2 killables then kill both
                     // If 2 enemies and after move 2 own tokens => kill both enemies
                     if (kilablePieces.Count == 2 && ownAtDest == 2 && !EngineHelper.safeZone.Contains(piece.Position))
                     {
                         if (RelocateAsync != null)
-                            await RelocateAsync(piece, pieceClone);
+                        {
+                            pieces.Add(piece);
+                            if (piece2!=null)
+                                  pieces.Add(piece2);
+                            
+                            await RelocateAsync(pieces, pieceClone);
+                        }
+                        
                         foreach (var enemy in kilablePieces)
                         {
                             enemy.Position = -1;
                             enemy.Location = 0;
                             board?[newBox].Remove(enemy);
                             board?[EngineHelper.getPieceBox(enemy)].Add(enemy);
-                            RelocateAsync(enemy, enemy);
+                            pieces = new List<Piece>();
+                            pieces.Add(enemy);
+                            if (RelocateAsync != null)
+                                RelocateAsync(pieces, pieces[0]);
                         }
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
@@ -470,13 +503,24 @@ namespace SharedCode.CoreEngine
                         board?[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
                         killed = true;
 
+                        pieces.Add(piece);
                         if (RelocateAsync != null)
-                            await RelocateAsync(piece, pieceClone);
+                            await RelocateAsync(pieces, pieceClone);
+                        pieces = new List<Piece>();
+                        pieces.Add(kilablePieces[0]);
                         if (RelocateAsync != null)
-                            await RelocateAsync(kilablePieces[0], kilablePieces[0]);
+                            await RelocateAsync(pieces, kilablePieces[0]);
                     }
                     if (!killed && RelocateAsync != null)
-                        await RelocateAsync(piece, pieceClone);
+                    {
+                        pieces = new();
+                        if (piece2 != null)
+                        {
+                            pieces.Add(piece2);
+                        }
+                        pieces.Add(piece);
+                        await RelocateAsync(pieces, pieceClone);
+                    }   
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
                     if (piece.Location == 57)
                     {

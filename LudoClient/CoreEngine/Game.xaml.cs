@@ -1,4 +1,3 @@
-
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
@@ -13,6 +12,7 @@ namespace LudoClient.CoreEngine;
 
 public partial class Game : ContentPage
 {//For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
+    Piece tempPiece = null;
     public string playerColor = "";
     public Engine engine;
     Gui gui;
@@ -62,7 +62,7 @@ public partial class Game : ContentPage
             Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor, rollsString);
         }
     }
-    private void Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
+    private async Task Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
     {
         InitializeComponent();
         // Create RedPlayerSeat
@@ -408,7 +408,20 @@ public partial class Game : ContentPage
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
         MusicSwitch.init(".png");
+        //The Display to show selection of single or double token move
+        TokenSelector.IsVisible = true;
+        Alayout.Remove(TokenSelector);
+        Alayout.Add(TokenSelector);
 
+        double x = engine.EngineHelper.originalPath["p0"][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
+        double y = engine.EngineHelper.originalPath["p0"][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
+
+       await TokenSelector.TranslateTo(x, y, 50, Easing.CubicIn);
+
+        TokenSelector1.UpdateView(GetDefaultImage("r", ""));
+        TokenSelector2.UpdateView(GetDefaultImage("r", "_2"));
+        
+        
         if (gameMode != "Client")//If local game init the seats so that results can be built later on
             foreach (var player in engine.EngineHelper.players)
             {
@@ -420,6 +433,8 @@ public partial class Game : ContentPage
                     PlayerPicture = playerp.PlayerImageSource
                 });
             }
+
+        TokenSelector.IsVisible = false;
     }
 
     private void SetHomeBlock(Token lockHome, string color)
@@ -494,7 +509,9 @@ public partial class Game : ContentPage
             {
                 gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]).RotateTo(-rotation);
                 AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
-                _ = RelocateAsync(engine.EngineHelper.players[i].Pieces[j], engine.EngineHelper.players[i].Pieces[j]);
+                List<Piece> pieces = new List<Piece>();
+                pieces.Add(engine.EngineHelper.players[i].Pieces[j]);
+                _ = RelocateAsync(pieces, engine.EngineHelper.players[i].Pieces[j]);
             }
 
         SetHomeBlock(gui.LockHome1, "red");
@@ -549,32 +566,55 @@ public partial class Game : ContentPage
             await Task.Delay(20);
         }
     }
-    public async Task RelocateAsync(Piece piece, Piece pieceClone)
+    public async Task RelocateAsync(List<Piece> piece, Piece pieceClone)
     {
         List<Piece> allPieces = GetAllPieces();
-
+        Token DoubleToken = null;
         // Hide indicators on all tokens.
         foreach (Piece p in allPieces)
         {
             var token = gui.getPieceToken(p);
             token.ShowHideIndicator(false);
         }
+        if (piece.Count == 2)
+        {
+            DoubleToken = gui.getPieceToken(piece[1]);
+            Alayout.Remove(DoubleToken);
+            DoubleToken.IsVisible = false;
+        }
 
-        string colorKey = char.ToLower(piece.Name[0]).ToString();
-        var movingToken = gui.getPieceToken(piece);
+        string colorKey = char.ToLower(piece[0].Name[0]).ToString();
+        var movingToken = gui.getPieceToken(piece[0]);
 
         // **Pre-move Phase:**
         // Update the moving token explicitly to use the single image version.
-        movingToken.UpdateView(GetDefaultImage(colorKey, ""));
+        if (piece.Count == 1)
+            movingToken.UpdateView(GetDefaultImage(colorKey, ""));
         // Update the source cell by excluding the moving piece.
-        adjustPiceImage(piece, allPieces, excludeMoving: true);
+        if (piece.Count == 1)
+            adjustPiceImage(piece[0], allPieces, excludeMoving: true);
 
         // Perform the relocation animation.
-        await RelocateHelper(piece, pieceClone);
+        await RelocateHelper(piece[0], pieceClone);
 
         // **Post-move Phase:**
         // Now update the board normally, including the moving piece in the grouping.
-        adjustPiceImage(piece, allPieces, excludeMoving: false);
+        if (piece.Count == 1)
+            adjustPiceImage(piece[0], allPieces, excludeMoving: false);
+        if (piece.Count == 2)
+        {
+            _ = Task.Run(async () =>
+          {
+              await Task.Delay(400); // Introduce a 20-millisecond delay
+
+              // Ensure UI updates are performed on the main thread
+              MainThread.BeginInvokeOnMainThread(() =>
+              {
+                  Alayout.Add(DoubleToken);
+                  DoubleToken.IsVisible = true;
+              });
+          });
+        }
     }
 
     private void adjustPiceImage(Piece movingPiece, List<Piece> allPieces, bool excludeMoving)
@@ -612,7 +652,6 @@ public partial class Game : ContentPage
             }
         }
     }
-
 
     private void ResizePieces()
     {
@@ -766,10 +805,70 @@ public partial class Game : ContentPage
     }
     public async void PlayerPieceClicked(String PieceName, bool SendToServer = true)
     {
+        TokenSelector.IsVisible = false;
         //start animation
         // Handle the dice click for the green player
-        await engine.MovePieceAsync(PieceName, SendToServer);
+        if (PieceName.Contains(","))
+        {
+            await engine.MovePieceAsync(PieceName, SendToServer);
+            return;
+        }
+        try
+        {
+            Piece piece = null;
+            string currentBox = "";
+            int ownAtBox = 0;
+            tempPiece = null;
+            if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(PieceName.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
+            {
+                piece = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, PieceName);
+                currentBox = engine.EngineHelper.getPieceBox(piece);
+                ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece.Color) ?? 0;
+            }
+            if (ownAtBox > 1)
+            {
+                TokenSelector.IsVisible = true;
+                Alayout.Remove(TokenSelector);
+                Alayout.Add(TokenSelector);
+
+                tempPiece = piece;
+                Token token = gui.getPieceToken(piece);
+
+                double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
+                double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
+
+                await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
+            }
+            else
+                await engine.MovePieceAsync(PieceName, SendToServer);
+        }
+        catch (Exception)
+        {}
         //stop animmation
+    }
+    private async void TokenSelected_Clicked(object sender, EventArgs e)
+    {
+        TokenSelector.IsVisible = false;
+        if (sender is ImageButton button)
+        {
+            var parameter = button.CommandParameter as string;
+            // Use the parameter value as needed
+            Console.WriteLine($"CommandParameter: {parameter}");
+            if (parameter == "2")
+            {
+                string currentBox = engine.EngineHelper.getPieceBox(tempPiece);
+                List<Piece> Piece2 = engine.board?[currentBox].Where(x => x.Color == tempPiece.Color).ToList().Where(x=>x.Name!=tempPiece.Name).ToList();
+
+                PlayerPieceClicked(tempPiece.Name+","+ Piece2?[0].Name , true);
+            }
+            else
+            {
+                await engine.MovePieceAsync(tempPiece.Name, true);
+            }
+        }
+        //var activeTab = e as string;
+        //TokenSelector1.IsVisible = false;
+        //TokenSelector2.IsVisible = false;
     }
     public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
@@ -802,6 +901,8 @@ public partial class Game : ContentPage
             Alayout.Remove(gui.getPieceToken(piece));
             Alayout.Add(gui.getPieceToken(piece));
         }
+        Alayout.Remove(TokenSelector);
+        Alayout.Add(TokenSelector);
         //Engine.PlayGame();
     }
     public void StartProgressAnimation(string SeatName)
@@ -868,6 +969,11 @@ public partial class Game : ContentPage
     private void QuestionClicked(object sender, EventArgs e)
     {
         PopoverButton.ShowAttachedPopover();
+    }
+    private async void CloseTokenSelector(object sender, EventArgs e)
+    {
+       // TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
+        TokenSelector.IsVisible = false;
     }
     MessageBox mb = null;
     private async void ExitToLobby(object sender, EventArgs e)

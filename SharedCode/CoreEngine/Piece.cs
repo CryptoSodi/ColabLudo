@@ -29,20 +29,20 @@
             if (this.Position == -1 && DiceValue == 6)
             {
                 if (!clone)
-                    Engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
+                    engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
                 this.Position = engine.EngineHelper.players.Where(p => p.Color == Color).ToList()[0].StartPosition;
                 this.Location = 1;
                 if (!clone)
-                    Engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
+                    engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
             }
             else if (this.Location + DiceValue <= 57)
             {
                 if (!clone)
-                    Engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
+                    engine.board[engine.EngineHelper.getPieceBox(this)].Remove(this);
                 this.Position = (this.Position + DiceValue) % 52;
                 this.Location += DiceValue;
                 if (!clone)
-                    Engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
+                    engine.board[engine.EngineHelper.getPieceBox(this)].Add(this);
             }
         }
     }
