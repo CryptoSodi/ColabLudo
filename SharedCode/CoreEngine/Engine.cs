@@ -175,7 +175,6 @@ namespace SharedCode.CoreEngine
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(1);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);

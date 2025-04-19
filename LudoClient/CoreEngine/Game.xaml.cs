@@ -837,10 +837,26 @@ public partial class Game : ContentPage
 
                 tempPiece = piece;
                 Token token = gui.getPieceToken(piece);
-
-                double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
-                double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
-
+                //Current location 360 : 358.39999389648426 X 113.20000076293945:256.6133280436197
+                double offsetX = (token.Width / 2);
+                double offsetY = 1;
+                if (currentBox == "p10" | currentBox == "p11" | currentBox == "p12")
+                {
+                    offsetX = offsetX + (TokenSelector.Width/2) - 6;
+                }
+                if (currentBox == "p22" | currentBox == "p23" | currentBox == "p24" | currentBox == "p25" | currentBox == "p26") // DONE
+                {
+                    offsetY = offsetY - TokenSelector.Height - token.Height - 2;
+                }
+                if (currentBox == "p36" | currentBox == "p37" | currentBox == "p38")
+                {
+                    offsetX = 6 + offsetX - (TokenSelector.Width / 2);
+                }
+                //22 23 24 25 26
+                //36 37 38
+                double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + offsetX;
+                double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - offsetY;
+                Console.WriteLine($"currentBox {currentBox} Current location {Alayout.Width} : {Alayout.Height} X {x}:{y}");
                 await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
             }
             else
