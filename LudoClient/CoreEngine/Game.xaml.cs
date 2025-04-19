@@ -822,10 +822,14 @@ public partial class Game : ContentPage
             if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(PieceName.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
             {
                 piece = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, PieceName);
-                currentBox = engine.EngineHelper.getPieceBox(piece);
-                ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece.Color) ?? 0;
+                if (piece != null)
+                {
+                    currentBox = engine.EngineHelper.getPieceBox(piece);
+                    ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece.Color) ?? 0;
+                }
             }
-            if (ownAtBox > 1)
+            
+            if (ownAtBox > 1 && piece.Location <= 51)
             {
                 TokenSelector.IsVisible = true;
                 Alayout.Remove(TokenSelector);
