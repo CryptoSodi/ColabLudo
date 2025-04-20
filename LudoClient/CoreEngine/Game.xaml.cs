@@ -421,7 +421,6 @@ public partial class Game : ContentPage
         TokenSelector1.UpdateView(GetDefaultImage("r", ""));
         TokenSelector2.UpdateView(GetDefaultImage("r", "_2"));
         
-        
         if (gameMode != "Client")//If local game init the seats so that results can be built later on
             foreach (var player in engine.EngineHelper.players)
             {
@@ -464,6 +463,7 @@ public partial class Game : ContentPage
     }
     public async Task ShowResults(string seats, string GameType, string GameCost)
     {
+        await Task.Delay(2000);
         if (gameMode == "Client")
         {
             ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
@@ -686,7 +686,6 @@ public partial class Game : ContentPage
             }
         }
     }
-
     private void ResizePieces()
     {
         List<Piece> allPieces = GetAllPieces();
@@ -840,10 +839,14 @@ public partial class Game : ContentPage
     public async void PlayerPieceClicked(String PieceName, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
+        
+        if (!engine.EngineHelper.checkTurn(PieceName, "MovePiece"))
+            return;
         //start animation
         // Handle the dice click for the green player
         if (PieceName.Contains(","))
         {
+            tempPiece = null;
             await engine.MovePieceAsync(PieceName, SendToServer);
             return;
         }
@@ -852,7 +855,7 @@ public partial class Game : ContentPage
             Piece piece = null;
             string currentBox = "";
             int ownAtBox = 0;
-            tempPiece = null;
+            
             if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(PieceName.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
             {
                 piece = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, PieceName);
@@ -862,21 +865,30 @@ public partial class Game : ContentPage
                     ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece.Color) ?? 0;
                 }
             }
-            
+
             if (ownAtBox > 1 && piece?.Location <= 51)
-            {
+            {//TODO
+             //If there is a block on the way and we have multiple options to move then if double tokens are clicked move them at once
+             //This code sets the location of TokenSelector
                 TokenSelector.IsVisible = true;
+                
+                string colorKey = char.ToLower(piece.Name[0]).ToString();
+                TokenSelector1.piece = GetDefaultImage(colorKey, "");
+                TokenSelector2.piece = GetDefaultImage(colorKey, "_2");
+                
                 Alayout.Remove(TokenSelector);
                 Alayout.Add(TokenSelector);
+                
+                
 
                 tempPiece = piece;
                 Token token = gui.getPieceToken(piece);
-                //Current location 360 : 358.39999389648426 X 113.20000076293945:256.6133280436197
+
                 double offsetX = (token.Width / 2);
                 double offsetY = 1;
                 if (currentBox == "p10" | currentBox == "p11" | currentBox == "p12")
                 {
-                    offsetX = offsetX + (TokenSelector.Width/2) - 6;
+                    offsetX = offsetX + (TokenSelector.Width / 2) - 6;
                 }
                 if (currentBox == "p22" | currentBox == "p23" | currentBox == "p24" | currentBox == "p25" | currentBox == "p26") // DONE
                 {
@@ -886,18 +898,19 @@ public partial class Game : ContentPage
                 {
                     offsetX = 6 + offsetX - (TokenSelector.Width / 2);
                 }
-                //22 23 24 25 26
-                //36 37 38
                 double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + offsetX;
                 double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - offsetY;
                 Console.WriteLine($"currentBox {currentBox} Current location {Alayout.Width} : {Alayout.Height} X {x}:{y}");
                 await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
             }
             else
+            {
+                tempPiece = null;
                 await engine.MovePieceAsync(PieceName, SendToServer);
+            }   
         }
         catch (Exception)
-        {}
+        { }
         //stop animmation
     }
     private async void TokenSelected_Clicked(object sender, EventArgs e)
@@ -926,7 +939,9 @@ public partial class Game : ContentPage
     }
     public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
-        if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
+        TokenSelector.IsVisible = false;
+        
+        if(engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             gui.red.reset();
             gui.green.reset();
@@ -949,6 +964,7 @@ public partial class Game : ContentPage
 
             await engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
         }
+        
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
         {
             // Safely update the UI

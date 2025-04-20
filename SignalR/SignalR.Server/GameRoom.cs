@@ -87,7 +87,7 @@ namespace SignalR.Server
 
             LudoHub.DM.SaveData();
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
-            await Task.Delay(2000);
+            await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await _hubContext.Clients.Group(RoomCode)
             .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");

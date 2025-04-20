@@ -172,6 +172,13 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(4);
@@ -180,23 +187,22 @@ namespace SharedCode.CoreEngine
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(4);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
@@ -973,6 +979,8 @@ namespace SharedCode.CoreEngine
         }
         public bool checkTurn(String SeatNameOrPiece, String GameState)
         {
+            if (SeatNameOrPiece.Contains(","))
+                SeatNameOrPiece = SeatNameOrPiece.Split(",")[0];
             return ((currentPlayer.Color == SeatNameOrPiece || currentPlayer.Color.ToLower().Contains(SeatNameOrPiece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", ""))) && gameState == GameState);
         }
         public async Task<String> RollDice(string seatName = "")
