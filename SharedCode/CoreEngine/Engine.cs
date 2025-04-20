@@ -174,23 +174,29 @@ namespace SharedCode.CoreEngine
 
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(4);
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(5);
-            EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(3);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(2);
             EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(1);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(3);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(4);
+            EngineHelper.rolls.Add(4);
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
@@ -292,7 +298,24 @@ namespace SharedCode.CoreEngine
                     }
                     else
                         piece.Moveable = false;
+
+
+                    // New logic to handle double token jump over a block
+                    if (piece.Location <= 51 && (EngineHelper.diceValue == 2 || EngineHelper.diceValue == 4 || EngineHelper.diceValue == 6))
+                    {
+                        // Check if another token is on the same position
+                        var samePositionTokens = EngineHelper.currentPlayer.Pieces
+                            .Where(p => p != piece && p.Position == piece.Position)
+                            .ToList();
+
+                        if (samePositionTokens.Count >= 1 && piece.Location != 0)
+                        {
+                            // Allow both tokens to move together
+                            piece.Moveable = true;
+                        }
+                    }
                 }
+
 
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} pieces.");
@@ -301,6 +324,7 @@ namespace SharedCode.CoreEngine
 
                 // Handle possible scenarios based on the number of moveable pieces
                 bool moveSeat = false;
+                bool moveDouble = false;
 
                 if (moveablePieces.Count == 1)
                 {
@@ -315,6 +339,31 @@ namespace SharedCode.CoreEngine
                         // Check if pieces are not at the Home Zone
                         if (EngineHelper.diceValue != 2 && EngineHelper.diceValue != 4 && EngineHelper.diceValue != 6 || firstLocation == 0)
                             moveSeat = true;
+                        else if ((EngineHelper.diceValue == 2 || EngineHelper.diceValue == 4 || EngineHelper.diceValue == 6) && firstLocation <= 51)
+                        {
+
+                            var piece = moveablePieces[0];
+                            int targetPosition = (piece.Position + (EngineHelper.diceValue)) % 52;
+                            
+                            var Stepperpiece = piece.Clone();
+
+                            // check if the path is blocked
+                            for (int step = 1; step < EngineHelper.diceValue; step++)
+                            {
+                                Stepperpiece.Jump(this, 1, true);
+                                //Engine.board[EngineHelper.getPieceBox(piece)]
+
+                                string newBox = EngineHelper.getPieceBox(Stepperpiece);
+                                List<Piece> tokensAtIntermediate = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+
+                                if (tokensAtIntermediate.Count > 1 && !EngineHelper.safeZone.Contains(Stepperpiece.Position))
+                                {
+                                    moveDouble = true;
+                                    moveSeat = true;
+                                    break;
+                                }
+                            }
+                        }
                         else if (firstLocation > 51)
                             moveSeat = true;
 
@@ -358,7 +407,16 @@ namespace SharedCode.CoreEngine
                         if (Piece != "")
                             tempPiece = Piece;
                         else
-                            tempPiece = moveablePieces.First(p => p.Moveable).Name;
+                        {
+                            if (moveDouble)
+                            {
+                                tempPiece = moveablePieces[0].Name;
+                                tempPiece += ","+moveablePieces[1].Name;
+                            }
+                            else
+                                tempPiece = moveablePieces.First(p => p.Moveable).Name;
+
+                        }
                         tempPiece = await MovePieceAsync(tempPiece, false);       // Move the only moveable piece
                         //EngineHelper.index--;
                     }
@@ -387,7 +445,7 @@ namespace SharedCode.CoreEngine
             {
                 piece2 = EngineHelper.GetPiece(player.Pieces, pieceName.Split(",")[1]);
                 piece2Clone = piece2.Clone();
-                pieceName = pieceName.Split(",")[0];                
+                pieceName = pieceName.Split(",")[0];
             }
             Piece piece = EngineHelper.GetPiece(player.Pieces, pieceName);
             if (piece == null || EngineHelper.diceValue == 0)
@@ -518,6 +576,8 @@ namespace SharedCode.CoreEngine
                         killed = true;
 
                         pieces.Add(piece);
+                        if (piece2 != null)
+                            pieces.Add(piece2);
                         if (RelocateAsync != null)
                             await RelocateAsync(pieces, pieceClone);
                         pieces = new List<Piece>();
@@ -528,14 +588,14 @@ namespace SharedCode.CoreEngine
                     if (!killed && RelocateAsync != null)
                     {
                         pieces = new();
-                        if (piece2 != null)
-                        {
-                            pieces.Add(piece2);
-                        }
                         pieces.Add(piece);
+                        if (piece2 != null)
+                            pieces.Add(piece2);
                         await RelocateAsync(pieces, pieceClone);
-                    }   
+                    }
+                    
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    
                     if (piece.Location == 57)
                     {
                         killed = true;

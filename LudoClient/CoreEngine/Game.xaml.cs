@@ -585,10 +585,30 @@ public partial class Game : ContentPage
             adjustPiceImage(piece[0], allPieces, excludeMoving: true);
             DoubleToken.UpdateView(GetDefaultImage(colorKey, "_2"));
             movingToken.UpdateView(GetDefaultImage(colorKey, "_2"));
-            Alayout.Remove(DoubleToken);
-            DoubleToken.IsVisible = false;
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(30); // Introduce a 20-millisecond delay
+                                       // Ensure UI updates are performed on the main thread
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try
+                    {
+                        // Check if DoubleToken is a child of Alayout before attempting to remove
+                       // if (Alayout.Children.Contains(DoubleToken))
+                            Alayout.Remove(DoubleToken);
+                        // Set visibility to false
+                        DoubleToken.IsVisible = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Optionally log the exception or handle it as needed
+                        Console.WriteLine($"Error removing DoubleToken: {ex.Message}");
+                    }
+                });
+            });
+            
         }
-        // **Pre-move Phase:**        
+        // **Pre-move Phase:**
         if (piece.Count == 1)
         {
             // Update the moving token explicitly to use the single image version.
@@ -605,15 +625,29 @@ public partial class Game : ContentPage
         if (piece.Count == 2)
         {
             _ = Task.Run(async () =>
-          {
-              await Task.Delay(300); // Introduce a 20-millisecond delay
-              // Ensure UI updates are performed on the main thread
-              MainThread.BeginInvokeOnMainThread(() =>
-              {
-                  Alayout.Add(DoubleToken);
-                  DoubleToken.IsVisible = true;
-              });
-          });
+            {
+                await Task.Delay(300); // Introduce a 300-millisecond delay
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    try
+                    {
+                        // Remove DoubleToken from its current parent if it has one
+                        if (DoubleToken.Parent is Layout parentLayout)
+                            parentLayout.Children.Remove(DoubleToken);
+
+                        // Add DoubleToken to Alayout if it's not already added
+                        if (!Alayout.Children.Contains(DoubleToken))
+                            Alayout.Children.Add(DoubleToken);
+
+                        DoubleToken.IsVisible = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Optionally log the exception or handle it as needed
+                        Console.WriteLine($"Error adding DoubleToken: {ex.Message}");
+                    }
+                });
+            });
         }
     }
 
@@ -829,7 +863,7 @@ public partial class Game : ContentPage
                 }
             }
             
-            if (ownAtBox > 1 && piece.Location <= 51)
+            if (ownAtBox > 1 && piece?.Location <= 51)
             {
                 TokenSelector.IsVisible = true;
                 Alayout.Remove(TokenSelector);
