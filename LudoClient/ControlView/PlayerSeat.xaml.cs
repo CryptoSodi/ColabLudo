@@ -61,7 +61,7 @@ public partial class PlayerSeat : ContentView
         this.seatColor = seatColor;
         InitializeComponent();
         this.Loaded += OnLoaded;
-        CheckBox.Source = "checkbox_"+seatColor+".png"; 
+        CheckBox.Source = "checkbox_"+seatColor+".png";
     }
     private void OnLoaded(object sender, EventArgs e)
     {
@@ -154,15 +154,24 @@ public partial class PlayerSeat : ContentView
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            DiceLayer.Source = "dice_" + DiceValue + ".png";
             DiceLayer.IsAnimationPlaying = false;
+            DiceLayer.Source = $"dice_{DiceValue}.png";
+
         });
     }
+
     internal void reset()
     {
-        //HARIS FIX THIS THE SOURCE FILE NEEDS TO BE MATCHED WITH dice_0.png only then we have to reset //0001
-        if (DiceLayer.Source + "" != "dice_0.png")
-            DiceLayer.Source = "dice_0.png";
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (DiceLayer.Source is FileImageSource fileSource &&
+                fileSource.File != "dice_0.png")
+            {
+                // Stop any animation & reconnect fresh
+                DiceLayer.IsAnimationPlaying = false;
+                DiceLayer.Source = "dice_0.png";
+            }
+        });
     }
     internal void PlayerLeft()
     {

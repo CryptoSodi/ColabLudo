@@ -6,6 +6,8 @@ using SharedCode;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
+using System.IO.Pipelines;
+using System;
 using System.Text.Json;
 
 namespace LudoClient.CoreEngine;
@@ -519,7 +521,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
     }
-    public async Task RelocateHelper(Piece piece, Piece pieceClone)
+    public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone)
     {   
         engine.EngineHelper.animationBlock = true;
 
@@ -527,129 +529,75 @@ public partial class Game : ContentPage
         if (engine.EngineHelper.stopAnimate)
         {
             animTime = 40;
-            pieceClone = piece.Clone();
+            pieceClone = pieces[0].Clone();
         }
-        //piece.Position
-        //player.StartPosition
-        
 
-        if (pieceClone.Location < piece.Location)
+        if (pieceClone.Location <= pieces[0].Location)
         {
-            pieceClone.Jump(engine, 1, true);
-            
-            string PBC = engine.EngineHelper.getPieceBox(pieceClone);
+            if (pieceClone.Location != pieces[0].Location)
+                pieceClone.Jump(engine, 1, true);
 
+            string PBC = engine.EngineHelper.getPieceBox(pieceClone);
             double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
             double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
-            await gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn);
-            
-            if (pieceClone.Location != piece.Location)
-                await RelocateHelper(piece, pieceClone);
+
+            await RunAnimationAsync(pieces, x, y, animTime);
+
+            if (pieceClone.Location != pieces[0].Location)
+                await RelocateHelper(pieces, pieceClone);
             else
             {
                 engine.EngineHelper.animationBlock = false;
                 ResizePieces();
             }
         }
-        else
-        {
-            string PB = engine.EngineHelper.getPieceBox(piece);
-            double x = engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
-            double y = engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
-            await gui.getPieceToken(piece).TranslateTo(x, y, animTime, Easing.CubicIn);
-            
-            engine.EngineHelper.animationBlock = false;
-            ResizePieces();
-        }
+
         while (engine.EngineHelper.animationBlock)
-        {
             await Task.Delay(20);
-        }
     }
     public async Task RelocateAsync(List<Piece> piece, Piece pieceClone)
     {
         string colorKey = char.ToLower(piece[0].Name[0]).ToString();
-        var movingToken = gui.getPieceToken(piece[0]);
 
         List<Piece> allPieces = GetAllPieces();
-        Token DoubleToken = null;
         // Hide indicators on all tokens.
         foreach (Piece p in allPieces)
-        {
-            var token = gui.getPieceToken(p);
-            token.ShowHideIndicator(false);
-        }
+            gui.getPieceToken(p).ShowHideIndicator(false);
+
+        // Update the source cell by excluding the moving piece.
+        adjustPiceImage(piece[0], allPieces, excludeMoving: true);
+        // **Pre-move Phase:**
+        // Update the moving token explicitly to use the single image version.
+        if (piece.Count == 1)
+            gui.getPieceToken(piece[0]).UpdateView(GetDefaultImage(colorKey, ""));
         if (piece.Count == 2)
         {
-            DoubleToken = gui.getPieceToken(piece[1]);
-            adjustPiceImage(piece[0], allPieces, excludeMoving: true);
-            DoubleToken.UpdateView(GetDefaultImage(colorKey, "_2"));
-            movingToken.UpdateView(GetDefaultImage(colorKey, "_2"));
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(30); // Introduce a 20-millisecond delay
-                                       // Ensure UI updates are performed on the main thread
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    try
-                    {
-                        // Check if DoubleToken is a child of Alayout before attempting to remove
-                       // if (Alayout.Children.Contains(DoubleToken))
-                            Alayout.Remove(DoubleToken);
-                        // Set visibility to false
-                        DoubleToken.IsVisible = false;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Optionally log the exception or handle it as needed
-                        Console.WriteLine($"Error removing DoubleToken: {ex.Message}");
-                    }
-                });
-            });
-            
+            gui.getPieceToken(piece[0]).UpdateView(GetDefaultImage(colorKey, "_2"));
+            gui.getPieceToken(piece[1]).UpdateView(GetDefaultImage(colorKey, "_2"));
         }
-        // **Pre-move Phase:**
-        if (piece.Count == 1)
-        {
-            // Update the moving token explicitly to use the single image version.
-            movingToken.UpdateView(GetDefaultImage(colorKey, ""));
-            // Update the source cell by excluding the moving piece.
-            adjustPiceImage(piece[0], allPieces, excludeMoving: true);
-        }
-        // Perform the relocation animation.
-        await RelocateHelper(piece[0], pieceClone);
 
+        // Perform the relocation animation.
+        await RelocateHelper(piece, pieceClone);
         // **Post-move Phase:**
         // Now update the board normally, including the moving piece in the grouping.
         adjustPiceImage(piece[0], allPieces, excludeMoving: false);
-        if (piece.Count == 2)
-        {
-            _ = Task.Run(async () =>
-            {
-                await Task.Delay(300); // Introduce a 300-millisecond delay
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    try
-                    {
-                        // Remove DoubleToken from its current parent if it has one
-                        if (DoubleToken.Parent is Layout parentLayout)
-                            parentLayout.Children.Remove(DoubleToken);
-
-                        // Add DoubleToken to Alayout if it's not already added
-                        if (!Alayout.Children.Contains(DoubleToken))
-                            Alayout.Children.Add(DoubleToken);
-
-                        DoubleToken.IsVisible = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Optionally log the exception or handle it as needed
-                        Console.WriteLine($"Error adding DoubleToken: {ex.Message}");
-                    }
-                });
-            });
-        }
     }
+public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY, uint duration)
+{
+    // Kick off a TranslateToAsync for each piece and return
+    // a Task that completes when all of them are done.
+    var moves = pieces
+        .Select(piece =>
+        {
+            var token = gui.getPieceToken(piece);
+            // TranslateToAsync animates both TranslationX and TranslationY
+            return token.TranslateTo(targetX, targetY, duration, Easing.CubicIn);
+        })
+        .ToArray();
+
+    // Task.WhenAll will complete when every TranslateToAsync is done.
+    return Task.WhenAll(moves);
+}
 
     private void adjustPiceImage(Piece movingPiece, List<Piece> allPieces, bool excludeMoving)
     {
@@ -878,30 +826,24 @@ public partial class Game : ContentPage
                 
                 Alayout.Remove(TokenSelector);
                 Alayout.Add(TokenSelector);
-                
-                
 
                 tempPiece = piece;
                 Token token = gui.getPieceToken(piece);
 
                 double offsetX = (token.Width / 2);
                 double offsetY = 1;
+
                 if (currentBox == "p10" | currentBox == "p11" | currentBox == "p12")
-                {
                     offsetX = offsetX + (TokenSelector.Width / 2) - 6;
-                }
                 if (currentBox == "p22" | currentBox == "p23" | currentBox == "p24" | currentBox == "p25" | currentBox == "p26") // DONE
-                {
                     offsetY = offsetY - TokenSelector.Height - token.Height - 2;
-                }
                 if (currentBox == "p36" | currentBox == "p37" | currentBox == "p38")
-                {
                     offsetX = 6 + offsetX - (TokenSelector.Width / 2);
-                }
+
                 double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + offsetX;
                 double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - offsetY;
                 Console.WriteLine($"currentBox {currentBox} Current location {Alayout.Width} : {Alayout.Height} X {x}:{y}");
-                await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
+                await TokenSelector.TranslateTo(x, y, 1, Easing.CubicIn);
             }
             else
             {
