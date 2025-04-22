@@ -1,4 +1,5 @@
 ﻿using SharedCode.Constants;
+using System.Diagnostics;
 using System.IO.Pipelines;
 
 namespace SharedCode.CoreEngine
@@ -173,44 +174,59 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(4);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
+            if (GlobalConstants.Debug)
+            {
+
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(4);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(4);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(6);
+            }
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)

@@ -812,11 +812,11 @@ public partial class Game : ContentPage
             }
 
             if (ownAtBox > 1 && piece?.Location <= 51)
-            {//TODO
-             //If there is a block on the way and we have multiple options to move then if double tokens are clicked move them at once
-             //This code sets the location of TokenSelector
+            {
+                //TODO
+                //This code sets the location of TokenSelector
+                
                 Piece piece2 = engine.board?[currentBox].Where(p => p != piece && p.Color == piece.Color).First();
-
                 if(!piece.Moveable && piece.DoubleMoveable)
                 {
                     tempPiece = null;
@@ -824,7 +824,6 @@ public partial class Game : ContentPage
                     await engine.MovePieceAsync(PieceName, SendToServer);
                     return;
                 }
-
 
                 string colorKey = char.ToLower(piece.Name[0]).ToString();
                 TokenSelector1.piece = GetDefaultImage(colorKey, "");
