@@ -9,6 +9,7 @@ using SimpleToolkit.Core;
 using System.IO.Pipelines;
 using System;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace LudoClient.CoreEngine;
 
@@ -418,11 +419,11 @@ public partial class Game : ContentPage
         double x = engine.EngineHelper.originalPath["p0"][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
         double y = engine.EngineHelper.originalPath["p0"][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
 
-       await TokenSelector.TranslateTo(x, y, 50, Easing.CubicIn);
+        await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
 
         TokenSelector1.UpdateView(GetDefaultImage("r", ""));
         TokenSelector2.UpdateView(GetDefaultImage("r", "_2"));
-        
+
         if (gameMode != "Client")//If local game init the seats so that results can be built later on
             foreach (var player in engine.EngineHelper.players)
             {
@@ -522,7 +523,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome4, "blue");
     }
     public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone)
-    {   
+    {
         engine.EngineHelper.animationBlock = true;
 
         uint animTime = 200;
@@ -541,7 +542,7 @@ public partial class Game : ContentPage
             double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
             double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
 
-            await RunAnimationAsync(pieces, x, y, animTime);
+            await RunAnimationAsync(pieces, x, y, animTime, "Move");
 
             if (pieceClone.Location != pieces[0].Location)
                 await RelocateHelper(pieces, pieceClone);
@@ -582,27 +583,38 @@ public partial class Game : ContentPage
         // Now update the board normally, including the moving piece in the grouping.
         adjustPiceImage(piece[0], allPieces, excludeMoving: false);
     }
-public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY, uint duration)
-{
-    // Kick off a TranslateToAsync for each piece and return
-    // a Task that completes when all of them are done.
-    var moves = pieces
-        .Select(piece =>
+    public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY, uint duration, String AnimationType)
+    {
+        switch (AnimationType)
         {
-            var token = gui.getPieceToken(piece);
-            // TranslateToAsync animates both TranslationX and TranslationY
-            return token.TranslateTo(targetX, targetY, duration, Easing.CubicIn);
-        })
-        .ToArray();
+            case "Move":
+                var moves = pieces
+                    .Select(piece =>
+                    {
+                        var token = gui.getPieceToken(piece);
+                        // TranslateToAsync animates both TranslationX and TranslationY
+                        return token.TranslateTo(targetX, targetY, duration, Easing.CubicIn);
+                    })
+                    .ToArray();
 
-    // Task.WhenAll will complete when every TranslateToAsync is done.
-    return Task.WhenAll(moves);
-}
+                // Task.WhenAll will complete when every TranslateToAsync is done.
+                return Task.WhenAll(moves);
+            case "Scale":
+                var scaleTasks = pieces.Select(async piece =>
+                {
+                    var token = gui.getPieceToken(piece);
+                    token.TranslateTo(targetX, targetY, duration, Easing.Linear);
+                    token.ScaleTo(1.0, 100);
+                });
+                return Task.WhenAll(scaleTasks);
+        }
+        // Kick off a TranslateToAsync for each piece and return
+        // a Task that completes when all of them are done.
+        return Task.CompletedTask;
+    }
 
     private void adjustPiceImage(Piece movingPiece, List<Piece> allPieces, bool excludeMoving)
     {
-        Console.WriteLine("ADJUST");
-
         // 1. Get the color key from the moving piece.
         string colorKey = char.ToLower(movingPiece.Name[0]).ToString();
 
@@ -628,13 +640,11 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
             {
                 var token = gui.getPieceToken(p);
                 if (token.ImageContainer != imagePath)
-                {
                     token.UpdateView(imagePath);
-                }
             }
         }
     }
-    private void ResizePieces()
+    private async Task ResizePieces()
     {
         List<Piece> allPieces = GetAllPieces();
 
@@ -661,14 +671,7 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
 
             // If only one player's tokens are in the cell, place them centered.
             if (numPlayerGroups == 1)
-            {
-                foreach (var piece in playerGroups[0])
-                {
-                    var token = gui.getPieceToken(piece);
-                    _ = token.TranslateTo(centerX, centerY, 100, Easing.Linear);
-                    token.ScaleTo(1.0, 100);
-                }
-            }
+                await RunAnimationAsync(playerGroups[0].ToList(), centerX, centerY, 100, "Scale");
             else
             {
                 // Define the offset distance.
@@ -746,14 +749,8 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
                             subCenterY = centerY;
                         }
                     }
-
                     // Place all tokens for this player's group at the computed sub-center.
-                    foreach (var piece in pg)
-                    {
-                        var token = gui.getPieceToken(piece);
-                        _ = token.TranslateTo(subCenterX, subCenterY, 100, Easing.Linear);
-                        token.ScaleTo(1.0, 100);
-                    }
+                    await RunAnimationAsync(pg.ToList(), subCenterX, subCenterY, 100, "Scale");
                     index++;
                 }
             }
@@ -787,13 +784,13 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
     public async void PlayerPieceClicked(String PieceName, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
-        
+
         if (!engine.EngineHelper.checkTurn(PieceName, "MovePiece"))
             return;
         //start animation
         // Handle the dice click for the green player
         if (PieceName.Contains(","))
-        {
+        {//FIX THE ERROR TO NOT ALLOW TO ENTER ON BLOCK SITUATION
             tempPiece = null;
             await engine.MovePieceAsync(PieceName, SendToServer);
             return;
@@ -803,7 +800,7 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
             Piece piece = null;
             string currentBox = "";
             int ownAtBox = 0;
-            
+
             if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(PieceName.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
             {
                 piece = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, PieceName);
@@ -818,14 +815,20 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
             {//TODO
              //If there is a block on the way and we have multiple options to move then if double tokens are clicked move them at once
              //This code sets the location of TokenSelector
-                TokenSelector.IsVisible = true;
-                
+                Piece piece2 = engine.board?[currentBox].Where(p => p != piece && p.Color == piece.Color).First();
+
+                if(!piece.Moveable && piece.DoubleMoveable)
+                {
+                    tempPiece = null;
+                    PieceName = piece.Name + "," + piece2.Name;
+                    await engine.MovePieceAsync(PieceName, SendToServer);
+                    return;
+                }
+
+
                 string colorKey = char.ToLower(piece.Name[0]).ToString();
                 TokenSelector1.piece = GetDefaultImage(colorKey, "");
                 TokenSelector2.piece = GetDefaultImage(colorKey, "_2");
-                
-                Alayout.Remove(TokenSelector);
-                Alayout.Add(TokenSelector);
 
                 tempPiece = piece;
                 Token token = gui.getPieceToken(piece);
@@ -834,22 +837,22 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
                 double offsetY = 1;
 
                 if (currentBox == "p10" | currentBox == "p11" | currentBox == "p12")
-                    offsetX = offsetX + (TokenSelector.Width / 2) - 6;
+                    offsetX = offsetX + (80 / 2) - 6;
                 if (currentBox == "p22" | currentBox == "p23" | currentBox == "p24" | currentBox == "p25" | currentBox == "p26") // DONE
-                    offsetY = offsetY - TokenSelector.Height - token.Height - 2;
+                    offsetY = offsetY - 50 - token.Height - 2;
                 if (currentBox == "p36" | currentBox == "p37" | currentBox == "p38")
-                    offsetX = 6 + offsetX - (TokenSelector.Width / 2);
+                    offsetX = 6 + offsetX - (80 / 2);
 
-                double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + offsetX;
-                double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - TokenSelector.Height - offsetY;
-                Console.WriteLine($"currentBox {currentBox} Current location {Alayout.Width} : {Alayout.Height} X {x}:{y}");
+                double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (80 / 2) + offsetX;
+                double y = engine.EngineHelper.originalPath[currentBox][0] * (Alayout.Height / 15) - 50 - offsetY;
                 await TokenSelector.TranslateTo(x, y, 1, Easing.CubicIn);
+                TokenSelector.IsVisible = true;
             }
             else
             {
                 tempPiece = null;
                 await engine.MovePieceAsync(PieceName, SendToServer);
-            }   
+            }
         }
         catch (Exception)
         { }
@@ -866,24 +869,23 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
             if (parameter == "2")
             {
                 string currentBox = engine.EngineHelper.getPieceBox(tempPiece);
-                List<Piece> Piece2 = engine.board?[currentBox].Where(x => x.Color == tempPiece.Color).ToList().Where(x=>x.Name!=tempPiece.Name).ToList();
+                List<Piece> Piece2 = engine.board?[currentBox].Where(x => x.Color == tempPiece.Color).ToList().Where(x => x.Name != tempPiece.Name).ToList();
 
-                PlayerPieceClicked(tempPiece.Name+","+ Piece2?[0].Name , true);
+                PlayerPieceClicked(tempPiece.Name + "," + Piece2?[0].Name, true);
             }
             else
             {
+                if (!engine.EngineHelper.checkTurn(tempPiece.Name, "MovePiece"))
+                    return;
                 await engine.MovePieceAsync(tempPiece.Name, true);
             }
         }
-        //var activeTab = e as string;
-        //TokenSelector1.IsVisible = false;
-        //TokenSelector2.IsVisible = false;
     }
     public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
-        
-        if(engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
+
+        if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             gui.red.reset();
             gui.green.reset();
@@ -906,7 +908,7 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
 
             await engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
         }
-        
+
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
         {
             // Safely update the UI
@@ -923,7 +925,7 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
         foreach (Piece p in allPieces)
             gui.getPieceToken(p).ShowHideIndicator(false);
 
-        List<Piece> moveablePieces = engine.EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
+        List<Piece> moveablePieces = engine.EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable || p.DoubleMoveable).ToList();
         Console.WriteLine("AnimatePawns" + moveablePieces.Count);
         foreach (Piece p in moveablePieces)
             if (engine.EngineHelper.gameState == "MovePiece")
@@ -982,9 +984,9 @@ public Task RunAnimationAsync(List<Piece> pieces, double targetX, double targetY
     {
         PopoverButton.ShowAttachedPopover();
     }
-    private async void CloseTokenSelector(object sender, EventArgs e)
+    private void CloseTokenSelector(object sender, EventArgs e)
     {
-       // TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
+        // TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
         TokenSelector.IsVisible = false;
     }
     MessageBox mb = null;

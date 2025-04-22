@@ -7,6 +7,8 @@
         public int Location { get; set; }
         public string Color { get; private set; }
         public int Position { get; set; }
+        public bool DoubleMoveable { get; internal set; }
+
         public Piece(string color, string name)
         {
             Name = name;
