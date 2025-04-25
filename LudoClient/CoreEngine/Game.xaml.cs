@@ -419,7 +419,8 @@ public partial class Game : ContentPage
         double x = engine.EngineHelper.originalPath["p0"][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
         double y = engine.EngineHelper.originalPath["p0"][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
 
-        await TokenSelector.TranslateTo(x, y, 10, Easing.CubicIn);
+        TokenSelector.RotateTo(-rotation);
+        await TokenSelector.TranslateTo(x, y, 1, Easing.CubicIn);
 
         TokenSelector1.UpdateView(GetDefaultImage("r", ""));
         TokenSelector2.UpdateView(GetDefaultImage("r", "_2"));
@@ -436,7 +437,7 @@ public partial class Game : ContentPage
                 });
             }
 
-        TokenSelector.IsVisible = false;
+      //  TokenSelector.IsVisible = false;
     }
 
     private void SetHomeBlock(Token lockHome, string color)
@@ -781,65 +782,60 @@ public partial class Game : ContentPage
                 allPieces.Add(piece);
         return allPieces;
     }
-    public async void PlayerPieceClicked(String PieceName, bool SendToServer = true)
+    public async void PlayerPieceClicked(String piece1String, String piece2String, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
-
-        if (!engine.EngineHelper.checkTurn(PieceName, "MovePiece"))
+        if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
             return;
-        //start animation
-        // Handle the dice click for the green player
-        if (PieceName.Contains(","))
-        {//FIX THE ERROR TO NOT ALLOW TO ENTER ON BLOCK SITUATION
+
+        if (!SendToServer || piece2String != "") {
             tempPiece = null;
-            await engine.MovePieceAsync(PieceName, SendToServer);
+            MovePiece(piece1String, piece2String, SendToServer);
             return;
         }
         try
         {
-            Piece piece = null;
+            Piece piece1 = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, piece1String);
             string currentBox = "";
             int ownAtBox = 0;
-
-            if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(PieceName.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
+            
+            if (engine.EngineHelper.currentPlayer.Color.ToLower().Contains(piece1String.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")) && (engine.EngineHelper.diceValue == 2 || engine.EngineHelper.diceValue == 4 || engine.EngineHelper.diceValue == 6))
             {
-                piece = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, PieceName);
-                if (piece != null)
+                if (piece1 != null)
                 {
-                    currentBox = engine.EngineHelper.getPieceBox(piece);
-                    ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece.Color) ?? 0;
+                    currentBox = engine.EngineHelper.getPieceBox(piece1);
+                    ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece1.Color) ?? 0;
                 }
             }
 
-            if (ownAtBox > 1 && piece?.Location <= 51)
+            if (ownAtBox > 1 && piece1?.Location <= 51)
             {
                 //TODO
                 //This code sets the location of TokenSelector
-                
-                Piece piece2 = engine.board?[currentBox].Where(p => p != piece && p.Color == piece.Color).First();
-                if(!piece.Moveable && piece.DoubleMoveable)
+
+                Piece piece2 = engine.board?[currentBox].Where(p => p != piece1 && p.Color == piece1.Color).First();
+                if(!piece1.Moveable && piece1.DoubleMoveable)
                 {
                     tempPiece = null;
-                    PieceName = piece.Name + "," + piece2.Name;
-                    await engine.MovePieceAsync(PieceName, SendToServer);
+                    await MovePiece(piece1.Name, piece2.Name, SendToServer);
                     return;
                 }
 
-                string colorKey = char.ToLower(piece.Name[0]).ToString();
+                string colorKey = char.ToLower(piece1.Name[0]).ToString();
                 TokenSelector1.piece = GetDefaultImage(colorKey, "");
                 TokenSelector2.piece = GetDefaultImage(colorKey, "_2");
 
-                tempPiece = piece;
-                Token token = gui.getPieceToken(piece);
+                tempPiece = piece1;
+                Token token = gui.getPieceToken(piece1);
 
                 double offsetX = (token.Width / 2);
                 double offsetY = 1;
 
-                if (currentBox == "p10" | currentBox == "p11" | currentBox == "p12")
+                if (currentBox == "p10" || currentBox == "p11" || currentBox == "p12")
                     offsetX = offsetX + (80 / 2) - 6;
-                if (currentBox == "p22" | currentBox == "p23" | currentBox == "p24" | currentBox == "p25" | currentBox == "p26") // DONE
+                if (currentBox == "p22" || currentBox == "p23" || currentBox == "p24" || currentBox == "p25" || currentBox == "p26") // DONE
                     offsetY = offsetY - 50 - token.Height - 2;
-                if (currentBox == "p36" | currentBox == "p37" | currentBox == "p38")
+                if (currentBox == "p36" || currentBox == "p37" || currentBox == "p38")
                     offsetX = 6 + offsetX - (80 / 2);
 
                 double x = engine.EngineHelper.originalPath[currentBox][1] * (Alayout.Width / 15) - (80 / 2) + offsetX;
@@ -850,12 +846,48 @@ public partial class Game : ContentPage
             else
             {
                 tempPiece = null;
-                await engine.MovePieceAsync(PieceName, SendToServer);
+                await MovePiece(piece1.Name, "", SendToServer);
             }
         }
         catch (Exception)
         { }
         //stop animmation
+    }
+    private async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
+    {
+        string result = await engine.MovePieceAsync(piece1String, piece2String);
+        ClientGlobalConstants.game.engine.EngineHelper.index++;
+        if (engine.EngineHelper.gameMode == "Client" && SendToServer)
+        {
+            List<string> results = result.Split(",").ToList();
+            GameCommand command = new GameCommand
+            {
+                SendToClientFunctionName = "MovePiece",
+                seatName = "",
+                diceValue = "",
+                piece1 = results[0],
+                piece2 = results[1],
+                Index = engine.EngineHelper.index,
+                IndexServer = 0
+            };
+
+            GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece").ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.RanToCompletion)
+                {
+                    GameCommand resultCommand = t.Result;
+                    if (command.Index != resultCommand.Index)
+                    {
+                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                    }
+                }
+                else
+                {
+                    //ServerpieceName = "Error"; // Handle failure
+                }
+            });
+        }
+        Console.WriteLine(result);
     }
     private async void TokenSelected_Clicked(object sender, EventArgs e)
     {
@@ -870,17 +902,17 @@ public partial class Game : ContentPage
                 string currentBox = engine.EngineHelper.getPieceBox(tempPiece);
                 List<Piece> Piece2 = engine.board?[currentBox].Where(x => x.Color == tempPiece.Color).ToList().Where(x => x.Name != tempPiece.Name).ToList();
 
-                PlayerPieceClicked(tempPiece.Name + "," + Piece2?[0].Name, true);
+                PlayerPieceClicked(tempPiece.Name , Piece2?[0].Name, true);
             }
             else
             {
                 if (!engine.EngineHelper.checkTurn(tempPiece.Name, "MovePiece"))
                     return;
-                await engine.MovePieceAsync(tempPiece.Name, true);
+                await MovePiece(tempPiece.Name, "");
             }
         }
     }
-    public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece, bool SendToServer = true)
+    public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
 
@@ -905,7 +937,38 @@ public partial class Game : ContentPage
 
             seat.AnimateDice();
 
-            await engine.SeatTurn(SeatColor, DiceValue, Piece, SendToServer);
+            String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
+            Console.WriteLine($"Local : {result}");
+            ClientGlobalConstants.game.engine.EngineHelper.index++;
+            if (engine.EngineHelper.gameMode == "Client" && SendToServer)
+            {
+                List<string> results = result.Split(",").ToList();
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "DiceRoll",
+                    seatName = SeatColor,
+                    diceValue = results[0],
+                    piece1 = results[1],
+                    piece2 = results[2],
+                    Index = engine.EngineHelper.index,
+                    IndexServer = 0
+                };
+                GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll").ContinueWith(t =>
+                {
+                    if (t.Status == TaskStatus.RanToCompletion)
+                    {
+                        GameCommand resultCommand = t.Result;
+                        if (command.Index != resultCommand.Index)
+                        {
+                            Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                        }
+                    }
+                    else
+                    {
+                        //ServerpieceName = "Error"; // Handle failure
+                    }
+                });
+            }
         }
 
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
@@ -925,7 +988,7 @@ public partial class Game : ContentPage
             gui.getPieceToken(p).ShowHideIndicator(false);
 
         List<Piece> moveablePieces = engine.EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable || p.DoubleMoveable).ToList();
-        Console.WriteLine("AnimatePawns" + moveablePieces.Count);
+        
         foreach (Piece p in moveablePieces)
             if (engine.EngineHelper.gameState == "MovePiece")
                 gui.getPieceToken(p).ShowHideIndicator(true);

@@ -154,11 +154,11 @@ namespace SharedCode.CoreEngine
                 case "RollDice":
                     Console.WriteLine($"{action.PlayerColor} rolled a {action.DiceValue}");
                     DiceValue = action.DiceValue;
-                    engine.SeatTurn(action.PlayerColor, action.DiceValue+"", "");
+                    engine.SeatTurn(action.PlayerColor, action.DiceValue+"", "", "");
                     break;
                 case "MovePiece":
                     Console.WriteLine($" moved  to {action.PieceName}");
-                    engine.MovePieceAsync(action.PieceName);
+                    engine.MovePieceAsync(action.PieceName, "");
                     break;
 
                 case "Kill":

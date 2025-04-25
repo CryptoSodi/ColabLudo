@@ -1,6 +1,7 @@
 ﻿
 using LudoClient.Constants;
 using LudoClient.CoreEngine;
+using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -63,22 +64,20 @@ namespace LudoClient
                 await PollForCommandsAsync();
             });
         }
-        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece) args)
+        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece1, string Piece2) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
                 if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
-                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece, false);
+                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece1, args.Piece2, false);
             });
         }
-        private void OnPieceMove(object? sender, string Piece)
+        private void OnPieceMove(object? sender, string Piece1, string Piece2)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
-                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                    ClientGlobalConstants.game.PlayerPieceClicked(Piece, false);
+                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                    ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
             });
         }
 
@@ -94,35 +93,46 @@ namespace LudoClient
                         if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State + "" != "Disconnected")
                         {
                             // Invoke the hub method to pull commands newer than _lastSeenIndex.
-                            List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(GlobalConstants.lastSeenIndex, GlobalConstants.RoomCode);
+                            int lastSeen = ClientGlobalConstants.game.engine.EngineHelper.indexServer;
+                            List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
+
+                            if (commands != null && commands.Count > 0)
                             {
-                                if (commands != null && commands.Count > 0)
-                                    foreach (var command in commands)
+                                foreach (var command in commands.OrderBy(c => c.IndexServer))
+                                {
+                                    while (ClientGlobalConstants.game.engine.processing)
+                                        await Task.Delay(100);
+
+                                    //  Console.WriteLine($"Room {GlobalConstants.RoomCode} LastSeenIndex {ClientGlobalConstants.game.engine.EngineHelper.index} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
+                                    // Process the command here (e.g., call a local method based on the command type).
+                                    // Update _lastSeenIndex with the highest received index.
+                                    if (ClientGlobalConstants.game.engine.EngineHelper.index <= command.Index)
                                     {
-                                        while (ClientGlobalConstants.game.engine.processing)
-                                        {
-                                            await Task.Delay(100);
-                                        }
-                                        Console.WriteLine($"Room {GlobalConstants.RoomCode} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
-                                        // Process the command here (e.g., call a local method based on the command type).
-                                        // Update _lastSeenIndex with the highest received index.
-                                        GlobalConstants.lastSeenIndex = command.Index;
                                         switch (command.SendToClientFunctionName)
                                         {
                                             case "MovePiece":
-                                                OnPieceMove(this, command.commandValue1);
+                                                OnPieceMove(this, command.piece1, command.piece2);
                                                 break;
                                             case "DiceRoll":
                                                 // For other command types, for example, SeatTurn:
                                                 // If SeatTurn returns a string, you can wait for it.
-                                                OnDiceRoll(this, (command.commandValue1, command.commandValue2, command.commandValue3));
+                                                OnDiceRoll(this, (command.seatName, command.diceValue, command.piece1, command.piece2));
                                                 break;
                                             case "PlayerLeft":
-                                                OnPlayerLeft(this, command.commandValue1);
+                                                OnPlayerLeft(this, command.seatName);
                                                 break;
                                         }
+                                        // Wait a bit before polling again.
+                                        await Task.Delay(500);
                                     }
+                                }
+
+                                if (commands.Any())
+                                    ClientGlobalConstants.game.engine.EngineHelper.indexServer = commands.Max(c => c.IndexServer);
                             }
+
+                            if (lastSeen != ClientGlobalConstants.game.engine.EngineHelper.index)
+                                Console.WriteLine("DESYNC WARNING!");
                         }
                     }
                 }

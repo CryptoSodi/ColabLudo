@@ -123,38 +123,43 @@ namespace SignalR.Server
             //await BroadcastPlayersAsync(existingGame, roomCode);
             return "ready";
         }
-        public string Send(string name, string commandValue, string commandtype, string roomCode)
+        public GameCommand Send(string name, GameCommand commandValue, string commandtype, string roomCode)
         {
+            GameCommand Result = new GameCommand();
             Console.WriteLine($"{name}: {commandValue}:{commandtype}");
             // Now use the user's Room property to get the GameRoom.
             if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
             {
                 Console.WriteLine($"GameRoom not found for room: {roomCode}");
-                return "Error: Room not found.";
+                //
+                Result.Result = "Error: Room not found.";
+                return Result;
             }
             // For logging purposes, show which room this command is coming from.
             Console.WriteLine($"{name} (room {roomCode}): {commandValue}:{commandtype}");
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
-                Console.WriteLine($"Engine not initialized for room: {roomCode}");
-                return "Error: Engine not initialized.";
+                Console.WriteLine($"Engine not initialized for room: {roomCode}");                
+                Result.Result = "Error: Engine not initialized.";
+                return Result;
             }
 
             // Process command based on the type.
             if (commandtype == "MovePiece")
             {
-                String piece = gameRoom.MovePieceAsync(commandValue).GetAwaiter().GetResult();
-                return commandValue;
+                Result = gameRoom.MovePieceAsync(commandValue).GetAwaiter().GetResult();
+                return Result;
             }
             else if (commandtype == "DiceRoll")
             {
                 // For other command types, for example, SeatTurn:
                 // If SeatTurn returns a string, you can wait for it.
-                String diveValue = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
-                return diveValue;
+                
+                Result = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
+                return Result;
             }
-            return "0";
+            return null;
         }
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {

@@ -11,7 +11,7 @@ public partial class PlayerSeat : ContentView
     public EngineHelper EngineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
 
-    public delegate void DiceClickedHandler(string SeatName, String DiceValue, String Piece, bool SendToServer = true);
+    public delegate void DiceClickedHandler(string SeatName, String DiceValue, String Piece1, String Piece2, bool SendToServer = true);
     public event DiceClickedHandler OnDiceClicked;
 
     public delegate Task<string> TimerTimeoutHandler(string SeatName);
@@ -137,10 +137,10 @@ public partial class PlayerSeat : ContentView
     private void Dice_Clicked(object sender, EventArgs e)
     {
         if ((ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Computer" || ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
-            OnDiceClicked?.Invoke(seatColor, "", "");
+            OnDiceClicked?.Invoke(seatColor, "", "", "");
         else
             if (ClientGlobalConstants.game.engine.EngineHelper.gameMode != "Computer" && ClientGlobalConstants.game.engine.EngineHelper.gameMode != "Client")
-            OnDiceClicked?.Invoke(seatColor, "", "");
+            OnDiceClicked?.Invoke(seatColor, "", "", "");
     }
     internal void AnimateDice()
     {
@@ -154,10 +154,8 @@ public partial class PlayerSeat : ContentView
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Console.WriteLine($"STOP DICE dice_{DiceValue}.png");
             DiceLayer.IsAnimationPlaying = false;
             DiceLayer.Source = $"dice_{DiceValue}.png";
-
         });
     }
 

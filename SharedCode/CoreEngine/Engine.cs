@@ -43,13 +43,13 @@ namespace SharedCode.CoreEngine
            string result = "";
            switch (EngineHelper.gameState){
                 case "RollDice":
-                    result = await SeatTurn(SeatName, "", "");
+                //    result = await SeatTurn(SeatName, "", "");
                     return result;
                 case "MovePiece":
                     Player player = EngineHelper.currentPlayer;
                     List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
                     
-                    await MovePieceAsync(moveablePieces[GlobalConstants.rnd.Next(0,moveablePieces.Count)].Name);
+               //     await MovePieceAsync(moveablePieces[GlobalConstants.rnd.Next(0,moveablePieces.Count)].Name);
                     result = moveablePieces[GlobalConstants.rnd.Next(0, moveablePieces.Count)].Name;
                     return result;
             }
@@ -176,11 +176,13 @@ namespace SharedCode.CoreEngine
 
             if (GlobalConstants.Debug)
             {
-
+                EngineHelper.rolls.Add(5);
                 EngineHelper.rolls.Add(6);
                 EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(4);
                 EngineHelper.rolls.Add(6);
                 EngineHelper.rolls.Add(6);
+                EngineHelper.rolls.Add(4);
                 EngineHelper.rolls.Add(6);
                 EngineHelper.rolls.Add(6);
                 EngineHelper.rolls.Add(6);
@@ -236,13 +238,15 @@ namespace SharedCode.CoreEngine
 
             EngineHelper.rollsString = string.Join("", EngineHelper.rolls);
         }
-        public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece, bool SendToServer=true)
+        public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece1, String Piece2)
         {
             if (PlayState == "Stop")
                 return "";
 
             int tempDice = -1;
-            string tempPiece = "";
+            string result = ",";
+            string tempPiece1 = "";
+            string tempPiece2 = "";
             // Check if it's the correct player's turn and if the game is in the roll state
             if (EngineHelper.checkTurn(seatName, "RollDice"))
             {
@@ -251,50 +255,19 @@ namespace SharedCode.CoreEngine
                 if (AnimateDice!=null)
                     AnimateDice(seatName);
 
-                int localDiceChecker = -1;
-                if (EngineHelper.gameMode == "Client")
-                {
-                    localDiceChecker = EngineHelper.rolls[0];
-                    EngineHelper.rolls.RemoveAt(0);
-                    _ = Task.Run(async () =>
-                    {
-                        // Notify the end of the dice roll
-                        if (StopDice != null && EngineHelper.rolls.Count > 0)
-                        {
-                            await Task.Delay(200);
-                            StopDice(seatName, localDiceChecker);
-                        }
-                    });
-                }
-                // Roll the dice
-                if (DiceValue != "")
-                    EngineHelper.diceValue = Int32.Parse(DiceValue);
-                else
-                {
-                    String DiceServerValueHolder = await EngineHelper.RollDice(seatName);
-                    EngineHelper.diceValue = Int32.Parse(DiceServerValueHolder.Split(",")[0]);
-                    Piece = DiceServerValueHolder.Split(",")[1];
-                }
-                
+                EngineHelper.diceValue = EngineHelper.RollDice();
                 tempDice = EngineHelper.diceValue;
 
-                if (EngineHelper.gameMode != "Client" && EngineHelper.gameMode != "Server")
+                if (EngineHelper.gameMode != "Server")
                 {
                     if (!EngineHelper.stopAnimate)
-                        // Simulate server delay
                         await Task.Delay(200);
                     else
                         await Task.Delay(30);
-                    // Notify the end of the dice roll
                 }
 
-                if(EngineHelper.gameMode == "Client" && localDiceChecker != EngineHelper.diceValue)
-                {
-                    Console.WriteLine("ERROR SERVER OUT OF SYNC");
-                }
-
-                if (StopDice!=null && EngineHelper.gameMode != "Client")
-                    StopDice(seatName, tempDice);
+                if (StopDice!=null)
+                    StopDice(seatName, EngineHelper.diceValue);
 
                 // Determine which pieces can move
                 foreach (var piece in EngineHelper.currentPlayer.Pieces)
@@ -349,7 +322,6 @@ namespace SharedCode.CoreEngine
                     }
                 }
 
-
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
                 List<Piece> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).ToList();
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} D: {DoubleMoveablePieces.Count} pieces. ");
@@ -373,7 +345,7 @@ namespace SharedCode.CoreEngine
                     EngineHelper.gameState = "RollDice";
                 }
 
-                if (moveablePieces.Count == 1)
+                if (moveablePieces.Count == 1 && DoubleMoveablePieces.Count==0)
                     moveSeat = true;
                 else if (moveablePieces.Count > 1 && DoubleMoveablePieces.Count == 0)
                 {
@@ -438,7 +410,7 @@ namespace SharedCode.CoreEngine
                     }
                 }
 
-                if (moveSeat || moveDouble)
+                if (moveablePieces.Count > 0 && DoubleMoveablePieces.Count>1)
                 {
                     EngineHelper.gameState = "MovePiece";
                     EngineHelper.animationBlock = false;
@@ -452,29 +424,30 @@ namespace SharedCode.CoreEngine
                 {
                     if (!EngineHelper.replay)
                     {
-                        if (Piece != "")
-                            tempPiece = Piece;
+                        if (Piece1 != "")
+                            tempPiece1 = Piece1;
                         else
                         {
-                            tempPiece = moveablePieces.First(p => p.Moveable).Name;
+                            tempPiece1 = moveablePieces.First(p => p.Moveable).Name;
                         }
-                        tempPiece = await MovePieceAsync(tempPiece, false);//Move the only moveable piece
-                        //EngineHelper.index--;
+                        result = await MovePieceAsync(tempPiece1, "");//Move the only moveable piece
                     }
                 }
                 else if (!moveSeat && moveDouble)
                 {
                     if (!EngineHelper.replay)
                     {
-                        if (Piece != "")
-                            tempPiece = Piece;
+                        if (Piece1 != "" && Piece2 != "")
+                        {
+                            tempPiece1 = Piece1;
+                            tempPiece2 = Piece2;
+                        }
                         else
                         {
-                            tempPiece = DoubleMoveablePieces[0].Name;
-                            tempPiece += "," + DoubleMoveablePieces[1].Name;
+                            tempPiece1 = DoubleMoveablePieces[0].Name;
+                            tempPiece2 = DoubleMoveablePieces[1].Name;
                         }
-                        tempPiece = await MovePieceAsync(tempPiece, false);//Move the only moveable piece
-                        //EngineHelper.index--;
+                        result = await MovePieceAsync(tempPiece1, tempPiece2);//Move the only moveable piece
                     }
                 }
                 else
@@ -487,100 +460,84 @@ namespace SharedCode.CoreEngine
                 Console.WriteLine("Not the turn of the player");
             }
             processing = false;
-            return $"{tempDice},{tempPiece}";
+            return $"{tempDice},{result}";
         }
-        public async Task<string> MovePieceAsync(String pieceName, bool SendToServer = true)
+        public async Task<string> MovePieceAsync(String piece1String, String piece2String)
         {
-            String tempPiece = "";
             if (PlayState == "Stop")
-                return "";
+                return ",";
             Player player = EngineHelper.currentPlayer;
+            Piece piece1 = null;
             Piece piece2 = null;
+            Piece piece1Clone = null;
             Piece piece2Clone = null;
-            if (pieceName.Contains(","))
-            {
-                piece2 = EngineHelper.GetPiece(player.Pieces, pieceName.Split(",")[1]);
-                piece2Clone = piece2.Clone();
-                pieceName = pieceName.Split(",")[0];
-            }
-            Piece piece = EngineHelper.GetPiece(player.Pieces, pieceName);
-            if (piece == null || EngineHelper.diceValue == 0)
-                return ""; // Exit if not the current player's piece or no dice roll
+            int tempDice = EngineHelper.diceValue;
 
-            if ((piece.Moveable || piece.DoubleMoveable) && EngineHelper.checkTurn(pieceName, "MovePiece"))
+            if (piece2String!="")
+            {
+                piece1 = EngineHelper.GetPiece(player.Pieces, piece1String);
+                piece2 = EngineHelper.GetPiece(player.Pieces, piece2String);
+                piece1Clone = piece1.Clone();
+                piece2Clone = piece2.Clone();
+            }
+            else
+            {
+                piece1 = EngineHelper.GetPiece(player.Pieces, piece1String);
+                piece1Clone = piece1.Clone();
+            }
+
+            if (piece1 == null || EngineHelper.diceValue == 0)
+                return ","; // Exit if not the current player's piece or no dice roll
+
+            if ((piece1.Moveable || piece1.DoubleMoveable) && EngineHelper.checkTurn(piece1.Name, "MovePiece"))
             {
                 processing = true;
-                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {pieceName} with dicevalue{EngineHelper.diceValue}.");
-
-                String ServerpieceName = pieceName;
                 EngineHelper.gameState = "MovingPiece";
-                if (EngineHelper.gameMode == "Client" && SendToServer)
-                {
-                    GlobalConstants.MatchMaker?.SendMessageAsync(pieceName, "MovePiece").ContinueWith(t =>
-                        {
-                            if (t.Status == TaskStatus.RanToCompletion)
-                            {
-                                ServerpieceName = t.Result;
-                                if (EngineHelper.gameMode == "Client" && ServerpieceName != pieceName)
-                                {
-                                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
-                                }
-                            }
-                            else
-                            {
-                                ServerpieceName = "Error"; // Handle failure
-                            }
-                        });
-                }
 
-                pieceName = ServerpieceName;
+                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {piece1String} & {piece2String} with dicevalue{EngineHelper.diceValue}.");
+
                 bool killed = false;
-                Piece pieceClone = piece.Clone();
 
                 List<Piece> relocatedPieces = new List<Piece>();//Pieces sent to the relocation service to relocate and paint them on the game UI
 
-                if (piece.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
+                if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    tempPiece = pieceName;
-
-                    piece.Jump(this, EngineHelper.diceValue);
-                    relocatedPieces.Add(piece);
+                    piece1.Jump(this, EngineHelper.diceValue);
+                    relocatedPieces.Add(piece1);
                     if (RelocateAsync != null)
-                       await RelocateAsync(relocatedPieces, piece.Clone());
+                       await RelocateAsync(relocatedPieces, piece1.Clone());
 
-                    gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed);
+                    gameRecorder.RecordMove(EngineHelper.diceValue, player, piece1, piece1.Position, killed);
                 }
-                else if (piece.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
+                else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    tempPiece = pieceName;
-
-                    int oldPosition = piece.Position;
-                    string oldBox = EngineHelper.getPieceBox(piece);
+                    int oldPosition = piece1.Position;
+                    string oldBox = EngineHelper.getPieceBox(piece1);
                     if (piece2 != null)
                     {
                         piece2.Jump(this, EngineHelper.diceValue/2);
-                        piece.Jump(this, EngineHelper.diceValue/2);
+                        piece1.Jump(this, EngineHelper.diceValue/2);
                     }
                     else
-                        piece.Jump(this, EngineHelper.diceValue);
+                        piece1.Jump(this, EngineHelper.diceValue);
                     
-                    string newBox = EngineHelper.getPieceBox(piece);
-                    int ownAtDest = board?[newBox].Count(x => x.Color == piece.Color) ?? 0;
+                    string newBox = EngineHelper.getPieceBox(piece1);
+                    int ownAtDest = board?[newBox].Count(x => x.Color == piece1.Color) ?? 0;
 
                     // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
-                    List<Piece> kilablePieces = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
+                    List<Piece> kilablePieces = board?[newBox].Where(p => p.Color != piece1.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece1.Color, p.Color))).ToList();
                     
                     var tokensInOldBox = board?[oldBox];
 
                     if (tokensInOldBox != null && tokensInOldBox.Count != 0 && !EngineHelper.safeZone.Contains(oldPosition))
                     {
-                        int ownCount = tokensInOldBox.Count(p => p.Color == piece.Color);
-                        int enemyCount = tokensInOldBox.Count(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color)));
+                        int ownCount = tokensInOldBox.Count(p => p.Color == piece1.Color);
+                        int enemyCount = tokensInOldBox.Count(p => p.Color != piece1.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece1.Color, p.Color)));
 
                         if (ownCount == 1 && enemyCount == 1)
                         {
                             // Kill the remaining own piece in the old box
-                            var ownTrapped = tokensInOldBox.First(p => p.Color == piece.Color && p != piece);
+                            var ownTrapped = tokensInOldBox.First(p => p.Color == piece1.Color && p != piece1);
                             var ownTrappedClone = ownTrapped.Clone();
                             ownTrapped.Position = -1;
                             ownTrapped.Location = 0;
@@ -589,22 +546,22 @@ namespace SharedCode.CoreEngine
 
                             if (RelocateAsync != null) {
                                 relocatedPieces.Add(ownTrapped);
-                                RelocateAsync(relocatedPieces, pieceClone);
+                                RelocateAsync(relocatedPieces, piece1Clone);
                             }
                         }
                     }
                     relocatedPieces = new List<Piece>();
                     //Add logic if the killer is 2 pieces and target has 2 killables then kill both
                     // If 2 enemies and after move 2 own tokens => kill both enemies
-                    if (kilablePieces.Count == 2 && ownAtDest == 2 && !EngineHelper.safeZone.Contains(piece.Position))
+                    if (kilablePieces?.Count == 2 && ownAtDest == 2 && !EngineHelper.safeZone.Contains(piece1.Position))
                     {
                         if (RelocateAsync != null)
                         {
-                            relocatedPieces.Add(piece);
+                            relocatedPieces.Add(piece1);
                             if (piece2!=null)
                                 relocatedPieces.Add(piece2);
                             
-                            await RelocateAsync(relocatedPieces, pieceClone);
+                            await RelocateAsync(relocatedPieces, piece1Clone);
                         }
                         
                         foreach (var enemy in kilablePieces)
@@ -621,7 +578,7 @@ namespace SharedCode.CoreEngine
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
                     }
-                    else if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece.Position))
+                    else if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece1.Position))
                     {// Prevent killing if there are two or more opponent pieces
                         
                         EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
@@ -632,11 +589,11 @@ namespace SharedCode.CoreEngine
                         board?[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
                         killed = true;
 
-                        relocatedPieces.Add(piece);
+                        relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
                         if (RelocateAsync != null)
-                            await RelocateAsync(relocatedPieces, pieceClone);
+                            await RelocateAsync(relocatedPieces, piece1Clone);
                         relocatedPieces = new List<Piece>();
                         relocatedPieces.Add(kilablePieces[0]);
                         if (RelocateAsync != null)
@@ -645,18 +602,18 @@ namespace SharedCode.CoreEngine
                     if (!killed && RelocateAsync != null)
                     {
                         relocatedPieces = new();
-                        relocatedPieces.Add(piece);
+                        relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        await RelocateAsync(relocatedPieces, pieceClone);
+                        await RelocateAsync(relocatedPieces, piece1Clone);
                     }
                     
-                    gameRecorder.RecordMove(EngineHelper.diceValue, player, piece, piece.Position, killed); // Prepare animation
+                    gameRecorder.RecordMove(EngineHelper.diceValue, player, piece1, piece1.Position, killed); // Prepare animation
                     
-                    if (piece.Location == 57)
+                    if (piece1.Location == 57)
                     {
                         killed = true;
-                        player.Pieces.Remove(piece);
+                        player.Pieces.Remove(piece1);
 
                         if (player.Pieces.Count == 0)
                         {
@@ -685,11 +642,11 @@ namespace SharedCode.CoreEngine
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
                     if (winners.Count > 0)
-                    { 
+                    {
                         //GANE OVER
                         GameOver(winners);
                         processing = false;
-                        return tempPiece;
+                        return piece1String+","+piece2String;
                     }
                 }
 
@@ -702,11 +659,12 @@ namespace SharedCode.CoreEngine
             else
             {
                 processing = false;
-                return "";
+                return ",";
             }
 
             processing = false;
-            return tempPiece;
+
+            return piece1String + "," + piece2String;
         }
         public void PlayerLeft(String playerColor, bool SendToServer = true)
         {
@@ -758,7 +716,9 @@ namespace SharedCode.CoreEngine
     }
     public class EngineHelper
     {
-        public int index = 0;
+        public int index = -1;
+        internal int indexServer = -1;
+
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString;
@@ -778,6 +738,7 @@ namespace SharedCode.CoreEngine
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
        
         public bool animationBlock = false;
+
         public Player getPlayer(String color)
         {
             return players.FirstOrDefault(p => p.Color == color);
@@ -1033,24 +994,21 @@ namespace SharedCode.CoreEngine
                 SeatNameOrPiece = SeatNameOrPiece.Split(",")[0];
             return ((currentPlayer.Color == SeatNameOrPiece || currentPlayer.Color.ToLower().Contains(SeatNameOrPiece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", ""))) && gameState == GameState);
         }
-        public async Task<String> RollDice(string seatName = "")
+        public int RollDice()
         {
             if(replay)
             {
-                return Engine.gameRecorder.RequestDice()+"";
+                return Engine.gameRecorder.RequestDice();
             }
-            if (gameMode == "Client")
-                return await GlobalConstants.MatchMaker?.SendMessageAsync(seatName, "DiceRoll");
-            else
             if (rolls.Count != 0)
             {
                 diceValue = rolls[0];
                 rolls.RemoveAt(0);
-                return diceValue+",";
+                return diceValue;
             }
             else
             {
-                return GlobalConstants.rnd.Next(1, 7) + ",";
+                return GlobalConstants.rnd.Next(1, 7);
             }
         }
         public void ChangeTurn(int retry = 0)
@@ -1065,7 +1023,6 @@ namespace SharedCode.CoreEngine
                 ChangeTurn(retry + 1);
                 return;
             }
-
             Console.WriteLine("Current Player: " + currentPlayer.Color);
         }
         public bool IsTeammate(string playerColor, string targetColor)

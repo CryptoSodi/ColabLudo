@@ -163,17 +163,17 @@ namespace SharedCode.Network
         /// <summary>
         /// Send a message to the server.
         /// </summary>
-        public async Task<string> SendMessageAsync(string line, string command)
+        public async Task<GameCommand> SendMessageAsync(GameCommand line, string command)
         {
             try
             {
-                string result = await _hubConnection.InvokeAsync<string>("Send", "client", line, command, GlobalConstants.RoomCode).ConfigureAwait(false);
+                GameCommand result = await _hubConnection.InvokeAsync<GameCommand>("Send", "client", line, command, GlobalConstants.RoomCode).ConfigureAwait(false);
                 return result;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error sending message: {ex.Message}");
-                return string.Empty;
+                return null;
             }
         }
         /// <summary>

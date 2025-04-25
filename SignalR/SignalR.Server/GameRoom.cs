@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SignalR.Server
 {
@@ -51,16 +52,20 @@ namespace SignalR.Server
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
 
-        public Task<List<GameCommand>> PullCommands(int lastSeenIndex)
+        public Task<List<GameCommand>> PullCommands(int lastSeenIndexServer)
         {
             List<GameCommand> newCommands;
             lock (_commandStoreLock)
             {
-                // Get all commands with index greater than lastSeenIndex.
-                newCommands = _commandStore.Where(cmd => cmd.Index > lastSeenIndex).ToList();
+                // Return only commands that have not been seen based on IndexServer
+                newCommands = _commandStore
+                    .Where(cmd => cmd.IndexServer > lastSeenIndexServer)
+                    .OrderBy(cmd => cmd.IndexServer)
+                    .ToList();
             }
             return Task.FromResult(newCommands);
         }
+
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
@@ -107,9 +112,7 @@ namespace SignalR.Server
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "PlayerLeft",
-                    commandValue1 = user.PlayerColor,
-                    commandValue2 = "",
-                    commandValue3 = "",
+                    seatName = user.PlayerColor,
                     Index = engine.EngineHelper.index++
                 };
                 lock (_commandStoreLock)
@@ -173,38 +176,53 @@ namespace SignalR.Server
            // result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
             Console.WriteLine($"TIMEOUT : {result}");
         }
-        internal async Task<string> MovePieceAsync(string commandValue)
+        internal async Task<GameCommand> MovePieceAsync(GameCommand commandValue)
         {
-          String piece = await engine.MovePieceAsync(commandValue, false);
-            GameCommand command = new GameCommand
+            if (engine.EngineHelper.checkTurn(commandValue.piece1, "MovePiece"))
             {
-                SendToClientFunctionName = "MovePiece",
-                commandValue1 = commandValue,
-                commandValue2 = "",
-                commandValue3 = "",
-                Index = engine.EngineHelper.index++
-            };
-            lock (_commandStoreLock)
-                _commandStore.Add(command);
+                String result = "FAILED";
+                result = await engine.MovePieceAsync(commandValue.piece1, commandValue.piece2);
 
-            return piece;
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "MovePiece",
+                    seatName = commandValue.seatName,
+                    diceValue = commandValue.diceValue,
+                    piece1 = result.Split(",")[0],
+                    piece2 = result.Split(",")[1],
+                    Index = commandValue.Index,
+                    IndexServer = ++engine.EngineHelper.index
+                };
+
+                lock (_commandStoreLock)
+                    _commandStore.Add(command);
+
+                return command;
+            }
+            return null;
         }
-        internal async Task<string> SeatTurn(string commandValue)
-        {
-            String diveValue = await engine.SeatTurn(commandValue, "", "", false);
-
-            GameCommand command = new GameCommand
+        internal async Task<GameCommand> SeatTurn(GameCommand commandValue)
+        {   
+            if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
             {
-                SendToClientFunctionName = "DiceRoll",
-                commandValue1 = commandValue,
-                commandValue2 = diveValue.Split(",")[0],
-                commandValue3 = diveValue.Split(",")[1],
-                Index = engine.EngineHelper.index++
-            };
-            lock (_commandStoreLock)
-                _commandStore.Add(command);
+                String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
+                Console.WriteLine($"Local : {result}");
 
-            return diveValue;
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "DiceRoll",
+                    seatName = commandValue.seatName,
+                    diceValue = result.Split(",")[0],
+                    piece1 = result.Split(",")[1],
+                    piece2 = result.Split(",")[2],
+                    Index = commandValue.Index,
+                    IndexServer = ++engine.EngineHelper.index
+                };
+                lock (_commandStoreLock)
+                    _commandStore.Add(command);
+                return command;
+            }
+            return null;
         }
     }
 }
