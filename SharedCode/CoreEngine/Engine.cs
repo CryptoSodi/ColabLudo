@@ -174,61 +174,7 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
-            if (GlobalConstants.Debug)
-            {
-                EngineHelper.rolls.Add(5);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(4);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(4);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(4);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(4);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-                EngineHelper.rolls.Add(6);
-            }
+            
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
