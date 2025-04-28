@@ -32,7 +32,11 @@ namespace LudoClient
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
-           // Preferences.Clear();
+            GlobalConstants.MatchMaker = new Client();
+            GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+            GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+            GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+            // Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();
@@ -43,12 +47,6 @@ namespace LudoClient
             }
             else
             {
-                
-                GlobalConstants.MatchMaker = new Client();
-                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
-
                 UserInfo.LoadState();
                 MainPage = new AppShell();
 
@@ -80,8 +78,6 @@ namespace LudoClient
                     ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
             });
         }
-
-      
         private async Task PollForCommandsAsync()
         {
             while (true)
@@ -123,7 +119,7 @@ namespace LudoClient
                                                 break;
                                         }
                                         // Wait a bit before polling again.
-                                        await Task.Delay(500);
+                                        await Task.Delay(200);
                                     }
                                 }
 

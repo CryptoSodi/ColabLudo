@@ -1,11 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:controls="clr-namespace:LudoClient.ControlView"
+             xmlns:controlview="clr-namespace:LudoClient.ControlView"
              xmlns:local="clr-namespace:LudoClient"
-             x:Class="LudoClient.FriendsPage" >
+             BackgroundImageSource="background_waitingroom.png"
+             x:Class="LudoClient.FriendsPage">
 
-    <Grid IgnoreSafeArea="True">
-        
+    <Grid IgnoreSafeArea="True" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
+        <controlview:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <Grid Margin="0,20,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".23*,1*" >
+                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
+                    <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".1*,.1*">
+                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Blocked" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
+                    <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="Fill" VerticalOptions="Start">
+                        <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions=".3*,.4*,.3*">
+                            <Label Text="RANK" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,22,0"/>
+                            <Label Grid.Column="1" Text="PLAYERS" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="STATUS" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,22,0"/>
+                        </Grid>
+                    </controlview:Capsule>
+                </Grid>
+                <ScrollView Margin="10,5,10,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <VerticalStackLayout x:Name="FriendsListStack" Spacing="5" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </controlview:Capsule>
+        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_friends.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
     </Grid>
 </ContentPage>

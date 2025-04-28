@@ -1,4 +1,6 @@
-﻿namespace SharedCode.Constants
+﻿using System.Threading.Tasks;
+
+namespace SharedCode.Constants
 {
     public class UserInfo
     {
@@ -37,7 +39,7 @@
             }
         }
         // Method to save state
-        public static async void SaveState()
+        public static async Task SaveState()
         {
             var instance = Instance;
             Preferences.Set(nameof(Id), instance.Id);
@@ -53,7 +55,7 @@
             Preferences.Set(nameof(City), instance.City);
             Preferences.Set(nameof(Lat), instance.Lat);
             Preferences.Set(nameof(Lon), instance.Lon);
-            DownloadImageAsBase64Async(instance.PictureUrl);
+            await DownloadImageAsBase64Async(instance.PictureUrl);
             Preferences.Set("IsUserLoggedIn", true);
         }
         public static void Logout()
@@ -79,7 +81,7 @@
             instance.Lat = Preferences.Get(nameof(Lat), (float)0.0);
             instance.Lon = Preferences.Get(nameof(Lon), (float)0.0);
         }
-        public static async void DownloadImageAsBase64Async(string imageUrl)
+        public static async Task DownloadImageAsBase64Async(string imageUrl)
         {
             using HttpClient client = new HttpClient();
             byte[] imageBytes = await client.GetByteArrayAsync(imageUrl);

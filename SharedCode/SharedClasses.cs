@@ -26,4 +26,14 @@ namespace SharedCode
         public int IndexServer { get; set; }
         public String Result { get; set; }
     }
+
+    public class Friends
+    {
+        public int playerID { get; set; }
+        public String playerName { get; set; }
+        public String playerPicture { get; set; }
+        public int rank { get; set; }
+        public String status { get; set; }
+        public bool lastGame { get; set; }
+    }
 }

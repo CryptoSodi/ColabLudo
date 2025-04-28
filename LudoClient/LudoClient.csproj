@@ -53,6 +53,7 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiImage Include="Resources\Images\Components\Tablets\friendlong.png" />
 
 		<!-- Splash Screen -->
 		<MauiImage Include="Resources\Images\dashboard\splashlogo.png" Color="#512BD4" BaseSize="128,128" />
@@ -175,6 +176,7 @@
 	  <None Remove="Resources\Images\Components\Tablets\arr_down.png" />
 	  <None Remove="Resources\Images\Components\Tablets\arr_up.png" />
 	  <None Remove="Resources\Images\Components\Tablets\expand_card.png" />
+	  <None Remove="Resources\Images\Components\Tablets\friendlong.png" />
 	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_1.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_2.png" />
@@ -197,6 +199,8 @@
 	  <None Remove="Resources\Images\DashBoard\practice_gray.png" />
 	  <None Remove="Resources\Images\DashBoard\tournament.png" />
 	  <None Remove="Resources\Images\DashBoard\tournament_gray.png" />
+	  <None Remove="Resources\Images\Flags\india.png" />
+	  <None Remove="Resources\Images\Flags\pakistan.png" />
 	  <None Remove="Resources\Images\GameRoom\chips_entry_bg.png" />
 	  <None Remove="Resources\Images\GameRoom\player2_00.png" />
 	  <None Remove="Resources\Images\GameRoom\player3_00.png" />
@@ -360,6 +364,7 @@
 	  <None Remove="Resources\Images\Tabs\tab_border.png" />
 	  <None Remove="Resources\Images\Tabs\tab_normal.png" />
 	  <None Remove="Resources\Images\Tabs\tab_normal_curve.png" />
+	  <None Remove="Resources\Images\Titles\title_friends.png" />
 	  <None Remove="Resources\Images\tournament.png" />
 	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\Verification\ic_right_arr.png" />
@@ -441,6 +446,8 @@
 	  <MauiImage Include="Resources\Images\DashBoard\playwithfriends_gray.png" />
 	  <MauiImage Include="Resources\Images\DashBoard\practice_gray.png" />
 	  <MauiImage Include="Resources\Images\DashBoard\tournament_gray.png" />
+	  <MauiImage Include="Resources\Images\Flags\india.png" />
+	  <MauiImage Include="Resources\Images\Flags\pakistan.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\blue_token.png" />
 	  <MauiImage Include="Resources\Images\GameSettings\btn_create.png" />
@@ -650,6 +657,7 @@
 	  <MauiImage Include="Resources\Images\Tabs\tab_border.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_normal.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_normal_curve.png" />
+	  <MauiImage Include="Resources\Images\Titles\title_friends.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_right_arr.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_account.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_bank.png" />
@@ -695,6 +703,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="ControlView\FriendsDetailList.xaml.cs">
+	    <DependentUpon>FriendsDetailList.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="ControlView\HelpCube.xaml.cs">
 	    <DependentUpon>HelpCube.xaml</DependentUpon>
 	  </Compile>
@@ -752,6 +763,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="ControlView\FriendsDetailList.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="ControlView\GameDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -3,10 +3,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.ImageSwitch"
              xmlns:local="clr-namespace:LudoClient.ControlView">
-    <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <local:Capsule x:Name="SwitchImage" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+        <local:Capsule x:Name="SwitchImage" HorizontalOptions="Fill" VerticalOptions="Fill">
             <Grid>
-                <Label x:Name="DisplayText" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand" Margin="0,5,0,0"/>
+                <Label x:Name="DisplayText" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,5,0,0">
+                    <Label.Shadow>
+                        <Shadow Brush="Black" Offset="1,1" Opacity="1" Radius="4" />
+                    </Label.Shadow>
+                </Label>
                 <ImageButton Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </local:Capsule>

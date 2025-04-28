@@ -7,11 +7,25 @@ public partial class ProfileInfo : BasePopup
     public ProfileInfo()
     {
         InitializeComponent();
-        player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
-        player.PlayerName = UserInfo.Instance.Name;
-        Email.Text = UserInfo.Instance.Email;
-        Number.Text = UserInfo.Instance.PhoneNumber;
-        Location.Text = UserInfo.Instance.City;
-        Coins.Text = UserInfo.Instance.Coins + "";
+        //reload this if pictureblock is ""
+        loadValues();
+    }
+    public void loadValues()
+    {
+        while(true)
+        {
+            if (UserInfo.Instance.PictureBlob == "")
+                Thread.Sleep(1000);
+            else
+            {
+                player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
+                player.PlayerName = UserInfo.Instance.Name;
+                Email.Text = UserInfo.Instance.Email;
+                Number.Text = UserInfo.Instance.PhoneNumber;
+                Location.Text = UserInfo.Instance.City;
+                Coins.Text = UserInfo.Instance.Coins + "";
+                break;
+            }
+        }
     }
 }

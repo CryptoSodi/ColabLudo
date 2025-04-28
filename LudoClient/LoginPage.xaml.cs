@@ -1,3 +1,4 @@
+using LudoClient.Constants;
 using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
 using System.Text;
@@ -15,6 +16,8 @@ namespace LudoClient
         {
             InitializeComponent();
             GetCountryByIpAsync();
+            if (Skins.CurrentSkin == Skins.SkinTypes.DefaultSkin)            
+                BtnCancel.IsVisible = BtnLoginSingup.IsVisible = OtpField.IsVisible = NumberField.IsVisible = false;
         }
         private async Task AddPhoneNumberToQueue()
         {
@@ -51,8 +54,6 @@ namespace LudoClient
             string phoneNumber = result["phoneNumber"].GetString();
             double PlayerLudoCoins = result["playerLudoCoins"].GetDouble();
             double PlayerCryptoCoins = result["playerCryptoCoins"].GetDouble();
-
-
 
             if (otpReuest.country == "")
                 otpReuest.country = result["country"].GetString();
@@ -97,7 +98,7 @@ namespace LudoClient
                         }
                         else
                         {
-                            UserInfo.SaveState();
+                           await UserInfo.SaveState();
                             //Success Login
                             Application.Current.MainPage = new AppShell();
                         }
@@ -258,18 +259,31 @@ namespace LudoClient
                     if (message == "Player login successfully." || message == "Player updated successfully.")
                     {
                         //Save the user's login state
-                        UserInfo.SaveState();
+                        await UserInfo.SaveState();
+                        UserInfo.LoadState();
+
                         //Hide Loader
                         Application.Current.MainPage = new AppShell();
                     }
                     else if (message == "Player created successfully." || message == "Attach Phone.")
                     {
-                        NumberField.IsVisible = true;
-                        OtpField.IsVisible = false;
-                        BtnLoginSingup.IsVisible = true;
-                        BtnCancel.IsVisible = false;
-                        GoogleLoginPanel.IsVisible = false;
-                        await DisplayAlert("Success", "Please Link a your phone number.", "OK");
+                        if(Skins.CurrentSkin != Skins.SkinTypes.DefaultSkin)
+                        {
+                            NumberField.IsVisible = true;
+                            OtpField.IsVisible = false;
+                            BtnLoginSingup.IsVisible = true;
+                            BtnCancel.IsVisible = false;
+                            GoogleLoginPanel.IsVisible = false;
+                            await DisplayAlert("Success", "Please Link a your phone number.", "OK");
+                        }
+                        else
+                        {
+                            //Save the user's login state
+                            await UserInfo.SaveState();
+                            UserInfo.LoadState();
+                            //Hide Loader
+                            Application.Current.MainPage = new AppShell();
+                        }
                     }
                 }
            }

@@ -58,6 +58,7 @@ namespace LudoClient.Constants
                 ForceLayoutPass(vehelpDeskProfile);
             if (dailyBonus is BasePopup bpdailyBonusProfile && bpdailyBonusProfile.PopupContentContainer is VisualElement vedailyBonusProfile)
                 ForceLayoutPass(vedailyBonusProfile);
+            profileInfo.loadValues();
         }
         public static void ForceLayoutPass(VisualElement page)
         {
