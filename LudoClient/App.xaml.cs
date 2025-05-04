@@ -49,7 +49,7 @@ namespace LudoClient
             {
                 UserInfo.LoadState();
                 MainPage = new AppShell();
-
+               // MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
             }
             //MainPage =new LoginPage();

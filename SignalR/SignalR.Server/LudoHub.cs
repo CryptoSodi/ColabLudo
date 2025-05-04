@@ -10,11 +10,19 @@ namespace SignalR.Server
     
     public class LudoHub : Hub
     {
+        public static Dictionary<int, string> PlayerConnections  = new Dictionary<int, string>();
+
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;// Better to use IHubContext if needed outside hub instances
         //public static Engine eng;// = new Engine("4", "4", "red");
         public static DatabaseManager DM;
         private static bool _initialized = false;
+        public Task UserConnectedSetID(int playerID)
+        {
+            // Context.ConnectionId is the SignalR connection ID
+            PlayerConnections[playerID] = Context.ConnectionId;
+            return Task.CompletedTask;
+        }
         public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext)
         {
             _contextFactory = contextFactory;
@@ -140,11 +148,10 @@ namespace SignalR.Server
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
-                Console.WriteLine($"Engine not initialized for room: {roomCode}");                
+                Console.WriteLine($"Engine not initialized for room: {roomCode}");
                 Result.Result = "Error: Engine not initialized.";
                 return Result;
             }
-
             // Process command based on the type.
             if (commandtype == "MovePiece")
             {
@@ -155,11 +162,48 @@ namespace SignalR.Server
             {
                 // For other command types, for example, SeatTurn:
                 // If SeatTurn returns a string, you can wait for it.
-                
                 Result = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
                 return Result;
             }
             return null;
+        }
+        List<ChatMessages> chatMessages = new List<ChatMessages>();
+        public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
+        {
+            if (roomCode != null)
+            {
+                // Now use the user's Room property to get the GameRoom.
+                if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+                {
+                    Console.WriteLine($"GameRoom not found for room: {roomCode}");
+                    //
+
+                    return null;
+                }
+
+                // Ensure the game room's engine is initialized.
+                if (gameRoom.engine == null)
+                {
+                    Console.WriteLine($"Engine not initialized for room: {roomCode}");
+
+                    return null;
+                }
+            }
+
+            if (CM.Message!="")
+                chatMessages.Add(CM);
+            // Process command based on the type.
+            //Result = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
+            //return Result;
+
+            // Optionally, also send back the last 50 messages to the sender
+            // send only to the receiver
+            if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId))
+            {
+                Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
+            }
+
+            return chatMessages.Take(50).ToList();
         }
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {

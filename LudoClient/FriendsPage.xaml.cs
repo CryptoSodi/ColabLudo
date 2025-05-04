@@ -23,17 +23,16 @@ public partial class FriendsPage : ContentPage
     }
     public async Task InitializeTournamentsAsync()
     {
-
-        List<Friends> Friends = await GetGamesAsync(UserInfo.Instance.Id);
-        var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
+        List<PlayerCard> playerCard = await GetGamesAsync(UserInfo.Instance.Id);
+        var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
 
         // Identify which items are currently displayed
-        var existingItems = FriendsListStack.Children.OfType<FriendsDetailList>().ToList();
+        var existingItems = FriendsListStack.Children.OfType<DetailList>().ToList();
 
-        var existingGameIds = existingItems.Select(i => i.friend.playerID).ToHashSet();
+        var existingFriendsIds = existingItems.Select(i => i.playerCard.playerID).ToHashSet();
 
         // Remove items that are no longer present in the new data
-        var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.friend.playerID)).ToList();
+        var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
 
         foreach (var item in itemsToRemove)
         {
@@ -41,32 +40,32 @@ public partial class FriendsPage : ContentPage
         }
 
         // Add new items that weren't previously displayed
-        foreach (var friend in Friends)
+        foreach (var PI in playerCard)
         {
-            if (!existingGameIds.Contains(friend.playerID))
+            if (!existingFriendsIds.Contains(PI.playerID))
             {
-                var friendDetail = new FriendsDetailList();
-                friendDetail.SetFriendsDetail(friend);
+                var friendDetail = new DetailList();
+                friendDetail.SetDetails(PI, "Friend");
                 FriendsListStack.Children.Add(friendDetail);
             }
             else
             {
                 // Optionally, update existing items if details have changed
-                var existingItem = existingItems.FirstOrDefault(i => i.friend.playerID == friend.playerID);
+                var existingItem = existingItems.FirstOrDefault(i => i.playerCard.playerID == PI.playerID);
                 if (existingItem != null)
                 {
-                    existingItem.SetFriendsDetail(friend);
+                    existingItem.SetDetails(PI, "Friend");
                 }
             }
         }
     }
-    private async Task<List<Friends>> GetGamesAsync(int playerId)
+    private async Task<List<PlayerCard>> GetGamesAsync(int playerId)
     {
         HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/Friends?playerId={playerId}");
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
-            var Friends = JsonSerializer.Deserialize<List<Friends>>(responseBody, new JsonSerializerOptions
+            var Friends = JsonSerializer.Deserialize<List<PlayerCard>>(responseBody, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
@@ -75,7 +74,7 @@ public partial class FriendsPage : ContentPage
         else
         {
             // Handle the error case as needed
-            return new List<Friends>();
+            return new List<PlayerCard>();
         }
     }
     private void TabRequestedActivate(object sender, EventArgs e)

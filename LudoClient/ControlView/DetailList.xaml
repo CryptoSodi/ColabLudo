@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.DetailList"
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+    <Grid>
+        <local:Capsule x:Name="BackgroundLayerImage" ImageSource="friendlong.png" HorizontalOptions="Fill" VerticalOptions="Start">
+            <Grid HorizontalOptions="Fill" VerticalOptions="Fill" ColumnSpacing="5" ColumnDefinitions="Auto,3*,2.5*">
+
+                <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="Auto,Auto">
+
+                    <Grid HorizontalOptions="Start" >
+                        <Image x:Name="PlayerMadel" HorizontalOptions="Center" Source="number_1.png" Margin="10"/>
+                        <Label x:Name="RankingText" Padding="0,0,0,5" Text="" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Grid>
+
+                    <Grid Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center">
+                        <Image x:Name="PlayerImage" Margin="4.15" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+                        <Image Source="profile_user.png" Margin="1" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    </Grid>
+                </Grid>
+                
+
+                <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Start" VerticalOptions="End" Margin="0,5,0,10">
+                    <Image x:Name="PlayerLocationImage" HorizontalOptions="Start" Source="pakistan.png"/>
+                    <Label x:Name="PlayerName" Text="Tassaduq" HorizontalOptions="Start"/>
+                </StackLayout>
+
+                <Grid x:Name="TappedAction" Grid.Column="3" HorizontalOptions="End" VerticalOptions="Center" Margin="0,0,10,0">
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="Action_Tapped" />
+                    </Grid.GestureRecognizers>
+                    <Image x:Name="TappedActionImage" Source="btn_verify_account.png" HeightRequest="30"/>
+                    <Label x:Name="TappedActionText" Text="MESSAGE" FontSize="13" TextColor="White" TextTransform="Uppercase" Margin="0,0,0,4"/>
+                </Grid>
+            </Grid>
+        </local:Capsule>
+    </Grid>
+</ContentView> 

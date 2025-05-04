@@ -53,7 +53,17 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
-		<MauiImage Include="Resources\Images\Components\Tablets\friendlong.png" />
+		<MauiImage Include="Resources\Images\ChatBox\btn_emoji.png" />
+		<MauiImage Include="Resources\Images\ChatBox\btn_send.png" />
+		<MauiImage Include="Resources\Images\ChatBox\chatbar_image.png" />
+		<MauiImage Include="Resources\Images\ChatBox\chatcardb.png" />
+		<MauiImage Include="Resources\Images\ChatBox\chatcardg.png" />
+		<MauiImage Include="Resources\Images\ChatBox\chatcardr.png" />
+		<MauiImage Include="Resources\Images\ChatBox\chatcardy.png" />
+		<MauiImage Include="Resources\Images\ChatBox\friendlong.png" />
+		<MauiImage Include="Resources\Images\Components\Tablets\detailgold.png" />
+		<MauiImage Include="Resources\Images\Components\Tablets\detailwhite.png" />
+		<MauiImage Include="Resources\Images\Components\Tablets\number_0.png" />
 
 		<!-- Splash Screen -->
 		<MauiImage Include="Resources\Images\dashboard\splashlogo.png" Color="#512BD4" BaseSize="128,128" />
@@ -139,6 +149,14 @@
 	  <None Remove="Resources\Images\btn_sharesharedassets2.assets.png" />
 	  <None Remove="Resources\Images\btn_whatsappsharedassets2.assets.png" />
 	  <None Remove="Resources\Images\cashgame.png" />
+	  <None Remove="Resources\Images\ChatBox\btn_emoji.png" />
+	  <None Remove="Resources\Images\ChatBox\btn_send.png" />
+	  <None Remove="Resources\Images\ChatBox\chatbar_image.png" />
+	  <None Remove="Resources\Images\ChatBox\chatcardb.png" />
+	  <None Remove="Resources\Images\ChatBox\chatcardg.png" />
+	  <None Remove="Resources\Images\ChatBox\chatcardr.png" />
+	  <None Remove="Resources\Images\ChatBox\chatcardy.png" />
+	  <None Remove="Resources\Images\ChatBox\friendlong.png" />
 	  <None Remove="Resources\Images\coin.png" />
 	  <None Remove="Resources\Images\Common\btn_green.png" />
 	  <None Remove="Resources\Images\Common\coin.png" />
@@ -175,9 +193,12 @@
 	  <None Remove="Resources\Images\Components\StatisticCard\played_bg.png" />
 	  <None Remove="Resources\Images\Components\Tablets\arr_down.png" />
 	  <None Remove="Resources\Images\Components\Tablets\arr_up.png" />
+	  <None Remove="Resources\Images\Components\Tablets\detailgold.png" />
+	  <None Remove="Resources\Images\Components\Tablets\detailwhite.png" />
 	  <None Remove="Resources\Images\Components\Tablets\expand_card.png" />
 	  <None Remove="Resources\Images\Components\Tablets\friendlong.png" />
 	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.png" />
+	  <None Remove="Resources\Images\Components\Tablets\number_0.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_1.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_2.png" />
 	  <None Remove="Resources\Images\Components\Tablets\number_3.png" />
@@ -686,15 +707,15 @@
 
 	<ItemGroup>
 		<PackageReference Include="AcrylicView.Maui" Version="2.1.3" />
-		<PackageReference Include="CommunityToolkit.Maui" Version="8.0.1" />
-		<PackageReference Include="Google.Apis.Auth" Version="1.68.0" />
-		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.0" />
-		<PackageReference Include="Microsoft.Identity.Client" Version="4.66.2" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.100" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-		<PackageReference Include="SimpleToolkit.Core" Version="5.1.2" />
-		<PackageReference Include="SimpleToolkit.SimpleShell" Version="4.1.3" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
+		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
+		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.4" />
+		<PackageReference Include="Microsoft.Identity.Client" Version="4.71.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.60" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.60" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.4" />
+		<PackageReference Include="SimpleToolkit.Core" Version="6.0.1" />
+		<PackageReference Include="SimpleToolkit.SimpleShell" Version="5.0.1" />
 		<PackageReference Include="System.Private.Uri" Version="4.3.2" />
 	</ItemGroup>
 
@@ -703,8 +724,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="ControlView\FriendsDetailList.xaml.cs">
-	    <DependentUpon>FriendsDetailList.xaml</DependentUpon>
+	  <Compile Update="ControlView\ChatCard.xaml.cs">
+	    <DependentUpon>ChatCard.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="ControlView\DetailList.xaml.cs">
+	    <DependentUpon>DetailList.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="ControlView\HelpCube.xaml.cs">
 	    <DependentUpon>HelpCube.xaml</DependentUpon>
@@ -763,7 +787,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="ControlView\FriendsDetailList.xaml">
+	  <MauiXaml Update="ChatPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\ChatCard.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlView\DetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\GameDetailList.xaml">
@@ -794,9 +824,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\ImageSwitch.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\LeaderboardLongDetailList.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\MessageBoxConfirm.xaml">

@@ -27,7 +27,7 @@ namespace SharedCode
         public String Result { get; set; }
     }
 
-    public class Friends
+    public class PlayerCard
     {
         public int playerID { get; set; }
         public String playerName { get; set; }
@@ -35,5 +35,16 @@ namespace SharedCode
         public int rank { get; set; }
         public String status { get; set; }
         public bool lastGame { get; set; }
+    }
+    public class ChatMessages
+    {
+        public int SenderId { get; set; }
+        public string SenderName { get; set; }
+        public string? SenderPicture { get; set; }
+        public int ReceiverId { get; set; }
+        public string ReceiverName { get; set; }
+        public string? ReceiverPicture { get; set; }
+        public string Message { get; set; }
+        public DateTime Time { get; set; }
     }
 }

@@ -31,6 +31,11 @@
                 <Setter Property="BorderWidth" Value="0" />
                 <Setter Property="Aspect" Value="AspectFit" />
             </Style>
+            <Shadow x:Key="CommonShadow"
+                Brush="Black"
+                Offset="1,1"
+                Radius="4"
+                Opacity="1" />
             <Style TargetType="Label">
                 <Setter Property="FontAttributes" Value="None" />
                 <Setter Property="FontSize" Value="15" />
@@ -38,7 +43,9 @@
                 <Setter Property="HorizontalTextAlignment" Value="Center"/>
                 <Setter Property="VerticalOptions" Value="FillAndExpand"/>
                 <Setter Property="HorizontalOptions" Value="FillAndExpand"/>
+                <Setter Property="Shadow" Value="{StaticResource CommonShadow}" />
             </Style>
+            
         </ResourceDictionary>
     </Application.Resources>
 </Application>

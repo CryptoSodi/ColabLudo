@@ -41,9 +41,8 @@ public partial class DashboardPage : ContentPage
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        var stopwatch = Stopwatch.StartNew();
-        Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait(); // For testing only
-        Console.WriteLine($"Navigation took: {stopwatch.ElapsedMilliseconds}ms");
+
+        Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait(); 
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {

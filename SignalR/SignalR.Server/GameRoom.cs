@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace SignalR.Server
 {
     public class GameRoom
     {
+        List<ChatMessages> chatMessages = new List<ChatMessages>();
         // A simple persistent store for commands.
         // In production, this might be a database or distributed log.
         private readonly List<GameCommand> _commandStore = new List<GameCommand>();
@@ -51,7 +51,6 @@ namespace SignalR.Server
             StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
-
         public Task<List<GameCommand>> PullCommands(int lastSeenIndexServer)
         {
             List<GameCommand> newCommands;

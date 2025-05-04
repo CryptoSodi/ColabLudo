@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ChatPage"
+             xmlns:controlview="clr-namespace:LudoClient.ControlView"
+             BackgroundColor="#100D1C2F">
+    <Grid RowDefinitions="Auto,*,Auto" HorizontalOptions="Fill" VerticalOptions="Fill">
+        <controlview:DetailList x:Name="Header" HorizontalOptions="Fill" VerticalOptions="Fill" />
+        <Grid Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <ScrollView x:Name="ChatScrollView" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill" >
+                <VerticalStackLayout Spacing="10" x:Name="MessagesListStack" Margin="15,0,15,0" VerticalOptions="End">
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+        <Grid Grid.Row="2" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <controlview:Capsule ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="Fill">
+                <Grid ColumnDefinitions="Auto,1*,Auto">
+                    <Image Source="btn_back.png" Margin="5,0,0,0" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    
+                    <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center" HeightRequest="40">
+                        <BoxView BackgroundColor="#80000000" CornerRadius="8"/>
+                        <Entry x:Name="MessageEntry" ReturnType="Send" Completed="MessageEntry_Completed" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="14" VerticalOptions="Fill" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                    </Grid>
+
+                    <Image Source="btn_send.png" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSendButton_Tapped" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                </Grid>
+            </controlview:Capsule>
+        </Grid>
+    </Grid>
+</ContentPage>

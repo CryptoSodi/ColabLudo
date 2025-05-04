@@ -17,6 +17,7 @@ namespace SharedCode.Network
         public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
+        public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event PropertyChangedEventHandler PropertyChanged;
         public bool Connected
         {
@@ -41,6 +42,14 @@ namespace SharedCode.Network
         }
         private void RegisterHubEvents()
         {
+            // Player ReceiveMessage event
+            _hubConnection.On<ChatMessages>("ReceiveChatHistory", msg =>
+            {
+                List<ChatMessages> lcm = new List<ChatMessages>();
+                lcm.Add(msg);
+                // This lambda runs on a non-UI thread:
+                ReceiveChatMessage?.Invoke(this, (lcm));
+            });
             // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
@@ -202,6 +211,22 @@ namespace SharedCode.Network
         public async Task<List<GameCommand>> PullCommands(int lastSeenIndex, string RoomCode)
         {
             return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode);
+        }
+        /// <summary>
+        /// Send a message to the server.
+        /// </summary>
+        public async Task<List<ChatMessages>> SendChatMessageAsync(ChatMessages CM, string roomCode)
+        {
+            try
+            {
+                List<ChatMessages> result = await _hubConnection.InvokeAsync<List<ChatMessages>>("SendChatMessage", CM, roomCode).ConfigureAwait(false);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending message: {ex.Message}");
+                return null;
+            }
         }
     }
 }

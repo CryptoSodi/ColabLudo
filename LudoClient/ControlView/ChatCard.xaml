@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LudoClient.ControlView.ChatCard"
+             xmlns:local="clr-namespace:LudoClient.ControlView">
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+        <Grid x:Name="Layer" BackgroundColor="#20FFFFFF" HeightRequest="55" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnSpacing="2" ColumnDefinitions="Auto,1*">
+
+            <Grid x:Name="PlayerGrid" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Start" Margin="4">
+                <Image x:Name="PlayerImage" Margin="4.15" VerticalOptions="Center" HorizontalOptions="Start"/>
+                <Image Source="profile_user.png" Margin="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+            </Grid>
+
+
+            <Label x:Name="MessageText" Text="Hi how are you today is everything going good. I hope you are feeling good did!" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill" HorizontalTextAlignment="Justify" VerticalTextAlignment="Start" 
+                       Margin="5,2,5,0"/>
+
+        </Grid>
+        <Label x:Name="TimeText" Text="20:20" HorizontalOptions="End" VerticalOptions="End" Margin="5,0,5,2"/>
+    </Grid>
+</ContentView>
