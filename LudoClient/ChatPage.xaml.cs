@@ -4,14 +4,13 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
-using System.Collections.Generic;
 
 namespace LudoClient;
 
 public partial class ChatPage : ContentPage
 {
     PlayerCard playerCard;
-    public ChatPage(PlayerCard playerCard)
+    public ChatPage(PlayerCard playerCard, String RoomCode="")
 	{
         this.playerCard = playerCard;
 
@@ -26,10 +25,27 @@ public partial class ChatPage : ContentPage
         //playerCard.status = "Friend";
         SetDetails(playerCard, new List<ChatMessages>());
 
+        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
         int myPlayerId = UserInfo.Instance.Id;
         GlobalConstants.MatchMaker._hubConnection.InvokeAsync("UserConnectedSetID", myPlayerId);
 
-        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
+        ChatMessages cm = new();
+        cm.SenderId = UserInfo.Instance.Id;
+        cm.SenderName = UserInfo.Instance.Name;
+        cm.SenderPicture = UserInfo.Instance.PictureUrl;
+        cm.ReceiverId = playerCard.playerID;
+        cm.ReceiverName = playerCard.playerName;
+        cm.Message = "";
+        cm.Time = DateTime.Now;
+
+        GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
+        {
+            if (t.Status == TaskStatus.RanToCompletion)
+            {
+                List<ChatMessages> messages = t.Result;
+                UpdateMessages(this, (messages));
+            }
+        });
     }
     public void SetDetails(PlayerCard playerCard, List<ChatMessages> messages)
     {
@@ -103,14 +119,10 @@ public partial class ChatPage : ContentPage
                 {
                     // Force layout to update ContentSize
                     await Task.Delay(50);
-
                     // Scroll to the bottom-most Y coordinate
                     double bottomY = ChatScrollView.ContentSize.Height;
                     await ChatScrollView.ScrollToAsync(0, bottomY, true);
                 });
-            }
-            {
-                Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
             }
         });
     }

@@ -176,31 +176,25 @@ namespace SignalR.Server
                 if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
                 {
                     Console.WriteLine($"GameRoom not found for room: {roomCode}");
-                    //
-
-                    return null;
+                    return new();
                 }
-
                 // Ensure the game room's engine is initialized.
                 if (gameRoom.engine == null)
                 {
                     Console.WriteLine($"Engine not initialized for room: {roomCode}");
-
-                    return null;
+                    return new();
                 }
             }
 
-            if (CM.Message!="")
-                chatMessages.Add(CM);
-            // Process command based on the type.
-            //Result = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
-            //return Result;
-
-            // Optionally, also send back the last 50 messages to the sender
-            // send only to the receiver
-            if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId))
+            if (CM.Message != "")
             {
-                Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
+                chatMessages.Add(CM);
+                // Optionally, also send back the last 50 messages to the sender
+                // send only to the receiver
+                if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId))
+                {
+                    Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
+                }
             }
 
             return chatMessages.Take(50).ToList();

@@ -19,7 +19,7 @@ namespace SharedCode.Constants
 
         static GlobalConstants()
         {
-                Url = Debug ? "http://192.168.1.8" : "http://3.143.14.201";
+                Url = Debug ? "http://192.168.1.13" : "http://3.143.14.201";
 #if WINDOWS
 if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());

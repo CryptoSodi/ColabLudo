@@ -10,6 +10,7 @@ using System.IO.Pipelines;
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace LudoClient.CoreEngine;
 
@@ -68,6 +69,30 @@ public partial class Game : ContentPage
     private async Task Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
     {
         InitializeComponent();
+        /* CHAT MANAGEMENT*/
+        
+        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
+        int myPlayerId = UserInfo.Instance.Id;
+        GlobalConstants.MatchMaker._hubConnection.InvokeAsync("UserConnectedSetID", myPlayerId);
+
+        ChatMessages cm = new();
+        cm.SenderId = UserInfo.Instance.Id;
+        cm.SenderName = UserInfo.Instance.Name;
+        cm.SenderPicture = UserInfo.Instance.PictureUrl;
+        cm.ReceiverId = -1;
+        cm.ReceiverName = "";
+        cm.Message = "";
+        cm.Time = DateTime.Now;
+
+        GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
+        {
+            if (t.Status == TaskStatus.RanToCompletion)
+            {
+                List<ChatMessages> messages = t.Result;
+                UpdateMessages(this, (messages));
+            }
+        });
+
         // Create RedPlayerSeat
         RedPlayerSeat = new PlayerSeat("red")
         {
@@ -104,6 +129,8 @@ public partial class Game : ContentPage
 
         if (gameMode == "Client")
         {
+            //Inject Chat panel
+
             // Get the received colors from the server
             List<string> availableSeats = seats.Select(s => s.PlayerColor).ToList(); // Extract received colors
             // Place player at bottom (Row2)
@@ -362,7 +389,7 @@ public partial class Game : ContentPage
         engine.PlayerLeftSeat += new Engine.CallbackEventHandlerPlayerLeft(PlayerLeftSeat);
         // Set rotation based on player color
         int rotation = engine.EngineHelper.SetRotation(this.playerColor);
-        Glayout.RotateTo(rotation);
+        Glayout?.RotateTo(rotation);
 
         foreach (var player in engine.EngineHelper.players)
             foreach (var piece in player.Pieces)
@@ -419,7 +446,7 @@ public partial class Game : ContentPage
         double x = engine.EngineHelper.originalPath["p0"][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
         double y = engine.EngineHelper.originalPath["p0"][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
 
-        TokenSelector.RotateTo(-rotation);
+        TokenSelector?.RotateTo(-rotation);
         await TokenSelector.TranslateTo(x, y, 1, Easing.CubicIn);
 
         TokenSelector1.UpdateView(GetDefaultImage("r", ""));
@@ -437,7 +464,7 @@ public partial class Game : ContentPage
                 });
             }
 
-      //  TokenSelector.IsVisible = false;
+        TokenSelector.IsVisible = false;
     }
 
     private void SetHomeBlock(Token lockHome, string color)
@@ -613,7 +640,6 @@ public partial class Game : ContentPage
         // a Task that completes when all of them are done.
         return Task.CompletedTask;
     }
-
     private void adjustPiceImage(Piece movingPiece, List<Piece> allPieces, bool excludeMoving)
     {
         // 1. Get the color key from the moving piece.
@@ -1074,7 +1100,13 @@ public partial class Game : ContentPage
                 GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
             else
             {
-                PopoverButton.HideAttachedPopover();
+                try
+                {
+                    PopoverButton.HideAttachedPopover();
+                }
+                catch (Exception)
+                {
+                }
                 //show pop up for Exit to lobby
                 // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
                 // GameRecorder.SaveGameHistory();
@@ -1085,12 +1117,105 @@ public partial class Game : ContentPage
     }
     protected override bool OnBackButtonPressed()
     {
-        // Insert your custom logic here
-        // For example, display a confirmation dialog (note: async work must be handled carefully since this method is synchronous)
-        ExitToLobby(null, null);
+        if (ChatScrollView.IsVisible)
+        {
+            ChatScrollView.IsVisible = false;
+            HideKeyboard();
+        }
+        else
+        {
+            // Insert your custom logic here
+            // For example, display a confirmation dialog (note: async work must be handled carefully since this method is synchronous)
+            ExitToLobby(null, null);
+        }
         // Prevent back navigation:
         return true;
         // Or to allow it:
         // return base.OnBackButtonPressed();
+    }
+
+    //CHAT ENGINE
+    private void MessageEntry_Completed(object sender, EventArgs e)
+    {
+        // … your send logic …
+        // Dismiss keyboard:
+        OnSendButton_Tapped(null, null);
+    }
+    private void ShowChat_Tapped(object sender, TappedEventArgs e)
+    {
+        ChatScrollView.IsVisible = true;
+        MessageEntry.Focus();
+    }
+    private void HideChat_Tapped(object sender, TappedEventArgs e)
+    {
+        ChatScrollView.IsVisible = false;
+        HideKeyboard();
+    }
+    private void OnSendButton_Tapped(object sender, TappedEventArgs e)
+    {
+        HideKeyboard();
+        ChatScrollView.IsVisible = true;
+        if (MessageEntry.Text != "")
+        {
+            ChatMessages cm = new();
+            cm.SenderId = UserInfo.Instance.Id;
+            cm.SenderName = UserInfo.Instance.Name;
+            cm.SenderPicture = UserInfo.Instance.PictureUrl;
+            //cm.ReceiverId = playerCard.playerID;
+            //cm.ReceiverName = playerCard.playerName;
+            //cm.ReceiverPicture = playerCard.playerPicture;
+            cm.Message = MessageEntry.Text;
+            cm.Time = DateTime.Now;
+            MessageEntry.Text = "";
+
+            GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
+            {
+                if (t.Status == TaskStatus.RanToCompletion)
+                {
+                    List<ChatMessages> messages = t.Result;
+                    UpdateMessages(this, (messages));
+                }
+            });
+        }
+    }
+
+    public void UpdateMessages(object sender, List<ChatMessages> messages)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            foreach (ChatMessages cm in messages)
+            {
+                ChatCard cc = new();
+                MessagesListStack.Children.Add(cc);
+
+                if (UserInfo.Instance.Id == cm.SenderId)
+                    cc.SetDetails(cm, "Right", "yellow");
+                else
+                    cc.SetDetails(cm, "Left", "white");
+                // Optional: scroll to bottom
+
+                // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    // Force layout to update ContentSize
+                    await Task.Delay(50);
+                    // Scroll to the bottom-most Y coordinate
+                    double bottomY = ChatScrollView.ContentSize.Height;
+                    await ChatScrollView.ScrollToAsync(0, bottomY, true);
+                });
+            }
+        });
+    }
+    public void HideKeyboard()
+    {
+        MessageEntry.Unfocus();
+#if ANDROID
+    var activity = Platform.CurrentActivity;
+    var inputMethodManager = activity.GetSystemService(Android.Content.Context.InputMethodService)
+                            as Android.Views.InputMethods.InputMethodManager;
+
+    var view = activity.CurrentFocus ?? activity.Window.DecorView;
+    inputMethodManager?.HideSoftInputFromWindow(view.WindowToken, Android.Views.InputMethods.HideSoftInputFlags.None);
+#endif
     }
 }
