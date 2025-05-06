@@ -92,10 +92,14 @@ public partial class Game : ContentPage
         ChatScrollView.IsVisible = false;
         ChatScrollView.InputTransparent = true;
         ChatScrollView.IsEnabled = false;
-
-        /* END CHAT MANAGEMENT*/
-        // Create RedPlayerSeat
-        RedPlayerSeat = new PlayerSeat("red")
+        if (gameMode != "Client")
+        {
+            MessageEntryContainer.IsVisible = false;
+            MessageEntryContainer.IsEnabled = false;
+        }
+            /* END CHAT MANAGEMENT*/
+            // Create RedPlayerSeat
+            RedPlayerSeat = new PlayerSeat("red")
         {
             PlayerBG = "red_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,

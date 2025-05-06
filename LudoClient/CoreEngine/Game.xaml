@@ -66,8 +66,8 @@
             </StackLayout>
             <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
             </StackLayout>
-            
-            <local:Capsule Grid.Row="5" ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="End">
+
+            <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="End">
                 <Grid ColumnDefinitions="0.026*,1*,Auto,0.01*">
 
                     <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center" HeightRequest="40">
