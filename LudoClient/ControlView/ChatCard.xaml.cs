@@ -19,19 +19,20 @@ namespace LudoClient.ControlView
             switch (color)
             {
                 case "red":
-                    Layer.BackgroundColor = Color.FromArgb("#20FF0000"); // 20% transparent red
+                    Layer.BackgroundColor = Color.FromArgb("#B11A1B"); // 20% transparent red
                     break;
                 case "green":
-                    Layer.BackgroundColor = Color.FromArgb("#2000FF00"); // 20% transparent green
+                    Layer.BackgroundColor = Color.FromArgb("#017034"); // 20% transparent green
                     break;
                 case "yellow":
-                    Layer.BackgroundColor = Color.FromArgb("#20FFFF00"); // 20% transparent yellow
+                    Layer.BackgroundColor = Color.FromArgb("#BFA611");
+                    // 20% transparent yellow
                     break;
                 case "blue":
-                    Layer.BackgroundColor = Color.FromArgb("#200000FF"); // 20% transparent blue
+                    Layer.BackgroundColor = Color.FromArgb("#3166A6"); // 20% transparent blue
                     break;
                 case "white":
-                    Layer.BackgroundColor = Color.FromArgb("#20FFFFFF"); // 20% transparent white
+                    Layer.BackgroundColor = Color.FromArgb("#E6FFFFFF"); // 20% transparent white
                     break;
             }
 
@@ -44,8 +45,12 @@ namespace LudoClient.ControlView
                 Grid.SetColumn(PlayerGrid, 1);
                 Grid.SetColumn(MessageText, 0);
 
+                TimeText.HorizontalOptions = LayoutOptions.End;
+            }
+            else
+            {
+
                 TimeText.HorizontalOptions = LayoutOptions.Start;
-                
             }
             //Message.
         }

@@ -4,7 +4,7 @@
              x:Class="LudoClient.ControlView.ChatCard"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
-        <Grid x:Name="Layer" BackgroundColor="#20FFFFFF" HeightRequest="55" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnSpacing="2" ColumnDefinitions="Auto,1*">
+        <Grid x:Name="Layer" BackgroundColor="#20FFFFFF" HeightRequest="65" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnSpacing="2" ColumnDefinitions="Auto,1*">
 
             <Grid x:Name="PlayerGrid" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Start" Margin="4">
                 <Image x:Name="PlayerImage" Margin="4.15" VerticalOptions="Center" HorizontalOptions="Start"/>

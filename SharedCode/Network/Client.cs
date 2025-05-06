@@ -7,6 +7,7 @@ namespace SharedCode.Network
 {
     public class Client
     {
+        private int playerID;
         private bool _connected;
         public HubConnection _hubConnection;
         private string _messages;
@@ -29,8 +30,9 @@ namespace SharedCode.Network
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Connected)));
             }
         }
-        public Client()
+        public Client(int playerID)
         {
+            this.playerID = playerID;
             Connected = false;
             // Build connection with automatic reconnect
             _hubConnection = new HubConnectionBuilder()
@@ -90,6 +92,7 @@ namespace SharedCode.Network
             _hubConnection.Reconnected += connectionId =>
             {
                 Connected = true;
+                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
@@ -113,14 +116,15 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
+                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
                 Console.WriteLine("Already connected.");
                 return;
             }
             try
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
-
                 Connected = true;
+                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)

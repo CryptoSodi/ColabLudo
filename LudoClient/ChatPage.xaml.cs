@@ -80,7 +80,8 @@ public partial class ChatPage : ContentPage
             cm.SenderPicture = UserInfo.Instance.PictureUrl;
             cm.ReceiverId = playerCard.playerID;
             cm.ReceiverName = playerCard.playerName;
-            cm.ReceiverPicture = playerCard.playerPicture;
+            cm.SenderColor = "";
+            //cm.ReceiverPicture = playerCard.playerPicture;
             cm.Message = MessageEntry.Text;
             cm.Time = DateTime.Now;
             MessageEntry.Text = "";

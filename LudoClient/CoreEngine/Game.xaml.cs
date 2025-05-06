@@ -2,15 +2,12 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Popups;
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
-using System.IO.Pipelines;
-using System;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Client;
 
 namespace LudoClient.CoreEngine;
 
@@ -92,7 +89,11 @@ public partial class Game : ContentPage
                 UpdateMessages(this, (messages));
             }
         });
+        ChatScrollView.IsVisible = false;
+        ChatScrollView.InputTransparent = true;
+        ChatScrollView.IsEnabled = false;
 
+        /* END CHAT MANAGEMENT*/
         // Create RedPlayerSeat
         RedPlayerSeat = new PlayerSeat("red")
         {
@@ -1120,6 +1121,8 @@ public partial class Game : ContentPage
         if (ChatScrollView.IsVisible)
         {
             ChatScrollView.IsVisible = false;
+            ChatScrollView.InputTransparent = true;
+            ChatScrollView.IsEnabled = false;
             HideKeyboard();
         }
         else
@@ -1144,11 +1147,15 @@ public partial class Game : ContentPage
     private void ShowChat_Tapped(object sender, TappedEventArgs e)
     {
         ChatScrollView.IsVisible = true;
+        ChatScrollView.InputTransparent = false;
+        ChatScrollView.IsEnabled = true;
         MessageEntry.Focus();
     }
     private void HideChat_Tapped(object sender, TappedEventArgs e)
     {
         ChatScrollView.IsVisible = false;
+        ChatScrollView.InputTransparent = true;
+        ChatScrollView.IsEnabled = false;
         HideKeyboard();
     }
     private void OnSendButton_Tapped(object sender, TappedEventArgs e)
@@ -1189,9 +1196,9 @@ public partial class Game : ContentPage
                 MessagesListStack.Children.Add(cc);
 
                 if (UserInfo.Instance.Id == cm.SenderId)
-                    cc.SetDetails(cm, "Right", "yellow");
+                    cc.SetDetails(cm, "Right", cm.SenderColor);
                 else
-                    cc.SetDetails(cm, "Left", "white");
+                    cc.SetDetails(cm, "Left", cm.SenderColor);
                 // Optional: scroll to bottom
 
                 // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:

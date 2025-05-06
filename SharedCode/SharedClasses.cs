@@ -40,10 +40,10 @@ namespace SharedCode
     {
         public int SenderId { get; set; }
         public string SenderName { get; set; }
+        public string? SenderColor { get; set; }
         public string? SenderPicture { get; set; }
         public int ReceiverId { get; set; }
         public string ReceiverName { get; set; }
-        public string? ReceiverPicture { get; set; }
         public string Message { get; set; }
         public DateTime Time { get; set; }
     }

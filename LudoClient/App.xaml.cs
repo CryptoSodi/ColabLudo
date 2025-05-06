@@ -32,10 +32,7 @@ namespace LudoClient
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
-            GlobalConstants.MatchMaker = new Client();
-            GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-            GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-            GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+            
             // Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
@@ -49,7 +46,11 @@ namespace LudoClient
             {
                 UserInfo.LoadState();
                 MainPage = new AppShell();
-               // MainPage = new ChatPage();
+                GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
+                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+                // MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
             }
             //MainPage =new LoginPage();

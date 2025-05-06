@@ -167,10 +167,11 @@ namespace SignalR.Server
             }
             return null;
         }
+
         List<ChatMessages> chatMessages = new List<ChatMessages>();
         public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
         {
-            if (roomCode != null)
+            if (roomCode != null && roomCode != "")
             {
                 // Now use the user's Room property to get the GameRoom.
                 if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
@@ -184,9 +185,19 @@ namespace SignalR.Server
                     Console.WriteLine($"Engine not initialized for room: {roomCode}");
                     return new();
                 }
-            }
+                if(CM.Message != "")
+                    chatMessages.Add(CM);
+                List<User> otherUsers = gameRoom.Users.Where(p => p.PlayerId != CM.SenderId).ToList();
+                User senderUser = gameRoom.Users.Where(p => p.PlayerId == CM.SenderId).ToList()[0];
+                CM.SenderColor = senderUser.PlayerColor;
 
-            if (CM.Message != "")
+                foreach (User u in otherUsers)
+                {
+                    if (CM.Message != "")
+                        Clients.Client(PlayerConnections[u.PlayerId]).SendAsync("ReceiveChatHistory", CM);
+                }
+            }
+            else if(CM.Message != "")
             {
                 chatMessages.Add(CM);
                 // Optionally, also send back the last 50 messages to the sender
@@ -197,7 +208,7 @@ namespace SignalR.Server
                 }
             }
 
-            return chatMessages.Take(50).ToList();
+            return chatMessages.Take(20).ToList();
         }
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
