@@ -1,6 +1,11 @@
+using LudoClient.Models;
 using Microsoft.Maui.Graphics.Text;
 using SharedCode;
 using SharedCode.Constants;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace LudoClient.ControlView
 {
@@ -44,9 +49,22 @@ namespace LudoClient.ControlView
             switch (type)
             {
                 case "Header":
-                    if (playerCard.status == "")
+                    switch (playerCard.status)
                     {
-                        TappedActionText.Text = "ADD FRIEND";
+                        case "ADD FRIEND":
+                            TappedActionText.Text = "UN FRIEND";
+                            BlockActionText.Text = "BLOCK";
+                            break;
+                        case "UN FRIEND":
+                        case "UN BLOCK":
+                            TappedActionText.Text = "ADD FRIEND";
+                            BlockActionText.Text = "BLOCK";
+                            TappedAction.IsVisible = true;
+                            break;
+                        case "BLOCK":
+                            TappedAction.IsVisible = false;
+                            BlockActionText.Text = "UN BLOCK";
+                            break;
                     }
                     PlayerMadel.IsVisible = false;
                     RankingText.IsVisible = false;
@@ -54,45 +72,83 @@ namespace LudoClient.ControlView
                     PlayerName.Margin = new Thickness(4, 0, 0, 0);
                     break;
                 case "Friend":
-
+                    if (playerCard.status == "UN FRIEND")
+                    {
+                        //TappedActionImage.Source = "btn_red.png";
+                        TappedActionText.Text = "MESSAGE";
+                    }
+                    if (playerCard.status == "BLOCK")
+                    {
+                        TappedActionImage.Source = "btn_red.png";
+                        TappedActionText.Text = "UN BLOCK";
+                    }
+                    BlockAction.IsVisible = false;
                     break;
                 case "Leaderboard":
                     TappedAction.IsVisible = false;
+                    BlockAction.IsVisible = false;
                     break;
-            }
-            if (playerCard.status == "AddFriend")
-            {
-                //TappedActionImage.Source = "btn_red.png";
-                TappedActionText.Text = "ADDFRIEND";
-            }
-            if (playerCard.status == "Blocked")
-            {
-                TappedActionImage.Source = "btn_red.png";
-                TappedActionText.Text = "UNBLOCK";
             }
             if(type!= "Header")
                 RankingText.Text = playerCard.rank > 99 ? "99+" : playerCard.rank.ToString();
         }
+        private async void Block_Action_Tapped(object sender, EventArgs e)
+        {
+            SendFriendRequestAsync(UserInfo.Instance.Id, playerCard.playerID, BlockActionText.Text);
+        }
         private async void Action_Tapped(object sender, EventArgs e)
         {
-            if(playerCard.status == "")//Default status is empy you can add friend
+            if (TappedActionText.Text == "MESSAGE")//Default status is empy you can add friend
             {
                 if (!GlobalConstants.MatchMaker.Connected)
                     return;
                 ChatPage cp = new ChatPage(playerCard);
 
                 Navigation.PushAsync(cp).Wait();
-                //await GlobalConstants.FriendsList.AddFriendAsync(playerCard.playerID);
             }
-            else
-            {
-                TappedActionImage.Source = "friend.png";
-                TappedAction.IsVisible = true;
-                //await GlobalConstants.FriendsList.RemoveFriendAsync(playerCard.playerID);
-            }
+            else 
+                SendFriendRequestAsync(UserInfo.Instance.Id, playerCard.playerID, TappedActionText.Text);
+
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
             //_ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, betAmount, RoomCode);
+        }
+
+        public async Task SendFriendRequestAsync(int senderId, int receiverId, string status)
+        {
+            try
+            {
+                // Send the HTTP POST request
+                HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/friends/friendrequest/?senderId={senderId}&receiverId={receiverId}&status={status}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    if(status == responseBody)
+                    {
+                        switch (status)
+                        {
+                            case "ADD FRIEND":
+                                TappedActionText.Text = "UN FRIEND";
+                                BlockActionText.Text = "BLOCK";
+                                break;
+                            case "UN FRIEND":
+                            case "UN BLOCK":
+                                TappedActionText.Text = "ADD FRIEND";
+                                BlockActionText.Text = "BLOCK";
+                                TappedAction.IsVisible = true;
+                                break;
+                            case "BLOCK":
+                                TappedAction.IsVisible = false;
+                                BlockActionText.Text = "UN BLOCK";
+                                break;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error: " + ex.Message);
+            }
         }
     }
 }

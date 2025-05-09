@@ -1,4 +1,5 @@
 
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Maui.Controls;
@@ -69,6 +70,10 @@ public partial class ChatPage : ContentPage
         // Dismiss keyboard:
         MessageEntry.Unfocus();
         OnSendButton_Tapped(null, null);
+    }
+    private void OnBackButton_Tapped(object sender, TappedEventArgs e)
+    {
+        Navigation.PopAsync();
     }
     private void OnSendButton_Tapped(object sender, TappedEventArgs e)
     {

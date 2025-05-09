@@ -169,6 +169,7 @@ namespace SignalR.Server
         }
 
         List<ChatMessages> chatMessages = new List<ChatMessages>();
+        /* CHAT AND FRIENDS MANAGEMENT */
         public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
         {
             if (roomCode != null && roomCode != "")
@@ -210,6 +211,9 @@ namespace SignalR.Server
 
             return chatMessages.Take(20).ToList();
         }
+        
+        
+        /* END CHAT AND FRIENDS MANAGEMENT */
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, playerId, userName, roomCode, gameType, gameCost);

@@ -18,11 +18,14 @@
                     <local:ResultCardLong x:Name="player4" />
                 </StackLayout>
                 <StackLayout Margin="0,50,0,0" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" >
-                    <Image Source="btn_playagain.png" HeightRequest="40"  VerticalOptions="Fill" HorizontalOptions="Fill">
-                        <Image.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="BtnExit"/>
-                        </Image.GestureRecognizers>
-                    </Image>
+                    <local:Capsule ImageSource="btn_verify_account.png" HeightRequest="40"  VerticalOptions="Fill" HorizontalOptions="Fill">
+                        <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="BtnExit"/>
+                            </Grid.GestureRecognizers>
+                            <Label Text="CLOSE" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" Margin="0,0,0,5"/>
+                        </Grid>
+                    </local:Capsule>
                 </StackLayout>
             </StackLayout>
         </Grid>

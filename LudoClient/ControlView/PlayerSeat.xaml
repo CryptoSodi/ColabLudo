@@ -15,7 +15,7 @@
             </Image>
 
             <Grid Grid.Row="2" Grid.ColumnSpan="4">
-                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="10,0,0,2" TextColor="Black"></Label>
+                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="10,0,0,2" TextColor="white"></Label>
             </Grid>
 
             <Grid x:Name="ProgressBoxParentContainer" Margin="0,0,0,-5" BackgroundColor="#992B4195" Grid.Row="3" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >

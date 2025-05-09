@@ -39,7 +39,7 @@ namespace LudoClient
             //MainPage = new Game();
             if (!isUserLoggedIn)
             {
-                UserInfo.LoadState(); 
+                UserInfo.LoadState();
                 MainPage = new LoginPage();
             }
             else
