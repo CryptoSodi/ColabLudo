@@ -118,7 +118,7 @@ public partial class ChatPage : ContentPage
             foreach (ChatMessages cm in messages)
             { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
                 bool isAlreadyPresent = existingMessages.Any(existing =>existing.Index == cm.Index);
-                Console.WriteLine(isAlreadyPresent);
+                
                 if (!isAlreadyPresent)
                 {
                     ChatCard cc = new();
@@ -130,6 +130,8 @@ public partial class ChatPage : ContentPage
                         cc.SetDetails(cm, "Left", "white");
                     // Optional: scroll to bottom
 
+                }
+            }
                     // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
                     MainThread.BeginInvokeOnMainThread(async () =>
                     {
@@ -139,8 +141,6 @@ public partial class ChatPage : ContentPage
                         double bottomY = ChatScrollView.ContentSize.Height;
                         await ChatScrollView.ScrollToAsync(0, bottomY, true);
                     });
-                }
-            }
         });
     }
 }
