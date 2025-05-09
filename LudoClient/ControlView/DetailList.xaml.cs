@@ -20,6 +20,7 @@ namespace LudoClient.ControlView
         public void SetDetails(PlayerCard playerCard, String type)
         {//detailgold.png
             this.playerCard = playerCard;
+            cardActionType = type;
             PlayerImage.Source = playerCard.playerPicture;
             PlayerName.Text = playerCard.playerName;
 
@@ -72,17 +73,20 @@ namespace LudoClient.ControlView
                     PlayerName.Margin = new Thickness(4, 0, 0, 0);
                     break;
                 case "Friend":
-                    if (playerCard.status == "UN FRIEND")
+
+                    if (playerCard.status == "UN FRIEND" || playerCard.status == "UN BLOCK" || playerCard.status == "ADD FRIEND")
                     {
                         //TappedActionImage.Source = "btn_red.png";
+                        TappedAction.IsVisible = true;
                         TappedActionText.Text = "MESSAGE";
+                        BlockAction.IsVisible = false;
                     }
                     if (playerCard.status == "BLOCK")
                     {
-                        TappedActionImage.Source = "btn_red.png";
-                        TappedActionText.Text = "UN BLOCK";
+                        BlockAction.IsVisible = true;
+                        TappedAction.IsVisible = false;
+                        BlockActionText.Text = "UN BLOCK";
                     }
-                    BlockAction.IsVisible = false;
                     break;
                 case "Leaderboard":
                     TappedAction.IsVisible = false;
@@ -125,6 +129,7 @@ namespace LudoClient.ControlView
                     var responseBody = await response.Content.ReadAsStringAsync();
                     if(status == responseBody)
                     {
+                        playerCard.status = status;
                         switch (status)
                         {
                             case "ADD FRIEND":
@@ -133,9 +138,18 @@ namespace LudoClient.ControlView
                                 break;
                             case "UN FRIEND":
                             case "UN BLOCK":
-                                TappedActionText.Text = "ADD FRIEND";
-                                BlockActionText.Text = "BLOCK";
-                                TappedAction.IsVisible = true;
+                                if (cardActionType == "Friend")
+                                {
+                                    TappedActionText.Text = "MESSAGE";
+                                    BlockAction.IsVisible = false;
+                                    TappedAction.IsVisible = true;
+                                }
+                                else
+                                {
+                                    TappedActionText.Text = "ADD FRIEND";
+                                    BlockActionText.Text = "BLOCK";
+                                    TappedAction.IsVisible = true;
+                                }   
                                 break;
                             case "BLOCK":
                                 TappedAction.IsVisible = false;
