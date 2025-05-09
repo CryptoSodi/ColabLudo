@@ -7,6 +7,7 @@ namespace LudoClient;
 
 public partial class LeaderboardPage : ContentPage
 {
+    String Filter = "Normal";
     public LeaderboardPage()
     {
         InitializeComponent();
@@ -16,9 +17,6 @@ public partial class LeaderboardPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        // Delay the heavy initialization to allow the page to render first.
-        await Task.Delay(100); // Adjust delay as needed
-        //GetAllFriendsIncludingPendingRejectedAndGames
         InitializeLeaderboardAsync();
     }
     public async Task InitializeLeaderboardAsync()
@@ -69,6 +67,10 @@ public partial class LeaderboardPage : ContentPage
             {
                 PropertyNameCaseInsensitive = true
             });
+            if (Filter == "ADD FRIEND")
+            {
+                Friends = Friends.Where(f => f.status == "ADD FRIEND").ToList();
+            }
             return Friends;
         }
         else
@@ -86,5 +88,10 @@ public partial class LeaderboardPage : ContentPage
         Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
         // Add logic here to change the content based on the active tab
+        if (Tab2 == activeTab)
+            Filter = "ADD FRIEND";
+        else
+            Filter = "";
+        InitializeLeaderboardAsync();
     }
 }

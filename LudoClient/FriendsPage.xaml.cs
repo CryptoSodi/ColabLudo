@@ -7,6 +7,7 @@ namespace LudoClient;
 
 public partial class FriendsPage : ContentPage
 {
+    String Filter = "Normal";
     public FriendsPage()
     {
         InitializeComponent();
@@ -26,6 +27,8 @@ public partial class FriendsPage : ContentPage
         List<PlayerCard> playerCard = await GetGamesAsync(UserInfo.Instance.Id);
         var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
 
+        
+
         // Identify which items are currently displayed
         var existingItems = FriendsListStack.Children.OfType<DetailList>().ToList();
 
@@ -33,7 +36,7 @@ public partial class FriendsPage : ContentPage
 
         // Remove items that are no longer present in the new data
         var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
-
+        
         foreach (var item in itemsToRemove)
         {
             FriendsListStack.Children.Remove(item);
@@ -65,10 +68,14 @@ public partial class FriendsPage : ContentPage
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
-            var Friends = JsonSerializer.Deserialize<List<PlayerCard>>(responseBody, new JsonSerializerOptions
+            List<PlayerCard> Friends = JsonSerializer.Deserialize<List<PlayerCard>>(responseBody, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });
+            if(Filter == "BLOCK") // Remove friends where status is "Block"
+                Friends = Friends.Where(f => f.status == "BLOCK").ToList();
+            else
+                Friends = Friends.Where(f => f.status != "BLOCK").ToList();
             return Friends;
         }
         else
@@ -89,5 +96,10 @@ public partial class FriendsPage : ContentPage
         Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
         // Add logic here to change the content based on the active tab
+        if(Tab2 == activeTab)
+            Filter = "BLOCK";
+        else
+            Filter = "NORMAL";
+        InitializeTournamentsAsync();
     }
 }
