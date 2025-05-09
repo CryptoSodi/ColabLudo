@@ -1208,11 +1208,8 @@ public partial class Game : ContentPage
                 // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    // Force layout to update ContentSize
-                    await Task.Delay(50);
-                    // Scroll to the bottom-most Y coordinate
-                    double bottomY = ChatScrollView.ContentSize.Height;
-                    await ChatScrollView.ScrollToAsync(0, bottomY, true);
+                    await Task.Delay(100);
+                    await ChatScrollView.ScrollToAsync(0, 40000, true);
                 });
             }
         });

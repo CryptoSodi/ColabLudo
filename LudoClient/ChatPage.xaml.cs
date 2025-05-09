@@ -48,6 +48,15 @@ public partial class ChatPage : ContentPage
             }
         });
     }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Force layout to update ContentSize
+        await Task.Delay(100);
+        await ChatScrollView.ScrollToAsync(0, 40000, true);
+    }
+
     public void SetDetails(PlayerCard playerCard, List<ChatMessages> messages)
     {
         foreach(ChatMessages cm in messages)
@@ -65,9 +74,6 @@ public partial class ChatPage : ContentPage
     }
     private void MessageEntry_Completed(object sender, EventArgs e)
     {
-        // … your send logic …
-
-        // Dismiss keyboard:
         MessageEntry.Unfocus();
         OnSendButton_Tapped(null, null);
     }
@@ -108,7 +114,7 @@ public partial class ChatPage : ContentPage
     public void UpdateMessages(object sender, List<ChatMessages> messages)
     {
         MainThread.BeginInvokeOnMainThread(() =>
-        {  
+        {
             // Get the existing ChatMessages directly from ChatCard
             var existingMessages = MessagesListStack.Children.OfType<ChatCard>()
                 .Select(cc => cc.Message)
@@ -117,8 +123,8 @@ public partial class ChatPage : ContentPage
 
             foreach (ChatMessages cm in messages)
             { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
-                bool isAlreadyPresent = existingMessages.Any(existing =>existing.Index == cm.Index);
-                
+                bool isAlreadyPresent = existingMessages.Any(existing => existing.Index == cm.Index);
+
                 if (!isAlreadyPresent)
                 {
                     ChatCard cc = new();
@@ -132,15 +138,15 @@ public partial class ChatPage : ContentPage
 
                 }
             }
-                    // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
-                    MainThread.BeginInvokeOnMainThread(async () =>
-                    {
-                        // Force layout to update ContentSize
-                        await Task.Delay(50);
-                        // Scroll to the bottom-most Y coordinate
-                        double bottomY = ChatScrollView.ContentSize.Height;
-                        await ChatScrollView.ScrollToAsync(0, bottomY, true);
-                    });
+            // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                // Force layout to update ContentSize
+                await Task.Delay(100);
+                // Scroll to the bottom-most Y coordinate
+                //double bottomY = ChatScrollView.ContentSize.Height;
+                await ChatScrollView.ScrollToAsync(0, 40000, true);
+            });
         });
     }
 }
