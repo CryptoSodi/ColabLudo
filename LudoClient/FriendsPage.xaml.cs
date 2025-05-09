@@ -20,11 +20,11 @@ public partial class FriendsPage : ContentPage
         // Delay the heavy initialization to allow the page to render first.
         await Task.Delay(100); // Adjust delay as needed
         //GetAllFriendsIncludingPendingRejectedAndGames
-        InitializeTournamentsAsync();
+        InitializeFriendsAsync();
     }
-    public async Task InitializeTournamentsAsync()
+    public async Task InitializeFriendsAsync()
     {
-        List<PlayerCard> playerCard = await GetGamesAsync(UserInfo.Instance.Id);
+        List<PlayerCard> playerCard = await GetPlayerCards(UserInfo.Instance.Id);
         var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
 
         
@@ -62,7 +62,7 @@ public partial class FriendsPage : ContentPage
             }
         }
     }
-    private async Task<List<PlayerCard>> GetGamesAsync(int playerId)
+    private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
     {
         HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/Friends?playerId={playerId}");
         if (response.IsSuccessStatusCode)
@@ -100,6 +100,6 @@ public partial class FriendsPage : ContentPage
             Filter = "BLOCK";
         else
             Filter = "NORMAL";
-        InitializeTournamentsAsync();
+        InitializeFriendsAsync();
     }
 }

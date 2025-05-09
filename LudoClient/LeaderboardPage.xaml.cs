@@ -21,7 +21,7 @@ public partial class LeaderboardPage : ContentPage
     }
     public async Task InitializeLeaderboardAsync()
     {
-        List<PlayerCard> Friends = await GetGamesAsync(UserInfo.Instance.Id);
+        List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.Id);
         var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
 
         // Identify which items are currently displayed
@@ -57,7 +57,7 @@ public partial class LeaderboardPage : ContentPage
             }
         }
     }
-    private async Task<List<PlayerCard>> GetGamesAsync(int playerId)
+    private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
     {
         HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/Friends?playerId={playerId}");
         if (response.IsSuccessStatusCode)
