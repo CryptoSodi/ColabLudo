@@ -108,27 +108,38 @@ public partial class ChatPage : ContentPage
     public void UpdateMessages(object sender, List<ChatMessages> messages)
     {
         MainThread.BeginInvokeOnMainThread(() =>
-        {
+        {  
+            // Get the existing ChatMessages directly from ChatCard
+            var existingMessages = MessagesListStack.Children.OfType<ChatCard>()
+                .Select(cc => cc.Message)
+                .Where(cm => cm != null)
+                .ToHashSet();
+
             foreach (ChatMessages cm in messages)
-            {
-                ChatCard cc = new();
-                MessagesListStack.Children.Add(cc);
-
-                if (UserInfo.Instance.Id == cm.SenderId)
-                    cc.SetDetails(cm, "Right", "yellow");
-                else
-                    cc.SetDetails(cm, "Left", "white");
-                // Optional: scroll to bottom
-
-                // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
-                MainThread.BeginInvokeOnMainThread(async () =>
+            { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
+                bool isAlreadyPresent = existingMessages.Any(existing =>existing.Index == cm.Index);
+                Console.WriteLine(isAlreadyPresent);
+                if (!isAlreadyPresent)
                 {
-                    // Force layout to update ContentSize
-                    await Task.Delay(50);
-                    // Scroll to the bottom-most Y coordinate
-                    double bottomY = ChatScrollView.ContentSize.Height;
-                    await ChatScrollView.ScrollToAsync(0, bottomY, true);
-                });
+                    ChatCard cc = new();
+                    MessagesListStack.Children.Add(cc);
+
+                    if (UserInfo.Instance.Id == cm.SenderId)
+                        cc.SetDetails(cm, "Right", "yellow");
+                    else
+                        cc.SetDetails(cm, "Left", "white");
+                    // Optional: scroll to bottom
+
+                    // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
+                    MainThread.BeginInvokeOnMainThread(async () =>
+                    {
+                        // Force layout to update ContentSize
+                        await Task.Delay(50);
+                        // Scroll to the bottom-most Y coordinate
+                        double bottomY = ChatScrollView.ContentSize.Height;
+                        await ChatScrollView.ScrollToAsync(0, bottomY, true);
+                    });
+                }
             }
         });
     }

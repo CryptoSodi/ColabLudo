@@ -12,6 +12,7 @@ namespace LudoClient.ControlView
         }
         public void SetDetails(ChatMessages Message, String direction, String color)
         {
+            this.Message = Message;
             PlayerImage.Source = Message.SenderPicture;
             MessageText.Text = Message.Message;
             TimeText.Text = Message.Time.ToShortTimeString();

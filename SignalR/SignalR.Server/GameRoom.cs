@@ -10,7 +10,7 @@ namespace SignalR.Server
 {
     public class GameRoom
     {
-        List<ChatMessages> chatMessages = new List<ChatMessages>();
+        public List<ChatMessages> chatMessages = new List<ChatMessages>();
         // A simple persistent store for commands.
         // In production, this might be a database or distributed log.
         private readonly List<GameCommand> _commandStore = new List<GameCommand>();

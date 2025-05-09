@@ -38,6 +38,7 @@ namespace SharedCode
     }
     public class ChatMessages
     {
+        public int Index { get; set; }
         public int SenderId { get; set; }
         public string SenderName { get; set; }
         public string? SenderColor { get; set; }

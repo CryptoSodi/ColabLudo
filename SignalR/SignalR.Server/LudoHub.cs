@@ -168,7 +168,6 @@ namespace SignalR.Server
             return null;
         }
 
-        List<ChatMessages> chatMessages = new List<ChatMessages>();
         /* CHAT AND FRIENDS MANAGEMENT */
         public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
         {
@@ -180,14 +179,9 @@ namespace SignalR.Server
                     Console.WriteLine($"GameRoom not found for room: {roomCode}");
                     return new();
                 }
-                // Ensure the game room's engine is initialized.
-                if (gameRoom.engine == null)
-                {
-                    Console.WriteLine($"Engine not initialized for room: {roomCode}");
-                    return new();
-                }
-                if(CM.Message != "")
-                    chatMessages.Add(CM);
+
+                if (CM.Message != "")
+                    gameRoom.chatMessages.Add(CM);
                 List<User> otherUsers = gameRoom.Users.Where(p => p.PlayerId != CM.SenderId).ToList();
                 User senderUser = gameRoom.Users.Where(p => p.PlayerId == CM.SenderId).ToList()[0];
                 CM.SenderColor = senderUser.PlayerColor;
@@ -197,19 +191,61 @@ namespace SignalR.Server
                     if (CM.Message != "")
                         Clients.Client(PlayerConnections[u.PlayerId]).SendAsync("ReceiveChatHistory", CM);
                 }
+                return gameRoom.chatMessages.Take(20).ToList();
             }
-            else if(CM.Message != "")
+            else 
             {
-                chatMessages.Add(CM);
+                using var context = _contextFactory.CreateDbContext();
+                if(CM.Message != "")
+                {
+                    // 1️⃣ Save the new message to the database
+                    CM.Time = DateTime.UtcNow;
+                    ChatMessageEntity newMessage = new ChatMessageEntity
+                    {
+                        SenderId = CM.SenderId,
+                        SenderName = CM.SenderName,
+                        SenderColor = CM.SenderColor,
+                        SenderPicture = CM.SenderPicture,
+                        ReceiverId = CM.ReceiverId,
+                        ReceiverName = CM.ReceiverName,
+                        Message = CM.Message,
+                        Time = DateTime.UtcNow  // Set the timestamp here
+                    };
+                    context.ChatMessages.Add(newMessage);
+                    context.SaveChanges();
+                }
+                
+
+                List<ChatMessageEntity> chatHistory = context.ChatMessages.Where(cm => 
+                (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
+                (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
+
+                
+
+                // 3️⃣ Convert to the response model
+                List<ChatMessages> chatMessagesList = chatHistory.Select(cm => new ChatMessages
+                { 
+                    Index = cm.Index,
+                    SenderId = cm.SenderId,
+                    SenderName = cm.SenderName,
+                    SenderColor = cm.SenderColor,
+                    SenderPicture = cm.SenderPicture,
+                    ReceiverId = cm.ReceiverId,
+                    ReceiverName = cm.ReceiverName,
+                    Message = cm.Message,
+                    Time = cm.Time
+                }).ToList();
+
+                //chatMessagesList.Add(CM);
                 // Optionally, also send back the last 50 messages to the sender
                 // send only to the receiver
-                if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId))
+                if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId) && CM.Message != "")
                 {
                     Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
                 }
+                return chatMessagesList.Take(30).ToList();
             }
-
-            return chatMessages.Take(20).ToList();
+            return new List<ChatMessages>();
         }
         
         
