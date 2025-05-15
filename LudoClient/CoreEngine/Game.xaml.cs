@@ -1194,6 +1194,7 @@ public partial class Game : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            if(messages!=null)
             foreach (ChatMessages cm in messages)
             {
                 ChatCard cc = new();
