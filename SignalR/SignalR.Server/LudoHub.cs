@@ -10,6 +10,8 @@ namespace SignalR.Server
     
     public class LudoHub : Hub
     {
+        private readonly CryptoHelper _crypto;
+
         public static Dictionary<int, string> PlayerConnections  = new Dictionary<int, string>();
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
@@ -19,12 +21,28 @@ namespace SignalR.Server
         private static bool _initialized = false;
         public Task UserConnectedSetID(int playerID)
         {
-            // Context.ConnectionId is the SignalR connection ID
-            PlayerConnections[playerID] = Context.ConnectionId;
+            try
+            {
+                // Context.ConnectionId is the SignalR connection ID
+                PlayerConnections[playerID] = Context.ConnectionId;
+
+                // Use the same key per player across restarts
+                string address = _crypto.GetOrCreateDepositAccountAsync(playerID.ToString()).GetAwaiter().GetResult();
+                Console.WriteLine($"Send SOL here: {address}");
+                // 2) Fetch raw balance (in lamports)
+                ulong lamports = _crypto.GetSolBalanceAsync(address).GetAwaiter().GetResult();
+                Console.WriteLine($"Balance: {lamports / 1_000_000_000.0} SOL");
+            }
+            catch (Exception)
+            {
+                Thread.Sleep(100);
+                return UserConnectedSetID(playerID);
+            }
             return Task.CompletedTask;
         }
-        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext)
+        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto)
         {
+            _crypto = crypto;
             _contextFactory = contextFactory;
             _hubContext = hubContext;
             if (!_initialized)

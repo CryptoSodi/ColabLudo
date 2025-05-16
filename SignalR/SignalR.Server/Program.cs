@@ -21,7 +21,17 @@ builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false) );// Turn off verbose logging
 
-
+// Replace your existing CryptoHelper registration with this:
+builder.Services.AddSingleton<CryptoHelper>(sp =>
+{
+    var env = sp.GetRequiredService<IHostEnvironment>();
+    // "Data/wallets.json" is relative to ContentRoot, i.e. your project folder
+    return new CryptoHelper(
+        env,
+        network: "DevNet",
+        relativeStoragePath: "Data/wallets.json"
+    );
+});
 // Build the app
 var app = builder.Build();
 

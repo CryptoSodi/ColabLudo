@@ -1,87 +1,161 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
+using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
-using Solnet.Programs;
+using Solnet.Wallet.Utilities;
 
 namespace SignalR.Server
 {
     public class CryptoHelper
     {
-        private readonly IRpcClient _rpcClient;
-        private readonly Account _platformAccount;
-        private readonly PublicKey _usdcMint;
+        private readonly IRpcClient _rpc;
+        private readonly string _storageFile;
+        // userId → (privateBase58, publicBase58)
+        private readonly Dictionary<string, WalletRecord> _wallets;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CryptoHelper"/> class.
-        /// </summary>
-        /// <param name="rpcEndpoint">Solana RPC endpoint (e.g., https://api.devnet.solana.com).</param>
-        /// <param name="platformKeypairBase64">Base64-encoded keypair for the platform fee-payer.</param>
-        /// <param name="usdcMintAddress">The USDC token mint address on the target cluster.</param>
-        public CryptoHelper(string rpcEndpoint, string platformKeypairBase64, string usdcMintAddress)
+        private class WalletRecord
         {
-            // Initialize the RPC client
-            _rpcClient = ClientFactory.GetClient(rpcEndpoint);
-
-            // Load the platform account (fee-payer)
-            var secretKey = Convert.FromBase64String(platformKeypairBase64);
-            _platformAccount = new Account(secretKey);
-
-            // Set the USDC mint
-            _usdcMint = new PublicKey(usdcMintAddress);
+            public string Priv { get; set; } = "";
+            public string Pub { get; set; } = "";
         }
 
         /// <summary>
-        /// Derives the Associated Token Account (ATA) for a given user wallet.
+        /// env: used to locate a stable folder under ContentRootPath
+        /// relativeStoragePath: e.g. "Data/wallets.json"
         /// </summary>
-        /// <param name="userWallet">The user's wallet public key.</param>
-        /// <returns>The ATA public key.</returns>
-        public PublicKey DeriveUsdcAta(PublicKey userWallet)
+        public CryptoHelper(
+            IHostEnvironment env,
+            string network = "MainNetBeta",
+            string relativeStoragePath = "wallets.json")
         {
-            return AssociatedTokenAccountProgram.DeriveAssociatedTokenAccount(userWallet, _usdcMint);
-        }
+            // 1) RPC client
+            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase)
+                ? Cluster.DevNet
+                : Cluster.MainNet;
+            _rpc = ClientFactory.GetClient(cluster);
 
-        /// <summary>
-        /// Ensures the user's USDC ATA exists; if not, creates it on-chain.
-        /// </summary>
-        /// <param name="userWallet">The user's wallet public key.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task EnsureUsdcAtaExistsAsync(PublicKey userWallet)
-        {
-            var ata = DeriveUsdcAta(userWallet);
+            // 2) Compute absolute storage path
+            var dataFolder = Path.Combine(env.ContentRootPath,
+                                          Path.GetDirectoryName(relativeStoragePath) ?? "");
+            Directory.CreateDirectory(dataFolder);
 
-            // Check if ATA exists
-            var accountInfo = await _rpcClient.GetAccountInfoAsync(ata.Key);
-            if (accountInfo.Result.Value != null)
-                return;
+            _storageFile = Path.Combine(env.ContentRootPath,
+                                        relativeStoragePath);
 
-            // Fetch recent block hash
-            var recent = await _rpcClient.GetLatestBlockHashAsync();
-            var blockHash = recent.Result.Value.Blockhash;
-
-            // Build transaction to create ATA
-            var tx = new TransactionBuilder()
-                .SetRecentBlockHash(blockHash)
-                .SetFeePayer(_platformAccount.PublicKey)
-                .AddInstruction(
-                    AssociatedTokenAccountProgram.CreateAssociatedTokenAccount(
-                        _platformAccount.PublicKey,
-                        userWallet,
-                        _usdcMint
-                    )
-                )
-                .Build(_platformAccount);
-
-            // Send and optionally confirm
-            var sendResult = await _rpcClient.SendTransactionAsync(tx);
-            if (!sendResult.WasSuccessful)
+            // 3) Load existing wallets from disk (if any)
+            if (File.Exists(_storageFile))
             {
-                throw new Exception($"Failed to create ATA: {sendResult.Reason}");
+                var json = File.ReadAllText(_storageFile);
+                _wallets = JsonSerializer
+                    .Deserialize<Dictionary<string, WalletRecord>>(json)
+                          ?? new Dictionary<string, WalletRecord>();
+            }
+            else
+            {
+                _wallets = new Dictionary<string, WalletRecord>();
+            }
+        }
+
+
+        /// <summary>
+        /// Returns existing or new public deposit address for user.
+        /// Persists both keys so the same pair is restored on restart.
+        /// </summary>
+        public async Task<string> GetOrCreateDepositAccountAsync(string userId)
+        {
+            if (_wallets.TryGetValue(userId, out var rec))
+            {
+                // Restore from Base58 strings
+                var acc = new Account(rec.Priv, rec.Pub);
+                return acc.PublicKey.Key;
             }
 
-            // Optionally confirm transaction
-            await _rpcClient.ConfirmTransactionAsync(sendResult.Result, Commitment.Confirmed);
+            // First-time: generate, persist, return
+            var newAcc = new Account();
+            var priv58 = new Base58Encoder().EncodeData(newAcc.PrivateKey);
+            var pub58 = newAcc.PublicKey.Key;
+
+            rec = new WalletRecord { Priv = priv58, Pub = pub58 };
+            _wallets[userId] = rec;
+
+            await File.WriteAllTextAsync(_storageFile,
+                JsonSerializer.Serialize(_wallets,
+                    new JsonSerializerOptions { WriteIndented = true }));
+
+            return pub58;
         }
+
+        /// <summary>Get balance in lamports (1 SOL = 1e9 lamports).</summary>
+        public async Task<ulong> GetSolBalanceAsync(string pubAddr)
+        {
+            var resp = await _rpc.GetBalanceAsync(pubAddr);
+            if (resp.WasSuccessful) return resp.Result.Value;
+            throw new Exception($"RPC Error: {resp.Reason}");
+        }
+
+        /// <summary>
+        /// Sends the specified amount of lamports from the user's stored wallet to a destination address.
+        /// </summary>
+        /// <param name="userId">The user ID whose stored account is the source.</param>
+        /// <param name="destination">The base58-encoded public key to receive funds.</param>
+        /// <param name="lamports">Amount in lamports (1 SOL = 1e9 lamports).</param>
+        /// <returns>The transaction signature string.</returns>
+        /// <summary>
+        /// Sends the specified amount of lamports from the user's stored wallet to a destination address.
+        /// </summary>
+        
+        public async Task<string> SendSolAsync(string userId, string destination, double solAmount)
+        {
+            // 1 SOL = 1_000_000_000 lamports
+            var lamports = (ulong)(solAmount * 1_000_000_000d);
+            // 1) Load the WalletRecord (must already exist)
+            if (!_wallets.TryGetValue(userId, out var rec))
+                throw new InvalidOperationException(
+                    "User wallet not found. Call GetOrCreateDepositAccountAsync first.");
+
+            // 2) Reconstruct the Account using the same Base58 strings you stored
+            //    (matches your GetOrCreateDepositAccountAsync logic)
+            var sender = new Account(rec.Priv, rec.Pub);
+
+            // 3) Fetch a recent blockhash
+            var blockHashResp = await _rpc.GetLatestBlockHashAsync();
+            if (!blockHashResp.WasSuccessful)
+                throw new Exception($"Failed to get recent blockhash: {blockHashResp.Reason}");
+            var recentBlockHash = blockHashResp.Result.Value.Blockhash;
+
+            // 4) Build and sign the transfer transaction
+            // `tx` here is already a Base64 string
+            var tx = new TransactionBuilder()
+                .SetRecentBlockHash(recentBlockHash)
+                .SetFeePayer(sender.PublicKey)
+                .AddInstruction(
+                    SystemProgram.Transfer(
+                        fromPublicKey: sender.PublicKey,
+                        toPublicKey: new PublicKey(destination),
+                        lamports: lamports
+                    )
+                )
+                .Build(sender); // returns Base64 string
+
+            // 5) Send and confirm
+            var sendResp = await _rpc.SendTransactionAsync(
+                tx,                      // <— pass tx directly
+                skipPreflight: false,
+                commitment: Commitment.Confirmed
+            );
+
+            if (!sendResp.WasSuccessful)
+                throw new Exception($"Transaction failed: {sendResp.Reason}");
+
+            return sendResp.Result; // transaction signature
+        }
+
+
     }
 }
