@@ -7,7 +7,7 @@ namespace SharedCode.Network
 {
     public class Client
     {
-        private int playerID;
+        public int playerID;
         private bool _connected;
         public HubConnection _hubConnection;
         private string _messages;
@@ -15,7 +15,7 @@ namespace SharedCode.Network
         // Event Definitions using standard .NET event patterns
 
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
-        public event EventHandler<(string GameType, int GameCost, string RoomCode)> RoomJoined;
+        public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
@@ -92,7 +92,7 @@ namespace SharedCode.Network
             _hubConnection.Reconnected += connectionId =>
             {
                 Connected = true;
-                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
+                UserConnectedSetID();
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
@@ -116,7 +116,7 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
-                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
+                UserConnectedSetID();
                 Console.WriteLine("Already connected.");
                 return;
             }
@@ -124,7 +124,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Connected = true;
-                this._hubConnection.InvokeAsync("UserConnectedSetID", playerID);
+                UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
@@ -155,7 +155,7 @@ namespace SharedCode.Network
         /// <summary>
         /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
         /// </summary>
-        public async Task CreateJoinLobbyAsync(int playerId, string userName, string pictureUrl, string gameType, int gameCost, string roomCode)
+        public async Task CreateJoinLobbyAsync(int playerId, string userName, string pictureUrl, string gameType, double gameCost, string roomCode)
         {
             try
             {
@@ -231,6 +231,28 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error sending message: {ex.Message}");
                 return null;
             }
+        }
+        public async Task<DepositInfo> UserConnectedSetID()
+        {
+            DepositInfo info = new DepositInfo();
+            try
+            {
+                info = await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerID).ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+            }
+            return info;
+        }
+
+        /// <summary>
+        /// Converts SOL to lamports and calls your lamport‐based SendSolAsync.
+        /// </summary>
+        public async Task<string> SendSolAsync(string destination, double solAmount)
+        {
+            // Use the generic InvokeAsync<DepositInfo>
+            String info = await _hubConnection.InvokeAsync<String>("SendSol", playerID, destination, solAmount).ConfigureAwait(false);
+            return info;
         }
     }
 }

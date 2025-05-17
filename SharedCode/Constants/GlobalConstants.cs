@@ -8,7 +8,7 @@ namespace SharedCode.Constants
     {
         public static int GameHistorySaveIndex = 0;
         public static readonly HttpClient httpClient;
-        public static readonly int initialEntry = 5;
+        public static readonly double initialEntry = 0.1;
         public static readonly bool Debug = true;
         public static readonly string Url;
         public static readonly string BaseUrl;
@@ -48,6 +48,6 @@ if(Debug){
 
         public static int lastSeenIndex = -1;
         public static string RoomCode { get; internal set; }
-        public static int GameCost { get; internal set; }
+        public static double GameCost { get; internal set; }
     }
 }

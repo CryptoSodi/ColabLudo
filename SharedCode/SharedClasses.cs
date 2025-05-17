@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace SharedCode
 {
+    public class DepositInfo
+    {
+        public string Address { get; set; } = "";
+        public string SolBalance { get; set; } = "";
+    }
+
     public class PlayerDto
     {
         public int PlayerId { get; set; }

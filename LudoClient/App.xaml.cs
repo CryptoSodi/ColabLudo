@@ -47,6 +47,7 @@ namespace LudoClient
                 UserInfo.LoadState();
                 MainPage = new AppShell();
                 GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
+                
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
@@ -172,7 +173,7 @@ namespace LudoClient
                 ClientGlobalConstants.FlushOld();
             });
         }
-        private void OnRoomJoined(object? sender, (string GameType, int GameCost, string RoomCode) args)
+        private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {

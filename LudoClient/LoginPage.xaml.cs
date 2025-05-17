@@ -101,6 +101,7 @@ namespace LudoClient
                            await UserInfo.SaveState();
                             //Success Login
                             Application.Current.MainPage = new AppShell();
+
                         }
                     }
                     else

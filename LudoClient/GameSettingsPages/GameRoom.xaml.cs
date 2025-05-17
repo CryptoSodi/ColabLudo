@@ -6,7 +6,7 @@ public partial class GameRoom : ContentPage
 {
     string GameType = "0";
 
-    public GameRoom(string GameType, int GameCost, string roomCode)
+    public GameRoom(string GameType, double GameCost, string roomCode)
     {
         InitializeComponent();
         this.GameType = GameType;

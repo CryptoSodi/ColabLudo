@@ -53,6 +53,7 @@
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiImage Include="Resources\Images\AddCash\after_add_cash_bg_hor.png" />
 		<MauiImage Include="Resources\Images\ChatBox\btn_emoji.png" />
 		<MauiImage Include="Resources\Images\ChatBox\btn_send.png" />
 		<MauiImage Include="Resources\Images\ChatBox\chatbar_image.png" />
@@ -138,6 +139,8 @@
 	  <None Remove="Resources\Images\AddCash\addmoney_bg.png" />
 	  <None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
 	  <None Remove="Resources\Images\AddCash\after_add_cash_bg.png" />
+	  <None Remove="Resources\Images\AddCash\after_add_cash_bg_h.png" />
+	  <None Remove="Resources\Images\AddCash\after_add_cash_bg_hor.png" />
 	  <None Remove="Resources\Images\AddCash\btn_blue.png" />
 	  <None Remove="Resources\Images\AddCash\btn_orange.png" />
 	  <None Remove="Resources\Images\AddCash\btn_pink.png" />
@@ -757,6 +760,9 @@
 	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
 	    <DependentUpon>OfflinePage.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Popups\WithdrawPopup.xaml.cs">
+	    <DependentUpon>WithdrawPopup.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Popups\AddCash.xaml.cs">
 	    <DependentUpon>AddCash.xaml</DependentUpon>
 	  </Compile>
@@ -797,6 +803,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="ControlView\GameDetailList.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Popups\WithdrawPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Popups\AddCash.xaml">

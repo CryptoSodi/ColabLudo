@@ -16,16 +16,20 @@
             </StackLayout>
 
             <StackLayout HeightRequest="40" Orientation="Horizontal" Grid.Row="1" Grid.Column="1" Spacing="10" HorizontalOptions="Center" VerticalOptions="End">
-                <Image Source="btn_playagain.png" VerticalOptions="End" HorizontalOptions="Center">
-                    <Image.GestureRecognizers>
+                <Grid VerticalOptions="End" HorizontalOptions="Center">
+                    <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="BTNClose" />
-                    </Image.GestureRecognizers>
-                </Image>
-                <Image Source="btn_exit.png" VerticalOptions="End" HorizontalOptions="Center">
-                    <Image.GestureRecognizers>
+                    </Grid.GestureRecognizers>
+                    <Image Source="btn_verify_account.png" VerticalOptions="End" HorizontalOptions="Center"/>
+                    <Label Text="CLOSE" FontSize="14" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                </Grid>
+                <Grid VerticalOptions="End" HorizontalOptions="Center">
+                    <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="BTNApprove" />
-                    </Image.GestureRecognizers>
-                </Image>
+                    </Grid.GestureRecognizers>
+                    <Image Source="btn_red.png" VerticalOptions="End" HorizontalOptions="Center"/>
+                    <Label Text="EXIT" FontSize="14" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                </Grid>
             </StackLayout>
         </Grid>
     </popup:BasePopup.PopupContent>

@@ -24,11 +24,13 @@ namespace SignalR.Server
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
+        private readonly CryptoHelper _crypto;
 
-        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, string roomCode, string gameType, decimal gameCost)
+        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, string roomCode, string gameType, decimal gameCost)
         {
             _hubContext = hubContext;
             _contextFactory = contextFactory;
+            _crypto = crypto;
             RoomCode = roomCode;
             GameType = gameType;
             GameCost = gameCost;
@@ -90,6 +92,50 @@ namespace SignalR.Server
             existingGame.State = "Completed";
 
             LudoHub.DM.SaveData();
+
+
+            // Get the winner and the list of losers
+            string winnerId = sortedSeats[0].PlayerId.ToString();
+            string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(winnerId);
+
+            List<string> loserIds = sortedSeats.Skip(1).Select(s => s.PlayerId.ToString()).ToList();
+
+            // Amount to transfer (assume GameCost is in SOL, you may want to adjust this logic)
+            double totalPrize = Double.Parse(GameCost+"") * loserIds.Count;
+            if (totalPrize > 0)
+                // 🔄 **Transfer SOL from each loser to the winner**
+                foreach (var loserId in loserIds)
+                {
+                    try
+                    {
+                        // Get the wallet address of the loser
+                        string loserAddress = await _crypto.GetOrCreateDepositAccountAsync(loserId);
+
+                        // Get balance of the loser to check if they have enough
+                        ulong balance = await _crypto.GetSolBalanceAsync(loserAddress);
+
+                        // Convert the game cost to lamports
+                        ulong lamports = (ulong)(GameCost * 1_000_000_000);
+
+                        if (balance >= lamports)
+                        {
+                            // Transfer the SOL
+                            string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(GameCost + ""));
+                            Console.WriteLine($"Transferred {GameCost} SOL from {loserId} to {winnerId}. Tx: {signature}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Insufficient balance for player {loserId}. Skipping transfer.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Failed to transfer SOL from {loserId} to {winnerId}: {ex.Message}");
+                    }
+                }
+
+
+
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)

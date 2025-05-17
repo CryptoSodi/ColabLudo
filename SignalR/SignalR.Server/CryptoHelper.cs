@@ -155,7 +155,5 @@ namespace SignalR.Server
 
             return sendResp.Result; // transaction signature
         }
-
-
     }
 }

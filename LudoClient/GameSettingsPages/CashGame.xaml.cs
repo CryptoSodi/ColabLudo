@@ -5,8 +5,8 @@ namespace LudoClient;
 
 public partial class CashGame : ContentPage
 {
-    public int entry = GlobalConstants.initialEntry;
-    public int win = GlobalConstants.initialEntry * 2;
+    public double entry = GlobalConstants.initialEntry;
+    public double win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
     public bool defaultTabSelection = true;
     public CashGame()
@@ -43,15 +43,24 @@ public partial class CashGame : ContentPage
     }
     private void BtnPlus(object sender, EventArgs e)
     {
-        entry += GlobalConstants.initialEntry;
-        EntryLabel.Text = entry.ToString();
-        CalculateWin();
+        if (UserInfo.Instance.SolBalance > entry + GlobalConstants.initialEntry)
+        {
+            entry += GlobalConstants.initialEntry;
+
+            // Round the value to 2 decimal places (adjust as needed)
+            entry = Math.Round(entry, 2);
+
+            EntryLabel.Text = entry.ToString();
+            CalculateWin();
+        }
     }
     private void BtnMinus(object sender, EventArgs e)
     {
-        if (entry > GlobalConstants.initialEntry)
+        if (entry > GlobalConstants.initialEntry && (entry - GlobalConstants.initialEntry) >= GlobalConstants.initialEntry)
         {
             entry -= GlobalConstants.initialEntry;
+            // Round the value to 2 decimal places (adjust as needed)
+            entry = Math.Round(entry, 2);
             EntryLabel.Text = entry.ToString();
             CalculateWin();
         }
@@ -70,7 +79,8 @@ public partial class CashGame : ContentPage
         {
             win = entry * 4;
         }
-        WinLabel.Text = win.ToString();
+        
+        WinLabel.Text = Math.Round(win, 2).ToString();
     }
     private void JoinRoom_Clicked(object sender, EventArgs e)
     {

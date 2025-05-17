@@ -1,7 +1,10 @@
 namespace LudoClient;
 
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
+using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 using SharedCode.Constants;
 using System.Diagnostics;
@@ -21,7 +24,6 @@ public partial class DashboardPage : ContentPage
                 MainThread.BeginInvokeOnMainThread(() =>
                     UpdateButtons(GlobalConstants.MatchMaker.Connected));
         };
-
     }
     void UpdateButtons(bool isConnected)
     {
@@ -41,8 +43,14 @@ public partial class DashboardPage : ContentPage
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-
-        Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait(); 
+        if(UserInfo.Instance.SolBalance>= GlobalConstants.initialEntry)
+            Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
+        else
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
+            });
+        
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
@@ -52,14 +60,19 @@ public partial class DashboardPage : ContentPage
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
+        if (UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
+            Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
+        else
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
+            }); 
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
-        //Navigation.PushAsync(new AddCash());
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {

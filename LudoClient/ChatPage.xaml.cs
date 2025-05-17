@@ -26,9 +26,10 @@ public partial class ChatPage : ContentPage
         //playerCard.status = "Friend";
         SetDetails(playerCard, new List<ChatMessages>());
 
-        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
-        int myPlayerId = UserInfo.Instance.Id;
-        GlobalConstants.MatchMaker._hubConnection.InvokeAsync("UserConnectedSetID", myPlayerId);
+        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;        
+
+        GlobalConstants.MatchMaker.UserConnectedSetID();
+        
 
         ChatMessages cm = new();
         cm.SenderId = UserInfo.Instance.Id;

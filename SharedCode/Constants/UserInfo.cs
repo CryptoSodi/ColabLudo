@@ -20,6 +20,8 @@ namespace SharedCode.Constants
         public string City { get; set; }
         public float Lat { get; set; }
         public float Lon { get; set; }
+        public string Address { get; set; }
+        public double SolBalance { get; set; }
 
         public static UserInfo Instance
         {

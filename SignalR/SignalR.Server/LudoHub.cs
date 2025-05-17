@@ -1,16 +1,18 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
+using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
+using System.Collections.Generic;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
     
     public class LudoHub : Hub
     {
-        private readonly CryptoHelper _crypto;
+        public static CryptoHelper _crypto;
 
         public static Dictionary<int, string> PlayerConnections  = new Dictionary<int, string>();
 
@@ -19,26 +21,50 @@ namespace SignalR.Server
         //public static Engine eng;// = new Engine("4", "4", "red");
         public static DatabaseManager DM;
         private static bool _initialized = false;
-        public Task UserConnectedSetID(int playerID)
+        public async Task<String> SendSol(int playerID, string destination, double amountInSol)
         {
             try
             {
-                // Context.ConnectionId is the SignalR connection ID
+            // 1) Store SignalR connection
+            PlayerConnections[playerID] = Context.ConnectionId;
+            string sig = await _crypto.SendSolAsync(playerID.ToString(), destination, amountInSol);
+            Console.WriteLine($"Sent {amountInSol} SOL — tx signature: {sig}");
+                return sig;
+            }
+            catch (Exception)
+            {
+            }
+            return "ERROR";
+        }
+        public async Task<DepositInfo> UserConnectedSetID(int playerID)
+        {
+            try
+            {
+                // 1) Store SignalR connection
                 PlayerConnections[playerID] = Context.ConnectionId;
 
-                // Use the same key per player across restarts
-                string address = _crypto.GetOrCreateDepositAccountAsync(playerID.ToString()).GetAwaiter().GetResult();
+                // 2) Await the wallet creation/restoration
+                string address = await _crypto.GetOrCreateDepositAccountAsync(playerID.ToString());
                 Console.WriteLine($"Send SOL here: {address}");
-                // 2) Fetch raw balance (in lamports)
-                ulong lamports = _crypto.GetSolBalanceAsync(address).GetAwaiter().GetResult();
-                Console.WriteLine($"Balance: {lamports / 1_000_000_000.0} SOL");
+
+                // 3) Await the balance fetch
+                ulong lamports = await _crypto.GetSolBalanceAsync(address);
+                double sol = lamports / 1_000_000_000.0;
+                string solBalance = sol.ToString();
+                Console.WriteLine($"Balance: {sol} SOL");
+                //4) Return a DTO
+                return new DepositInfo
+                {
+                    Address = address,
+                    SolBalance = solBalance
+                };
+                
             }
             catch (Exception)
             {
                 Thread.Sleep(100);
-                return UserConnectedSetID(playerID);
+                return await UserConnectedSetID(playerID);
             }
-            return Task.CompletedTask;
         }
         public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto)
         {
@@ -47,7 +73,7 @@ namespace SignalR.Server
             _hubContext = hubContext;
             if (!_initialized)
             {
-                DM = new DatabaseManager(_hubContext, _contextFactory);
+                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
                 _initialized = true;
             }
         }
@@ -232,13 +258,10 @@ namespace SignalR.Server
                     context.ChatMessages.Add(newMessage);
                     context.SaveChanges();
                 }
-                
 
                 List<ChatMessageEntity> chatHistory = context.ChatMessages.Where(cm => 
                 (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
                 (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
-
-                
 
                 // 3️⃣ Convert to the response model
                 List<ChatMessages> chatMessagesList = chatHistory.Select(cm => new ChatMessages
@@ -265,8 +288,6 @@ namespace SignalR.Server
             }
             return new List<ChatMessages>();
         }
-        
-        
         /* END CHAT AND FRIENDS MANAGEMENT */
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {

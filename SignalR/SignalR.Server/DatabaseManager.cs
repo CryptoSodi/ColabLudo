@@ -18,12 +18,14 @@ namespace SignalR.Server
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
+        private readonly CryptoHelper _crypto;
         private IHubCallerClients Clients;
 
-        public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory)
+        public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto)
         {
             _hubContext = hubContext;
             _contextFactory = contextFactory;
+            _crypto = crypto;
             Task.Run(LoadData); // Run async without blocking constructor
         }
         public async Task<Game> JoinGameLobby(string ConnectionId, int playerId, string userName, string roomCode, string gameType, decimal gameCost)
@@ -77,7 +79,7 @@ namespace SignalR.Server
             }
 
             // Create or retrieve the room
-            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, roomCode, gameType, gameCost));
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto,  roomCode, gameType, gameCost));
 
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
             var user = new User(ConnectionId, existingGame.RoomCode, playerId, userName, "Color");
@@ -132,7 +134,7 @@ namespace SignalR.Server
             }
             while (_gameRooms.ContainsKey(roomCode));
 
-            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, roomCode, gameType, gameCost));
+            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, _crypto, roomCode, gameType, gameCost));
 
             return roomCode;
         }
@@ -208,7 +210,7 @@ namespace SignalR.Server
                 foreach (var game in games)
                 {
                     game.MultiPlayer = multiPlayers.FirstOrDefault(mp => mp.MultiPlayerId == game.MultiPlayerId);
-                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, game.RoomCode, game.Type, game.BetAmount));
+                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, game.RoomCode, game.Type, game.BetAmount));
                 }
 
                 Console.WriteLine("Data loaded successfully!");
