@@ -502,7 +502,12 @@ public partial class Game : ContentPage
         await Task.Delay(2000);
         if (gameMode == "Client")
         {
-            ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
+            
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Task.Delay(100);
+                ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
+            });
             ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
             ClientGlobalConstants.FlushOld();
         }

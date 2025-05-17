@@ -5,7 +5,7 @@
     <Grid Margin="25,0,25,0">
         <Image x:Name="BgImageItem" Source="user_main_bg.png" />
         <Grid HeightRequest="{Binding Source={x:Reference BgImageItem}, Path=Height}"
-               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,2.2*,.2*" >
+               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,3.5*,.3*" >
             <Grid Grid.Row="1" Grid.Column="1">
                 <Image x:Name="StarTypeItem" Source="star_silver.png" />
                 <Label x:Name="StarNumberItem" Text="1" FontSize="14" TextColor="Black" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
@@ -18,10 +18,10 @@
             </Grid>
             <Label x:Name="PlayerNameItem" Text="Player" TextColor="White" FontSize="14" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Grid x:Name="ChipCountHolder" Grid.Row="1" Grid.Column="4" HorizontalOptions="Fill">
-                <BoxView x:Name="WinAmountColorItem" CornerRadius="5" Color="Purple" />
-                <StackLayout Margin="5" Spacing="5" Orientation="Horizontal">
-                    <Image Source="ic_chips_spades.png"/>
-                    <Label x:Name="ChipCountItem" Text="+1" FontSize="14" FontAttributes="Bold" VerticalTextAlignment="Center"/>
+                <Frame x:Name="WinAmountColorItem" BackgroundColor="#FCA020F0" CornerRadius="5" HorizontalOptions="Fill" VerticalOptions="Fill"/>                
+                <StackLayout Margin="2" Spacing="2" Orientation="Horizontal">
+                    <Image Source="solicon.png" HorizontalOptions="Start"/>
+                    <Label x:Name="ChipCountItem" Text="" FontSize="12" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalOptions="Center"/>
                 </StackLayout>
             </Grid>
         </Grid>

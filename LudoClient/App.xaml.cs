@@ -128,7 +128,7 @@ namespace LudoClient
                                 if (commands.Any())
                                     ClientGlobalConstants.game.engine.EngineHelper.indexServer = commands.Max(c => c.IndexServer);
                             }
-
+                            if(ClientGlobalConstants.game!=null)
                             if (lastSeen != ClientGlobalConstants.game.engine.EngineHelper.index)
                                 Console.WriteLine("DESYNC WARNING!");
                         }
