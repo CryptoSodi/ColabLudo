@@ -15,7 +15,6 @@ namespace LudoClient
         public LoginPage()
         {
             InitializeComponent();
-            GetCountryByIpAsync();
             if (Skins.CurrentSkin == Skins.SkinTypes.DefaultSkin)            
                 BtnCancel.IsVisible = BtnLoginSingup.IsVisible = OtpField.IsVisible = NumberField.IsVisible = false;
         }
@@ -235,6 +234,7 @@ namespace LudoClient
             UserInfo.Instance.Email = (string)googleResponse["email"];
             UserInfo.Instance.Name = (string)googleResponse["name"];
             UserInfo.Instance.PictureUrl = (string)googleResponse["picture"];
+
             performLoginAsync();
         }
         private async void performLoginAsync()

@@ -15,14 +15,18 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         ClientGlobalConstants.dashBoard = this;
-
-        UpdateButtons(GlobalConstants.MatchMaker.Connected);
-        GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
+        Task.Run(async () =>
         {
-            if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))
-                MainThread.BeginInvokeOnMainThread(() =>
-                    UpdateButtons(GlobalConstants.MatchMaker.Connected));
-        };
+            while (GlobalConstants.MatchMaker == null)
+              await Task.Delay(50);
+            UpdateButtons(GlobalConstants.MatchMaker.Connected);
+            GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))
+                    MainThread.BeginInvokeOnMainThread(() =>
+                        UpdateButtons(GlobalConstants.MatchMaker.Connected));
+            };
+        });
     }
     void UpdateButtons(bool isConnected)
     {

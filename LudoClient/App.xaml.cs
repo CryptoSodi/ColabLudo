@@ -41,6 +41,19 @@ namespace LudoClient
                 UserInfo.LoadState();
                 MainPage = new LoginPage();
 
+                Task.Run(async () =>
+                {
+                    while(ClientGlobalConstants.dashBoard == null)
+                    {
+                        await Task.Delay(100);
+
+                        GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
+
+                        GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+                        GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+                        GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+                    }
+                });
             }
             else
             {
