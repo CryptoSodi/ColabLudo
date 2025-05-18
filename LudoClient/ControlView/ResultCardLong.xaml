@@ -18,7 +18,7 @@
             </Grid>
             <Label x:Name="PlayerNameItem" Text="Player" TextColor="White" FontSize="14" Margin="5,0,0,0" Grid.Row="1" Grid.Column="3" FontAttributes="Bold" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Grid x:Name="ChipCountHolder" Grid.Row="1" Grid.Column="4" HorizontalOptions="Fill">
-                <Frame x:Name="WinAmountColorItem" BackgroundColor="#FCA020F0" CornerRadius="5" HorizontalOptions="Fill" VerticalOptions="Fill"/>                
+                <Frame x:Name="WinAmountColorItem" BackgroundColor="#FCA020F0" CornerRadius="5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                 <StackLayout Margin="2" Spacing="2" Orientation="Horizontal">
                     <Image Source="solicon.png" HorizontalOptions="Start"/>
                     <Label x:Name="ChipCountItem" Text="" FontSize="12" FontAttributes="Bold" VerticalTextAlignment="Center" HorizontalOptions="Center"/>

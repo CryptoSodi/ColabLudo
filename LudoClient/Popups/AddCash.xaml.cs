@@ -2,10 +2,6 @@ using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using SharedCode;
 using SharedCode.Constants;
-using System.Buffers.Text;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
-using System.Windows.Input;
 
 namespace LudoClient.Popups;
 

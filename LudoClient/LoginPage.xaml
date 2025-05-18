@@ -10,7 +10,7 @@
     <!--  StackLayout for the content  -->
     <StackLayout Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" >
         <!--  Your content here  -->
-        <Image HeightRequest="185" Margin="0,0,0,80" Source="alogo2.png" HorizontalOptions="Center"/>
+        <Image HeightRequest="185" Margin="0,0,0,80" Source="logo.png" HorizontalOptions="Center"/>
 
         <local:EditField x:Name="NumberField" Title="Number" Margin="15,15,15,0"  HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
         <local:EditField x:Name="OtpField" IsVisible="False" Title="OTP" Margin="15,15,15,0" HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />

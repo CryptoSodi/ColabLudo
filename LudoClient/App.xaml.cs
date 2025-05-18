@@ -1,7 +1,6 @@
 ﻿
 using LudoClient.Constants;
 using LudoClient.CoreEngine;
-using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -41,6 +40,7 @@ namespace LudoClient
             {
                 UserInfo.LoadState();
                 MainPage = new LoginPage();
+
             }
             else
             {
@@ -54,11 +54,6 @@ namespace LudoClient
                 // MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
             }
-            //MainPage =new LoginPage();
-            //
-            //MainPage = new DashboardPage();
-            //MainPage = new TabHandeler();
-            // Start polling in a background thread using Task.Run.
             Task.Run(async () =>
             {
                 await PollForCommandsAsync();

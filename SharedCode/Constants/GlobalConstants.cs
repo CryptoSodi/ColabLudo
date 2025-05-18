@@ -9,7 +9,7 @@ namespace SharedCode.Constants
         public static int GameHistorySaveIndex = 0;
         public static readonly HttpClient httpClient;
         public static readonly double initialEntry = 0.1;
-        public static readonly bool Debug = true;
+        public static readonly bool Debug = false;
         public static readonly string Url;
         public static readonly string BaseUrl;
         public static readonly string HubUrl;

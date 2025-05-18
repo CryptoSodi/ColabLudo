@@ -46,7 +46,6 @@ namespace LudoClient
         }
         void SetupInstance(Dictionary<string, JsonElement>? result)
         {
-
             int playerId = result["playerId"].GetInt32();
             string PlayerName = result["playerName"].GetString();
             string Email = result["email"].GetString();
@@ -240,8 +239,8 @@ namespace LudoClient
         }
         private async void performLoginAsync()
         {
-         try
-            {    
+            try
+            {
                 if (GlobalConstants.online)
                 {
                     string url = "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl;
@@ -268,7 +267,7 @@ namespace LudoClient
                     }
                     else if (message == "Player created successfully." || message == "Attach Phone.")
                     {
-                        if(Skins.CurrentSkin != Skins.SkinTypes.DefaultSkin)
+                        if (Skins.CurrentSkin != Skins.SkinTypes.DefaultSkin)
                         {
                             NumberField.IsVisible = true;
                             OtpField.IsVisible = false;
@@ -287,7 +286,7 @@ namespace LudoClient
                         }
                     }
                 }
-           }
+            }
             catch (Exception ex)
             {
                 await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");

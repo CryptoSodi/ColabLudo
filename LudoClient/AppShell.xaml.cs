@@ -1,6 +1,4 @@
-﻿using LudoClient.Constants;
-using LudoClient.Utilities;
-using SharedCode.Constants;
+﻿using LudoClient.Utilities;
 using SimpleToolkit.Core;
 
 namespace LudoClient

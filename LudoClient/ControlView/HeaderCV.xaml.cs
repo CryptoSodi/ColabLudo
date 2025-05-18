@@ -21,7 +21,7 @@ public partial class HeaderCV : ContentView
             PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
 
         // Initialize and start the timer
-        _qrCodeTimer = new System.Timers.Timer(60000); // 60,000 milliseconds = 60 seconds
+        _qrCodeTimer = new System.Timers.Timer(30000); // 60,000 milliseconds = 60 seconds
         _qrCodeTimer.Elapsed += async (sender, e) => await GenerateQRCodeAsync();
         _qrCodeTimer.AutoReset = true;
         _qrCodeTimer.Enabled = true;
@@ -32,15 +32,22 @@ public partial class HeaderCV : ContentView
     {
         if (GlobalConstants.MatchMaker != null)
         {
-            DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
-            // You can tweak these hex colors and size as you like:
-            // Update the image source asynchronously (UI thread)
-            UserInfo.Instance.Address = info.Address;
-            UserInfo.Instance.SolBalance = Double.Parse(info.SolBalance);
-            MainThread.BeginInvokeOnMainThread(() =>
+            try
             {
-                Coins.Text = info.SolBalance + " SOL";
-            });
+                DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
+                // You can tweak these hex colors and size as you like:
+                // Update the image source asynchronously (UI thread)
+                UserInfo.Instance.Address = info.Address;
+                UserInfo.Instance.SolBalance = Double.Parse(info.SolBalance);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Coins.Text = info.SolBalance + " SOL";
+                });
+            }
+            catch (Exception)
+            {
+
+            }
         }
         else
         {

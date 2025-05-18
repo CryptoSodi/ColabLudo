@@ -17,7 +17,6 @@ public partial class DashboardPage : ContentPage
         ClientGlobalConstants.dashBoard = this;
 
         UpdateButtons(GlobalConstants.MatchMaker.Connected);
-
         GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-android;net9.0-ios;net9.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>net9.0-ios;net9.0-maccatalyst;net9.0-android35.0</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);net8.0-tizen</TargetFrameworks> -->
@@ -50,9 +50,29 @@
 	  <AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android35.0|AnyCPU'">
+	  <AndroidUseAapt2>True</AndroidUseAapt2>
+	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+	  <AndroidPackageFormat>apk</AndroidPackageFormat>
+	  <AndroidKeyStore>True</AndroidKeyStore>
+	  <AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
+	  <AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
+	  <AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android35.0|AnyCPU'">
+	  <DebugSymbols>False</DebugSymbols>
+	  <AndroidKeyStore>True</AndroidKeyStore>
+		<AndroidSigningKeyStore>D:\ludokey.keystore</AndroidSigningKeyStore>
+	  <AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
+	  <AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
+	  <AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appiconfg.svg" />
 		<MauiImage Include="Resources\Images\AddCash\after_add_cash_bg_hor.png" />
 		<MauiImage Include="Resources\Images\ChatBox\btn_emoji.png" />
 		<MauiImage Include="Resources\Images\ChatBox\btn_send.png" />
@@ -98,43 +118,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Resources\Images\Adatya\abhoosebetbar.png" />
-	  <None Remove="Resources\Images\Adatya\abtnlogin.png" />
-	  <None Remove="Resources\Images\Adatya\abtnplay.png" />
-	  <None Remove="Resources\Images\Adatya\abtnsignup.png" />
-	  <None Remove="Resources\Images\Adatya\alogo2.png" />
-	  <None Remove="Resources\Images\Adatya\amenubackground.png" />
-	  <None Remove="Resources\Images\Adatya\atitlebattlezone.png" />
-	  <None Remove="Resources\Images\Adatya\background_a.png" />
-	  <None Remove="Resources\Images\Adatya\background_sa.png" />
-	  <None Remove="Resources\Images\Adatya\background_waitingroom_a.png" />
-	  <None Remove="Resources\Images\Adatya\bnt1.png" />
-	  <None Remove="Resources\Images\Adatya\bnt2.png" />
-	  <None Remove="Resources\Images\Adatya\bnt3.png" />
-	  <None Remove="Resources\Images\Adatya\btn_create_a.png" />
-	  <None Remove="Resources\Images\Adatya\btn_join_large_a.png" />
-	  <None Remove="Resources\Images\Adatya\btn_minus_large_a.png" />
-	  <None Remove="Resources\Images\Adatya\btn_paste_a.png" />
-	  <None Remove="Resources\Images\Adatya\btn_play_large_a.png" />
-	  <None Remove="Resources\Images\Adatya\btn_plus_large_a.png" />
-	  <None Remove="Resources\Images\Adatya\Components\Tablets\timer_a.png" />
-	  <None Remove="Resources\Images\Adatya\Components\Tablets\total_available_bal_bg_a.png" />
-	  <None Remove="Resources\Images\Adatya\Components\Tablets\total_available_bal_title_a.png" />
-	  <None Remove="Resources\Images\Adatya\controlbox_a.png" />
-	  <None Remove="Resources\Images\Adatya\controlbox_small_a.png" />
-	  <None Remove="Resources\Images\Adatya\DailyBonus\background_waitingroom_a.png" />
-	  <None Remove="Resources\Images\Adatya\DailyBonus\daily_bonus_a.png" />
-	  <None Remove="Resources\Images\Adatya\DailyBonus\days_main_bg_a.png" />
-	  <None Remove="Resources\Images\Adatya\friend_a.png" />
-	  <None Remove="Resources\Images\Adatya\game_setting_bg_a.png" />
-	  <None Remove="Resources\Images\Adatya\offline_a.png" />
-	  <None Remove="Resources\Images\Adatya\playwithfriends_a.png" />
-	  <None Remove="Resources\Images\Adatya\practice_a.png" />
-	  <None Remove="Resources\Images\Adatya\round_cashgames_a.png" />
-	  <None Remove="Resources\Images\Adatya\round_offline_a.png" />
-	  <None Remove="Resources\Images\Adatya\round_practice_a.png" />
-	  <None Remove="Resources\Images\Adatya\tournament_a.png" />
-	  <None Remove="Resources\Images\Adatya\vs_a.png" />
+	  <None Remove="Resources\AppIcon\appiconfg.svg" />
 	  <None Remove="Resources\Images\AddCash\addcash_popup_bg.png" />
 	  <None Remove="Resources\Images\AddCash\addmoney_bg.png" />
 	  <None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.png" />
@@ -435,36 +419,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\Adatya\abhoosebetbar.png" />
-	  <MauiImage Include="Resources\Images\Adatya\abtnlogin.png" />
-	  <MauiImage Include="Resources\Images\Adatya\background_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\background_sa.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_create_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_join_large_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_minus_large_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_paste_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_play_large_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\btn_plus_large_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\timer_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\total_available_bal_bg_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\Components\Tablets\total_available_bal_title_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\controlbox_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\controlbox_small_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\DailyBonus\background_waitingroom_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\DailyBonus\daily_bonus_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\DailyBonus\days_main_bg_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\game_setting_bg_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\logo_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\alogo2.png" />
-	  <MauiImage Include="Resources\Images\Adatya\atitlebattlezone.png" />
-	  <MauiImage Include="Resources\Images\Adatya\offline_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\playwithfriends_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\practice_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\round_cashgames_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\round_offline_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\round_practice_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\tournament_a.png" />
-	  <MauiImage Include="Resources\Images\Adatya\vs_a.png" />
 	  <MauiImage Include="Resources\Images\Components\Header\btn_help.png" />
 	  <MauiImage Include="Resources\Images\DashBoard\cashgame_gray.png" />
 	  <MauiImage Include="Resources\Images\DashBoard\playwithfriends_gray.png" />
@@ -977,10 +931,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Network\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <MauiImage Include="Resources\Images\Adatya\abtnsignup.png" />
 	</ItemGroup>
 
 </Project>
