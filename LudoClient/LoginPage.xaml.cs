@@ -17,6 +17,10 @@ namespace LudoClient
             InitializeComponent();
             if (Skins.CurrentSkin == Skins.SkinTypes.DefaultSkin)            
                 BtnCancel.IsVisible = BtnLoginSingup.IsVisible = OtpField.IsVisible = NumberField.IsVisible = false;
+            Task.Run(async () =>
+            {
+                GetCountryByIpAsync();
+            });
         }
         private async Task AddPhoneNumberToQueue()
         {
