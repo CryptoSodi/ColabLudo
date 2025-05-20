@@ -34,7 +34,7 @@
                 </Grid>
             </local:Capsule>
             
-            <Label Grid.Row="5" Text="Version 0.01" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+            <Label x:Name="VersionText" Grid.Row="5" Text="" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup> 

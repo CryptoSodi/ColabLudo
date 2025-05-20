@@ -18,7 +18,7 @@
             <Grid Grid.Column="1" Padding="0,8,0,5" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Frame BackgroundColor="#60000000" CornerRadius="4" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                 <StackLayout Orientation="Horizontal">
-                    <Image Source="solicon.png" Margin="4" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Image Source="solicon.png" Margin="4" MaximumHeightRequest="40" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <Label x:Name="Coins" FontSize="18" Text="0.0" Margin="4,0,0,0" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center"/>
                 </StackLayout>
             </Grid>

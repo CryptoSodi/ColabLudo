@@ -11,6 +11,10 @@ public partial class Settings : BasePopup
         MusicSwitch.init("line_bg.png");
         NotificationSwitch.init("line_bg.png");
 
+        string version = VersionTracking.CurrentVersion;          // e.g., "1.1.0"
+        string build = VersionTracking.CurrentBuild;
+
+        VersionText.Text = "Version : " + version;
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {
