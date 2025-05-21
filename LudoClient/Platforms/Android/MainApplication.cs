@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Runtime;
+using Android.Gms.Games;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 namespace LudoClient
@@ -25,6 +26,11 @@ namespace LudoClient
 
             return MauiProgram.CreateMauiApp();
         }
-
+        public override void OnCreate()
+        {
+            base.OnCreate();
+            // Initialize Google Play Games SDK
+            PlayGamesSdk.Initialize(this);
+        }
     }
 }
