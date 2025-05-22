@@ -34,18 +34,18 @@ namespace LudoClient
 
 
 
-            // Obtain the Play Games sign-in client
-            _signInClient = PlayGames.GetGamesSignInClient(this);
+            //// Obtain the Play Games sign-in client
+            //_signInClient = PlayGames.GetGamesSignInClient(this);
 
-            // 1) Silent sign-in on startup
-            _signInClient.IsAuthenticated()
-                         .AddOnCompleteListener(new AuthListener(this));
+            //// 1) Silent sign-in on startup
+            //_signInClient.IsAuthenticated()
+            //             .AddOnCompleteListener(new AuthListener(this));
             
             
-            System.Threading.Tasks.Task.Run(() => {
-                System.Threading.Tasks.Task.Delay(5000);
-                SignInWithPlayGames(); 
-            } );
+            //System.Threading.Tasks.Task.Run(() => {
+            //    System.Threading.Tasks.Task.Delay(5000);
+            //    SignInWithPlayGames(); 
+            //} );
         }
 
 
@@ -92,8 +92,6 @@ namespace LudoClient
         // TODO: wire these up in your UI
         void ShowSignInButton() { /* enable your button → calls SignInWithPlayGames() */ }
         void OnSignedIn() { /* proceed with signed-in logic */ }
-
-
 
         public static string GetApkSignatureSha1(Context context)
         {

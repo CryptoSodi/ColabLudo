@@ -506,6 +506,7 @@ public partial class Game : ContentPage
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 Task.Delay(100);
+                ClientGlobalConstants.results = new Results();
                 ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
             });
             ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
@@ -534,6 +535,7 @@ public partial class Game : ContentPage
                 if (loser != null)
                     playerDtos.Add(loser);
             // Pass the list to the UI for displaying results
+            ClientGlobalConstants.results = new Results();
             ClientGlobalConstants.results.init(playerDtos, GameType, GameCost);
             ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
         }

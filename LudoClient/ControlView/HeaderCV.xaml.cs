@@ -57,10 +57,12 @@ public partial class HeaderCV : ContentView
     }
     private void Navigate_Settings(object sender, EventArgs e)
     {
+        ClientGlobalConstants.settings = new Settings();
         Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings);
     }
     private void OnPlayerTapped(object sender, EventArgs e)
     {
-        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
+        //Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
+        //ClientGlobalConstants.profileInfo = new ProfileInfo();
     }
 }

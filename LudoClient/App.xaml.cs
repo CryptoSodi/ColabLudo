@@ -43,27 +43,28 @@ namespace LudoClient
 
                 Task.Run(async () =>
                 {
-                    while(ClientGlobalConstants.dashBoard == null)
+                    while (ClientGlobalConstants.dashBoard == null)
                     {
                         await Task.Delay(100);
-
-                        GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
-
-                        GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-                        GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                        GlobalConstants.MatchMaker.ShowResults += OnShowResults;
                     }
+
+                    GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
+
+                    GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+                    GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+                    GlobalConstants.MatchMaker.ShowResults += OnShowResults;
                 });
             }
             else
             {
                 UserInfo.LoadState();
-                MainPage = new AppShell();
                 GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
-                
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+
+                MainPage = new AppShell();
+                
                 // MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
             }

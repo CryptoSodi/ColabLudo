@@ -8,24 +8,22 @@ public partial class ProfileInfo : BasePopup
     {
         InitializeComponent();
         //reload this if pictureblock is ""
-        loadValues();
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            loadValues();
+        });
     }
     public void loadValues()
     {
-        while(true)
-        {
-            if (UserInfo.Instance.PictureBlob == "")
+        while(UserInfo.Instance.PictureBlob == "")
                 Thread.Sleep(1000);
-            else
-            {
-                player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
-                player.PlayerName = UserInfo.Instance.Name;
-                Email.Text = UserInfo.Instance.Email;
-                Number.Text = UserInfo.Instance.PhoneNumber;
-                Location.Text = UserInfo.Instance.City;
-                Coins.Text = UserInfo.Instance.Coins + "";
-                break;
-            }
-        }
+
+        player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
+        player.PlayerName = UserInfo.Instance.Name;
+        Email.Text = UserInfo.Instance.Email;
+        Number.Text = UserInfo.Instance.PhoneNumber;
+        Location.Text = UserInfo.Instance.City;
+        Coins.Text = UserInfo.Instance.Coins + "";
     }
 }

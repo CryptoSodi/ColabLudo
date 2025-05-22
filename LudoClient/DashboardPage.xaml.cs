@@ -15,10 +15,12 @@ public partial class DashboardPage : ContentPage
     {
         InitializeComponent();
         ClientGlobalConstants.dashBoard = this;
+
         Task.Run(async () =>
         {
             while (GlobalConstants.MatchMaker == null)
-              await Task.Delay(50);
+                await Task.Delay(50);
+
             UpdateButtons(GlobalConstants.MatchMaker.Connected);
             GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
             {
@@ -39,15 +41,18 @@ public partial class DashboardPage : ContentPage
     {
         base.OnAppearing();
         // Delay the heavy initialization to allow the page to render first.
-        await Task.Delay(100); // Adjust delay as needed
-        ClientGlobalConstants.Init();
+        //await Task.Delay(100); // Adjust delay as needed
+        //ClientGlobalConstants.Init();
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if(UserInfo.Instance.SolBalance>= GlobalConstants.initialEntry)
+        {
+            ClientGlobalConstants.cashGame = new CashGame();
             Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
+        }   
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -57,6 +62,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.offlinePage = new OfflinePage();
         Navigation.PushAsync(ClientGlobalConstants.offlinePage);//Done
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
@@ -64,17 +70,21 @@ public partial class DashboardPage : ContentPage
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if (UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
+        {
+            ClientGlobalConstants.playWithFriends = new PlayWithFriends();
             Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
+        }   
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
-            }); 
+            });
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
+        ClientGlobalConstants.practicePage = new PracticePage();
         Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
     }
     private void Tournament_Clicked(object sender, EventArgs e)
@@ -82,7 +92,10 @@ public partial class DashboardPage : ContentPage
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if (Skins.CurrentSkin == Skins.SkinTypes.Adatiya)
+        {
+            ClientGlobalConstants.cashGame = new CashGame();
             Navigation.PushAsync(ClientGlobalConstants.cashGame);
+        }   
         else
         {
             TournamentPage tournamentPage = new TournamentPage();
@@ -92,6 +105,10 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
-        this.ShowPopup(ClientGlobalConstants.dailyBonus);
+        //this.ShowPopup(ClientGlobalConstants.dailyBonus);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Toast.Make("Not Bonus Today!", ToastDuration.Long, 24).Show();
+        });
     }
 }

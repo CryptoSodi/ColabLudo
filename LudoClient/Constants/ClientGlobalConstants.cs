@@ -15,18 +15,18 @@ namespace LudoClient.Constants
         private static double width;
         private static double height;
 
-        public static CashGame cashGame = new CashGame();
-        public static FriendsPage friendsPage = new FriendsPage();
-        public static OfflinePage offlinePage = new OfflinePage();
-        public static PracticePage practicePage = new PracticePage();
-        public static PlayWithFriends playWithFriends = new PlayWithFriends();
+        public static CashGame cashGame;
+        public static FriendsPage friendsPage;
+        public static OfflinePage offlinePage;
+        public static PracticePage practicePage;
+        public static PlayWithFriends playWithFriends;
 
-        public static EditInfo editInfo = new EditInfo();
-        public static Settings settings = new Settings();
-        public static HelpDesk helpDesk = new HelpDesk();
-        public static DailyBonus dailyBonus = new DailyBonus();
-        public static ProfileInfo profileInfo = new ProfileInfo();
-        public static Results results = new Results();
+        public static EditInfo editInfo;
+        public static Settings settings;
+        public static HelpDesk helpDesk;
+        public static DailyBonus dailyBonus;
+        public static ProfileInfo profileInfo;
+        public static Results results;
 
         internal static Game game;
 
@@ -66,14 +66,12 @@ namespace LudoClient.Constants
             page.Measure(width, height);
             page.Layout(new Rect(0, 0, width, height));
         }
-
         public static void ForceLayoutPass(ContentPage page)
         {
             // Measure and layout off-screen
             page.Measure(width, height);
             page.Layout(new Rect(0, 0, width, height));
         }
-
         internal static void GoBack()
         {
             var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
@@ -88,7 +86,6 @@ namespace LudoClient.Constants
                     ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 1]);
             }
         }
-
         internal static void FlushOld()
         {
             // Retrieve a copy of the current navigation stack.
