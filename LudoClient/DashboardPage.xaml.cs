@@ -56,7 +56,7 @@ public partial class DashboardPage : ContentPage
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
+                Toast.Make("No enough balance!", ToastDuration.Long, 24).Show();
             });
         
     }

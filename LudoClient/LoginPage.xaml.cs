@@ -4,6 +4,7 @@ using SharedCode.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using LudoClient.Services;
 
 namespace LudoClient
 {
@@ -182,6 +183,30 @@ namespace LudoClient
             String AuthToken;
             try
             {
+                var authService = DependencyService.Get<IGoogleAuthService>();
+                var idToken = await authService.SignInAsync();
+
+                if (!string.IsNullOrEmpty(idToken))
+                {
+                    // Successfully signed in
+                    UserInfo.Instance.Name = authService.UserName;
+                    UserInfo.Instance.Email = authService.UserEmail;
+                    UserInfo.Instance.PictureUrl = authService.UserPhotoUrl;
+
+                    performLoginAsync();
+                }
+                else
+                {
+                    await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Error", $"Sign-in failed:\n{ex.Message}", "OK");
+            }
+            /*
+            try
+            {
                 WebAuthenticatorResult r = null;
 
                 if (scheme.Equals("Apple", StringComparison.Ordinal)
@@ -225,7 +250,7 @@ namespace LudoClient
                 Console.WriteLine($"Failed: {ex.Message}");
                 AuthToken = string.Empty;
                 DisplayAlert("Error", $"Failed: {ex.Message}", "ok");
-            }
+            }*/
         }
         private async void GetUserInfoAsync(string accessToken)
         {

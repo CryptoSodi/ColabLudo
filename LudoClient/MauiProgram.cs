@@ -3,6 +3,11 @@ using Microsoft.Extensions.Logging;
 using SimpleToolkit.Core;
 using SimpleToolkit.SimpleShell;
 using Xe.AcrylicView;
+#if ANDROID
+using LudoClient.Services;
+using LudoClient.Platforms.Android;
+#endif
+
 namespace LudoClient
 {
     public static class MauiProgram
@@ -26,7 +31,9 @@ namespace LudoClient
                 .UseMauiApp<App>()
                 .UseSimpleToolkit()
                 .UseSimpleShell();
-
+#if ANDROID
+    builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+#endif
 #if DEBUG
             builder.Logging.AddDebug();
 #endif

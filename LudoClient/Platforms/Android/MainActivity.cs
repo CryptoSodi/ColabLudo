@@ -1,16 +1,15 @@
-﻿using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.Content.PM;
-using Android.OS;
-using Java.Security;
-using PMSignature = Android.Content.PM.Signature;
 using Android.Gms.Games;        // PlayGames, GamesSignInClient, AuthenticationResult
 using Android.Gms.Tasks;        // Task, IOnCompleteListener
-using Android.OS;
 using Android.Runtime;
-using System;
+using Java.Security;
+using PMSignature = Android.Content.PM.Signature;
+using Android.App;
+using Android.OS;
+using Android.Gms.Auth.Api;
 using Android.Gms.Auth.Api.SignIn;
-using System.Net;
+using LudoClient.Platforms.Android;
 
 namespace LudoClient
 {
@@ -24,6 +23,19 @@ namespace LudoClient
            
         }
 
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == 9001 && GoogleAuthService.Instance != null && data != null)
+            {
+                GoogleAuthService.Instance.OnActivityResult(data);
+            }
+        }
+
+
+
+
         IGamesSignInClient _signInClient;
 
         protected override void OnCreate(Bundle savedInstanceState)
@@ -31,6 +43,8 @@ namespace LudoClient
             base.OnCreate(savedInstanceState);
             string sha1 = GetApkSignatureSha1(this);
             Console.WriteLine($"My APK SHA-1 = {sha1}");
+
+
 
 
 
