@@ -274,7 +274,7 @@ namespace LudoClient
                 {
                     string url = "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl;
                     if (UserInfo.Instance.Id != null)
-                        url = url + "&playerId=" + UserInfo.Instance.Id;
+                        url = url + "&playerId=-1";
 
                     HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync(url, null);
                     string responseBody = await response.Content.ReadAsStringAsync();
