@@ -7,9 +7,7 @@ public partial class BottomNavigation : ContentView
     public BottomNavigation()
     {
         InitializeComponent();
-        //ImageSwitchControl.SwitchState = Preferences.Get(PreferencesKey, true);
     }
-
     async void OnBackButtonClicked(object sender, EventArgs e)
     {
         GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);

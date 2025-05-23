@@ -1,10 +1,10 @@
 using LudoClient.Constants;
+using LudoClient.Services;
 using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using LudoClient.Services;
 
 namespace LudoClient
 {
@@ -22,6 +22,8 @@ namespace LudoClient
             {
                 GetCountryByIpAsync();
             });
+            string build = VersionTracking.CurrentBuild;
+            VersionText.Text = "Version : " + build;
         }
         private async Task AddPhoneNumberToQueue()
         {

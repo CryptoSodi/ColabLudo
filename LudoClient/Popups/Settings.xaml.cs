@@ -18,7 +18,7 @@ public partial class Settings : BasePopup
         string version = VersionTracking.CurrentVersion;          // e.g., "1.1.0"
         string build = VersionTracking.CurrentBuild;
 
-        VersionText.Text = "Version : " + version;
+        VersionText.Text = "Version : " + build;
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {

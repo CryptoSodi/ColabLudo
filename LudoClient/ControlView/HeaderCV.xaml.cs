@@ -1,9 +1,8 @@
 using CommunityToolkit.Maui.Views;
-using SharedCode.Constants;
-using LudoClient.Popups;
 using LudoClient.Constants;
-using System.Net;
+using LudoClient.Popups;
 using SharedCode;
+using SharedCode.Constants;
 namespace LudoClient;
 
 public partial class HeaderCV : ContentView
@@ -12,23 +11,34 @@ public partial class HeaderCV : ContentView
     public HeaderCV()
     {
         InitializeComponent();
-        if (UserInfo.Instance.PictureBlob == "")
-        {
-            PlayerImageItem.Source = UserInfo.Instance.PictureUrl;
-            UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl);
-        }
-        else
-            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
+
+        loadHeaderImage();
 
         // Initialize and start the timer
         _qrCodeTimer = new System.Timers.Timer(30000); // 60,000 milliseconds = 60 seconds
-        _qrCodeTimer.Elapsed += async (sender, e) => await GenerateQRCodeAsync();
+        _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
         _qrCodeTimer.AutoReset = true;
         _qrCodeTimer.Enabled = true;
 
-        GenerateQRCodeAsync();
+        UpdateBalance();
     }
-    public async Task GenerateQRCodeAsync()
+    private async void loadHeaderImage()
+    {
+        if (UserInfo.Instance.PictureBlob == "")
+        {
+            //PlayerImageItem.Source = UserInfo.Instance.PictureUrl;
+            await UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl);
+        }
+        if (UserInfo.Instance.PictureBlob == "")
+        {
+            Console.WriteLine("BLOB NOT LOADED");
+        }
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
+        });
+    }
+    public async Task UpdateBalance()
     {
         if (GlobalConstants.MatchMaker != null)
         {
@@ -52,7 +62,7 @@ public partial class HeaderCV : ContentView
         else
         {
           await Task.Delay(100);
-          GenerateQRCodeAsync();
+          UpdateBalance();
         }
     }
     private void Navigate_Settings(object sender, EventArgs e)
@@ -62,7 +72,7 @@ public partial class HeaderCV : ContentView
     }
     private void OnPlayerTapped(object sender, EventArgs e)
     {
-        //Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
-        //ClientGlobalConstants.profileInfo = new ProfileInfo();
+        ClientGlobalConstants.profileInfo = new ProfileInfo();
+        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
     }
 }

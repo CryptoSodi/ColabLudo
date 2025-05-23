@@ -24,6 +24,5 @@ public partial class ProfileInfo : BasePopup
         Email.Text = UserInfo.Instance.Email;
         Number.Text = UserInfo.Instance.PhoneNumber;
         Location.Text = UserInfo.Instance.City;
-        Coins.Text = UserInfo.Instance.Coins + "";
     }
 }

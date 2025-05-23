@@ -39,6 +39,6 @@
             </Image.GestureRecognizers>
         </Image>
 
-        <Label HorizontalOptions="Center" Margin="0,0,0,100" Text="Version 1.0" VerticalOptions="Fill" />
+        <Label x:Name="VersionText" HorizontalOptions="Center" Margin="0,0,0,100" Text="Version 1.0" VerticalOptions="Fill" />
         </StackLayout>
 </ContentPage>

@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient.ControlView"
              x:Class="LudoClient.HeaderCV">
-    <local:Capsule ImageSource="hdrbgsharedassets.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+    <local:Capsule ImageSource="hdrbgsharedassets.png" HorizontalOptions="Fill" VerticalOptions="Fill">
         <Grid ColumnDefinitions=".17*,.6*,.1*">
 
             <Image x:Name="PlayerImageItem" Margin="7,7,-8,-18" VerticalOptions="Start" HorizontalOptions="Start"/>
