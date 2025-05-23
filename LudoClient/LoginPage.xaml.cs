@@ -158,7 +158,7 @@ namespace LudoClient
             BtnLoginSingup.Source = "abtnlogin.png";
             NumberField.entryField.Text = otpReuest.countryCode;
         }
-        private async void GooleSignup_Clicked(object sender, EventArgs e)
+        private async void Guest_Login_Clicked(object sender, EventArgs e)
         {
 #if WINDOWS
             UserInfo.Instance.Email = "Sodi@gmail.com";
@@ -169,7 +169,32 @@ namespace LudoClient
 #if ANDROID
             try
             {
-                OnAuthenticate("Google");
+                var deviceIdService = this.Handler.MauiContext.Services.GetService<IDeviceIdentifierService>();
+                var deviceId = deviceIdService?.GetDeviceId();
+                UserInfo.Instance.Email = deviceId + "@LudoNFT.com";
+                UserInfo.Instance.Name = deviceId + "";
+                UserInfo.Instance.PictureUrl = "https://ludoNFT.online/player.png";
+                performLoginAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
+            }
+#endif
+        }
+        private async void GooleSignup_Clicked(object sender, EventArgs e)
+        {
+#if WINDOWS
+            UserInfo.Instance.Email = "Sodi@gmail.com";
+            UserInfo.Instance.Name = "Sodi";
+            UserInfo.Instance.PictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";
+            performLoginAsync();
+#endif
+#if ANDROID
+            try
+            { 
+                OnAuthenticate("Google"); 
             }
             catch (Exception ex)
             {
@@ -348,7 +373,7 @@ namespace LudoClient
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine($"Error: Country {ex.Message}");
             }
         }
     }

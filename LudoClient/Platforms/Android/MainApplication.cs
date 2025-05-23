@@ -31,6 +31,8 @@ namespace LudoClient
         public override void OnCreate()
         {
             base.OnCreate();
+            
+            Microsoft.Maui.Controls.DependencyService.Register<IDeviceIdentifierService, DeviceIdentifierService>();
             Microsoft.Maui.Controls.DependencyService.Register<IGoogleAuthService, GoogleAuthService>();
             // Initialize Google Play Games SDK
             PlayGamesSdk.Initialize(this);

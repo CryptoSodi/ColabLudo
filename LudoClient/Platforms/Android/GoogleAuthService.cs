@@ -1,12 +1,19 @@
-﻿using Android.Content;
+﻿using Android.App;
+using Android.Content;
 using Android.Gms.Auth.Api.SignIn;
-using LudoClient.Services;
 using Android.Gms.Tasks;  // for IOnCompleteListener and Android.Gms.Tasks.Task
-using Task = System.Threading.Tasks.Task;
-using Java.Interop;  // alias System.Threading.Tasks.Task as Task
-
+using Android.Provider;
+using LudoClient.Services;
 namespace LudoClient.Platforms.Android
 {
+    public class DeviceIdentifierService : IDeviceIdentifierService
+    {
+        public string GetDeviceId()
+        {
+            var context = Microsoft.Maui.ApplicationModel.Platform.AppContext;
+            return Settings.Secure.GetString(context.ContentResolver, Settings.Secure.AndroidId);
+        }
+    }
     public class GoogleAuthService : Java.Lang.Object, IGoogleAuthService
     {
         private TaskCompletionSource<string?> _signInTcs;
@@ -26,6 +33,7 @@ namespace LudoClient.Platforms.Android
             var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
                 .RequestIdToken("973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com") // Replace this
                 .RequestEmail()
+                .RequestProfile()
                 .Build();
 
             var signInClient = GoogleSignIn.GetClient(Platform.CurrentActivity, gso);

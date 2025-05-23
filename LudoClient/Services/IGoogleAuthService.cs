@@ -16,4 +16,9 @@ namespace LudoClient.Services
         string? UserEmail { get; }
         string? UserPhotoUrl { get; }
     }
+
+    public interface IDeviceIdentifierService
+    {
+        string GetDeviceId();
+    }
 }

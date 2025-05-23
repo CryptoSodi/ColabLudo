@@ -32,7 +32,8 @@ namespace LudoClient
                 .UseSimpleToolkit()
                 .UseSimpleShell();
 #if ANDROID
-    builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
+            builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
+            builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
 #endif
 #if DEBUG
             builder.Logging.AddDebug();

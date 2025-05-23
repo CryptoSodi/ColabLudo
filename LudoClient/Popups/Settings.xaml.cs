@@ -30,24 +30,31 @@ public partial class Settings : BasePopup
     private void SignOutTapped(object sender, EventArgs e)
     {
 #if ANDROID
-    var authService = DependencyService.Get<IGoogleAuthService>();
-    authService.SignOutAsync().ContinueWith(task =>
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
+        try
         {
-            if (task.IsCompletedSuccessfully && task.Result)
+            var authService = DependencyService.Get<IGoogleAuthService>();
+            authService.SignOutAsync().ContinueWith(task =>
             {
-                Close(); // If this is your cleanup method
-                UserInfo.Logout();
-                Application.Current.MainPage = new LoginPage();
-            }
-            else
-            {
-                // Sign-out failed
-                Toast.Make("Logout failed. Try again.", ToastDuration.Long, 24).Show();
-            }
-        });
-    });
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (task.IsCompletedSuccessfully && task.Result)
+                    {
+                        
+                    }
+                    else
+                    {
+                        // Sign-out failed
+                        //Toast.Make("Logout failed. Try again.", ToastDuration.Long, 24).Show();
+                    }
+                });
+            });
+        }
+        catch (Exception)
+        {   
+        }
+        Close(); // If this is your cleanup method
+        UserInfo.Logout();
+        Application.Current.MainPage = new LoginPage();
 #else
         Close();
         UserInfo.Logout();
