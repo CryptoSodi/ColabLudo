@@ -180,7 +180,6 @@ namespace LudoClient
         }
         async Task OnAuthenticate(string scheme)
         {
-            String AuthToken;
             try
             {
                 var authService = DependencyService.Get<IGoogleAuthService>();

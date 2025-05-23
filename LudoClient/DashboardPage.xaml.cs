@@ -56,7 +56,7 @@ public partial class DashboardPage : ContentPage
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Toast.Make("No enough balance!", ToastDuration.Long, 24).Show();
+                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
             });
         
     }
@@ -108,7 +108,7 @@ public partial class DashboardPage : ContentPage
         //this.ShowPopup(ClientGlobalConstants.dailyBonus);
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Toast.Make("Not Bonus Today!", ToastDuration.Long, 24).Show();
+            Toast.Make("No Bonus Today!", ToastDuration.Long, 24).Show();
         });
     }
 }

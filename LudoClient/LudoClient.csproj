@@ -50,8 +50,8 @@
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
@@ -79,44 +79,44 @@
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+	  <ApplicationVersion>5</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.5</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo NFT</ApplicationTitle>
 	</PropertyGroup>
 
@@ -453,6 +453,7 @@
 	  <None Remove="Resources\Images\Wallet\total_ava_bal_bg.png" />
 	  <None Remove="Resources\Images\Wallet\verify_acc_bg.png" />
 	  <None Remove="Resources\Images\Wallet\wallet_bg.png" />
+	  <None Remove="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -991,6 +992,10 @@
 	  <PackageReference Include="Xamarin.GooglePlayServices.Games.V2">
 	    <Version>120.1.2.5</Version>
 	  </PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 </Project>
