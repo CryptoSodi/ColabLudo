@@ -12,7 +12,9 @@ using System.Text.Json;
 namespace LudoClient.CoreEngine;
 
 public partial class Game : ContentPage
-{//For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
+{
+    HepticEngine hepticEngine = new HepticEngine();
+    //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
     Piece tempPiece = null;
     public string playerColor = "";
     public Engine engine;
@@ -471,7 +473,6 @@ public partial class Game : ContentPage
 
         TokenSelector.IsVisible = false;
     }
-
     private void SetHomeBlock(Token lockHome, string color)
     {
         var player = engine.EngineHelper.getPlayer(color);
@@ -554,7 +555,7 @@ public partial class Game : ContentPage
                 AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
                 List<Piece> pieces = new List<Piece>();
                 pieces.Add(engine.EngineHelper.players[i].Pieces[j]);
-                _ = RelocateAsync(pieces, engine.EngineHelper.players[i].Pieces[j]);
+                _ = RelocateAsync(pieces, engine.EngineHelper.players[i].Pieces[j], false);
             }
 
         SetHomeBlock(gui.LockHome1, "red");
@@ -562,7 +563,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
     }
-    public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone)
+    public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone, bool playsound = true)
     {
         engine.EngineHelper.animationBlock = true;
 
@@ -584,8 +585,11 @@ public partial class Game : ContentPage
 
             await RunAnimationAsync(pieces, x, y, animTime, "Move");
 
+            if (playsound)
+                hepticEngine?.PlayHapticFeedback("token_move");
+
             if (pieceClone.Location != pieces[0].Location)
-                await RelocateHelper(pieces, pieceClone);
+                await RelocateHelper(pieces, pieceClone, playsound);
             else
             {
                 engine.EngineHelper.animationBlock = false;
@@ -596,7 +600,7 @@ public partial class Game : ContentPage
         while (engine.EngineHelper.animationBlock)
             await Task.Delay(20);
     }
-    public async Task RelocateAsync(List<Piece> piece, Piece pieceClone)
+    public async Task RelocateAsync(List<Piece> piece, Piece pieceClone, bool playsound = true)
     {
         string colorKey = char.ToLower(piece[0].Name[0]).ToString();
 
@@ -618,7 +622,7 @@ public partial class Game : ContentPage
         }
 
         // Perform the relocation animation.
-        await RelocateHelper(piece, pieceClone);
+        await RelocateHelper(piece, pieceClone, playsound);
         // **Post-move Phase:**
         // Now update the board normally, including the moving piece in the grouping.
         adjustPiceImage(piece[0], allPieces, excludeMoving: false);
@@ -1055,6 +1059,7 @@ public partial class Game : ContentPage
                 seat = BluePlayerSeat;
                 break;
         }
+        hepticEngine?.PlayHapticFeedback("DiceRoll");
         seat.AnimateDice();
     }
     public void StopDice(string SeatName, int dicevalue)
@@ -1068,12 +1073,10 @@ public partial class Game : ContentPage
             seat = YellowPlayerSeat;
         if (SeatName == "blue")
             seat = BluePlayerSeat;
-
-        if (dicevalue == 0)
-        {
-            seat.StopDice(6);
-            return;
-        }
+        
+        if(dicevalue==6)
+            hepticEngine?.PlayHapticFeedback("ding");
+        
         seat.StopDice(dicevalue);
     }
     private void PopOverClicked(object sender, EventArgs e)
@@ -1196,7 +1199,6 @@ public partial class Game : ContentPage
             });
         }
     }
-
     public void UpdateMessages(object sender, List<ChatMessages> messages)
     {
         MainThread.BeginInvokeOnMainThread(() =>

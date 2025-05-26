@@ -154,6 +154,7 @@ public partial class PlayerSeat : ContentView
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            Thread.Sleep(200);
             DiceLayer.IsAnimationPlaying = false;
             DiceLayer.Source = $"dice_{DiceValue}.png";
         });

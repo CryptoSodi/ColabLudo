@@ -15,7 +15,7 @@ namespace SharedCode.CoreEngine
         public delegate void Callback_AnimateDice_EventHandler(string SeatName);
         public event Callback_AnimateDice_EventHandler AnimateDice;
 
-        public delegate Task CallbackEventHandlerRelocateAsync(List<Piece> piece, Piece pieceClone);
+        public delegate Task CallbackEventHandlerRelocateAsync(List<Piece> piece, Piece pieceClone, bool playsound);
         public event CallbackEventHandlerRelocateAsync RelocateAsync;
 
         public delegate void CallbackEventHandlerStartProgressAnimation(string SeatColor);
@@ -451,7 +451,7 @@ namespace SharedCode.CoreEngine
                     piece1.Jump(this, EngineHelper.diceValue);
                     relocatedPieces.Add(piece1);
                     if (RelocateAsync != null)
-                       await RelocateAsync(relocatedPieces, piece1.Clone());
+                       await RelocateAsync(relocatedPieces, piece1.Clone(), true);
 
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece1, piece1.Position, killed);
                 }
@@ -492,7 +492,7 @@ namespace SharedCode.CoreEngine
 
                             if (RelocateAsync != null) {
                                 relocatedPieces.Add(ownTrapped);
-                                RelocateAsync(relocatedPieces, piece1Clone);
+                                RelocateAsync(relocatedPieces, piece1Clone, true);
                             }
                         }
                     }
@@ -507,7 +507,7 @@ namespace SharedCode.CoreEngine
                             if (piece2!=null)
                                 relocatedPieces.Add(piece2);
                             
-                            await RelocateAsync(relocatedPieces, piece1Clone);
+                            await RelocateAsync(relocatedPieces, piece1Clone, true);
                         }
                         
                         foreach (var enemy in kilablePieces)
@@ -519,7 +519,7 @@ namespace SharedCode.CoreEngine
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
                             if (RelocateAsync != null)
-                                RelocateAsync(relocatedPieces, relocatedPieces[0]);
+                                RelocateAsync(relocatedPieces, relocatedPieces[0], true);
                         }
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
@@ -539,11 +539,11 @@ namespace SharedCode.CoreEngine
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
                         if (RelocateAsync != null)
-                            await RelocateAsync(relocatedPieces, piece1Clone);
+                            await RelocateAsync(relocatedPieces, piece1Clone, true);
                         relocatedPieces = new List<Piece>();
                         relocatedPieces.Add(kilablePieces[0]);
                         if (RelocateAsync != null)
-                            await RelocateAsync(relocatedPieces, kilablePieces[0]);
+                            await RelocateAsync(relocatedPieces, kilablePieces[0], true);
                     }
                     if (!killed && RelocateAsync != null)
                     {
@@ -551,7 +551,7 @@ namespace SharedCode.CoreEngine
                         relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        await RelocateAsync(relocatedPieces, piece1Clone);
+                        await RelocateAsync(relocatedPieces, piece1Clone, true);
                     }
                     
                     gameRecorder.RecordMove(EngineHelper.diceValue, player, piece1, piece1.Position, killed); // Prepare animation

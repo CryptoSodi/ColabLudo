@@ -724,6 +724,7 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.70" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
+		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
 		<PackageReference Include="SimpleToolkit.Core" Version="6.0.1" />
 		<PackageReference Include="SimpleToolkit.SimpleShell" Version="5.0.1" />
 		<PackageReference Include="System.Private.Uri" Version="4.3.2" />
@@ -984,6 +985,7 @@
 
 	<ItemGroup>
 	  <Folder Include="Network\" />
+	  <Folder Include="Resources\Raw\" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">

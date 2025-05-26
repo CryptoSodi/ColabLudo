@@ -1,7 +1,6 @@
 using LudoServer.Data;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 

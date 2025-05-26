@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Plugin.Maui.Audio;
 using SimpleToolkit.Core;
 using SimpleToolkit.SimpleShell;
 using Xe.AcrylicView;
@@ -38,7 +39,7 @@ namespace LudoClient
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
-
+            builder.AddAudio();
             return builder.Build();
         }
     }
