@@ -4,14 +4,22 @@ using Android.Gms.Auth.Api.SignIn;
 using Android.Gms.Tasks;  // for IOnCompleteListener and Android.Gms.Tasks.Task
 using Android.Provider;
 using LudoClient.Services;
+using System.Net;
+using static Android.Resource;
 namespace LudoClient.Platforms.Android
 {
     public class DeviceIdentifierService : IDeviceIdentifierService
     {
         public string GetDeviceId()
         {
-            var context = Microsoft.Maui.ApplicationModel.Platform.AppContext;
-            return Settings.Secure.GetString(context.ContentResolver, Settings.Secure.AndroidId);
+            var deviceId = Preferences.Get("device_id", null);
+            if (deviceId == null)
+            {
+                var context = Microsoft.Maui.ApplicationModel.Platform.AppContext;
+                deviceId = Settings.Secure.GetString(context.ContentResolver, Settings.Secure.AndroidId);
+                Preferences.Set("device_id", deviceId);  // already persisted
+            }
+            return deviceId;
         }
     }
     public class GoogleAuthService : Java.Lang.Object, IGoogleAuthService
@@ -19,6 +27,8 @@ namespace LudoClient.Platforms.Android
         private TaskCompletionSource<string?> _signInTcs;
         private TaskCompletionSource<bool> _signOutTcs;
         public static GoogleAuthService? Instance { get; private set; }
+
+        System.String webclientID = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
         public GoogleAuthService()
         {
             Instance = this;
@@ -31,7 +41,7 @@ namespace LudoClient.Platforms.Android
             _signInTcs = new TaskCompletionSource<string?>();
 
             var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
-                .RequestIdToken("973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com") // Replace this
+                .RequestIdToken(webclientID) 
                 .RequestEmail()
                 .RequestProfile()
                 .Build();
@@ -48,8 +58,9 @@ namespace LudoClient.Platforms.Android
             _signOutTcs = new TaskCompletionSource<bool>();
 
             var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
-                .RequestIdToken("973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com") // same web client ID here
+                .RequestIdToken(webclientID)
                 .RequestEmail()
+                .RequestProfile()
                 .Build();
 
             var signInClient = GoogleSignIn.GetClient(Platform.CurrentActivity, gso);
@@ -76,7 +87,7 @@ namespace LudoClient.Platforms.Android
             {
                 GoogleSignInAccount account = (GoogleSignInAccount)task.Result;
 
-                UserName = account.GivenName;
+                UserName = account.DisplayName;
                 UserEmail = account.Email;
                 UserPhotoUrl = account.PhotoUrl?.ToString();
 
@@ -87,7 +98,6 @@ namespace LudoClient.Platforms.Android
                 _signInTcs.TrySetException(new System.Exception("Google Sign-In failed."));
             }
         }
-
         private class OnCompleteListener : Java.Lang.Object, IOnCompleteListener
         {
             private readonly Action<global::Android.Gms.Tasks.Task> _onComplete;

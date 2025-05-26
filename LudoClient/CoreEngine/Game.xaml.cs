@@ -442,7 +442,7 @@ public partial class Game : ContentPage
         YellowPlayerSeat.reset();
         BluePlayerSeat.reset();
         SoundSwitch.init(".png");
-        MusicSwitch.init(".png");
+        VibrationSwitch.init(".png");
         //The Display to show selection of single or double token move
         TokenSelector.IsVisible = true;
         Alayout.Remove(TokenSelector);

@@ -12,7 +12,7 @@ public partial class Settings : BasePopup
     {
         InitializeComponent();
         SoundSwitch.init("line_bg.png");
-        MusicSwitch.init("line_bg.png");
+        VibrationSwitch.init("line_bg.png");
         NotificationSwitch.init("line_bg.png");
 
         string version = VersionTracking.CurrentVersion;          // e.g., "1.1.0"
@@ -24,8 +24,8 @@ public partial class Settings : BasePopup
     {
         Close();
         ClientGlobalConstants.helpDesk = new HelpDesk();
-        Application.Current.MainPage.ShowPopup(ClientGlobalConstants.helpDesk);
-        // Close the popup when the background is tapped
+        Application.Current?.MainPage.ShowPopup(ClientGlobalConstants.helpDesk);
+        //Close the popup when the background is tapped
     }
     private void SignOutTapped(object sender, EventArgs e)
     {
@@ -39,7 +39,6 @@ public partial class Settings : BasePopup
                 {
                     if (task.IsCompletedSuccessfully && task.Result)
                     {
-                        
                     }
                     else
                     {

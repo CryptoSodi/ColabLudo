@@ -1,54 +1,25 @@
-using LudoClient.Constants;
+using Acr.UserDialogs;
 using LudoClient.Services;
-using Newtonsoft.Json.Linq;
 using SharedCode.Constants;
-using System.Text;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace LudoClient
 {
     public partial class LoginPage : ContentPage
     {
-        const string authenticationUrl = "https://xamarin-essentials-auth-sample.azurewebsites.net/mobileauth/";
-        const string userInfoUrl = "https://www.googleapis.com/oauth2/v1/userinfo";
-        OtpRequest otpReuest = null;
+        string city = "none";
+        private bool _isLoggingIn = false;
         public LoginPage()
         {
             InitializeComponent();
-            if (Skins.CurrentSkin == Skins.SkinTypes.DefaultSkin)            
-                BtnCancel.IsVisible = BtnLoginSingup.IsVisible = OtpField.IsVisible = NumberField.IsVisible = false;
-            Task.Run(async () =>
+         
+            Task.Run(() =>
             {
                 GetCountryByIpAsync();
             });
+
             string build = VersionTracking.CurrentBuild;
             VersionText.Text = "Version : " + build;
-        }
-        private async Task AddPhoneNumberToQueue()
-        {
-            if (UserInfo.Instance.Id != null)
-                otpReuest.playerId = UserInfo.Instance.Id + "";
-            var content = new StringContent(JsonSerializer.Serialize(otpReuest), Encoding.UTF8, "application/json");
-            try
-            {
-                HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync("api/Otp", content);
-                string responseBody = await response.Content.ReadAsStringAsync();
-                if (responseBody.Contains("OTP saved successfully."))
-                {
-                    Console.WriteLine($"Status Code: {response.StatusCode}");
-                    Console.WriteLine("Response Body:");
-                    Console.WriteLine(responseBody);
-                    NumberField.IsVisible = false;
-                    OtpField.IsVisible = true;
-                    BtnCancel.IsVisible = true;
-                    BtnLoginSingup.Source = "abtnsignup.png";
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Request failed: {ex.Message}");
-            }
         }
         void SetupInstance(Dictionary<string, JsonElement>? result)
         {
@@ -59,18 +30,10 @@ namespace LudoClient
             string phoneNumber = result["phoneNumber"].GetString();
             double PlayerLudoCoins = result["playerLudoCoins"].GetDouble();
             double PlayerCryptoCoins = result["playerCryptoCoins"].GetDouble();
-
-            if (otpReuest.country == "")
-                otpReuest.country = result["country"].GetString();
-
+     
             UserInfo.Instance.Id = playerId;
             UserInfo.Instance.PhoneNumber = phoneNumber;
-            UserInfo.Instance.Country = otpReuest.country;
-            UserInfo.Instance.CountryCode = otpReuest.countryCode;
-            UserInfo.Instance.RegionName = otpReuest.regionName;
-            UserInfo.Instance.City = otpReuest.city;
-            UserInfo.Instance.Lat = (float)otpReuest.lat;
-            UserInfo.Instance.Lon = (float)otpReuest.lon;
+            UserInfo.Instance.City = city;
 
             UserInfo.Instance.Name = PlayerName;
             UserInfo.Instance.Email = Email;
@@ -78,267 +41,115 @@ namespace LudoClient
             UserInfo.Instance.Coins = (float)PlayerLudoCoins;
             UserInfo.Instance.PlayerCryptoCoins = (float)PlayerCryptoCoins;
         }
-        private async Task VerifyOtpAsync(string phoneNumber, string otp)
-        {
-            try
-            {
-                var response = await GlobalConstants.httpClient.GetAsync($"api/otp?phoneNumber={Uri.EscapeDataString(phoneNumber)}&otp={otp}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    Dictionary<string, JsonElement>? result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
-
-                    SetupInstance(result);
-
-                    string message = result["message"].GetString();
-                    if (message.Contains("success"))
-                    {
-                        if (UserInfo.Instance.Name == null)
-                        {
-                            NumberField.IsVisible = false;
-                            OtpField.IsVisible = false;
-                            BtnLoginSingup.IsVisible = false;
-                            BtnCancel.IsVisible = false;
-                            await DisplayAlert("Success", "Please Link a Google account to this number.", "OK");
-                        }
-                        else
-                        {
-                           await UserInfo.SaveState();
-                            //Success Login
-                            Application.Current.MainPage = new AppShell();
-
-                        }
-                    }
-                    else
-                        await DisplayAlert("Failed", message, "OK");
-                }
-                else
-                {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<Dictionary<string, string>>(responseBody);
-                    await DisplayAlert("Error", result["message"], "OK");
-                }
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
-            }
-        }
-        private bool IsValidPhoneNumber(string phoneNumber)
-        {
-            // A simple validation regex for phone numbers. This can be improved based on requirements.
-            //return Regex.IsMatch(phoneNumber, @"^\+[1-9]\d{1,14}$");
-            return Regex.IsMatch(phoneNumber, @"^[0-9]{7,15}$");
-        }
-        private async void LoginSingup_Clicked(object sender, EventArgs e)
-        {
-            String Number = NumberField.entryField.Text;
-            String OTP = OtpField.entryField.Text;
-            if (BtnLoginSingup.Source is FileImageSource fileImageSource && fileImageSource.File == "abtnlogin.png")
-            {
-                otpReuest.phoneNumber = Number;
-                //Perform Login
-                AddPhoneNumberToQueue();
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(OTP))
-                {
-                    await DisplayAlert("Error", "Please enter OTP.", "OK");
-                    return;
-                }
-                // Call the API to verify OTP
-                await VerifyOtpAsync(Number, OTP);
-            }
-            //GooleSignup_Clicked(null, null);
-        }
-        private async void Cancel_Clicked(object sender, EventArgs e)
-        {
-            NumberField.IsVisible = true;
-            OtpField.IsVisible = false;
-            BtnCancel.IsVisible = false;
-            BtnLoginSingup.Source = "abtnlogin.png";
-            NumberField.entryField.Text = otpReuest.countryCode;
-        }
         private async void Guest_Login_Clicked(object sender, EventArgs e)
         {
-#if WINDOWS
-            UserInfo.Instance.Email = "Sodi@gmail.com";
-            UserInfo.Instance.Name = "Sodi";
-            UserInfo.Instance.PictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";
-            performLoginAsync();
-#endif
-#if ANDROID
+            if (_isLoggingIn)
+                return;
+            _isLoggingIn = true;
+
             try
             {
-                var deviceIdService = this.Handler.MauiContext.Services.GetService<IDeviceIdentifierService>();
-                var deviceId = deviceIdService?.GetDeviceId();
+#if ANDROID
+                UserDialogs.Instance.ShowLoading("Logging in as Guest.", MaskType.Black);                
+#endif
+                var deviceId = this.Handler.MauiContext.Services.GetService<IDeviceIdentifierService>()?.GetDeviceId();
+
+                UserInfo.Instance.Id = 19;
                 UserInfo.Instance.Email = deviceId + "@LudoNFT.com";
                 UserInfo.Instance.Name = deviceId + "";
                 UserInfo.Instance.PictureUrl = "https://ludoNFT.online/player.png";
-                performLoginAsync();
+
+                //Save the user's login state
+                await UserInfo.SaveState();
+                UserInfo.LoadState();
+                Application.Current.MainPage = new AppShell();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
                 await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
             }
+#if ANDROID
+            UserDialogs.Instance.HideLoading();
 #endif
+            _isLoggingIn = false;
         }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
+            if (_isLoggingIn)
+                return;
+            _isLoggingIn = true;
 #if WINDOWS
-            UserInfo.Instance.Email = "Sodi@gmail.com";
-            UserInfo.Instance.Name = "Sodi";
-            UserInfo.Instance.PictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";
-            performLoginAsync();
+            await performLoginAsync("-1","Sodi", "Sodi@gmail.com","https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj");
+            _isLoggingIn = false;
+            return;
 #endif
 #if ANDROID
-            try
-            { 
-                OnAuthenticate("Google"); 
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
-            }
+            // Show loading indicator on the main thread
+            MainThread.BeginInvokeOnMainThread(() =>{
+                UserDialogs.Instance.ShowLoading("Logging in with Google.", MaskType.Black);
+            });
 #endif
-        }
-        async Task OnAuthenticate(string scheme)
-        {
+            IGoogleAuthService authService = null;
             try
             {
-                var authService = DependencyService.Get<IGoogleAuthService>();
+                authService = DependencyService.Get<IGoogleAuthService>();
                 var idToken = await authService.SignInAsync();
-
-                if (!string.IsNullOrEmpty(idToken))
-                {
-                    // Successfully signed in
-                    UserInfo.Instance.Name = authService.UserName;
-                    UserInfo.Instance.Email = authService.UserEmail;
-                    UserInfo.Instance.PictureUrl = authService.UserPhotoUrl;
-
-                    performLoginAsync();
-                }
-                else
-                {
-                    await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");
-                }
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", $"Sign-in failed:\n{ex.Message}", "OK");
+                await DisplayAlert("Google Sign-In FAILED", "Sign-in returned no token.", "OK");            
+                return;
             }
-            /*
-            try
-            {
-                WebAuthenticatorResult r = null;
-
-                if (scheme.Equals("Apple", StringComparison.Ordinal)
-                    && DeviceInfo.Platform == DevicePlatform.iOS
-                    && DeviceInfo.Version.Major >= 13)
-                {
-                    // Make sure to enable Apple Sign In in both the
-                    // entitlements and the provisioning profile.
-                    var options = new AppleSignInAuthenticator.Options
-                    {
-                        IncludeEmailScope = true,
-                        IncludeFullNameScope = true,
-                    };
-                    r = await AppleSignInAuthenticator.AuthenticateAsync(options);
-                }
-                else
-                {
-                    var authUrl = new Uri(authenticationUrl + scheme);
-                    var callbackUrl = new Uri("xamarinessentials://");
-
-                    r = await WebAuthenticator.AuthenticateAsync(authUrl, callbackUrl);
-                }
-
-                AuthToken = string.Empty;
-                if (r.Properties.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name))
-                    AuthToken += $"Name: {name}{Environment.NewLine}";
-                if (r.Properties.TryGetValue("email", out var email) && !string.IsNullOrEmpty(email))
-                    AuthToken += $"Email: {email}{Environment.NewLine}";
-                AuthToken += r?.AccessToken ?? r?.IdToken;
-                GetUserInfoAsync(AuthToken);
+            if (authService != null)
+            {   
+                // Successfully signed in
+                await performLoginAsync((UserInfo.Instance.Id != null ? UserInfo.Instance.Id.ToString() : "-1"),authService.UserName,authService.UserEmail,authService.UserPhotoUrl);
             }
-            catch (OperationCanceledException)
+            else
             {
-                Console.WriteLine("Login canceled.");
-
-                AuthToken = string.Empty;
-                DisplayAlert("Error", "Login canceled.", "ok");
+                await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");                
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed: {ex.Message}");
-                AuthToken = string.Empty;
-                DisplayAlert("Error", $"Failed: {ex.Message}", "ok");
-            }*/
+#if ANDROID
+            UserDialogs.Instance.HideLoading();
+#endif
+            _isLoggingIn = false;
         }
-        private async void GetUserInfoAsync(string accessToken)
-        {
-            HttpClient client = new HttpClient();
-            client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
-            var response = await client.GetAsync(userInfoUrl);
-            String responseString = await response.Content.ReadAsStringAsync();
-
-            JObject googleResponse = JObject.Parse(responseString);
-            UserInfo.Instance.Email = (string)googleResponse["email"];
-            UserInfo.Instance.Name = (string)googleResponse["name"];
-            UserInfo.Instance.PictureUrl = (string)googleResponse["picture"];
-
-            performLoginAsync();
-        }
-        private async void performLoginAsync()
+        private async Task performLoginAsync(String Id, String Name,String Email,String PicURL)
         {
             try
             {
                 if (GlobalConstants.online)
                 {
-                    string url = "api/GoogleAuthentication?name=" + UserInfo.Instance.Name + "&email=" + UserInfo.Instance.Email + "&pictureUrl=" + UserInfo.Instance.PictureUrl;
-                    if (UserInfo.Instance.Id != null)
-                        url = url + "&playerId=-1";
+                    string url = $"api/GoogleAuthentication?name={Name}&email={Email}&pictureUrl={PicURL}&playerId={Id}";
 
-                    HttpResponseMessage response = await GlobalConstants.httpClient.PostAsync(url, null);
-                    string responseBody = await response.Content.ReadAsStringAsync();
-
-                    Dictionary<string, JsonElement>? result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
+                    Dictionary<string, JsonElement>? result = null;
+                    
+                    try
+                    {
+                        HttpResponseMessage response = GlobalConstants.httpClient.GetAsync(url).GetAwaiter().GetResult();
+                        string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        await DisplayAlert("Server Error", $"An error occurred: {ex.Message}", "OK");
+                    }
 
                     SetupInstance(result);
-                    string message = result["message"].GetString();
+                    string message = result?["message"].GetString();
 
-                    response.EnsureSuccessStatusCode();
-                    if (message == "Player login successfully." || message == "Player updated successfully.")
+                    if (message == "Player login successfully." || message == "Player updated successfully." || message == "Player created successfully." || message == "Attach Phone.")
                     {
+
+                        UserInfo.Instance.Name = Name;
+                        UserInfo.Instance.Email = Email;
+                        UserInfo.Instance.PictureUrl = PicURL;
                         //Save the user's login state
                         await UserInfo.SaveState();
                         UserInfo.LoadState();
-
                         //Hide Loader
                         Application.Current.MainPage = new AppShell();
-                    }
-                    else if (message == "Player created successfully." || message == "Attach Phone.")
-                    {
-                        if (Skins.CurrentSkin != Skins.SkinTypes.DefaultSkin)
-                        {
-                            NumberField.IsVisible = true;
-                            OtpField.IsVisible = false;
-                            BtnLoginSingup.IsVisible = true;
-                            BtnCancel.IsVisible = false;
-                            GoogleLoginPanel.IsVisible = false;
-                            await DisplayAlert("Success", "Please Link a your phone number.", "OK");
-                        }
-                        else
-                        {
-                            //Save the user's login state
-                            await UserInfo.SaveState();
-                            UserInfo.LoadState();
-                            //Hide Loader
-                            Application.Current.MainPage = new AppShell();
-                        }
                     }
                 }
             }
@@ -347,34 +158,46 @@ namespace LudoClient
                 await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
         }
-        public class OtpRequest
-        {
-            public string playerId { get; set; }
-            public string phoneNumber { get; set; }
-            public string countryCode { get; set; }
-            public string country { get; set; }
-            public string regionName { get; set; }
-            public string city { get; set; }
-            public double lat { get; set; }
-            public double lon { get; set; }
-        }
-
         public async void GetCountryByIpAsync()
         {
             try
             {
                 using HttpClient client = new HttpClient();
                 //{"status":"success","country":"Pakistan","countryCode":"PK","region":"PB","regionName":"Punjab","city":"Lahore","zip":"54020","lat":31.558,"lon":74.3587,"timezone":"Asia/Karachi","isp":"Cloudflare, Inc.","org":"Cloudflare WARP","as":"AS13335 Cloudflare, Inc.","query":"104.28.212.126"}
-                string url = "http://ip-api.com/json/?token=0cf62c767a1ab9";
+                //string url = "http://ip-api.com/json/?token=0cf62c767a1ab9";
+                string url = "http://ip-api.com/json/?token=0cf62c767a1ab9&fields=status,countryCode,city";
+                try
+                {
+                    var response = await client.GetStringAsync(url);
+                    using JsonDocument doc = JsonDocument.Parse(response);
+                    var root = doc.RootElement;
 
-                var response = await client.GetStringAsync(url);
-                otpReuest = JsonSerializer.Deserialize<OtpRequest>(response);
-                otpReuest.countryCode = otpReuest?.country == "Pakistan" ? "+92" : "+91";
-                NumberField.entryField.Text = otpReuest.countryCode;
-                otpReuest.country = otpReuest?.country;
+                    if (root.TryGetProperty("status", out JsonElement statusElement) &&
+                        statusElement.GetString() == "success" &&
+                        root.TryGetProperty("city", out JsonElement cityElement))
+                    {
+                        city = cityElement.GetString();
+                    }
+                    else
+                    {
+                        // Handle cases where 'status' is not 'success' or 'city' property is missing
+                        city = "null";
+                    }
+                }
+                catch (HttpRequestException ex)
+                {
+                    // Handle HTTP request errors
+                    city = ex.Message;
+                }
+                catch (JsonException ex)
+                {
+                    // Handle JSON parsing errors
+                    city = ex.Message;
+                }
             }
             catch (Exception ex)
             {
+                city = ex.Message;
                 Console.WriteLine($"Error: Country {ex.Message}");
             }
         }

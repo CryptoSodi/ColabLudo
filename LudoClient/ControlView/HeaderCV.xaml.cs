@@ -24,17 +24,18 @@ public partial class HeaderCV : ContentView
     }
     private async void loadHeaderImage()
     {
-        if (UserInfo.Instance.PictureBlob == "")
-        {
-            //PlayerImageItem.Source = UserInfo.Instance.PictureUrl;
-            await UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl);
-        }
-        if (UserInfo.Instance.PictureBlob == "")
-        {
-            Console.WriteLine("BLOB NOT LOADED");
-        }
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            if (UserInfo.Instance.PictureBlob == "")
+            {
+                //PlayerImageItem.Source = UserInfo.Instance.PictureUrl;
+                UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl);
+            }
+            if (UserInfo.Instance.PictureBlob == "")
+            {
+                Console.WriteLine("BLOB NOT LOADED");
+            }
+
             PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
         });
     }

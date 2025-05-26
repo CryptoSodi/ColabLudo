@@ -13,7 +13,7 @@
             <local:Capsule ImageSource="settings_forground.png" Grid.Row="2" Grid.Column="1" Grid.RowSpan="4" Margin="20,0,20,0" VerticalOptions="Start" HorizontalOptions="Center">
                 <Grid Padding="20,0,20,0" Grid.Row="2"  Grid.Column="1" RowSpacing="8" ColumnSpacing="8" VerticalOptions="Start" HorizontalOptions="Center" RowDefinitions=".08*,1*,1*,1*,.08*">
                     <local:SettingsSwitch x:Name="SoundSwitch" SettingText="SOUNDS" PreferencesKey="IsSoundEnabled" Grid.Row="1"/>
-                    <local:SettingsSwitch x:Name="MusicSwitch" SettingText="MUSIC" PreferencesKey="IsMusicEnabled" Grid.Row="2"/>
+                    <local:SettingsSwitch x:Name="VibrationSwitch" SettingText="VIBRATION" PreferencesKey="IsVibrationEnabled" Grid.Row="2"/>
                     <local:SettingsSwitch x:Name="NotificationSwitch" SettingText="NOTIFICATION" PreferencesKey="IsNotificationEnabled" Grid.Row="3"/>
                 </Grid>
             </local:Capsule>

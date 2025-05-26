@@ -33,18 +33,17 @@ if(Debug){
 #endif
             BaseUrl = Url.Replace("http:", "https:") + ":7255/";
             HubUrl  = Url + ":8085/";
+            
+            HttpClientHandler handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+            };
+
             httpClient = new HttpClient(handler)
             {
                 BaseAddress = new Uri(BaseUrl) // Set the base URL
             };
         }
-        static readonly HttpClientHandler handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
-            {
-                return true; // Ignore SSL certificate errors for development
-            }
-        };
 
         public static int lastSeenIndex = -1;
         public static string RoomCode { get; internal set; }

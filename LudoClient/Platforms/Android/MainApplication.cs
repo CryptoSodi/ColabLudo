@@ -22,8 +22,7 @@ namespace LudoClient
             // Remove Entry control underline
             Microsoft.Maui.Handlers.EntryHandler.Mapper.AppendToMapping("NoUnderline", (h, v) =>
             {
-                h.PlatformView.BackgroundTintList =
-                    Android.Content.Res.ColorStateList.ValueOf(Colors.Transparent.ToAndroid());
+                h.PlatformView.BackgroundTintList = Android.Content.Res.ColorStateList.ValueOf(Colors.Transparent.ToAndroid());
             });
 
             return MauiProgram.CreateMauiApp();
@@ -34,8 +33,6 @@ namespace LudoClient
             
             Microsoft.Maui.Controls.DependencyService.Register<IDeviceIdentifierService, DeviceIdentifierService>();
             Microsoft.Maui.Controls.DependencyService.Register<IGoogleAuthService, GoogleAuthService>();
-            // Initialize Google Play Games SDK
-            PlayGamesSdk.Initialize(this);
         }
     }
 }

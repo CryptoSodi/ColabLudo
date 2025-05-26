@@ -48,7 +48,7 @@ public partial class DashboardPage : ContentPage
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        if(UserInfo.Instance.SolBalance>= GlobalConstants.initialEntry)
+        if(UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.cashGame = new CashGame();
             Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();

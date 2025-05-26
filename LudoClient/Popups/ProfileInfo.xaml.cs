@@ -17,7 +17,7 @@ public partial class ProfileInfo : BasePopup
     public void loadValues()
     {
         while(UserInfo.Instance.PictureBlob == "")
-                Thread.Sleep(1000);
+                Thread.Sleep(50);
 
         player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
         player.PlayerName = UserInfo.Instance.Name;

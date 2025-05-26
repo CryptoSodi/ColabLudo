@@ -11,28 +11,11 @@
     <StackLayout Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" >
         <!--  Your content here  -->
         <Image HeightRequest="185" Margin="0,0,0,80" Source="logo.png" HorizontalOptions="Center"/>
-
-        <local:EditField x:Name="NumberField" Title="Number" Margin="15,15,15,0"  HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
-        <local:EditField x:Name="OtpField" IsVisible="False" Title="OTP" Margin="15,15,15,0" HorizontalOptions="Fill" VerticalOptions="FillAndExpand" />
-
-        <StackLayout Spacing="15" HeightRequest="40" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="StartAndExpand" >
-            <Image x:Name="BtnLoginSingup" Source="abtnlogin.png" >
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="LoginSingup_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
-            <Image x:Name="BtnCancel" Source="abtnlogin.png" IsVisible="False">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="Cancel_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
-        </StackLayout>
-        
-            <Image x:Name="GoogleLoginPanel" Margin="90,0,90,20" HeightRequest="60" Source="google_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="GooleSignup_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
+        <Image x:Name="GoogleLoginPanel" Margin="90,0,90,20" HeightRequest="60" Source="google_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="GooleSignup_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
         <Image x:Name="GuestPanel" Margin="90,0,90,20" HeightRequest="60" Source="guest_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="Guest_Login_Clicked" />
@@ -40,5 +23,5 @@
         </Image>
 
         <Label x:Name="VersionText" HorizontalOptions="Center" Margin="0,0,0,100" Text="Version 1.0" VerticalOptions="Fill" />
-        </StackLayout>
+    </StackLayout>
 </ContentPage>

@@ -112,16 +112,16 @@
                                                 </Grid>
                                                 <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
                                                 <Grid WidthRequest="160" HeightRequest="35">
-                                                    <Label Text="Music"  TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                    <Label Text="Sound"  TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                     <Grid HorizontalOptions="End" VerticalOptions="Center">
                                                         <local:SettingsSwitch x:Name="SoundSwitch" SettingText="" PreferencesKey="IsSoundEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
                                                     </Grid>
                                                 </Grid>
                                                 <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
                                                 <Grid WidthRequest="160" HeightRequest="35">
-                                                    <Label Text="Sound" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                    <Label Text="Vibration" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                     <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                        <local:SettingsSwitch x:Name="MusicSwitch" SettingText="" PreferencesKey="IsMusicEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
+                                                        <local:SettingsSwitch x:Name="VibrationSwitch" SettingText="" PreferencesKey="IsVibrationEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
                                                     </Grid>
                                                 </Grid>
                                             </VerticalStackLayout>

@@ -6,27 +6,19 @@
 
     <Grid RowDefinitions="1*" ColumnDefinitions=".3*,1*">
         <local:Capsule ImageSource="profile_user.png" VerticalOptions="Fill" HorizontalOptions="Fill">
-            <Grid>
-                <Image x:Name="PlayerImageItem" Margin="2" VerticalOptions="Fill" HorizontalOptions="Fill"/>
-                <Image IsVisible="False" Source="ic_camera.png" Margin="-1" VerticalOptions="End" HorizontalOptions="End" WidthRequest="25" HeightRequest="25"/>
-            </Grid>
+            <Image x:Name="PlayerImageItem" Source="http://ludonft.online/player.png" Margin="4" VerticalOptions="Fill" HorizontalOptions="Fill"/>
         </local:Capsule>
-        <Grid RowDefinitions="1*,1*" ColumnDefinitions="1*" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+        <Grid RowDefinitions="1*,1*" ColumnDefinitions="1*" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
 
             <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="Fill">
-                <Label Margin="8,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                <Image Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>
-                <Grid IsVisible="False" Margin="2" VerticalOptions="Center" HorizontalOptions="End">
-                    <local:Capsule ImageSource="btn_edit.png" VerticalOptions="Center" HorizontalOptions="End">
-                        <ImageButton Clicked="EditInfoClicked"/>
-                    </local:Capsule>
-                </Grid>
+                <Label Margin="1,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                <Image Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
             </StackLayout>
 
             <StackLayout Margin="0,0,5,0" Grid.Row="1" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand">
-                <Grid Margin="8,1,0,1">
+                <Grid Margin="0,1,0,1">
                     <Image Source="level_star.png" VerticalOptions="Center" HorizontalOptions="Center"/>
-                    <Label Text="3"  Margin="3" VerticalOptions="Center" HorizontalOptions="Center" TextColor="Black"/>
+                    <Label Text="1" Margin="3" VerticalOptions="Center" HorizontalOptions="Center" TextColor="Black"/>
                 </Grid>
                 <Grid HorizontalOptions="FillAndExpand">
                     <Image Source="progress_bar_bg.png"/>
