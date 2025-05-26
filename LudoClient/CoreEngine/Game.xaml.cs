@@ -443,8 +443,12 @@ public partial class Game : ContentPage
         GreenPlayerSeat.reset();
         YellowPlayerSeat.reset();
         BluePlayerSeat.reset();
-        SoundSwitch.init(".png");
-        VibrationSwitch.init(".png");
+
+        // Refresh preferences in case they have changed
+
+        SoundSwitch.Source = Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        VibrationSwitch.Source = Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+
         //The Display to show selection of single or double token move
         TokenSelector.IsVisible = true;
         Alayout.Remove(TokenSelector);
@@ -1126,7 +1130,7 @@ public partial class Game : ContentPage
                 // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
                 // GameRecorder.SaveGameHistory();
                 engine.cleanGame();
-                ClientGlobalConstants.dashBoard.Navigation.PopAsync();
+                await ClientGlobalConstants.dashBoard.Navigation.PopAsync();
             }
         }
     }
@@ -1150,7 +1154,17 @@ public partial class Game : ContentPage
         // Or to allow it:
         // return base.OnBackButtonPressed();
     }
-
+    private void SoundSwitch_Tapped(object sender, EventArgs e)
+    {
+        SoundSwitch.Source = !Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        Preferences.Default.Set("IsSoundEnabled", !Preferences.Default.Get("IsSoundEnabled", true));
+    }
+    private void VibrationSwitch_Tapped(object sender, EventArgs e)
+    {
+        VibrationSwitch.Source = !Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        Preferences.Default.Set("IsVibrationEnabled", !Preferences.Default.Get("IsVibrationEnabled", true));
+    }
+        
     //CHAT ENGINE
     private void MessageEntry_Completed(object sender, EventArgs e)
     {

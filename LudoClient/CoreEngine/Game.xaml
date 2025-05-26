@@ -7,156 +7,164 @@
              xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
              xmlns:constants="clr-namespace:LudoClient.Constants"
              BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
-    <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".3*,.4*,.06*,1.6*,.4*,.3*">
+
+        <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
+            <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" Margin="5">
+                <Grid.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="CloseTokenSelector"/>
+                </Grid.GestureRecognizers>
+
+                <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
+                    <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
+                    <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
+                    <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
+                    <local:Token x:Name="red4" piece="{x:Static constants:Skins.RedToken}"/>
+                    <local:Token x:Name="gre1" piece="{x:Static constants:Skins.GreenToken}"/>
+                    <local:Token x:Name="gre2" piece="{x:Static constants:Skins.GreenToken}"/>
+                    <local:Token x:Name="gre3" piece="{x:Static constants:Skins.GreenToken}"/>
+                    <local:Token x:Name="gre4" piece="{x:Static constants:Skins.GreenToken}"/>
+                    <local:Token x:Name="yel1" piece="{x:Static constants:Skins.YellowToken}"/>
+                    <local:Token x:Name="yel2" piece="{x:Static constants:Skins.YellowToken}"/>
+                    <local:Token x:Name="yel3" piece="{x:Static constants:Skins.YellowToken}"/>
+                    <local:Token x:Name="yel4" piece="{x:Static constants:Skins.YellowToken}"/>
+                    <local:Token x:Name="blu1" piece="{x:Static constants:Skins.BlueToken}"/>
+                    <local:Token x:Name="blu2" piece="{x:Static constants:Skins.BlueToken}"/>
+                    <local:Token x:Name="blu3" piece="{x:Static constants:Skins.BlueToken}"/>
+                    <local:Token x:Name="blu4" piece="{x:Static constants:Skins.BlueToken}"/>
+
+                    <local:Token x:Name="LockHome1" piece="{x:Static constants:Skins.LockHome}"/>
+                    <local:Token x:Name="LockHome2" piece="{x:Static constants:Skins.LockHome}"/>
+                    <local:Token x:Name="LockHome3" piece="{x:Static constants:Skins.LockHome}"/>
+                    <local:Token x:Name="LockHome4" piece="{x:Static constants:Skins.LockHome}"/>
+
+                    <acrylic:AcrylicView x:Name="TokenSelector" CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                        <StackLayout Orientation="Horizontal" WidthRequest="80" HeightRequest="50">
+                            <Grid HorizontalOptions="StartAndExpand" VerticalOptions="Center">
+                                <Grid HorizontalOptions="Start" VerticalOptions="Center">
+                                    <local:Token x:Name="TokenSelector1" piece="{x:Static constants:Skins.RedToken}"/>
+                                    <ImageButton Clicked="TokenSelected_Clicked" CommandParameter="1"/>
+                                </Grid>
+                            </Grid>
+                            <Grid HorizontalOptions="EndAndExpand" VerticalOptions="Center">
+                                <Grid HorizontalOptions="Start" VerticalOptions="Center">
+                                    <local:Token x:Name="TokenSelector2" piece="{x:Static constants:Skins.RedToken}"/>
+                                    <ImageButton Clicked="TokenSelected_Clicked" CommandParameter="2"/>
+                                </Grid>
+                            </Grid>
+                        </StackLayout>
+                    </acrylic:AcrylicView>
+                </AbsoluteLayout>
+            </Grid>
+        </local:Capsule>
         
-        <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".3*,.4*,.06*,1.6*,.4*,.3*">
+        <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="End">
+        </StackLayout>
+        
+        <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
+        </StackLayout>
 
-           
-                
+        <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="End">
+            <Grid ColumnDefinitions="0.026*,1*,Auto,0.01*">
 
-            <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
-                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" Margin="5">
-                    <Grid.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="CloseTokenSelector"/>
-                    </Grid.GestureRecognizers>
-
-                    <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
-                        <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
-                        <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
-                        <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
-                        <local:Token x:Name="red4" piece="{x:Static constants:Skins.RedToken}"/>
-                        <local:Token x:Name="gre1" piece="{x:Static constants:Skins.GreenToken}"/>
-                        <local:Token x:Name="gre2" piece="{x:Static constants:Skins.GreenToken}"/>
-                        <local:Token x:Name="gre3" piece="{x:Static constants:Skins.GreenToken}"/>
-                        <local:Token x:Name="gre4" piece="{x:Static constants:Skins.GreenToken}"/>
-                        <local:Token x:Name="yel1" piece="{x:Static constants:Skins.YellowToken}"/>
-                        <local:Token x:Name="yel2" piece="{x:Static constants:Skins.YellowToken}"/>
-                        <local:Token x:Name="yel3" piece="{x:Static constants:Skins.YellowToken}"/>
-                        <local:Token x:Name="yel4" piece="{x:Static constants:Skins.YellowToken}"/>
-                        <local:Token x:Name="blu1" piece="{x:Static constants:Skins.BlueToken}"/>
-                        <local:Token x:Name="blu2" piece="{x:Static constants:Skins.BlueToken}"/>
-                        <local:Token x:Name="blu3" piece="{x:Static constants:Skins.BlueToken}"/>
-                        <local:Token x:Name="blu4" piece="{x:Static constants:Skins.BlueToken}"/>
-
-                        <local:Token x:Name="LockHome1" piece="{x:Static constants:Skins.LockHome}"/>
-                        <local:Token x:Name="LockHome2" piece="{x:Static constants:Skins.LockHome}"/>
-                        <local:Token x:Name="LockHome3" piece="{x:Static constants:Skins.LockHome}"/>
-                        <local:Token x:Name="LockHome4" piece="{x:Static constants:Skins.LockHome}"/>
-
-                        <acrylic:AcrylicView x:Name="TokenSelector" CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                            <StackLayout Orientation="Horizontal" WidthRequest="80" HeightRequest="50">
-                                <Grid HorizontalOptions="StartAndExpand" VerticalOptions="Center">
-                                    <Grid HorizontalOptions="Start" VerticalOptions="Center">
-                                        <local:Token x:Name="TokenSelector1" piece="{x:Static constants:Skins.RedToken}"/>
-                                        <ImageButton Clicked="TokenSelected_Clicked" CommandParameter="1"/>
-                                    </Grid>
-                                </Grid>
-                                <Grid HorizontalOptions="EndAndExpand" VerticalOptions="Center">
-                                    <Grid HorizontalOptions="Start" VerticalOptions="Center">
-                                        <local:Token x:Name="TokenSelector2" piece="{x:Static constants:Skins.RedToken}"/>
-                                        <ImageButton Clicked="TokenSelected_Clicked" CommandParameter="2"/>
-                                    </Grid>
-                                </Grid>
-                            </StackLayout>
-                        </acrylic:AcrylicView>
-                    </AbsoluteLayout>
-                </Grid>
-            </local:Capsule>
-            <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="End">
-            </StackLayout>
-            <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
-            </StackLayout>
-
-            <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="End">
-                <Grid ColumnDefinitions="0.026*,1*,Auto,0.01*">
-
-                    <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center" HeightRequest="40">
-                        <BoxView BackgroundColor="#80000000" CornerRadius="8"/>
-                        <Entry x:Name="MessageEntry" ReturnType="Send" Completed="MessageEntry_Completed" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="14" VerticalOptions="Fill" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                        <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="ShowChat_Tapped" />
-                            </Grid.GestureRecognizers>
-                        </Grid>
+                <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center" HeightRequest="40">
+                    <BoxView BackgroundColor="#80000000" CornerRadius="8"/>
+                    <Entry x:Name="MessageEntry" ReturnType="Send" Completed="MessageEntry_Completed" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="14" VerticalOptions="Fill" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                    <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="ShowChat_Tapped" />
+                        </Grid.GestureRecognizers>
                     </Grid>
-
-                    <Image Source="btn_send.png" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
-                        <Image.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnSendButton_Tapped" />
-                        </Image.GestureRecognizers>
-                    </Image>
                 </Grid>
-            </local:Capsule>
-            <ScrollView x:Name="ChatScrollView" Grid.Row="1" Grid.RowSpan="4" HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="#400000ff">
-                <VerticalStackLayout Spacing="10" x:Name="MessagesListStack" Margin="15,0,15,15" VerticalOptions="End" Opacity="0.9">
-                    <VerticalStackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="HideChat_Tapped" />
-                    </VerticalStackLayout.GestureRecognizers>
-                </VerticalStackLayout>
-            </ScrollView>
-            <local:Capsule ImageSource="footer.png" HorizontalOptions="Fill" VerticalOptions="Start">
-                <StackLayout Spacing="5" Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
-                    <local:Capsule ImageSource="popover.png" HorizontalOptions="Center" VerticalOptions="Center">
-                        <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked">
-                            <simpleCore:Popover.AttachedPopover>
-                                <simpleCore:Popover>
-                                    <Grid>
-                                        <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                                            <VerticalStackLayout Padding="12,5,10,0" WidthRequest="180" HeightRequest="125" >
-                                                <Grid WidthRequest="160" HeightRequest="35">
-                                                    <Label Text="Exit to lobby" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                                    <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                        <Image Source="btn_exit_to_lobby.png" Margin="0,4,8,4" />
-                                                        <ImageButton Clicked="ExitToLobby" />
-                                                    </Grid>
+
+                <Image Source="btn_send.png" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                    <Image.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSendButton_Tapped" />
+                    </Image.GestureRecognizers>
+                </Image>
+            </Grid>
+        </local:Capsule>
+        <ScrollView x:Name="ChatScrollView" Grid.Row="1" Grid.RowSpan="4" HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="#400000ff">
+            <VerticalStackLayout Spacing="10" x:Name="MessagesListStack" Margin="15,0,15,15" VerticalOptions="End" Opacity="0.9">
+                <VerticalStackLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="HideChat_Tapped" />
+                </VerticalStackLayout.GestureRecognizers>
+            </VerticalStackLayout>
+        </ScrollView>
+        <local:Capsule ImageSource="footer.png" HorizontalOptions="Fill" VerticalOptions="Start">
+            <StackLayout Spacing="5" Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
+                <local:Capsule ImageSource="popover.png" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked">
+                        <simpleCore:Popover.AttachedPopover>
+                            <simpleCore:Popover>
+                                <Grid>
+                                    <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                                        <VerticalStackLayout Padding="12,5,10,0" WidthRequest="180" HeightRequest="125" >
+
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Exit to lobby" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Image Source="btn_exit_to_lobby.png" Margin="0,4,8,4">
+                                                        <Image.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="ExitToLobby"/>
+                                                        </Image.GestureRecognizers>
+                                                    </Image>
                                                 </Grid>
-                                                <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
-                                                <Grid WidthRequest="160" HeightRequest="35">
-                                                    <Label Text="Sound"  TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                                    <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                        <local:SettingsSwitch x:Name="SoundSwitch" SettingText="" PreferencesKey="IsSoundEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
-                                                    </Grid>
+                                            </Grid>
+                                            <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Sound"  TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Image x:Name="SoundSwitch" Source="switch_btn_on.png" Margin="0,4,8,4">
+                                                        <Image.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="SoundSwitch_Tapped"/>
+                                                        </Image.GestureRecognizers>
+                                                    </Image>
                                                 </Grid>
-                                                <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
-                                                <Grid WidthRequest="160" HeightRequest="35">
-                                                    <Label Text="Vibration" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                                    <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                        <local:SettingsSwitch x:Name="VibrationSwitch" SettingText="" PreferencesKey="IsVibrationEnabled" Margin="0,-4,3,-4" VerticalOptions="Center" HorizontalOptions="End"/>
-                                                    </Grid>
+                                            </Grid>
+                                            <BoxView BackgroundColor="#20000000" HeightRequest="2"/>
+                                            <Grid WidthRequest="160" HeightRequest="35">
+                                                <Label Text="Vibration" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Image x:Name="VibrationSwitch" Source="switch_btn_on.png" Margin="0,4,8,4">
+                                                        <Image.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="VibrationSwitch_Tapped"/>
+                                                        </Image.GestureRecognizers>
+                                                    </Image>
                                                 </Grid>
-                                            </VerticalStackLayout>
-                                        </acrylic:AcrylicView>
-                                    </Grid>
-                                </simpleCore:Popover>
-                            </simpleCore:Popover.AttachedPopover>
-                        </ImageButton>
-                    </local:Capsule>
-                    <local:Capsule ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
-                        <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked">
-                            <simpleCore:Popover.AttachedPopover>
-                                <simpleCore:Popover>
-                                    <Grid>
-                                        <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
-                                            <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
-                                                <Grid WidthRequest="180" HeightRequest="35">
-                                                    <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
-                                                    <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                        <Image Source="btn_exit_to_lobby.png" Margin="0,8,5,8">
-                                                            <Image.GestureRecognizers>
-                                                                <TapGestureRecognizer Tapped="ExitToLobby" />
-                                                            </Image.GestureRecognizers>
-                                                        </Image>
-                                                    </Grid>
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </acrylic:AcrylicView>
+                                </Grid>
+                            </simpleCore:Popover>
+                        </simpleCore:Popover.AttachedPopover>
+                    </ImageButton>
+                </local:Capsule>
+                <local:Capsule ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
+                    <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked">
+                        <simpleCore:Popover.AttachedPopover>
+                            <simpleCore:Popover>
+                                <Grid>
+                                    <acrylic:AcrylicView CornerRadius="20" EffectStyle="Custom" TintColor="#FCE7a7" TintOpacity=".1" VerticalOptions="Center">
+                                        <VerticalStackLayout Padding="10" WidthRequest="180" HeightRequest="125">
+                                            <Grid WidthRequest="180" HeightRequest="35">
+                                                <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
+                                                <Grid HorizontalOptions="End" VerticalOptions="Center">
+                                                    <Image Source="btn_exit_to_lobby.png" Margin="0,8,5,8">
+                                                        <Image.GestureRecognizers>
+                                                            <TapGestureRecognizer Tapped="ExitToLobby" />
+                                                        </Image.GestureRecognizers>
+                                                    </Image>
                                                 </Grid>
-                                            </VerticalStackLayout>
-                                        </acrylic:AcrylicView>
-                                    </Grid>
-                                </simpleCore:Popover>
-                            </simpleCore:Popover.AttachedPopover>
-                        </ImageButton>
-                    </local:Capsule>
-                </StackLayout>
-            </local:Capsule>
-        </Grid>
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </acrylic:AcrylicView>
+                                </Grid>
+                            </simpleCore:Popover>
+                        </simpleCore:Popover.AttachedPopover>
+                    </ImageButton>
+                </local:Capsule>
+            </StackLayout>
+        </local:Capsule>
     </Grid>
 </ContentPage>
