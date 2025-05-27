@@ -17,6 +17,8 @@ public partial class Results : ContentPage
                 <Image Source="star_gold.png" />
                 <Image Source="ic_chips_spades.png" />
                 */
+
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("tak");
     }
     internal void init(List<PlayerDto> seats, string GameType, string GameCost)
     {
@@ -52,6 +54,7 @@ public partial class Results : ContentPage
     private void BtnExit(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        Thread.Sleep(50);
         ClientGlobalConstants.GoBack();
     }
 }
