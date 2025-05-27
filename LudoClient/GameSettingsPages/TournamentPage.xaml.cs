@@ -2,6 +2,7 @@ using SharedCode.Constants;
 using LudoClient.ControlView;
 using LudoClient.Models;
 using System.Text.Json;
+using LudoClient.Constants;
 namespace LudoClient;
 public partial class TournamentPage : ContentPage
 {
@@ -53,13 +54,10 @@ public partial class TournamentPage : ContentPage
     {
         if (sender is ImageSwitch activeTab)
         {
-            ActivateTab(activeTab);
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
+            Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
+            // Add logic here to change the content based on the active tab
         }
-    }
-    private void ActivateTab(ImageSwitch activeTab)
-    {
-        Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
-        Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
-        // Add logic here to change the content based on the active tab
     }
 }

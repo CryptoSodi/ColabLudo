@@ -30,6 +30,7 @@ public partial class PlayWithFriends : ContentPage
     }
     private void ActivateTab(ImageSwitch activeTab)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         var configTab1 = Tab1 == activeTab ? (Source: Tab1.SwitchOn, Active: true) : (Source: Tab1.SwitchOff, Active: false);
         Tab1.SwitchSource = configTab1.Source;
         Tab1.IsActive = configTab1.Active;
@@ -48,6 +49,7 @@ public partial class PlayWithFriends : ContentPage
     }
     private void TabRequestedActivateP(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ImageSwitch activeTab = sender as ImageSwitch;
         TabP1.SwitchSource = TabP1 == activeTab ? TabP1.SwitchOn : TabP1.SwitchOff;
         TabP2.SwitchSource = TabP2 == activeTab ? TabP2.SwitchOn : TabP2.SwitchOff;
@@ -70,6 +72,7 @@ public partial class PlayWithFriends : ContentPage
     }
     private void BtnPlus(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (UserInfo.Instance.SolBalance > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
@@ -83,6 +86,7 @@ public partial class PlayWithFriends : ContentPage
     }
     private void BtnMinus(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (entry > GlobalConstants.initialEntry && (entry - GlobalConstants.initialEntry) >= GlobalConstants.initialEntry)
         {
             entry -= GlobalConstants.initialEntry;
@@ -111,9 +115,11 @@ public partial class PlayWithFriends : ContentPage
 
     private void CreateJoinTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
     }
     private async void BtnPaste(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (Clipboard.HasText)
         {
             string copiedText = await Clipboard.GetTextAsync();

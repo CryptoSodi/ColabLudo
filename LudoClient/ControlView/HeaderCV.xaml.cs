@@ -68,11 +68,13 @@ public partial class HeaderCV : ContentView
     }
     private void Navigate_Settings(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.settings = new Settings();
         Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings);
     }
     private void OnPlayerTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.profileInfo = new ProfileInfo();
         Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
     }

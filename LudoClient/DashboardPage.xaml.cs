@@ -46,6 +46,7 @@ public partial class DashboardPage : ContentPage
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if(UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
@@ -62,11 +63,13 @@ public partial class DashboardPage : ContentPage
     }
     private void Offline_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.offlinePage = new OfflinePage();
         Navigation.PushAsync(ClientGlobalConstants.offlinePage);//Done
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if (UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
@@ -82,6 +85,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         ClientGlobalConstants.practicePage = new PracticePage();
@@ -89,6 +93,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
         if (Skins.CurrentSkin == Skins.SkinTypes.Adatiya)
@@ -105,6 +110,7 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         //this.ShowPopup(ClientGlobalConstants.dailyBonus);
         MainThread.BeginInvokeOnMainThread(() =>
         {

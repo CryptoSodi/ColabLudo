@@ -1,3 +1,4 @@
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using SharedCode.Constants;
 
@@ -25,6 +26,7 @@ public partial class CashGame : ContentPage
     }
     private void ActivateTab(ImageSwitch activeTab)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         var configTab1 = Tab1 == activeTab ? (Source: Tab1.SwitchOn, Active: true) : (Source: Tab1.SwitchOff, Active: false);
         Tab1.SwitchSource = configTab1.Source;
         Tab1.IsActive = configTab1.Active;
@@ -43,6 +45,7 @@ public partial class CashGame : ContentPage
     }
     private void BtnPlus(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (UserInfo.Instance.SolBalance > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
@@ -56,6 +59,7 @@ public partial class CashGame : ContentPage
     }
     private void BtnMinus(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (entry > GlobalConstants.initialEntry && (entry - GlobalConstants.initialEntry) >= GlobalConstants.initialEntry)
         {
             entry -= GlobalConstants.initialEntry;
@@ -84,10 +88,12 @@ public partial class CashGame : ContentPage
     }
     private void JoinRoom_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Navigation.PushAsync(new GamesListPage());
     }
     private void CreateRoom_Clicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         string gameType = "2";
         if (Tab1.IsActive)
             gameType = "2";

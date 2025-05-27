@@ -22,6 +22,7 @@ public partial class Settings : BasePopup
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Close();
         ClientGlobalConstants.helpDesk = new HelpDesk();
         Application.Current?.MainPage.ShowPopup(ClientGlobalConstants.helpDesk);
@@ -29,6 +30,7 @@ public partial class Settings : BasePopup
     }
     private void SignOutTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 #if ANDROID
         try
         {

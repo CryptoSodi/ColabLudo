@@ -1,3 +1,4 @@
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using SharedCode.Constants;
 namespace LudoClient;
@@ -15,6 +16,7 @@ public partial class PracticePage : ContentPage
     string gameType = "2";
     private void ActivateTab(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ImageSwitch activeTab = sender as ImageSwitch;
         Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
@@ -33,6 +35,7 @@ public partial class PracticePage : ContentPage
     }
     private void JoinPracticeTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         // Add logic here to join an offline game
         //Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
         _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, 0, "");

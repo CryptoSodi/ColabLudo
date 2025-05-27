@@ -80,10 +80,12 @@ public partial class ChatPage : ContentPage
     }
     private void OnBackButton_Tapped(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Navigation.PopAsync();
     }
     private void OnSendButton_Tapped(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (MessageEntry.Text != "")
         {
             ChatMessages cm = new();

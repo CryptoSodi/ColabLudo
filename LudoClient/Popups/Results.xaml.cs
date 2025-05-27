@@ -51,6 +51,7 @@ public partial class Results : ContentPage
     }
     private void BtnExit(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.GoBack();
     }
 }

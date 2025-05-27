@@ -1,3 +1,5 @@
+using LudoClient.Constants;
+
 namespace LudoClient.ControlView
 {
     public partial class SettingsSwitch : ContentView
@@ -46,6 +48,7 @@ namespace LudoClient.ControlView
         // Save the state in preferences when toggled
         private void ImageSwitchControl_SwitchToggled(object sender, EventArgs e)
         {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (!string.IsNullOrEmpty(PreferencesKey))
             {
                 Preferences.Set(PreferencesKey, ImageSwitchControl.SwitchState); // Save state

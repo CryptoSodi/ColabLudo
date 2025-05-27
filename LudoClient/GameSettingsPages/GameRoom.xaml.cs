@@ -1,3 +1,4 @@
+using LudoClient.Constants;
 using SharedCode.Constants;
 
 namespace LudoClient;
@@ -59,6 +60,7 @@ public partial class GameRoom : ContentPage
         }
         GlobalConstants.MatchMaker.PlayerSeated += (sender, args) =>
         {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("playerjoin");
             var (playerType, playerId, userName, pictureUrl) = args;
             MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -88,6 +90,7 @@ public partial class GameRoom : ContentPage
     }
     protected override bool OnBackButtonPressed()
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         // Prevent back navigation
         return true;
     }

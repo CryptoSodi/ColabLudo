@@ -158,6 +158,8 @@ namespace LudoClient
                 ClientGlobalConstants.game.engine.EngineHelper.index++;
                 if (ClientGlobalConstants.game != null)
                     ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
+
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
             });
         }
         private void OnShowResults(object? sender, (string seats, string GameType, string GameCost) e)

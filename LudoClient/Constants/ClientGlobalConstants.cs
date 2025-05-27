@@ -11,6 +11,7 @@ namespace LudoClient.Constants
 {
     public static class ClientGlobalConstants
     {
+        public static HepticEngine hepticEngine = new HepticEngine();
         public static DashboardPage dashBoard;
         private static double width;
         private static double height;

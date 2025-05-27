@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using LudoClient.Constants;
 using SharedCode;
 using SharedCode.Constants;
 
@@ -41,6 +42,7 @@ public partial class AddCash : BasePopup
     }
     private void OnCopyButtonClicked(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Clipboard.Default.SetTextAsync(Address);
         // Show toast message
         Toast.Make("Copied to Clipboard", ToastDuration.Short, 22).Show();

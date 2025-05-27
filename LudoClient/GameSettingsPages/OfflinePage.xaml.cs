@@ -28,6 +28,7 @@ public partial class OfflinePage : ContentPage
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ImageSwitch activeTab = sender as ImageSwitch;
         Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
@@ -45,6 +46,7 @@ public partial class OfflinePage : ContentPage
     }
     private void TabRequestedActivateC(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         var activeTab = e.Parameter as string;
         TabC1.SwitchSource = "TabC1" == activeTab ? TabC1.SwitchOn : TabC1.SwitchOff;
         TabC2.SwitchSource = "TabC2" == activeTab ? TabC2.SwitchOn : TabC2.SwitchOff;
@@ -62,6 +64,7 @@ public partial class OfflinePage : ContentPage
     }
     private void TabRequestedActivateP(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         var activeTab = e.Parameter as string;
 
         TabP1.SwitchSource = "TabP1" == activeTab ? TabP1.SwitchOn : TabP1.SwitchOff;
@@ -75,6 +78,7 @@ public partial class OfflinePage : ContentPage
     }
     private void JoinOfflineTapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Game game = new Game(gameMode, gameType, playerColor);
         ClientGlobalConstants.game = game;
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);

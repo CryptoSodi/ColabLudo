@@ -13,7 +13,6 @@ namespace LudoClient.CoreEngine;
 
 public partial class Game : ContentPage
 {
-    HepticEngine hepticEngine = new HepticEngine();
     //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
     Piece tempPiece = null;
     public string playerColor = "";
@@ -559,7 +558,7 @@ public partial class Game : ContentPage
                 AbsoluteLayout.SetLayoutBounds(gui.getPieceToken(engine.EngineHelper.players[i].Pieces[j]), new Rect(0, 0, (Alayout.Width / 15), (Alayout.Height / 15)));
                 List<Piece> pieces = new List<Piece>();
                 pieces.Add(engine.EngineHelper.players[i].Pieces[j]);
-                _ = RelocateAsync(pieces, engine.EngineHelper.players[i].Pieces[j], false);
+                _ = RelocateAsync(pieces, engine.EngineHelper.players[i].Pieces[j], "");
             }
 
         SetHomeBlock(gui.LockHome1, "red");
@@ -567,7 +566,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
     }
-    public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone, bool playsound = true)
+    public async Task RelocateHelper(List<Piece> pieces, Piece pieceClone, string playsound = "move")
     {
         engine.EngineHelper.animationBlock = true;
 
@@ -577,6 +576,9 @@ public partial class Game : ContentPage
             animTime = 40;
             pieceClone = pieces[0].Clone();
         }
+
+        if (playsound != "")
+           ClientGlobalConstants.hepticEngine?.PlayHapticFeedback(playsound);
 
         if (pieceClone.Location <= pieces[0].Location)
         {
@@ -588,10 +590,7 @@ public partial class Game : ContentPage
             double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
 
             await RunAnimationAsync(pieces, x, y, animTime, "Move");
-
-            if (playsound)
-                hepticEngine?.PlayHapticFeedback("token_move");
-
+            
             if (pieceClone.Location != pieces[0].Location)
                 await RelocateHelper(pieces, pieceClone, playsound);
             else
@@ -600,11 +599,14 @@ public partial class Game : ContentPage
                 ResizePieces();
             }
         }
-
+        if (pieceClone.Location == 57)
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("home");
+        }
         while (engine.EngineHelper.animationBlock)
             await Task.Delay(20);
     }
-    public async Task RelocateAsync(List<Piece> piece, Piece pieceClone, bool playsound = true)
+    public async Task RelocateAsync(List<Piece> piece, Piece pieceClone, string playsound = "move")
     {
         string colorKey = char.ToLower(piece[0].Name[0]).ToString();
 
@@ -1063,7 +1065,8 @@ public partial class Game : ContentPage
                 seat = BluePlayerSeat;
                 break;
         }
-        hepticEngine?.PlayHapticFeedback("DiceRoll");
+
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("DiceRoll");
         seat.AnimateDice();
     }
     public void StopDice(string SeatName, int dicevalue)
@@ -1079,26 +1082,30 @@ public partial class Game : ContentPage
             seat = BluePlayerSeat;
         
         if(dicevalue==6)
-            hepticEngine?.PlayHapticFeedback("ding");
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("ding");
         
         seat.StopDice(dicevalue);
     }
     private void PopOverClicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         PopoverButton.ShowAttachedPopover();
     }
     private void QuestionClicked(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         PopoverButton.ShowAttachedPopover();
     }
     private void CloseTokenSelector(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         // TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
         TokenSelector.IsVisible = false;
     }
     MessageBox mb = null;
     private async void ExitToLobby(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try { PopoverButton.HideAttachedPopover(); } catch (Exception) { }
 
         if (mb != null)
@@ -1136,6 +1143,7 @@ public partial class Game : ContentPage
     }
     protected override bool OnBackButtonPressed()
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (ChatScrollView.IsVisible)
         {
             ChatScrollView.IsVisible = false;
@@ -1156,15 +1164,16 @@ public partial class Game : ContentPage
     }
     private void SoundSwitch_Tapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         SoundSwitch.Source = !Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
         Preferences.Default.Set("IsSoundEnabled", !Preferences.Default.Get("IsSoundEnabled", true));
     }
     private void VibrationSwitch_Tapped(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         VibrationSwitch.Source = !Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
         Preferences.Default.Set("IsVibrationEnabled", !Preferences.Default.Get("IsVibrationEnabled", true));
     }
-        
     //CHAT ENGINE
     private void MessageEntry_Completed(object sender, EventArgs e)
     {
@@ -1174,6 +1183,7 @@ public partial class Game : ContentPage
     }
     private void ShowChat_Tapped(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ChatScrollView.IsVisible = true;
         ChatScrollView.InputTransparent = false;
         ChatScrollView.IsEnabled = true;
@@ -1181,6 +1191,7 @@ public partial class Game : ContentPage
     }
     private void HideChat_Tapped(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ChatScrollView.IsVisible = false;
         ChatScrollView.InputTransparent = true;
         ChatScrollView.IsEnabled = false;
@@ -1188,6 +1199,7 @@ public partial class Game : ContentPage
     }
     private void OnSendButton_Tapped(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         HideKeyboard();
         ChatScrollView.IsVisible = true;
         if (MessageEntry.Text != "")

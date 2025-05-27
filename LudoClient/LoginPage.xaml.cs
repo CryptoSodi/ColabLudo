@@ -1,4 +1,5 @@
 using Acr.UserDialogs;
+using LudoClient.Constants;
 using LudoClient.Services;
 using SharedCode.Constants;
 using System.Text.Json;
@@ -46,7 +47,7 @@ namespace LudoClient
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
-
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             try
             {
 #if ANDROID
@@ -79,6 +80,7 @@ namespace LudoClient
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 #if WINDOWS
             await performLoginAsync("-1","Sodi", "Sodi@gmail.com","https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj");
             _isLoggingIn = false;

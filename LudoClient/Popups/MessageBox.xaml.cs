@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui.Views;
+using LudoClient.Constants;
 namespace LudoClient.Popups;
 
 public partial class MessageBox : BasePopup
@@ -12,10 +13,12 @@ public partial class MessageBox : BasePopup
     }
     private void BTNClose(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Close("Cancel");
     }
     private void BTNApprove(object sender, EventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Close("Approve");
     }
 }

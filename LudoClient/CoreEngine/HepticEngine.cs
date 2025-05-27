@@ -29,7 +29,7 @@ namespace LudoClient.CoreEngine
 
             string soundFileName = $"{hapticInstruct.ToLower()}.mp3";
 
-            if (IsSoundEnabled)
+            if (IsSoundEnabled || hapticInstruct=="click")
             {
                 try
                 {

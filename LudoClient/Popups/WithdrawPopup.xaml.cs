@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using LudoClient.Constants;
 using SharedCode;
 using SharedCode.Constants;
 using System.Net;
@@ -42,6 +43,7 @@ public partial class WithdrawPopup : BasePopup
     }
     private void OnSendButtonClicked(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         string amountInSoltext = AmmountEntry.entryField.Text;
 
         if (double.TryParse(amountInSoltext, out double amountInSol))
@@ -62,6 +64,7 @@ public partial class WithdrawPopup : BasePopup
     }
     private void OnPasteButtonClicked(object sender, TappedEventArgs e)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         Clipboard.Default.SetTextAsync(Address);
         // Check if there's text on the clipboard
         if (Clipboard.Default.HasText)
