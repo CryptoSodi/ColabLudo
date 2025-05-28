@@ -358,8 +358,6 @@ namespace SignalR.Server
             catch (Exception ex)
             {
             }
-            
-
             return new DailyBonusDto
             {
                 DailyBonusId = bonus.DailyBonusId,
@@ -433,6 +431,7 @@ namespace SignalR.Server
                 Day5 = bonus.Day5,
                 Day6 = bonus.Day6,
                 Day7 = bonus.Day7,
+                Bonus = 10,
                 DayCounter = bonus.DayCounter
             };
         }

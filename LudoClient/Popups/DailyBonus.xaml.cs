@@ -48,7 +48,7 @@ public partial class DailyBonus : BasePopup
         for (int i = 0; i < 7; i++)
         {
             string state;
-            if (i < dc)
+            if (i < dc || (i == dc && flags[i]))
                 state = flags[i] ? "Claimed" : "Missed";
             else if (i == dc)
                 state = "Active";
