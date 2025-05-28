@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 namespace SignalR.Server
@@ -12,39 +13,56 @@ namespace SignalR.Server
     
     public class LudoHub : Hub
     {
-        public static CryptoHelper _crypto;
-
-        public static Dictionary<int, string> PlayerConnections  = new Dictionary<int, string>();
+        // Thread-safe connection mappings
+        public static ConcurrentDictionary<int, string> PlayerConnections = new ConcurrentDictionary<int, string>();
+        public static ConcurrentDictionary<string, int> ConnectionToPlayer = new ConcurrentDictionary<string, int>();
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
-        private readonly IHubContext<LudoHub> _hubContext;// Better to use IHubContext if needed outside hub instances
-        //public static Engine eng;// = new Engine("4", "4", "red");
+        private readonly IHubContext<LudoHub> _hubContext;
+        public static CryptoHelper _crypto;
         public static DatabaseManager DM;
         private static bool _initialized = false;
-        public async Task<String> SendSol(int playerID, string destination, double amountInSol)
+
+        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory,
+                      IHubContext<LudoHub> hubContext,
+                      CryptoHelper crypto)
         {
-            try
+            _crypto = crypto;
+            _contextFactory = contextFactory;
+            _hubContext = hubContext;
+            if (!_initialized)
             {
-            // 1) Store SignalR connection
-            PlayerConnections[playerID] = Context.ConnectionId;
-            string sig = await _crypto.SendSolAsync(playerID.ToString(), destination, amountInSol);
-            Console.WriteLine($"Sent {amountInSol} SOL — tx signature: {sig}");
-                return sig;
+                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
+                _initialized = true;
             }
-            catch (Exception)
-            {
-            }
-            return "ERROR";
         }
-        public async Task<DepositInfo> UserConnectedSetID(int playerID)
+        public override async Task OnConnectedAsync()
+        {
+            Console.WriteLine($"User connected: {Context.ConnectionId}");
+            await base.OnConnectedAsync();
+        }
+        public override async Task OnDisconnectedAsync(Exception exception)
+        {
+            // Clean up our connection mappings
+            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var pid))
+            {
+                PlayerConnections.TryRemove(pid, out _);
+            }
+            await base.OnDisconnectedAsync(exception);
+        }
+        /// <summary>
+        /// Call this once after authentication or lobby-join to establish mapping.
+        /// </summary>
+        public async Task<DepositInfo> UserConnectedSetID(int playerId)
         {
             try
             {
                 // 1) Store SignalR connection
-                PlayerConnections[playerID] = Context.ConnectionId;
+                PlayerConnections[playerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = playerId;
 
                 // 2) Await the wallet creation/restoration
-                string address = await _crypto.GetOrCreateDepositAccountAsync(playerID.ToString());
+                string address = await _crypto.GetOrCreateDepositAccountAsync(playerId.ToString());
                 Console.WriteLine($"Send SOL here: {address}");
 
                 // 3) Await the balance fetch
@@ -63,35 +81,35 @@ namespace SignalR.Server
             catch (Exception)
             {
                 Thread.Sleep(100);
-                return await UserConnectedSetID(playerID);
+                return await UserConnectedSetID(playerId);
             }
         }
-        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto)
+        /// <summary>
+        /// Helper to fetch the current caller's player ID from the connection map.
+        /// </summary>
+        private int GetCurrentPlayerId()
         {
-            _crypto = crypto;
-            _contextFactory = contextFactory;
-            _hubContext = hubContext;
-            if (!_initialized)
+            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var pid))
+                return pid;
+            throw new HubException("Player not recognized.");
+        }
+
+
+
+        public async Task<String> SendSol(int playerID, string destination, double amountInSol)
+        {
+            try
             {
-                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
-                _initialized = true;
+            // 1) Store SignalR connection
+            PlayerConnections[playerID] = Context.ConnectionId;
+            string sig = await _crypto.SendSolAsync(playerID.ToString(), destination, amountInSol);
+            Console.WriteLine($"Sent {amountInSol} SOL — tx signature: {sig}");
+                return sig;
             }
-        }
-        public override async Task OnDisconnectedAsync(Exception? exception)
-        {/*
-            if (_users.TryGetValue(Context.ConnectionId, out var user))
+            catch (Exception)
             {
-                await Groups.RemoveFromGroupAsync(Context.ConnectionId, user.roomCode);
-                await Clients.Group(user.roomCode).SendAsync("UserLeft", user.PlayerName);
-            }*/
-        }
-        public override async Task OnConnectedAsync()
-        {
-            // Get the connection ID of the newly connected user
-            var connectionId = Context.ConnectionId;
-            // Print the connection message to the console
-            Console.WriteLine($"User connected: {connectionId}");
-            await base.OnConnectedAsync();
+            }
+            return "ERROR";
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {
@@ -289,6 +307,136 @@ namespace SignalR.Server
             return new List<ChatMessages>();
         }
         /* END CHAT AND FRIENDS MANAGEMENT */
+
+        // ----------------
+        // DAILY BONUS API
+        // ----------------
+        // Fetch or initialize the player's daily bonus record
+        public async Task<DailyBonusDto> GetDailyBonus()
+        {
+            var playerId = GetCurrentPlayerId();
+            using var ctx = _contextFactory.CreateDbContext();
+
+            // Fetch the record (or null)
+            var bonus = await ctx.DailyBonus
+                                 .FirstOrDefaultAsync(x => x.PlayerId == playerId);
+            var now = DateTime.UtcNow;
+            var today = now.Date;
+            var weekdayIndex = (int)now.DayOfWeek; // Sunday=0, Monday=1, …
+
+            if (bonus == null)
+            {
+                // First‐time setup
+                bonus = new DailyBonus
+                {
+                    PlayerId = playerId,
+                    Day1 = false,
+                    Day2 = false,
+                    Day3 = false,
+                    Day4 = false,
+                    Day5 = false,
+                    Day6 = false,
+                    Day7 = false,
+                    DayCounter = weekdayIndex,
+                    LastResetDate = today.AddDays(-1)
+                };
+                ctx.DailyBonus.Add(bonus);
+            }
+            else if (bonus.LastResetDate < today && weekdayIndex == 1)
+            {
+                bonus.Day1 = bonus.Day2 = bonus.Day3 = bonus.Day4 =
+                bonus.Day5 = bonus.Day6 = bonus.Day7 = false;
+
+                // Reset your counter back to Monday (1)
+                bonus.DayCounter = weekdayIndex;
+            }
+            // else: same day, nothing to reset
+            try
+            {
+                await ctx.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+            }
+            
+
+            return new DailyBonusDto
+            {
+                DailyBonusId = bonus.DailyBonusId,
+                PlayerId = bonus.PlayerId,
+                Day1 = bonus.Day1,
+                Day2 = bonus.Day2,
+                Day3 = bonus.Day3,
+                Day4 = bonus.Day4,
+                Day5 = bonus.Day5,
+                Day6 = bonus.Day6,
+                Day7 = bonus.Day7,
+                Bonus = 10,
+                DayCounter = bonus.DayCounter
+            };
+        }
+        // New function: Claim today's bonus and update LastResetDate
+        public async Task<DailyBonusDto> ClaimTodayBonus()
+        {
+            var playerId = GetCurrentPlayerId();
+            using var ctx = _contextFactory.CreateDbContext();
+
+            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == playerId);
+            var today = DateTime.UtcNow.Date;
+            var weekdayIndex = (int)DateTime.UtcNow.DayOfWeek; // Sunday=0, Monday=1, …
+
+            if (bonus == null)
+            {
+                // Initialize record if missing
+                bonus = new DailyBonus
+                {
+                    PlayerId = playerId,
+                    Day1 = false,
+                    Day2 = false,
+                    Day3 = false,
+                    Day4 = false,
+                    Day5 = false,
+                    Day6 = false,
+                    Day7 = false,
+                    DayCounter = weekdayIndex,
+                    LastResetDate = today
+                };
+                ctx.DailyBonus.Add(bonus);
+            }
+
+            // Mark today's day flag
+            switch (weekdayIndex)
+            {
+                case 0: bonus.Day1 = true; break;
+                case 1: bonus.Day2 = true; break;
+                case 2: bonus.Day3 = true; break;
+                case 3: bonus.Day4 = true; break;
+                case 4: bonus.Day5 = true; break;
+                case 5: bonus.Day6 = true; break;
+                case 6: bonus.Day7 = true; break;
+            }
+
+            // Update LastResetDate to today
+            bonus.LastResetDate = today;
+            bonus.DayCounter = weekdayIndex;
+
+            await ctx.SaveChangesAsync();
+
+            return new DailyBonusDto
+            {
+                DailyBonusId = bonus.DailyBonusId,
+                PlayerId = bonus.PlayerId,
+                Day1 = bonus.Day1,
+                Day2 = bonus.Day2,
+                Day3 = bonus.Day3,
+                Day4 = bonus.Day4,
+                Day5 = bonus.Day5,
+                Day6 = bonus.Day6,
+                Day7 = bonus.Day7,
+                DayCounter = bonus.DayCounter
+            };
+        }
+        /* END DAILY BONUS */
         public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
         {
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, playerId, userName, roomCode, gameType, gameCost);

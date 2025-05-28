@@ -133,6 +133,7 @@
 		<MauiImage Include="Resources\Images\ChatBox\chatcardr.png" />
 		<MauiImage Include="Resources\Images\ChatBox\chatcardy.png" />
 		<MauiImage Include="Resources\Images\ChatBox\friendlong.png" />
+		<MauiImage Include="Resources\Images\Components\DailyBonusCard\days_gold_bg.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\detailgold.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\detailwhite.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\number_0.png" />
@@ -215,6 +216,7 @@
 	  <None Remove="Resources\Images\Components\Bottom\footer.png" />
 	  <None Remove="Resources\Images\Components\contain_gray_bg.png" />
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_current_bg.png" />
+	  <None Remove="Resources\Images\Components\DailyBonusCard\days_gold_bg.png" />
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_gray_bg.png" />
 	  <None Remove="Resources\Images\Components\DailyBonusCard\days_transparent_bg.png" />
 	  <None Remove="Resources\Images\Components\Header\btn_help.png" />

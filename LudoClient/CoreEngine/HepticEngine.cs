@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui.Storage;
-using Microsoft.Maui.Devices;
-using Plugin.Maui.Audio;
+﻿using Plugin.Maui.Audio;
 
 namespace LudoClient.CoreEngine
 {
@@ -29,7 +24,7 @@ namespace LudoClient.CoreEngine
 
             string soundFileName = $"{hapticInstruct.ToLower()}.mp3";
 
-            if (IsSoundEnabled || hapticInstruct=="click")
+            if (IsSoundEnabled)
             {
                 try
                 {
@@ -49,12 +44,30 @@ namespace LudoClient.CoreEngine
                     Console.WriteLine($"Error playing sound '{soundFileName}': {ex.Message}");
                 }
             }
+            int vibeMS = 30;
 
-            if (IsVibrationEnabled && hapticInstruct.Equals("kill", StringComparison.OrdinalIgnoreCase))
+            switch (hapticInstruct) {
+                case "click":
+                    vibeMS = 30;
+                    break;
+                case "kill":
+                    vibeMS = 80;
+                    break;
+                case "tak":
+                    vibeMS = 100;
+                    break;
+                case "move":
+                    vibeMS = 5;
+                    break;
+                default:
+                    vibeMS = 10;
+                    break;
+            }
+            if (IsVibrationEnabled || hapticInstruct == "tak")
             {
                 try
                 {
-                    Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(100));
+                    Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(vibeMS));
                 }
                 catch (Exception ex)
                 {

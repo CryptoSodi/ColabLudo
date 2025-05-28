@@ -111,10 +111,7 @@ public partial class DashboardPage : ContentPage
     private void Bonus_Clicked(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        //this.ShowPopup(ClientGlobalConstants.dailyBonus);
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            Toast.Make("No Bonus Today!", ToastDuration.Long, 24).Show();
-        });
+        ClientGlobalConstants.dailyBonus = new DailyBonus();
+        this.ShowPopup(ClientGlobalConstants.dailyBonus);
     }
 }
