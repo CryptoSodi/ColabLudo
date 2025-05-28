@@ -91,8 +91,8 @@
                 </VerticalStackLayout.GestureRecognizers>
             </VerticalStackLayout>
         </ScrollView>
-        <local:Capsule ImageSource="footer.png" HorizontalOptions="Fill" VerticalOptions="Start">
-            <StackLayout Spacing="5" Orientation="Horizontal" HorizontalOptions="Start" VerticalOptions="Center">
+        <local:Capsule ImageSource="footer.png" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
+            <Grid ColumnSpacing="5" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="Auto,Auto,1*">
                 <local:Capsule ImageSource="popover.png" HorizontalOptions="Center" VerticalOptions="Center">
                     <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked">
                         <simpleCore:Popover.AttachedPopover>
@@ -140,7 +140,7 @@
                         </simpleCore:Popover.AttachedPopover>
                     </ImageButton>
                 </local:Capsule>
-                <local:Capsule ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
+                <local:Capsule Grid.Column="1" ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
                     <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked">
                         <simpleCore:Popover.AttachedPopover>
                             <simpleCore:Popover>
@@ -164,7 +164,10 @@
                         </simpleCore:Popover.AttachedPopover>
                     </ImageButton>
                 </local:Capsule>
-            </StackLayout>
+                <Grid Grid.Column="2" Margin="0,0,20,4" HorizontalOptions="FillAndExpand">
+                    <Label x:Name="ScoreText" Text="" HorizontalOptions="End" HorizontalTextAlignment="End" VerticalOptions="Center"/>
+                </Grid>
+            </Grid>
         </local:Capsule>
     </Grid>
 </ContentPage>

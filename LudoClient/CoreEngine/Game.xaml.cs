@@ -808,6 +808,13 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome2, "green");
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
+
+        if(gameMode == "Client")
+        {
+            string score = $"Score : {engine.EngineHelper.getPlayer(playerColor.ToLower()).Score}";
+            if (score != ScoreText.Text)
+                ScoreText.Text = score;
+        }
     }
     // Helper method to return the default image file name for a given color.
     private string GetDefaultImage(string colorLetter, string suffics)

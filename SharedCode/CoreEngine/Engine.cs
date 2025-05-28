@@ -1,6 +1,4 @@
 ﻿using SharedCode.Constants;
-using System.Diagnostics;
-using System.IO.Pipelines;
 
 namespace SharedCode.CoreEngine
 {
@@ -613,7 +611,7 @@ namespace SharedCode.CoreEngine
                 if (player.Pieces.Count == 0)
                 {
                     player.playState = "Home";
-                    EngineHelper.currentPlayer.Score += 20; // PLAYER WON THE GAME BONUS
+                    EngineHelper.currentPlayer.Score += 60; // PLAYER WON THE GAME BONUS
                     Console.WriteLine($"{player.Color} has won the game!");
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
@@ -658,6 +656,7 @@ namespace SharedCode.CoreEngine
                 GameOver(winners);
             }
         }
+       
         private void GameOver(List<Player> winners)
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
@@ -694,7 +693,6 @@ namespace SharedCode.CoreEngine
     {
         public int index = -1;
         internal int indexServer = -1;
-
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString;
@@ -715,10 +713,6 @@ namespace SharedCode.CoreEngine
        
         public bool animationBlock = false;
 
-        public Player getPlayer(String color)
-        {
-            return players.FirstOrDefault(p => p.Color == color);
-        }
         public void InitializePlayers(string playerCount, string playerColor)
         {
             // Assume each piece has a UI element or rendering component
@@ -1086,6 +1080,10 @@ namespace SharedCode.CoreEngine
                 }
             }
             return winners;
+        }
+        public Player getPlayer(String color)
+        {
+            return players.FirstOrDefault(p => p.Color == color);
         }
     }
 }
