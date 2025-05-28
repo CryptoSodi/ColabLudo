@@ -462,9 +462,12 @@ namespace SharedCode.CoreEngine
 
                 List<Piece> relocatedPieces = new List<Piece>();//Pieces sent to the relocation service to relocate and paint them on the game UI
 
+                EngineHelper.currentPlayer.Score += EngineHelper.diceValue;//INCREASE THE SCORE OF THE PLAYER
+
                 if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
                     piece1.Jump(this, EngineHelper.diceValue);
+                    
                     relocatedPieces.Add(piece1);
                     if (RelocateAsync != null)
                        await RelocateAsync(relocatedPieces, piece1.Clone(), "move");
@@ -508,6 +511,7 @@ namespace SharedCode.CoreEngine
 
                             if (RelocateAsync != null) {
                                 relocatedPieces.Add(ownTrapped);
+                                EngineHelper.currentPlayer.Score -= 5; // Lose points in case of getting own piece beat by moveing a piece
                                 RelocateAsync(relocatedPieces, piece1Clone, "kill");
                             }
                         }
@@ -534,8 +538,12 @@ namespace SharedCode.CoreEngine
                             board?[EngineHelper.getPieceBox(enemy)].Add(enemy);
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
+                            
                             if (RelocateAsync != null)
+                            {
+                                EngineHelper.currentPlayer.Score += 5; // INCREASE SCORE BY KILLED PIECE
                                 RelocateAsync(relocatedPieces, relocatedPieces[0], "kill");
+                            }
                         }
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
@@ -559,7 +567,11 @@ namespace SharedCode.CoreEngine
                         relocatedPieces = new List<Piece>();
                         relocatedPieces.Add(kilablePieces[0]);
                         if (RelocateAsync != null)
+                        {
+                            EngineHelper.currentPlayer.Score += 5;
                             await RelocateAsync(relocatedPieces, kilablePieces[0], "kill");
+                        }
+                            
                     }
                     if (!killed && RelocateAsync != null)
                     {
@@ -574,6 +586,7 @@ namespace SharedCode.CoreEngine
                     
                     if (piece1.Location == 57)
                     {
+                        EngineHelper.currentPlayer.Score += 10; // Piece reached home score bonus
                         killed = true;
                         player.Pieces.Remove(piece1);
 
@@ -600,6 +613,7 @@ namespace SharedCode.CoreEngine
                 if (player.Pieces.Count == 0)
                 {
                     player.playState = "Home";
+                    EngineHelper.currentPlayer.Score += 20; // PLAYER WON THE GAME BONUS
                     Console.WriteLine($"{player.Color} has won the game!");
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();

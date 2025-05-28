@@ -2,7 +2,6 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Popups;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;

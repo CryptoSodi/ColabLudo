@@ -402,23 +402,43 @@ namespace SignalR.Server
                 ctx.DailyBonus.Add(bonus);
             }
 
-            // Mark today's day flag
-            switch (weekdayIndex)
+
+            bool alreadyClaimed = weekdayIndex switch
             {
-                case 0: bonus.Day1 = true; break;
-                case 1: bonus.Day2 = true; break;
-                case 2: bonus.Day3 = true; break;
-                case 3: bonus.Day4 = true; break;
-                case 4: bonus.Day5 = true; break;
-                case 5: bonus.Day6 = true; break;
-                case 6: bonus.Day7 = true; break;
+                0 => bonus.Day1,
+                1 => bonus.Day2,
+                2 => bonus.Day3,
+                3 => bonus.Day4,
+                4 => bonus.Day5,
+                5 => bonus.Day6,
+                6 => bonus.Day7,
+                _ => true
+            };
+
+            if (!alreadyClaimed)
+            {
+                // Mark today's day flag
+                switch (weekdayIndex)
+                {
+                    case 0: bonus.Day1 = true; break;
+                    case 1: bonus.Day2 = true; break;
+                    case 2: bonus.Day3 = true; break;
+                    case 3: bonus.Day4 = true; break;
+                    case 4: bonus.Day5 = true; break;
+                    case 5: bonus.Day6 = true; break;
+                    case 6: bonus.Day7 = true; break;
+                }
+
+                // Update LastResetDate to today
+                bonus.LastResetDate = today;
+                bonus.DayCounter = weekdayIndex;
+
+                await ctx.SaveChangesAsync();
+
+                // Transfer bonus logic here
+                int bonusAmount = 10;
+                //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
             }
-
-            // Update LastResetDate to today
-            bonus.LastResetDate = today;
-            bonus.DayCounter = weekdayIndex;
-
-            await ctx.SaveChangesAsync();
 
             return new DailyBonusDto
             {

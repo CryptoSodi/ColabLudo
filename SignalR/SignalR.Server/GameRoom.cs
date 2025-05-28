@@ -66,7 +66,6 @@ namespace SignalR.Server
             }
             return Task.FromResult(newCommands);
         }
-
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
@@ -134,14 +133,11 @@ namespace SignalR.Server
                     }
                 }
 
-
-
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await _hubContext.Clients.Group(RoomCode)
             .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
-            
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {
