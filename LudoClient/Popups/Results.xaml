@@ -7,7 +7,8 @@
     <Grid VerticalOptions="Fill" HorizontalOptions="Fill" >
         <Image Source="spinner_bk_red_glow.png" Margin="-100" />
         <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
-
+        <Image Source="result_celibration.gif" IsAnimationPlaying="True" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
+        
         <Grid VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <StackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Fill">
                 <Image Margin="0,100,0,0"  Source="ttl_results.png" VerticalOptions="End" HorizontalOptions="Fill"/>
