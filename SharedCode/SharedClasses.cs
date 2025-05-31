@@ -2,12 +2,13 @@
 {
     public class StateInfo
     {
-        public string GamesPlayed { get; set; } = "";
-        public string GamesWon { get; set; } = "";
-        public string GamesLost { get; set; } = "";
-        public string BestWin { get; set; } = "";
-        public string TotalWin { get; set; } = "";
-        public string TotalLost { get; set; } = "";
+        public string GamesPlayed { get; set; } = "0";
+        public string GamesWon { get; set; } = "0";
+        public string GamesLost { get; set; } = "0";
+        public string BestWin { get; set; } = "0";
+        public string TotalWin { get; set; } = "0";
+        public string TotalLost { get; set; } = "0";
+        public string Score { get; set; } = "0";
     }
     public class DepositInfo
     {

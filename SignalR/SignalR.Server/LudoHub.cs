@@ -67,7 +67,8 @@ namespace SignalR.Server
                 GamesLost = P.GamesLost + "",
                 BestWin = P.BestWin + "",
                 TotalWin = P.TotalWin + "",
-                TotalLost = P.TotalLost + ""
+                TotalLost = P.TotalLost + "",
+                Score = P.Score + ""
             };
         }
         /// <summary>

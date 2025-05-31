@@ -82,7 +82,6 @@ namespace SignalR.Server
                                seat => seat.PlayerColor.Equals(winner1, StringComparison.OrdinalIgnoreCase)
                                    || seat.PlayerColor.Equals(winner2, StringComparison.OrdinalIgnoreCase)).ToList();
 
-
                 for (int i = 0; i < sortedSeats.Count; i++)
                 {
                     LudoServer.Models.Player p = context.Players.FirstOrDefault(p => p.PlayerId == sortedSeats[i].PlayerId);
@@ -98,6 +97,8 @@ namespace SignalR.Server
                         p.GamesLost++;
                         p.TotalLost += GameCost;
                     }
+
+                    p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
                     p.GamesPlayed++;
                     context.Players.Update(p);
                 }
@@ -122,6 +123,7 @@ namespace SignalR.Server
                         p.TotalLost += GameCost;
                     }
 
+                    p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
                     p.GamesPlayed++;
                     context.Players.Update(p);
                 }

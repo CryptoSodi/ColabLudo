@@ -662,13 +662,14 @@ namespace SharedCode.CoreEngine
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
             {
                 string GameType = EngineHelper.gameType;
-                //, string GameCost
-                cleanGame();
+                
                 // Show game over dialog if the game is not in online mode
                 if (GameType == "22")
                     ShowResults(winners[0].Color + "," + winners[1].Color, GameType, "0");
                 else
                     ShowResults(winners[0].Color + ",", GameType, "0");
+                //, string GameCost
+                cleanGame();
             }
 #if WINDOWS
             gameRecorder.SaveGameHistory();

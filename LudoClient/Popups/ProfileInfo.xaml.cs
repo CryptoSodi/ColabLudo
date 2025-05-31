@@ -1,3 +1,4 @@
+using Google.Android.Material.Color.Utilities;
 using LudoClient.Constants;
 using LudoClient.Models;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -42,7 +43,9 @@ public partial class ProfileInfo : BasePopup
             C3.setValue(dto.GamesLost + "");
             C4.setValue(dto.BestWin + "");
             C5.setValue(dto.TotalWin + "");
-            C6.setValue(dto.TotalLost + ""); 
+            C6.setValue(dto.TotalLost + "");
+            //Score.setValue(dto.Score + "");
+            
         }
         catch (Exception ex)
         {
