@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
@@ -68,9 +69,11 @@ namespace SignalR.Server
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
+            using var context = _contextFactory.CreateDbContext();
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> sortedSeats;
+
             if (GameType == "22")
             {
                 String winner1 = PlayerColor.Split(",")[0];
@@ -78,20 +81,59 @@ namespace SignalR.Server
                 sortedSeats = seats.OrderByDescending(
                                seat => seat.PlayerColor.Equals(winner1, StringComparison.OrdinalIgnoreCase)
                                    || seat.PlayerColor.Equals(winner2, StringComparison.OrdinalIgnoreCase)).ToList();
+
+
+                for (int i = 0; i < sortedSeats.Count; i++)
+                {
+                    LudoServer.Models.Player p = context.Players.FirstOrDefault(p => p.PlayerId == sortedSeats[i].PlayerId);
+                    if (i == 0 || i == 1)
+                    {
+                        p.GamesWon++;
+                        p.TotalWin += GameCost;
+                        if (p.BestWin < GameCost)
+                            p.BestWin = GameCost;
+                    }
+                    else
+                    {
+                        p.GamesLost++;
+                        p.TotalLost += GameCost;
+                    }
+                    p.GamesPlayed++;
+                    context.Players.Update(p);
+                }
             }
             else
             {
                 sortedSeats = seats
                     .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor.Split(",")[0], StringComparison.OrdinalIgnoreCase))
                     .ToList();
+
+                for (int i = 0; i < sortedSeats.Count; i++)
+                {
+                    LudoServer.Models.Player p = context.Players.FirstOrDefault(p => p.PlayerId == sortedSeats[i].PlayerId);
+                    if (i == 0)
+                    {
+                        p.GamesWon++;
+                        p.TotalWin += GameCost;
+                    }
+                    else
+                    {
+                        p.GamesLost++;
+                        p.TotalLost += GameCost;
+                    }
+
+                    p.GamesPlayed++;
+                    context.Players.Update(p);
+                }
             }
             
             Game existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == RoomCode);
+            
             existingGame.Winner = sortedSeats[0].PlayerId + "";
             existingGame.State = "Completed";
-
+            
+            await context.SaveChangesAsync();
             LudoHub.DM.SaveData();
-
 
             // Get the winner and the list of losers
             string winnerId = sortedSeats[0].PlayerId.ToString();

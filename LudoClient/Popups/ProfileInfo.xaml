@@ -42,16 +42,16 @@
                         <Image Source="statistics_info.png" Margin="30,0,30,10" VerticalOptions="Center" HorizontalOptions="Center"/>
                         <Grid HorizontalOptions="FillAndExpand">
                             <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand">
-                                <local:StatisticCard Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" />
-                                <local:StatisticCard Title="GAMES WON" HorizontalOptions="FillAndExpand" />
-                                <local:StatisticCard Title="GAMES LOST" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C1" Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C2" Title="GAMES WON" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C3" Title="GAMES LOST" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                         <Grid HorizontalOptions="FillAndExpand">
                             <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand">
-                                <local:StatisticCard Title="BEST WIN" HorizontalOptions="FillAndExpand" />
-                                <local:StatisticCard Title="TOTAL WIN" HorizontalOptions="FillAndExpand" />
-                                <local:StatisticCard Title="TOTAL LOST" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C4" Title="BEST WIN" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C5" Title="TOTAL WIN" HorizontalOptions="FillAndExpand" />
+                                <local:StatisticCard x:Name="C6" Title="TOTAL LOST" HorizontalOptions="FillAndExpand" />
                             </StackLayout>
                         </Grid>
                     </StackLayout>

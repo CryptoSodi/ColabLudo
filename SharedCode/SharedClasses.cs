@@ -1,11 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SharedCode
+﻿namespace SharedCode
 {
+    public class StateInfo
+    {
+        public string GamesPlayed { get; set; } = "";
+        public string GamesWon { get; set; } = "";
+        public string GamesLost { get; set; } = "";
+        public string BestWin { get; set; } = "";
+        public string TotalWin { get; set; } = "";
+        public string TotalLost { get; set; } = "";
+    }
     public class DepositInfo
     {
         public string Address { get; set; } = "";
@@ -36,8 +39,8 @@ namespace SharedCode
     public class PlayerCard
     {
         public int playerID { get; set; }
-        public String playerName { get; set; }
-        public String playerPicture { get; set; }
+        public String name { get; set; }
+        public String pictureUrl { get; set; }
         public int rank { get; set; }
         public String status { get; set; }
         public bool lastGame { get; set; }

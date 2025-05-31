@@ -16,4 +16,8 @@ public partial class StatisticCard : ContentView
         get => GetValue(TitleBarProperty) as string;
         set => SetValue(TitleBarProperty, value);
     }
+    public void setValue(String value)
+    {
+        ValueText.Text = value;
+    }
 }

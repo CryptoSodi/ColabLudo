@@ -1,11 +1,5 @@
-using LudoClient.Models;
-using Microsoft.Maui.Graphics.Text;
 using SharedCode;
 using SharedCode.Constants;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json;
 
 namespace LudoClient.ControlView
 {
@@ -21,8 +15,8 @@ namespace LudoClient.ControlView
         {//detailgold.png
             this.playerCard = playerCard;
             cardActionType = type;
-            PlayerImage.Source = playerCard.playerPicture;
-            PlayerName.Text = playerCard.playerName;
+            PlayerImage.Source = playerCard.pictureUrl;
+            PlayerName.Text = playerCard.name;
 
             switch (playerCard.rank)
             {

@@ -33,6 +33,7 @@ namespace LudoClient.Platforms.Android
         {
             Instance = this;
         }
+        public string? GoogleId { get; private set; }
         public string? UserName { get; private set; }
         public string? UserEmail { get; private set; }
         public string? UserPhotoUrl { get; private set; }
@@ -87,6 +88,7 @@ namespace LudoClient.Platforms.Android
             {
                 GoogleSignInAccount account = (GoogleSignInAccount)task.Result;
 
+                GoogleId = account.Id;
                 UserName = account.DisplayName;
                 UserEmail = account.Email;
                 UserPhotoUrl = account.PhotoUrl?.ToString();

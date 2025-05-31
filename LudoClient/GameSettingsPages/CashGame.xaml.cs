@@ -46,7 +46,7 @@ public partial class CashGame : ContentPage
     private void BtnPlus(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (UserInfo.Instance.SolBalance > entry + GlobalConstants.initialEntry)
+        if (UserInfo.Instance.LudoCoins > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
 

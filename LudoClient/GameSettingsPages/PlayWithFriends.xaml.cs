@@ -1,8 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using Microsoft.Maui;
 using SharedCode.Constants;
-using System.Threading.Tasks;
 
 namespace LudoClient;
 
@@ -73,7 +71,7 @@ public partial class PlayWithFriends : ContentPage
     private void BtnPlus(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (UserInfo.Instance.SolBalance > entry + GlobalConstants.initialEntry)
+        if (UserInfo.Instance.LudoCoins > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
 

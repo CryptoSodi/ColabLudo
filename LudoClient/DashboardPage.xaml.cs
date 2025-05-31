@@ -7,7 +7,6 @@ using LudoClient.Constants;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 using SharedCode.Constants;
-using System.Diagnostics;
 
 public partial class DashboardPage : ContentPage
 {
@@ -49,7 +48,7 @@ public partial class DashboardPage : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        if(UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
+        if(UserInfo.Instance.LudoCoins >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.cashGame = new CashGame();
             Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
@@ -72,7 +71,7 @@ public partial class DashboardPage : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        if (UserInfo.Instance.SolBalance >= GlobalConstants.initialEntry)
+        if (UserInfo.Instance.LudoCoins >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.playWithFriends = new PlayWithFriends();
             Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done

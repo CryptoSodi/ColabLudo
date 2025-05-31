@@ -19,7 +19,6 @@ namespace SignalR.Server
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
         private readonly CryptoHelper _crypto;
-        private IHubCallerClients Clients;
 
         public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto)
         {

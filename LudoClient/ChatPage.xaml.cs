@@ -36,7 +36,7 @@ public partial class ChatPage : ContentPage
         cm.SenderName = UserInfo.Instance.Name;
         cm.SenderPicture = UserInfo.Instance.PictureUrl;
         cm.ReceiverId = playerCard.playerID;
-        cm.ReceiverName = playerCard.playerName;
+        cm.ReceiverName = playerCard.name;
         cm.Message = "";
         cm.Time = DateTime.Now;
 
@@ -93,7 +93,7 @@ public partial class ChatPage : ContentPage
             cm.SenderName = UserInfo.Instance.Name;
             cm.SenderPicture = UserInfo.Instance.PictureUrl;
             cm.ReceiverId = playerCard.playerID;
-            cm.ReceiverName = playerCard.playerName;
+            cm.ReceiverName = playerCard.name;
             cm.SenderColor = "";
             //cm.ReceiverPicture = playerCard.playerPicture;
             cm.Message = MessageEntry.Text;

@@ -12,6 +12,7 @@ namespace LudoClient.Services
         Task<bool> SignOutAsync();
 
         // Add these properties to expose user info
+        string? GoogleId { get; }
         string? UserName { get; }
         string? UserEmail { get; }
         string? UserPhotoUrl { get; }

@@ -50,6 +50,26 @@ namespace SignalR.Server
             }
             await base.OnDisconnectedAsync(exception);
         }
+
+        public async Task<StateInfo> LoadPlayerData(int playerId)
+        {
+            // 1) Store SignalR connection
+            PlayerConnections[playerId] = Context.ConnectionId;
+            ConnectionToPlayer[Context.ConnectionId] = playerId;
+
+            using var context = _contextFactory.CreateDbContext();
+            LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+
+            return new StateInfo
+            {
+                GamesPlayed = P.GamesPlayed + "",
+                GamesWon = P.GamesWon + "",
+                GamesLost = P.GamesLost + "",
+                BestWin = P.BestWin + "",
+                TotalWin = P.TotalWin + "",
+                TotalLost = P.TotalLost + ""
+            };
+        }
         /// <summary>
         /// Call this once after authentication or lobby-join to establish mapping.
         /// </summary>
@@ -93,9 +113,6 @@ namespace SignalR.Server
                 return pid;
             throw new HubException("Player not recognized.");
         }
-
-
-
         public async Task<String> SendSol(int playerID, string destination, double amountInSol)
         {
             try
@@ -145,25 +162,25 @@ namespace SignalR.Server
             if (existingGame.MultiPlayer.P1 != null)
             {
                 LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Red" });
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Red" });
             }
             if (existingGame.MultiPlayer.P2 != null)
             {
                 LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
                 if (existingGame.Type == "2")
-                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Yellow" });
                 else
-                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Green" });
+                    seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Green" });
             }
             if (existingGame.MultiPlayer.P3 != null)
             {
                 LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Yellow" });
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Yellow" });
             }
             if (existingGame.MultiPlayer.P4 != null)
             {
                 LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.PlayerName, PlayerPicture = P.PlayerPicture, PlayerColor = "Blue" });
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Blue" });
             }
 
             if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
@@ -370,7 +387,7 @@ namespace SignalR.Server
                 Day6 = bonus.Day6,
                 Day7 = bonus.Day7,
                 Bonus = 10,
-                DayCounter = bonus.DayCounter
+                DayCounter = weekdayIndex
             };
         }
         // New function: Claim today's bonus and update LastResetDate
@@ -452,7 +469,7 @@ namespace SignalR.Server
                 Day6 = bonus.Day6,
                 Day7 = bonus.Day7,
                 Bonus = 10,
-                DayCounter = bonus.DayCounter
+                DayCounter = weekdayIndex
             };
         }
         /* END DAILY BONUS */
@@ -467,7 +484,7 @@ namespace SignalR.Server
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameRoom.RoomCode);
 
-            BroadcastPlayersAsync(gameRoom);
+            await BroadcastPlayersAsync(gameRoom);
 
             return gameRoom.RoomCode; // Return the room name to the client
         }
@@ -477,29 +494,35 @@ namespace SignalR.Server
             // Notify others in the room that a new user has joined
             if (existingGame.MultiPlayer.P1 != null)
             {
-                var P1 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.PlayerName, P1.PlayerPicture);
+                try
+                {
+                    Player P1 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
+                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.Name, P1.PictureUrl);
+                }
+                catch (Exception ex)
+                {
+                }
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P2 != null)
             {
                 var P2 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.PlayerName, P2.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.Name, P2.PictureUrl);
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P3 != null)
             {
                 var P3 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.PlayerName, P3.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.Name, P3.PictureUrl);
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", 0, "Waiting", "user.png");
             if (existingGame.MultiPlayer.P4 != null)
             {
                 var P4 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.PlayerName, P4.PlayerPicture);
+                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.Name, P4.PictureUrl);
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");

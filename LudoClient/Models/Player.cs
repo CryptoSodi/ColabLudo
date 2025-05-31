@@ -36,6 +36,5 @@ namespace LudoClient.Models
         public ICollection<FriendRequest> SentFriendRequests { get; set; }  // Player initiated requests
         [JsonIgnore] // Prevents circular reference during serialization
         public ICollection<FriendRequest> ReceivedFriendRequests { get; set; }  // Requests received by the player
-
     }
 }

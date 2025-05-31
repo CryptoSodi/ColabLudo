@@ -9,6 +9,7 @@ namespace LudoClient
     public partial class LoginPage : ContentPage
     {
         string city = "none";
+        string countryCode = "none";
         private bool _isLoggingIn = false;
         public LoginPage()
         {
@@ -24,57 +25,27 @@ namespace LudoClient
         }
         void SetupInstance(Dictionary<string, JsonElement>? result)
         {
-            int playerId = result["playerId"].GetInt32();
-            string PlayerName = result["playerName"].GetString();
-            string Email = result["email"].GetString();
-            string PlayerPicture = result["playerPicture"].GetString();
-            string phoneNumber = result["phoneNumber"].GetString();
-            double PlayerLudoCoins = result["playerLudoCoins"].GetDouble();
-            double PlayerCryptoCoins = result["playerCryptoCoins"].GetDouble();
-     
-            UserInfo.Instance.Id = playerId;
-            UserInfo.Instance.PhoneNumber = phoneNumber;
-            UserInfo.Instance.City = city;
+            UserInfo.Instance.Id = result["id"].GetInt32();
+            UserInfo.Instance.GoogleId = result?["googleId"].GetString();
+            UserInfo.Instance.Name = result?["name"].GetString();
+            UserInfo.Instance.Email = result?["email"].GetString();
+            UserInfo.Instance.PictureUrl = result?["pictureUrl"].GetString();
 
-            UserInfo.Instance.Name = PlayerName;
-            UserInfo.Instance.Email = Email;
-            UserInfo.Instance.PictureUrl = PlayerPicture;
-            UserInfo.Instance.Coins = (float)PlayerLudoCoins;
-            UserInfo.Instance.PlayerCryptoCoins = (float)PlayerCryptoCoins;
+            UserInfo.Instance.PictureUrlBlob = UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl).GetAwaiter().GetResult();
+            
+            UserInfo.Instance.PhoneNumber = result?["phoneNumber"].GetString();
+            UserInfo.Instance.CountryCode = result?["countryCode"].GetString();
+            UserInfo.Instance.City = result?["city"].GetString();
+
+            UserInfo.Instance.GamesPlayed = result["gamesPlayed"].GetInt32();
+            UserInfo.Instance.GamesWon = result["gamesWon"].GetInt32();
+            UserInfo.Instance.GamesLost = result["gamesLost"].GetInt32();
+
+            UserInfo.Instance.BestWin = result["bestWin"].GetDecimal();
+            UserInfo.Instance.TotalWin = result["totalWin"].GetDecimal();
+            UserInfo.Instance.TotalLost = result["totalLost"].GetDecimal();
         }
-        private async void Guest_Login_Clicked(object sender, EventArgs e)
-        {
-            if (_isLoggingIn)
-                return;
-            _isLoggingIn = true;
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            try
-            {
-#if ANDROID
-                UserDialogs.Instance.ShowLoading("Logging in as Guest.", MaskType.Black);                
-#endif
-                var deviceId = this.Handler.MauiContext.Services.GetService<IDeviceIdentifierService>()?.GetDeviceId();
-
-                UserInfo.Instance.Id = 19;
-                UserInfo.Instance.Email = deviceId + "@LudoNFT.com";
-                UserInfo.Instance.Name = deviceId + "";
-                UserInfo.Instance.PictureUrl = "https://ludoNFT.online/player.png";
-
-                //Save the user's login state
-                await UserInfo.SaveState();
-                UserInfo.LoadState();
-                Application.Current.MainPage = new AppShell();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                await DisplayAlert("Error", "Failed to sign in: " + ex.Message, "OK");
-            }
-#if ANDROID
-            UserDialogs.Instance.HideLoading();
-#endif
-            _isLoggingIn = false;
-        }
+       
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
             if (_isLoggingIn)
@@ -82,7 +53,7 @@ namespace LudoClient
             _isLoggingIn = true;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 #if WINDOWS
-            await performLoginAsync("-1","Sodi", "Sodi@gmail.com","https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj");
+            await performLoginAsync("Guest1");
             _isLoggingIn = false;
             return;
 #endif
@@ -95,8 +66,7 @@ namespace LudoClient
             IGoogleAuthService authService = null;
             try
             {
-                authService = DependencyService.Get<IGoogleAuthService>();
-                var idToken = await authService.SignInAsync();
+                authService = DependencyService.Get<IGoogleAuthService>();                
             }
             catch (Exception ex)
             {
@@ -104,9 +74,11 @@ namespace LudoClient
                 return;
             }
             if (authService != null)
-            {   
+            {
+                string idToken = await authService.SignInAsync();
                 // Successfully signed in
-                await performLoginAsync((UserInfo.Instance.Id != null ? UserInfo.Instance.Id.ToString() : "-1"),authService.UserName,authService.UserEmail,authService.UserPhotoUrl);
+                
+                await performLoginAsync(idToken);
             }
             else
             {
@@ -117,13 +89,13 @@ namespace LudoClient
 #endif
             _isLoggingIn = false;
         }
-        private async Task performLoginAsync(String Id, String Name,String Email,String PicURL)
+        private async Task performLoginAsync(String idToken)
         {
             try
             {
                 if (GlobalConstants.online)
                 {
-                    string url = $"api/GoogleAuthentication?name={Name}&email={Email}&pictureUrl={PicURL}&playerId={Id}";
+                    string url = $"api/GoogleAuthentication?idToken={idToken}&city={city}&countryCode={countryCode}";
 
                     Dictionary<string, JsonElement>? result = null;
                     
@@ -137,20 +109,15 @@ namespace LudoClient
                     {
                         await DisplayAlert("Server Error", $"An error occurred: {ex.Message}", "OK");
                     }
-
-                    SetupInstance(result);
                     string message = result?["message"].GetString();
 
                     if (message == "Player login successfully." || message == "Player updated successfully." || message == "Player created successfully." || message == "Attach Phone.")
                     {
+                        SetupInstance(result);
 
-                        UserInfo.Instance.Name = Name;
-                        UserInfo.Instance.Email = Email;
-                        UserInfo.Instance.PictureUrl = PicURL;
-                        //Save the user's login state
                         await UserInfo.SaveState();
                         UserInfo.LoadState();
-                        //Hide Loader
+
                         Application.Current.MainPage = new AppShell();
                     }
                 }
@@ -175,30 +142,35 @@ namespace LudoClient
                     var root = doc.RootElement;
 
                     if (root.TryGetProperty("status", out JsonElement statusElement) &&
-                        statusElement.GetString() == "success" &&
-                        root.TryGetProperty("city", out JsonElement cityElement))
+                        statusElement.GetString() == "success" && 
+                        root.TryGetProperty("city", out JsonElement cityElement) && root.TryGetProperty("countryCode", out JsonElement countryCodeElement))
                     {
                         city = cityElement.GetString();
+                        countryCode = countryCodeElement.GetString() == "PK"?"+92":"+91";
                     }
                     else
                     {
                         // Handle cases where 'status' is not 'success' or 'city' property is missing
+                        countryCode = "null";
                         city = "null";
                     }
                 }
                 catch (HttpRequestException ex)
                 {
                     // Handle HTTP request errors
+                    countryCode = ex.Message;
                     city = ex.Message;
                 }
                 catch (JsonException ex)
                 {
                     // Handle JSON parsing errors
+                    countryCode = ex.Message;
                     city = ex.Message;
                 }
             }
             catch (Exception ex)
             {
+                countryCode = ex.Message;
                 city = ex.Message;
                 Console.WriteLine($"Error: Country {ex.Message}");
             }

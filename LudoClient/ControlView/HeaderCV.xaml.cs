@@ -26,17 +26,7 @@ public partial class HeaderCV : ContentView
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            if (UserInfo.Instance.PictureBlob == "")
-            {
-                //PlayerImageItem.Source = UserInfo.Instance.PictureUrl;
-                UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl);
-            }
-            if (UserInfo.Instance.PictureBlob == "")
-            {
-                Console.WriteLine("BLOB NOT LOADED");
-            }
-
-            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureBlob);
+            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
         });
     }
     public async Task UpdateBalance()
@@ -48,8 +38,8 @@ public partial class HeaderCV : ContentView
                 DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
                 // You can tweak these hex colors and size as you like:
                 // Update the image source asynchronously (UI thread)
-                UserInfo.Instance.Address = info.Address;
-                UserInfo.Instance.SolBalance = Double.Parse(info.SolBalance);
+                UserInfo.Instance.CryptoAddress = info.Address;
+                UserInfo.Instance.LudoCoins = Double.Parse(info.SolBalance);
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     Coins.Text = info.SolBalance + " SOL";
@@ -57,7 +47,6 @@ public partial class HeaderCV : ContentView
             }
             catch (Exception)
             {
-
             }
         }
         else
