@@ -28,7 +28,7 @@
                 </ScrollView>
             </Grid>
         </controlview:Capsule>
-        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="popup_title.png" Title="TOURNAMENTS" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
         <controlView:BottomNavigation Grid.Row="2" Grid.ColumnSpan="5"></controlView:BottomNavigation>
     </Grid>
 </ContentPage>

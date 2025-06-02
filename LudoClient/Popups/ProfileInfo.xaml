@@ -7,7 +7,7 @@
              ImageSource="dailybonus_popup_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
-            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="Profile Info" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="PROFILE" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
 
             <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="15" >
                 <local:Capsule  ImageSource="profile_info_bg.png" HorizontalOptions="Center">

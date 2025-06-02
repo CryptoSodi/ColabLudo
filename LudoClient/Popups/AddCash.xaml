@@ -7,7 +7,7 @@
            ImageSource="popup_bg.png">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
-            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="DESPOSIT" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
+            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="DEPOSIT" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
             <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="10,0,10,-28" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <local:Capsule ImageSource="bg_disable_field.png" Margin="0,5,0,0" VerticalOptions="Start" HorizontalOptions="Fill">
                     <Grid Margin="0,5,8,8.5" ColumnDefinitions="4*,1*">

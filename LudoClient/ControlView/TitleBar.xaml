@@ -5,7 +5,7 @@
     <Grid>
         <Image x:Name="TitleBarImage" Source="popup_title.png"/>
         <Grid RowDefinitions="1.5*,1*">
-            <Label x:Name="TitleBarText" Text="Settings" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+            <Label x:Name="TitleBarText" Text="SETTINGS" CharacterSpacing="1.2" FontSize="18" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
         </Grid>
     </Grid>
 </ContentView>
