@@ -62,13 +62,14 @@ namespace SignalR.Server
 
             return new StateInfo
             {
-                GamesPlayed = P.GamesPlayed + "",
-                GamesWon = P.GamesWon + "",
-                GamesLost = P.GamesLost + "",
-                BestWin = P.BestWin + "",
-                TotalWin = P.TotalWin + "",
-                TotalLost = P.TotalLost + "",
-                Score = P.Score + ""
+                GamesPlayed = P.GamesPlayed,
+                GamesWon = P.GamesWon,
+                GamesLost = P.GamesLost,
+                BestWin = P.BestWin,
+                TotalWin = P.TotalWin,
+                TotalLost = P.TotalLost,
+                PhoneNumber = P.PhoneNumber,
+                Score = P.Score
             };
         }
         /// <summary>

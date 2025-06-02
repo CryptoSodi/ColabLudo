@@ -19,8 +19,8 @@ namespace LudoClient.ControlView
             // Set the text of the labels
             TournamentId.Text = tournamentId.ToString();
             TournamentNameLabel.Text = tournamentName;
-            JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}$";
-            PrizeAmountLabel.Text = $"{prizeAmount}$";
+            JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}";
+            PrizeAmountLabel.Text = $"{prizeAmount}";
             StartDateLabel.Text = $"Start Date : {startDate}";
             EndDateLabel.Text = $"End Date   : {endDate}";
             // Parse the end date

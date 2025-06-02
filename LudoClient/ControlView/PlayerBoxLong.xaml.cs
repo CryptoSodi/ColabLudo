@@ -34,6 +34,46 @@ public partial class PlayerBoxLong : ContentView
         InitializeComponent();
         this.playerImageItem = PlayerImageItem;
     }
+    int remainderScore = 10;
+    public void SetScore(int score, bool verified)
+    {
+        remainderScore = score % 10000; // Store the remainder
+        int dividedScore = score / 10000;
+        ScoreText.Text = dividedScore.ToString();
+        if (verified)
+        {
+            VerificationImage.Source = "lbl_verified.png";
+        }
+        else
+        {
+            VerificationImage.Source = "lbl_unverified.png";
+        }
+        UpdateOrangeBarWidth();
+    }
+
+    private void UpdateOrangeBarWidth()
+    {
+        double fullWidth = ScoreBarGrid.Width;
+
+        if (fullWidth <= 0)
+        {
+            Task.Delay(100).ContinueWith(_ => UpdateOrangeBarWidth(), TaskScheduler.FromCurrentSynchronizationContext());
+            // Wait until the layout is measured            
+        }
+        else
+        {
+            SetOrangeBarWidth();
+        }
+    }
+
+    private void SetOrangeBarWidth()
+    {
+        double fullWidth = ScoreBarGrid.Width;
+        double targetWidth = fullWidth * remainderScore / 10000.0;
+        ReminderScoreText.Text = remainderScore.ToString();
+        OrangeBar.WidthRequest = targetWidth;
+    }
+
     private void EditInfoClicked(object sender, EventArgs e)
     {
 

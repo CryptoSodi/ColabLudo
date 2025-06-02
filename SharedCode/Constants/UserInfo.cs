@@ -22,7 +22,8 @@
         public decimal BestWin { get; set; }
         public decimal TotalLost { get; set; }
         public decimal TotalWin { get; set; }
-        
+        public int Score { get; set; } = 0;
+
         public double? LudoCoins { get; set; } = 0;
         public string CryptoAddress { get; set; }
 
@@ -65,6 +66,7 @@
             Preferences.Set(nameof(TotalLost), instance.TotalLost + "");
             Preferences.Set(nameof(TotalWin), instance.TotalWin + "");
             Preferences.Set(nameof(IsActive), instance.IsActive);
+            Preferences.Set(nameof(Score), instance.Score);
 
             Preferences.Set("IsUserLoggedIn", true);
         }
@@ -93,6 +95,7 @@
             instance.TotalLost = decimal.Parse(Preferences.Get(nameof(TotalLost), "0"));
             instance.TotalWin = decimal.Parse(Preferences.Get(nameof(TotalWin), "0"));
             instance.IsActive = Preferences.Get(nameof(IsActive), true);
+            instance.Score = Preferences.Get(nameof(Score), 0);
         }
         public static async Task<string> DownloadImageAsBase64Async(string imageUrl)
         {

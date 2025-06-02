@@ -12,16 +12,19 @@
 
             <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="Fill">
                 <Label Margin="1,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                <Image Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
+                <Image x:Name="VerificationImage" Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
             </StackLayout>
 
             <StackLayout Margin="0,0,5,0" Grid.Row="1" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand">
-                <Grid Margin="0,1,0,1">
-                    <Image Source="level_star.png" VerticalOptions="Center" HorizontalOptions="Center"/>
-                    <Label Text="1" Margin="3" VerticalOptions="Center" HorizontalOptions="Center" TextColor="Black"/>
+                <Grid Margin="0,1,0,1" WidthRequest="60">
+                    <Frame BackgroundColor="#60000000" CornerRadius="4" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    <Image Source="level_star.png" Margin="4,4,0,4" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Label x:Name="ScoreText" Text="1" Margin="0,0,5,2" VerticalOptions="Center" HorizontalOptions="End" TextColor="White"/>
                 </Grid>
-                <Grid HorizontalOptions="FillAndExpand">
-                    <Image Source="progress_bar_bg.png"/>
+                <Grid Margin="0,5,0,5" HorizontalOptions="FillAndExpand">
+                    <Frame x:Name="ScoreBarGrid" BackgroundColor="#60000000" CornerRadius="4" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    <Frame x:Name="OrangeBar" BackgroundColor="DarkOrange" CornerRadius="4" HorizontalOptions="Start" VerticalOptions="Fill"/>
+                    <Label x:Name="ReminderScoreText" TextColor="Wheat" FontSize="10" HorizontalOptions="Center" VerticalOptions="Fill"/>
                 </Grid>
                 <Image Source="btn_info.png" Margin="0,2,0,2" VerticalOptions="Center" HorizontalOptions="End"/>
             </StackLayout>

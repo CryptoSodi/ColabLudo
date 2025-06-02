@@ -2,13 +2,14 @@
 {
     public class StateInfo
     {
-        public string GamesPlayed { get; set; } = "0";
-        public string GamesWon { get; set; } = "0";
-        public string GamesLost { get; set; } = "0";
-        public string BestWin { get; set; } = "0";
-        public string TotalWin { get; set; } = "0";
-        public string TotalLost { get; set; } = "0";
-        public string Score { get; set; } = "0";
+        public int GamesPlayed { get; set; } = 0;
+        public int GamesWon { get; set; } = 0;
+        public int GamesLost { get; set; } = 0;
+        public decimal BestWin { get; set; } = 0;
+        public decimal TotalWin { get; set; } = 0;
+        public decimal TotalLost { get; set; } = 0;
+        public int Score { get; set; } = 0;
+        public string? PhoneNumber { get; internal set; }
     }
     public class DepositInfo
     {
