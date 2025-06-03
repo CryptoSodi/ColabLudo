@@ -8,7 +8,8 @@ namespace LudoClient.Models
         public string TournamentName { get; set; }
         public string? TournamentWinner { get; set; }
         public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        public DateTime EndDate { get; set; }        
+        public DateTime ServerDateTime { get; set; }
         public decimal EntryPrice { get; set; }
         public decimal PrizeAmount { get; set; }
         public State TournamentState { get; set; }

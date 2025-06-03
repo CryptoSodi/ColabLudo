@@ -14,21 +14,16 @@ public partial class TournamentPage : ContentPage
     }
     public async Task InitializeTournamentsAsync()
     {
-        // Retrieve or create a list of tournaments
+        // Clear old items to avoid duplicates
+        TournamentListStack.Children.Clear();
+
         List<Tournament> tournaments = await GetTournamentsAsync();
-        // Dynamically create and add TournamentDetailList controls
+
         foreach (var tournament in tournaments)
         {
             var tournamentDetail = new TournamentDetailList();
-            tournamentDetail.SetTournamentDetails(
-                tournamentId: tournament.TournamentId,
-                tournamentName: tournament.TournamentName,
-                startDate: tournament.StartDate.ToString("g"),
-                endDate: tournament.EndDate.ToString("g"),
-                entryPrice: tournament.EntryPrice,
-                prizeAmount: tournament.PrizeAmount
-            );
-            // Add the control to the stack layout
+            // Pass the tournament data + status
+            tournamentDetail.SetTournamentDetails(tournament);
             TournamentListStack.Children.Add(tournamentDetail);
         }
     }

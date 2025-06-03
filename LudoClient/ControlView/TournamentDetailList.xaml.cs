@@ -1,3 +1,4 @@
+using LudoClient.Models;
 using SharedCode.Constants;
 using System.Timers;
 
@@ -5,43 +6,33 @@ namespace LudoClient.ControlView
 {
     public partial class TournamentDetailList : ContentView
     {
+        Tournament tournament;
+        DateTime ServerDateTime;
         private System.Timers.Timer? countdownTimer;
-        private DateTime endDateTime;
+        
         public TournamentDetailList()
         {
             InitializeComponent();
         }
-        /// <summary>
-        /// Sets the tournament details on the UI and starts the countdown timer.
-        /// </summary>
-        public void SetTournamentDetails(int tournamentId, string tournamentName, string startDate, string endDate, decimal entryPrice, decimal prizeAmount)
+        internal void SetTournamentDetails(Tournament tournament)
         {
-            // Set the text of the labels
-            TournamentId.Text = tournamentId.ToString();
-            TournamentNameLabel.Text = tournamentName;
-            JoiningFeeLabel.Text = $"Joining Fee : {entryPrice}";
-            PrizeAmountLabel.Text = $"{prizeAmount}";
-            StartDateLabel.Text = $"Start Date : {startDate}";
-            EndDateLabel.Text = $"End Date   : {endDate}";
-            // Parse the end date
-            if (DateTime.TryParse(endDate, out DateTime parsedEndDate))
-            {
-                endDateTime = parsedEndDate;
-                // Start the countdown timer
-                StartCountdownTimer();
-            }
-            else
-            {
-                TimeRemainingLabel.Text = "Invalid end date";
-            }
+            ServerDateTime = tournament.ServerDateTime;
+            this.tournament = tournament;
+            
+            string status;
+            TournamentNameLabel.Text = tournament.TournamentName;
+            StartDateLabel.Text = $"Starts: {tournament.StartDate}";
+            EndDateLabel.Text = $"Ends: {tournament.EndDate}";
+            EntryPriceLabel.Text = $"Entry: {tournament.EntryPrice}";
+            PrizeAmountLabel.Text = $"Prize: {tournament.PrizeAmount}";
+            StartCountdownTimer();
         }
         /// <summary>
         /// Starts a timer that updates the time remaining label every second.
         /// </summary>
         private void StartCountdownTimer()
         {
-            // Initialize the timer
-            countdownTimer = new System.Timers.Timer(1000); // Update every second
+            countdownTimer = new System.Timers.Timer(1000); // 1 second
             countdownTimer.Elapsed += OnCountdownTimerElapsed;
             countdownTimer.AutoReset = true;
             countdownTimer.Start();
@@ -51,21 +42,37 @@ namespace LudoClient.ControlView
         /// </summary>
         private void OnCountdownTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            // Calculate time remaining
-            TimeSpan timeRemaining = endDateTime - DateTime.Now;
+            //DateTime timeRemaining;
+            String status;
+            TimeSpan timeRemaining;
 
-            // Update the label on the UI thread
-            MainThread.BeginInvokeOnMainThread(() =>
+            ServerDateTime = ServerDateTime.Add(TimeSpan.FromSeconds(1));
+            if (ServerDateTime > tournament.EndDate)
             {
-                if (timeRemaining.TotalSeconds > 0)
-                {
-                    TimeRemainingLabel.Text = $"Time Remaining {timeRemaining:dd\\:hh\\:mm\\:ss}";
-                }
-                else
+                status = "Completed";
+                MainThread.BeginInvokeOnMainThread(() =>
                 {
                     TimeRemainingLabel.Text = "Tournament Ended";
-                    StopCountdownTimer();
-                }
+                });
+                StopCountdownTimer();
+                return; // No need to update the label if the tournament has ended
+            }
+            else
+            if (ServerDateTime > tournament.StartDate)
+            {
+                status = "Ending in :"; 
+                timeRemaining = ServerDateTime - tournament.EndDate;
+            }
+            else
+            {
+                status = "Starting in :";
+                timeRemaining = ServerDateTime - tournament.StartDate;
+            }
+            // Calculate the fixed time difference
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                TimeRemainingLabel.Text = $"{status} {timeRemaining:dd\\:hh\\:mm\\:ss}";
             });
         }
         /// <summary>
@@ -125,5 +132,6 @@ namespace LudoClient.ControlView
                 Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
             }
         }
+
     }
 }

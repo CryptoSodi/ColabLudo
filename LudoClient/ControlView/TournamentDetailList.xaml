@@ -27,11 +27,10 @@
                 <StackLayout Margin="12,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
                     <Label x:Name="TournamentNameLabel" Text="Monthly Tournament" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
                     <Label x:Name="TimeRemainingLabel" Text="Time Remaining 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
-                    <Label x:Name="JoiningFeeLabel" Text="Entry Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
+                    <Label x:Name="EntryPriceLabel" Text="Entry Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
                 </StackLayout>
                 <Image x:Name="SheetDirection" Source="arr_down.png" Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center"/>
                 <StackLayout Margin="0,-12,0,-12" Spacing="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center">
-                    <Label Text="Prize" TextColor="Black" HorizontalOptions="Center" VerticalOptions="Center"/>
                     <Grid HorizontalOptions="Fill" VerticalOptions="Center">
                         <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                         <Label x:Name="PrizeAmountLabel" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
