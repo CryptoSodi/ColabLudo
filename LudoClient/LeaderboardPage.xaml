@@ -12,8 +12,8 @@
             <Grid Margin="0,20,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
                     <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".1*,.1*">
-                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Gobal" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Friends" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Gobal" SwitchOn="tab_normal.png" SwitchOff="tab_active.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Friends" Grid.Column="1" SwitchOn="tab_normal.png" SwitchOff="tab_active.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
                     <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="Fill" VerticalOptions="Start">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions=".3*,.4*,.3*">

@@ -11,6 +11,7 @@ public partial class TournamentPage : ContentPage
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
+        Tab3.SwitchSource = Tab3.SwitchOff;
     }
     public async Task InitializeTournamentsAsync()
     {
@@ -29,7 +30,9 @@ public partial class TournamentPage : ContentPage
     }
     private async Task<List<Tournament>> GetTournamentsAsync()
     {
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync("api/tournament");
+        String type = "Running"; // Default type to fetch running tournaments
+        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/tournament/type/{type}");
+
         if (response.IsSuccessStatusCode)
         {
             var responseBody = await response.Content.ReadAsStringAsync();
@@ -37,11 +40,12 @@ public partial class TournamentPage : ContentPage
             {
                 PropertyNameCaseInsensitive = true
             });
+
             return tournaments ?? new List<Tournament>();
         }
         else
         {
-            // Handle the error case as needed
+            // Handle the error case as needed (logging, message, etc.)
             return new List<Tournament>();
         }
     }
@@ -52,6 +56,7 @@ public partial class TournamentPage : ContentPage
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
             Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
+            Tab3.SwitchSource = Tab3 == activeTab ? Tab3.SwitchOn : Tab3.SwitchOff;
             // Add logic here to change the content based on the active tab
         }
     }

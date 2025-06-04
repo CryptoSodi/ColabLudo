@@ -7,36 +7,67 @@
         <Grid x:Name="ExpandSheet" HorizontalOptions="Fill" VerticalOptions="Fill">
             <local:Capsule ImageSource="expand_card.png" Margin="0,-1,0,0" HorizontalOptions="Fill" VerticalOptions="Start">
                 <Grid HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions=".3*,.14*">
-                    <StackLayout Spacing="1" Margin="18,8,6,14" HorizontalOptions="Start" VerticalOptions="Fill">
+                    <StackLayout Spacing="1" Margin="18,11,5,14" HorizontalOptions="Start" VerticalOptions="Fill">
                         <Label Text="Tournament Details" FontSize="10" TextColor="white" HorizontalOptions="Start" VerticalOptions="Center"/>
                         <Label x:Name="StartDateLabel" Text="Start Date : 06/02/2024 17:20:00" FontSize="10" TextColor="LightGray" HorizontalOptions="Start" VerticalOptions="Center"/>
                         <Label x:Name="EndDateLabel" Text="End Date   : 07/02/2024 17:20:00" FontSize="10" TextColor="LightGray" HorizontalOptions="Start" VerticalOptions="Center"/>
                     </StackLayout>
                     <ImageButton Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <Image Grid.Column="1" Margin="0,0,10,0" Source="tournament_btn.png" HorizontalOptions="Center" VerticalOptions="Center">
-                        <Image.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="Join_Clicked" />
-                        </Image.GestureRecognizers>
-                    </Image>
                 </Grid>
             </local:Capsule>
         </Grid>
-
-        <local:Capsule x:Name="SubSheet" ImageSource="total_available_bal_bg.png" HorizontalOptions="Fill" VerticalOptions="Fill">
-            <Grid ColumnSpacing="10" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions=".3*,.1*,.04*" Padding="2,0,10,0">
-                <StackLayout Margin="12,0,0,0" HorizontalOptions="Start" VerticalOptions="Center">
-                    <Label x:Name="TournamentNameLabel" Text="Monthly Tournament" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
-                    <Label x:Name="TimeRemainingLabel" Text="Time Remaining 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
-                    <Label x:Name="EntryPriceLabel" Text="Entry Fee : 100$" FontSize="10" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
-                </StackLayout>
-                <Image x:Name="SheetDirection" Source="arr_down.png" Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center"/>
-                <StackLayout Margin="0,-12,0,-12" Spacing="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center">
-                    <Grid HorizontalOptions="Fill" VerticalOptions="Center">
-                        <BoxView CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                        <Label x:Name="PrizeAmountLabel" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+        
+        <local:Capsule x:Name="SubSheet" ImageSource="tournament_bg.png" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <Grid ColumnSpacing="10" RowSpacing="4" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".05*,.1*,.01*" Padding="0,0,0,0">
+                <Frame BackgroundColor="DarkBlue" CornerRadius="2" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="1,0,1,0"/>
+                
+                <Grid Margin="5,2,5,0" HorizontalOptions="Fill" VerticalOptions="Center">
+                    <Label x:Name="TournamentNameLabel" Text="Daily" FontSize="12" HorizontalOptions="Start" VerticalOptions="Center"/>
+                    <StackLayout Orientation="Horizontal" VerticalOptions="Fill" HorizontalOptions="End" >
+                        <Label x:Name="TimeRemainingLabel" Text="Time Remaining 17:20:03" FontSize="12" HorizontalOptions="Start" VerticalOptions="Center"/>
+                        <Image Source="time_gyro.png" Margin="5" Aspect="AspectFit" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    </StackLayout>
+                </Grid>
+                <Image x:Name="SheetDirection" IsVisible="False" Source="arr_down.png" Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Grid Margin="10,0,10,0" ColumnSpacing="5" Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="Auto,Auto,Auto,1*">
+                    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" WidthRequest="70">
+                        <Frame BackgroundColor="#40000000" CornerRadius="6" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="5" Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Label Text="1st Prize" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="DarkOrange"/>
+                            <Label x:Name="PrizeAmountLabel" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                        </StackLayout>
                     </Grid>
-                </StackLayout>
-                <Label x:Name="TournamentId" Text="" TextColor="Transparent" HorizontalOptions="Start" VerticalOptions="Center"/>
+                    <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill" WidthRequest="70">
+                        <Frame BackgroundColor="#40000000" CornerRadius="6" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="5" Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Label Text="2nd Prize" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="DarkOrange"/>
+                            <Label x:Name="PrizeAmountLabel2" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                        </StackLayout>
+                    </Grid>
+                    <Grid Grid.Column="2" HorizontalOptions="Fill" VerticalOptions="Fill" WidthRequest="70">
+                        <Frame BackgroundColor="#40000000" CornerRadius="6" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="5" Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Label Text="3rd Prize" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill" BackgroundColor="DarkOrange"/>
+                            <Label x:Name="PrizeAmountLabel3" Text="1000$" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+                        </StackLayout>
+                    </Grid>
+                    <Grid Grid.Column="3" HorizontalOptions="Fill" VerticalOptions="Fill" >
+                        <Frame BackgroundColor="#40000000" CornerRadius="6" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="5" Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Label x:Name="EntryPriceLabel" Text="Entry Fee : 100" FontSize="11" HorizontalOptions="Fill" VerticalOptions="Center" BackgroundColor="DarkOrange"/>
+                            <Grid>
+                                <Image Margin="10,2,10,0" Source="btn_green.png" HorizontalOptions="Center" VerticalOptions="Center">
+                                    <Image.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="Join_Clicked" />
+                                    </Image.GestureRecognizers>
+                                </Image>
+                                <Label x:Name="ButtonText" Text="JOIN" FontSize="12" HorizontalOptions="Fill" VerticalOptions="Center"/>
+                            </Grid>
+                            
+                        </StackLayout>
+                    </Grid>
+                </Grid>
+                <Label x:Name="TournamentId" Text="" TextColor="Black" HorizontalOptions="Start" VerticalOptions="Center"/>
                 <ImageButton Grid.ColumnSpan="3" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </local:Capsule>

@@ -428,6 +428,9 @@
 	  <None Remove="Resources\Images\Tabs\tab_normal_curve.png" />
 	  <None Remove="Resources\Images\Titles\title_friends.png" />
 	  <None Remove="Resources\Images\tournament.png" />
+	  <None Remove="Resources\Images\Tournament\team_teamwork.png" />
+	  <None Remove="Resources\Images\Tournament\time_gyro.png" />
+	  <None Remove="Resources\Images\Tournament\tournament_bg.png" />
 	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
 	  <None Remove="Resources\Images\Verification\ic_right_arr.png" />
 	  <None Remove="Resources\Images\Verification\ic_verify_account.png" />
@@ -692,6 +695,9 @@
 	  <MauiImage Include="Resources\Images\Tabs\tab_normal.png" />
 	  <MauiImage Include="Resources\Images\Tabs\tab_normal_curve.png" />
 	  <MauiImage Include="Resources\Images\Titles\title_friends.png" />
+	  <MauiImage Include="Resources\Images\Tournament\team_teamwork.png" />
+	  <MauiImage Include="Resources\Images\Tournament\time_gyro.png" />
+	  <MauiImage Include="Resources\Images\Tournament\tournament_bg.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_right_arr.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_account.png" />
 	  <MauiImage Include="Resources\Images\Verification\ic_verify_bank.png" />

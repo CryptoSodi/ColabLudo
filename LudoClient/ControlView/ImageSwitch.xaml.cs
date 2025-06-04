@@ -16,7 +16,12 @@ public partial class ImageSwitch : ContentView
     public BindableProperty SwitchTextProperty = BindableProperty.Create(nameof(SwitchText), typeof(string), typeof(ImageSwitch), propertyChanged: (bindable, oldValue, newValue) =>
     {
         var control = (ImageSwitch)bindable;
-        control.DisplayText.Text = (string)newValue;
+        String v = (string)newValue;
+        if (v == "2" || v == "3" || v == "4" || v == "2v2")
+            control.DisplayPlayersText.IsVisible = true;
+        if(v == "2v2")
+            control.DisplayPlayersText.Text = "TEAM UP";
+        control.DisplayText.Text = v;
     });
     public static readonly BindableProperty IsActiveProperty = BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(ImageSwitch), defaultValue: false);
     public string SwitchText

@@ -6,11 +6,18 @@
     <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
         <local:Capsule x:Name="SwitchImage" HorizontalOptions="Fill" VerticalOptions="Fill">
             <Grid>
-                <Label x:Name="DisplayText" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,5,0,0">
-                    <Label.Shadow>
-                        <Shadow Brush="Black" Offset="1,1" Opacity="1" Radius="4" />
-                    </Label.Shadow>
-                </Label>
+                <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label x:Name="DisplayText" TextColor="White" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,5,2,0">
+                        <Label.Shadow>
+                            <Shadow Brush="Black" Offset="1,1" Opacity="1" Radius="4" />
+                        </Label.Shadow>
+                    </Label>
+                    <Label x:Name="DisplayPlayersText" IsVisible="False" Text="PLAYERS" FontSize="10" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,2,0">
+                        <Label.Shadow>
+                            <Shadow Brush="Black" Offset="1,1" Opacity="1" Radius="4" />
+                        </Label.Shadow>
+                    </Label>
+                </StackLayout>
                 <ImageButton Clicked="SwitchImage_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </local:Capsule>

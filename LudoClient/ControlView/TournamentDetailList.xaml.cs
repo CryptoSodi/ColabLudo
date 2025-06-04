@@ -24,7 +24,7 @@ namespace LudoClient.ControlView
             StartDateLabel.Text = $"Starts: {tournament.StartDate}";
             EndDateLabel.Text = $"Ends: {tournament.EndDate}";
             EntryPriceLabel.Text = $"Entry: {tournament.EntryPrice}";
-            PrizeAmountLabel.Text = $"Prize: {tournament.PrizeAmount}";
+            PrizeAmountLabel.Text = $"{tournament.PrizeAmount}";
             StartCountdownTimer();
         }
         /// <summary>
@@ -47,31 +47,31 @@ namespace LudoClient.ControlView
             TimeSpan timeRemaining;
 
             ServerDateTime = ServerDateTime.Add(TimeSpan.FromSeconds(1));
-            if (ServerDateTime > tournament.EndDate)
-            {
-                status = "Completed";
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    TimeRemainingLabel.Text = "Tournament Ended";
-                });
-                StopCountdownTimer();
-                return; // No need to update the label if the tournament has ended
-            }
-            else
-            if (ServerDateTime > tournament.StartDate)
-            {
-                status = "Ending in :"; 
-                timeRemaining = ServerDateTime - tournament.EndDate;
-            }
-            else
-            {
-                status = "Starting in :";
-                timeRemaining = ServerDateTime - tournament.StartDate;
-            }
-            // Calculate the fixed time difference
-
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                if (ServerDateTime > tournament.EndDate)
+                {
+                    ButtonText.Text = "RESULTS";
+                    status = "Completed";
+                    TimeRemainingLabel.Text = "Tournament Ended";
+                    StopCountdownTimer();
+                    return; // No need to update the label if the tournament has ended
+                }
+                else if (ServerDateTime > tournament.StartDate)
+                {
+                    ButtonText.Text = "PLAY";
+                    status = "Ending in :";
+                    timeRemaining = ServerDateTime - tournament.EndDate;
+                }
+                else
+                {
+                    ButtonText.Text = "JOIN";
+                    status = "Starting in :";
+                    timeRemaining = ServerDateTime - tournament.StartDate;
+                }
+                // Calculate the fixed time difference
+
+
                 TimeRemainingLabel.Text = $"{status} {timeRemaining:dd\\:hh\\:mm\\:ss}";
             });
         }

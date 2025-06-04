@@ -57,12 +57,12 @@ public partial class PlayerBoxLong : ContentView
 
         if (fullWidth <= 0)
         {
-            Task.Delay(100).ContinueWith(_ => UpdateOrangeBarWidth(), TaskScheduler.FromCurrentSynchronizationContext());
+            Task.Delay(200).ContinueWith(_ => UpdateOrangeBarWidth(), TaskScheduler.FromCurrentSynchronizationContext());
             // Wait until the layout is measured            
         }
         else
         {
-            SetOrangeBarWidth();
+            Task.Delay(100).ContinueWith(_ => SetOrangeBarWidth(), TaskScheduler.FromCurrentSynchronizationContext());
         }
     }
 
@@ -70,8 +70,11 @@ public partial class PlayerBoxLong : ContentView
     {
         double fullWidth = ScoreBarGrid.Width;
         double targetWidth = fullWidth * remainderScore / 10000.0;
-        ReminderScoreText.Text = remainderScore.ToString();
-        OrangeBar.WidthRequest = targetWidth;
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ReminderScoreText.Text = remainderScore.ToString();
+            OrangeBar.WidthRequest = targetWidth;
+        });
     }
 
     private void EditInfoClicked(object sender, EventArgs e)
