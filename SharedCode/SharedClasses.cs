@@ -24,6 +24,17 @@
         public string? PlayerPicture { get; set; }
         public string? PlayerColor { get; set; }
     }
+    public class GameDto
+    {
+        public string GameType { get; set; } = "2"; 
+        public string RoomCode { get; set; } = ""; // Room code for joining games
+        public decimal BetAmount { get; set; } = 0; // Default game cost
+        public int PlayerCount { get; set; } = 2; // Default to 2 players
+        public bool IsPracticeGame { get; set; } = false; // Flag for practice games
+        public bool IsTournamentGame { get; set; } = false; // Flag for tournament games
+        public bool IsPrivateGame { get; set; } = false; // Flag for private games
+        public string playerColor { get; set; }
+    }
     public class GameCommand
     {
         // Your command properties

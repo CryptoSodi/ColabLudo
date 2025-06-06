@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
+using System.Linq;
 
 namespace SignalR.Server
 {
@@ -16,9 +17,7 @@ namespace SignalR.Server
         // In production, this might be a database or distributed log.
         private readonly List<GameCommand> _commandStore = new List<GameCommand>();
         private readonly object _commandStoreLock = new object();
-        public string RoomCode { get; set; }
-        public string GameType { get; set; }
-        public decimal GameCost { get; set; }
+        SharedCode.GameDto gameDTO;
         public List<User> Users { get; set; }
         public List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
         public Engine engine { get; set; }  // The Engine instance for this room
@@ -27,14 +26,13 @@ namespace SignalR.Server
         private readonly IHubContext<LudoHub> _hubContext;
         private readonly CryptoHelper _crypto;
 
-        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, string roomCode, string gameType, decimal gameCost)
+        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, SharedCode.GameDto gameDTO)
+            //string roomCode, string gameType, decimal gameCost)
         {
+            this.gameDTO = gameDTO;
             _hubContext = hubContext;
             _contextFactory = contextFactory;
-            _crypto = crypto;
-            RoomCode = roomCode;
-            GameType = gameType;
-            GameCost = gameCost;
+            _crypto = crypto;        
             Users = new List<User>();
         }
         public delegate Task<string> TimerTimeoutHandler(string SeatName);
@@ -44,7 +42,7 @@ namespace SignalR.Server
         public void InitializeEngine(string initialPlayerColor)
         {
             // For example, using GameType and number of users (or connection count)
-            engine = new Engine("Server", GameType, Users.Count.ToString(), initialPlayerColor);
+            engine = new Engine("Server", gameDTO.GameType, Users.Count.ToString(), initialPlayerColor);
             engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
             engine.StartProgressAnimation += StartProgressAnimation;
@@ -74,7 +72,7 @@ namespace SignalR.Server
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> sortedSeats;
 
-            if (GameType == "22")
+            if (gameDTO.GameType == "22")
             {
                 String winner1 = PlayerColor.Split(",")[0];
                 String winner2 = PlayerColor.Split(",")[1];
@@ -88,14 +86,14 @@ namespace SignalR.Server
                     if (i == 0 || i == 1)
                     {
                         p.GamesWon++;
-                        p.TotalWin += GameCost;
-                        if (p.BestWin < GameCost)
-                            p.BestWin = GameCost;
+                        p.TotalWin += gameDTO.BetAmount;
+                        if (p.BestWin < gameDTO.BetAmount)
+                            p.BestWin = gameDTO.BetAmount;
                     }
                     else
                     {
                         p.GamesLost++;
-                        p.TotalLost += GameCost;
+                        p.TotalLost += gameDTO.BetAmount;
                     }
 
                     p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
@@ -115,12 +113,12 @@ namespace SignalR.Server
                     if (i == 0)
                     {
                         p.GamesWon++;
-                        p.TotalWin += GameCost;
+                        p.TotalWin += gameDTO.BetAmount;
                     }
                     else
                     {
                         p.GamesLost++;
-                        p.TotalLost += GameCost;
+                        p.TotalLost += gameDTO.BetAmount;
                     }
 
                     p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
@@ -129,22 +127,26 @@ namespace SignalR.Server
                 }
             }
             
-            Game existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == RoomCode);
+            Game existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
             
-            existingGame.Winner = sortedSeats[0].PlayerId + "";
+            existingGame.Winner1 = sortedSeats[0].PlayerId + "";
+            if (gameDTO.GameType == "22")
+               existingGame.Winner2 = sortedSeats[1].PlayerId + "";
+
             existingGame.State = "Completed";
             
             await context.SaveChangesAsync();
             LudoHub.DM.SaveData();
 
             // Get the winner and the list of losers
-            string winnerId = sortedSeats[0].PlayerId.ToString();
-            string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(winnerId);
-
-            List<string> loserIds = sortedSeats.Skip(1).Select(s => s.PlayerId.ToString()).ToList();
+            
+            
+            //if Game has 2 vs 2 then skip the first two players
+            List<string> loserIds = sortedSeats.Skip(gameDTO.GameType == "22"?2:1).Select(s => s.PlayerId.ToString()).ToList();
 
             // Amount to transfer (assume GameCost is in SOL, you may want to adjust this logic)
-            double totalPrize = Double.Parse(GameCost+"") * loserIds.Count;
+            double totalPrize = Double.Parse(gameDTO.BetAmount +"") * loserIds.Count;
+            int pcount = 0;
             if (totalPrize > 0)
                 // 🔄 **Transfer SOL from each loser to the winner**
                 foreach (var loserId in loserIds)
@@ -158,13 +160,16 @@ namespace SignalR.Server
                         ulong balance = await _crypto.GetSolBalanceAsync(loserAddress);
 
                         // Convert the game cost to lamports
-                        ulong lamports = (ulong)(GameCost * 1_000_000_000);
+                        ulong lamports = (ulong)(gameDTO.BetAmount * 1_000_000_000);
 
                         if (balance >= lamports)
                         {
+                            string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(sortedSeats[pcount].PlayerId.ToString());
                             // Transfer the SOL
-                            string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(GameCost + ""));
-                            Console.WriteLine($"Transferred {GameCost} SOL from {loserId} to {winnerId}. Tx: {signature}");
+                            string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(gameDTO.BetAmount + ""));
+                            Console.WriteLine($"Transferred {gameDTO.BetAmount} SOL from {loserId} to {sortedSeats[pcount].PlayerId.ToString()}. Tx: {signature}");
+                            if (gameDTO.GameType == "22")
+                                pcount++;
                         }
                         else
                         {
@@ -173,15 +178,15 @@ namespace SignalR.Server
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"Failed to transfer SOL from {loserId} to {winnerId}: {ex.Message}");
+                        Console.WriteLine($"Failed to transfer SOL from {loserId} to {sortedSeats[pcount].PlayerId.ToString()}: {ex.Message}");
                     }
                 }
 
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
-            await _hubContext.Clients.Group(RoomCode)
-            .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), GameType + "", GameCost + "");
+            await _hubContext.Clients.Group(gameDTO.RoomCode)
+            .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), gameDTO.PlayerCount + "", gameDTO.BetAmount + "");
         }
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {

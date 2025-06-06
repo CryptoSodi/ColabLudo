@@ -1,12 +1,11 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+using PlayerDto = SharedCode.PlayerDto;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
@@ -169,7 +168,7 @@ namespace SignalR.Server
             if (existingGame.MultiPlayer.P2 != null)
             {
                 LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
-                if (existingGame.Type == "2")
+                if (existingGame.GameType == "2")
                     seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Yellow" });
                 else
                     seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Green" });
@@ -185,7 +184,7 @@ namespace SignalR.Server
                 seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Blue" });
             }
 
-            if (existingGame.Type == seats.Count + "" || (seats.Count == 4 && existingGame.Type == "22"))
+            if (existingGame.GameType == seats.Count + "" || (seats.Count == 4 && existingGame.GameType == "22"))
             {
                 existingGame.State = "Playing";
                 await DM.SaveData();
@@ -200,7 +199,7 @@ namespace SignalR.Server
 
                 // _engine.TryAdd(existingGame.RoomCode, gameRoom);
                 
-                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.Type, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
+                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.GameType, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
             }
         }
         public async Task<string> Ready(string roomCode)
@@ -475,9 +474,9 @@ namespace SignalR.Server
             };
         }
         /* END DAILY BONUS */
-        public async Task<string> CreateJoinLobby(int playerId, string userName, string pictureUrl, string gameType, decimal gameCost, string roomCode)
+        public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
         {
-            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, playerId, userName, roomCode, gameType, gameCost);
+            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
 
             if (gameRoom == null)
             {

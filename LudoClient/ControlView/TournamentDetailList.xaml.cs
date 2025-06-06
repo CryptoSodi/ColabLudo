@@ -1,5 +1,6 @@
 using LudoClient.Models;
 using SharedCode.Constants;
+using System.Text.Json;
 using System.Timers;
 
 namespace LudoClient.ControlView
@@ -10,9 +11,10 @@ namespace LudoClient.ControlView
         DateTime ServerDateTime;
         private System.Timers.Timer? countdownTimer;
         
-        public TournamentDetailList()
+        public TournamentDetailList(Tournament tournament)
         {
             InitializeComponent();
+            SetTournamentDetails(tournament);
         }
         internal void SetTournamentDetails(Tournament tournament)
         {
@@ -20,11 +22,15 @@ namespace LudoClient.ControlView
             this.tournament = tournament;
             
             string status;
-            TournamentNameLabel.Text = tournament.TournamentName;
+            TournamentNameLabel.Text = tournament.Name;
             StartDateLabel.Text = $"Starts: {tournament.StartDate}";
             EndDateLabel.Text = $"Ends: {tournament.EndDate}";
-            EntryPriceLabel.Text = $"Entry: {tournament.EntryPrice}";
-            PrizeAmountLabel.Text = $"{tournament.PrizeAmount}";
+            EntryPriceLabel.Text = $"Entry: {tournament.EntryFee}";
+            PrizeAmountLabel1.Text = $"{tournament.Prize1}";
+            PrizeAmountLabel2.Text = $"{tournament.Prize2}";
+            PrizeAmountLabel3.Text = $"{tournament.Prize3}";
+            TournamentId.Text = tournament.TournamentId.ToString();
+            OnCountdownTimerElapsed(null,null);
             StartCountdownTimer();
         }
         /// <summary>
@@ -52,6 +58,7 @@ namespace LudoClient.ControlView
                 if (ServerDateTime > tournament.EndDate)
                 {
                     ButtonText.Text = "RESULTS";
+                    EntryPriceLabel.Text = "ENDED";
                     status = "Completed";
                     TimeRemainingLabel.Text = "Tournament Ended";
                     StopCountdownTimer();
@@ -59,13 +66,23 @@ namespace LudoClient.ControlView
                 }
                 else if (ServerDateTime > tournament.StartDate)
                 {
+                    EntryPriceLabel.Text = $"JOINED";
                     ButtonText.Text = "PLAY";
                     status = "Ending in :";
                     timeRemaining = ServerDateTime - tournament.EndDate;
                 }
                 else
                 {
-                    ButtonText.Text = "JOIN";
+                    if (tournament.IsJoined)
+                    {
+                        EntryPriceLabel.Text = $"JOINED";
+                        ButtonText.Text = "WAIT";
+                    }
+                    else
+                    {
+                        ButtonText.Text = "JOIN";
+                    }
+
                     status = "Starting in :";
                     timeRemaining = ServerDateTime - tournament.StartDate;
                 }
@@ -104,8 +121,18 @@ namespace LudoClient.ControlView
                 SheetDirection.Source = "arr_up.png";
             }
         }
+        bool joining = false;
         private async void Join_Clicked(object sender, EventArgs e)
         {
+            if (joining)
+                return;
+            joining = true;
+
+            if (ButtonText.Text == "WAIT") return;
+            if (ButtonText.Text == "PLAY") {
+
+                return;
+            }
             int playerId = Preferences.Get("PlayerId", UserInfo.Instance.Id);
             int tournamentId = Int32.Parse(TournamentId.Text);
 
@@ -117,21 +144,21 @@ namespace LudoClient.ControlView
 
             if (response.IsSuccessStatusCode)
             {
-                // Handle successful join, e.g., show a message or update the UI
-                Console.WriteLine("Successfully joined the tournament!");
+                var responseBody = await response.Content.ReadAsStringAsync();
+                tournament = JsonSerializer.Deserialize<Tournament>(responseBody, new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
             }
-
-            else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                Console.WriteLine("You are already Joined");
-            }
-            else
+                // Handle failure, e.g., show an error message
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
+            } else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
                 // Handle failure, e.g., show an error message
                 var errorContent = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
             }
+            joining = false;
         }
-
     }
 }

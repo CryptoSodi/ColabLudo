@@ -1,9 +1,7 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -27,33 +25,33 @@ namespace SignalR.Server
             _crypto = crypto;
             Task.Run(LoadData); // Run async without blocking constructor
         }
-        public async Task<Game> JoinGameLobby(string ConnectionId, int playerId, string userName, string roomCode, string gameType, decimal gameCost)
+        public async Task<Game> JoinGameLobby(string ConnectionId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
         {
             Game existingGame;
-            if (gameCost == 0 && string.IsNullOrWhiteSpace(roomCode))
+            if (gameDTO.IsPracticeGame && string.IsNullOrWhiteSpace(gameDTO.RoomCode))
             {
-                existingGame = games.FirstOrDefault(g => g.BetAmount == gameCost && g.State == "Active");//await _context.
+                existingGame = games.FirstOrDefault(g => g.BetAmount == gameDTO.BetAmount && g.PlayerCount == gameDTO.PlayerCount && g.GameType == gameDTO.GameType && g.State == "Active");//await _context.
                 if (existingGame == null)
                 {
-                    if (string.IsNullOrWhiteSpace(roomCode))
+                    if (string.IsNullOrWhiteSpace(gameDTO.RoomCode))
                         // Generates a unique room name
-                        roomCode = GenerateUniqueRoomId(gameType, gameCost);
+                        gameDTO.RoomCode = GenerateUniqueRoomId(gameDTO);
                     // Check if the RoomCode already exists in the database
 
-                    existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
+                    existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);//await _context.FirstOrDefaultAsync
                 }
             }
             else
             {
                 //Generate a new room name if roomName is empty
-                if (string.IsNullOrWhiteSpace(roomCode))
+                if (string.IsNullOrWhiteSpace(gameDTO.RoomCode))
                     // Generates a unique room name
-                    roomCode = GenerateUniqueRoomId(gameType, gameCost);
+                    gameDTO.RoomCode = GenerateUniqueRoomId(gameDTO);
                 // Check if the RoomCode already exists in the database
-                existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
+                existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);//await _context.FirstOrDefaultAsync
             }
 
-            MultiPlayer multiPlayer = await GetGamePlayers(playerId, existingGame);
+            MultiPlayer multiPlayer = await GetGamePlayers(player.PlayerId, existingGame);
 
             if (multiPlayer == null)
             {
@@ -61,15 +59,16 @@ namespace SignalR.Server
             }
             if (existingGame == null)
             {
-                multiPlayer.RoomCode = int.Parse(roomCode);
+                multiPlayer.RoomCode = int.Parse(gameDTO.RoomCode);
                 // RoomCode does not exist, create a new game entry
                 existingGame = new Game
                 {
                     MultiPlayerId = multiPlayer.MultiPlayerId,
-                    Type = gameType,
-                    BetAmount = gameCost,
-                    RoomCode = roomCode,
-                    Owner = playerId.ToString(),
+                    PlayerCount = gameDTO.PlayerCount,
+                    GameType= gameDTO.GameType,
+                    BetAmount = gameDTO.BetAmount,
+                    RoomCode = gameDTO.RoomCode,
+                    Owner = player.PlayerId.ToString(),
                     State = "Active"
                 };
                 existingGame.MultiPlayer = multiPlayer;
@@ -78,10 +77,10 @@ namespace SignalR.Server
             }
 
             // Create or retrieve the room
-            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto,  roomCode, gameType, gameCost));
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto,  gameDTO));
 
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
-            var user = new User(ConnectionId, existingGame.RoomCode, playerId, userName, "Color");
+            var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.PlayerName, "Color");
             _users.GetOrAdd(ConnectionId, user);
             // Add the user to the room's user list
             gameRoom.Users.Add(user);
@@ -124,7 +123,8 @@ namespace SignalR.Server
             SaveData(); // Run save in a background thread (non-blocking)
             return (existingGame, user);
         }
-        private string GenerateUniqueRoomId(string gameType, decimal gameCost)
+        private string GenerateUniqueRoomId(SharedCode.GameDto gameDTO)
+            //string gameType, decimal gameCost)
         {
             string roomCode;
             do
@@ -133,7 +133,7 @@ namespace SignalR.Server
             }
             while (_gameRooms.ContainsKey(roomCode));
 
-            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, _crypto, roomCode, gameType, gameCost));
+            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
 
             return roomCode;
         }
@@ -209,7 +209,17 @@ namespace SignalR.Server
                 foreach (var game in games)
                 {
                     game.MultiPlayer = multiPlayers.FirstOrDefault(mp => mp.MultiPlayerId == game.MultiPlayerId);
-                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, game.RoomCode, game.Type, game.BetAmount));
+                   SharedCode.GameDto gameDto = new SharedCode.GameDto
+                    {
+                        GameType = game.GameType,
+                        RoomCode = game.RoomCode,
+                        BetAmount = game.BetAmount,
+                        PlayerCount = game.PlayerCount,
+                        IsPracticeGame = game.BetAmount==0,
+                        IsTournamentGame = game.TournamentId != null,                        
+                        playerColor = "DefaultColor" // Set a default color or retrieve from the database if needed
+                    };
+                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDto));
                 }
 
                 Console.WriteLine("Data loaded successfully!");

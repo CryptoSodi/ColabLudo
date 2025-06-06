@@ -11,6 +11,12 @@ namespace LudoClient.ControlView
         {
             InitializeComponent();
         }
+        public DetailList(PlayerCard playerCard , String type)
+        {
+            InitializeComponent();
+            if (playerCard != null)
+                SetDetails(playerCard, type);
+        }
         public void SetDetails(PlayerCard playerCard, String type)
         {//detailgold.png
             this.playerCard = playerCard;

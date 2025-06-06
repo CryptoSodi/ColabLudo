@@ -43,8 +43,7 @@ public partial class LeaderboardPage : ContentPage
         {
             if (!existingFriendsIds.Contains(friend.playerID))
             {
-                var friendDetail = new DetailList();
-                friendDetail.SetDetails(friend, "Leaderboard");
+                var friendDetail = new DetailList(friend, "Leaderboard");
                 LeaderboardListStack.Children.Add(friendDetail);
             }
             else

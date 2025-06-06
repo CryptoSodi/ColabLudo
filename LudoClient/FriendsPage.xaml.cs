@@ -48,8 +48,7 @@ public partial class FriendsPage : ContentPage
         {
             if (!existingFriendsIds.Contains(PI.playerID))
             {
-                var friendDetail = new DetailList();
-                friendDetail.SetDetails(PI, "Friend");
+                var friendDetail = new DetailList(PI, "Friend");                
                 FriendsListStack.Children.Add(friendDetail);
             }
             else

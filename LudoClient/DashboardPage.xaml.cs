@@ -104,7 +104,6 @@ public partial class DashboardPage : ContentPage
         {
             TournamentPage tournamentPage = new TournamentPage();
             Navigation.PushAsync(tournamentPage);
-            _ = tournamentPage.InitializeTournamentsAsync();
         }
     }
     private void Bonus_Clicked(object sender, EventArgs e)

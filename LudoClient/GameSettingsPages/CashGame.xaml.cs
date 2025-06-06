@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using SharedCode;
 using SharedCode.Constants;
 
 namespace LudoClient;
@@ -104,8 +105,21 @@ public partial class CashGame : ContentPage
         if (Tab4.IsActive)
             gameType = "22";
 
-        //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, entry, "");
+        PlayerDto player = new PlayerDto();
+        player.PlayerId = UserInfo.Instance.Id;
+        player.PlayerName = UserInfo.Instance.Name;
+        player.PlayerPicture = UserInfo.Instance.PictureUrl;
 
+        GameDto gameDto = new GameDto();
+        gameDto.GameType = gameType; // Set the game type based on the active tab
+        gameDto.IsPracticeGame = true; // Set the practice game flag
+        gameDto.BetAmount = 0;
+        gameDto.RoomCode = "";
+        gameDto.PlayerCount = int.Parse(gameType);
+        if (gameDto.PlayerCount == 22)
+            gameDto.PlayerCount = 4;
+
+        //Navigation.PushAsync(new GameRoom(gameType, entry));
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
     }
 }

@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using SharedCode;
 using SharedCode.Constants;
 namespace LudoClient;
 public partial class PracticePage : ContentPage
@@ -38,6 +39,20 @@ public partial class PracticePage : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         // Add logic here to join an offline game
         //Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, 0, "");
+        PlayerDto player = new PlayerDto();
+        player.PlayerId = UserInfo.Instance.Id;
+        player.PlayerName = UserInfo.Instance.Name;
+        player.PlayerPicture = UserInfo.Instance.PictureUrl;
+
+        GameDto gameDto = new GameDto();
+        gameDto.GameType = gameType; // Set the game type based on the active tab
+        gameDto.IsPracticeGame = true; // Set the practice game flag
+        gameDto.BetAmount = 0;
+        gameDto.RoomCode = "";
+        gameDto.PlayerCount = int.Parse(gameType);
+        if (gameDto.PlayerCount == 22)
+            gameDto.PlayerCount = 4;
+
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
     }
 }

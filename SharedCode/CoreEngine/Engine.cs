@@ -172,24 +172,6 @@ namespace SharedCode.CoreEngine
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
-
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(3);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(3);
-            EngineHelper.rolls.Add(6);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(2);
-            EngineHelper.rolls.Add(1);
-
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
                     EngineHelper.rolls.Add(GlobalConstants.rnd.Next(1, 7));
@@ -660,14 +642,12 @@ namespace SharedCode.CoreEngine
         private void GameOver(List<Player> winners)
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
-            {
-                string GameType = EngineHelper.gameType;
-                
+            {   
                 // Show game over dialog if the game is not in online mode
-                if (GameType == "22")
-                    ShowResults(winners[0].Color + "," + winners[1].Color, GameType, "0");
+                if (EngineHelper.gameType == "22")
+                    ShowResults(winners[0].Color + "," + winners[1].Color, EngineHelper.gameType + "", "0");
                 else
-                    ShowResults(winners[0].Color + ",", GameType, "0");
+                    ShowResults(winners[0].Color + ",", EngineHelper.gameType + "", "0");
                 //, string GameCost
                 cleanGame();
             }
