@@ -504,8 +504,7 @@ public partial class Game : ContentPage
     {
         await Task.Delay(2000);
         if (gameMode == "Client")
-        {
-            
+        {   
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 Task.Delay(100);

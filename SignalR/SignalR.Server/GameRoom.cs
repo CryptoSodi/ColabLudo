@@ -70,124 +70,110 @@ namespace SignalR.Server
             using var context = _contextFactory.CreateDbContext();
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
-            List<SharedCode.PlayerDto> sortedSeats;
+            List<SharedCode.PlayerDto> orderedSeats;
 
-            if (gameDTO.GameType == "22")
+            List<string> winnerIds = gameDTO.GameType == "22"
+                    ? PlayerColor.Split(",").Select(c => c.Trim()).ToList()
+                    : new List<string> { PlayerColor.Split(",")[0].Trim() };
+
+            orderedSeats = seats.OrderByDescending(seat => winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase)).ToList();
+
+            try
             {
-                String winner1 = PlayerColor.Split(",")[0];
-                String winner2 = PlayerColor.Split(",")[1];
-                sortedSeats = seats.OrderByDescending(
-                               seat => seat.PlayerColor.Equals(winner1, StringComparison.OrdinalIgnoreCase)
-                                   || seat.PlayerColor.Equals(winner2, StringComparison.OrdinalIgnoreCase)).ToList();
-
-                for (int i = 0; i < sortedSeats.Count; i++)
-                {
-                    LudoServer.Models.Player p = context.Players.FirstOrDefault(p => p.PlayerId == sortedSeats[i].PlayerId);
-                    if (i == 0 || i == 1)
-                    {
-                        p.GamesWon++;
-                        p.TotalWin += gameDTO.BetAmount;
-                        if (p.BestWin < gameDTO.BetAmount)
-                            p.BestWin = gameDTO.BetAmount;
-                    }
-                    else
-                    {
-                        p.GamesLost++;
-                        p.TotalLost += gameDTO.BetAmount;
-                    }
-
-                    p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
-                    p.GamesPlayed++;
-                    context.Players.Update(p);
-                }
+                // 1) Update player statistics in the DB
+                UpdatePlayerStats(context, orderedSeats, winnerIds);
             }
-            else
+            catch { }
+            // 2) Update game state in DM and database
+            var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
+            if (existingGame != null)
             {
-                sortedSeats = seats
-                    .OrderByDescending(seat => seat.PlayerColor.Equals(PlayerColor.Split(",")[0], StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                for (int i = 0; i < sortedSeats.Count; i++)
+                existingGame.Winner1 = winnerIds[0];
+                if (winnerIds.Count > 1)
                 {
-                    LudoServer.Models.Player p = context.Players.FirstOrDefault(p => p.PlayerId == sortedSeats[i].PlayerId);
-                    if (i == 0)
-                    {
-                        p.GamesWon++;
-                        p.TotalWin += gameDTO.BetAmount;
-                    }
-                    else
-                    {
-                        p.GamesLost++;
-                        p.TotalLost += gameDTO.BetAmount;
-                    }
-
-                    p.Score += engine.EngineHelper.getPlayer(sortedSeats[i].PlayerColor.ToLower()).Score;
-                    p.GamesPlayed++;
-                    context.Players.Update(p);
+                    existingGame.Winner2 = winnerIds[1];
                 }
+                existingGame.State = "Completed";
+                context.Games.Update(existingGame);
             }
-            
-            Game existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
-            
-            existingGame.Winner1 = sortedSeats[0].PlayerId + "";
-            if (gameDTO.GameType == "22")
-               existingGame.Winner2 = sortedSeats[1].PlayerId + "";
-
-            existingGame.State = "Completed";
-            
+            // Commit all EF changes
             await context.SaveChangesAsync();
             LudoHub.DM.SaveData();
 
-            // Get the winner and the list of losers
-            
-            
-            //if Game has 2 vs 2 then skip the first two players
-            List<string> loserIds = sortedSeats.Skip(gameDTO.GameType == "22"?2:1).Select(s => s.PlayerId.ToString()).ToList();
+            // After EF commit, perform SOL transfers in saga-like flow
+            List<string> loserids = orderedSeats
+                .Where(seat => !winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase))
+                .Select(s => s.PlayerId.ToString())
+                .ToList();
 
-            // Amount to transfer (assume GameCost is in SOL, you may want to adjust this logic)
-            double totalPrize = Double.Parse(gameDTO.BetAmount +"") * loserIds.Count;
-            int pcount = 0;
-            if (totalPrize > 0)
-                // 🔄 **Transfer SOL from each loser to the winner**
-                foreach (var loserId in loserIds)
+            // Sort the seats based on the winner and losers
+            for (int i = 0; i < loserids.Count && gameDTO.BetAmount > 0; i++)
+            {
+                var loserId = loserids[i];
+                var winnerId = winnerIds.Count == 1 ? winnerIds[0] : winnerIds[i];
+
+                try
                 {
-                    try
+                    // Retrieve wallets and check balance
+                    var loserAddress = await _crypto.GetOrCreateDepositAccountAsync(loserId);
+                    var balance = await _crypto.GetSolBalanceAsync(loserAddress);
+                    var lamports = (ulong)(gameDTO.BetAmount * 1_000_000_000);
+
+                    if (balance >= lamports)
                     {
-                        // Get the wallet address of the loser
-                        string loserAddress = await _crypto.GetOrCreateDepositAccountAsync(loserId);
-
-                        // Get balance of the loser to check if they have enough
-                        ulong balance = await _crypto.GetSolBalanceAsync(loserAddress);
-
-                        // Convert the game cost to lamports
-                        ulong lamports = (ulong)(gameDTO.BetAmount * 1_000_000_000);
-
-                        if (balance >= lamports)
-                        {
-                            string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(sortedSeats[pcount].PlayerId.ToString());
-                            // Transfer the SOL
-                            string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(gameDTO.BetAmount + ""));
-                            Console.WriteLine($"Transferred {gameDTO.BetAmount} SOL from {loserId} to {sortedSeats[pcount].PlayerId.ToString()}. Tx: {signature}");
-                            if (gameDTO.GameType == "22")
-                                pcount++;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"Insufficient balance for player {loserId}. Skipping transfer.");
-                        }
+                        // Transfer SOL
+                        string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(winnerId);
+                        // Transfer the SOL
+                        string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(gameDTO.BetAmount + ""));
+                        Console.WriteLine($"Transferred {gameDTO.BetAmount} SOL from {loserId} X {loserAddress} to {winnerId} X {winnerAddress}. Tx: {signature}");
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        Console.WriteLine($"Failed to transfer SOL from {loserId} to {sortedSeats[pcount].PlayerId.ToString()}: {ex.Message}");
+                        Console.WriteLine($"Insufficient balance for player {loserId} X {loserAddress}. Skipping transfer.");
                     }
                 }
+                catch (Exception ex)
+                {
+                    // Log and optionally compensate later
+                    Console.WriteLine($"Failed to transfer SOL from {loserId} to {winnerId}: {ex.Message}");
+                }
+            }
 
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
-            await _hubContext.Clients.Group(gameDTO.RoomCode)
-            .SendAsync("ShowResults", JsonConvert.SerializeObject(sortedSeats), gameDTO.PlayerCount + "", gameDTO.BetAmount + "");
+            await _hubContext.Clients.Group(gameDTO.RoomCode).SendAsync("ShowResults", JsonConvert.SerializeObject(orderedSeats), gameDTO.GameType, gameDTO.BetAmount.ToString());
         }
+
+        private void UpdatePlayerStats(LudoDbContext context,List<SharedCode.PlayerDto> orderedSeats,List<string> winnerIds)
+        {
+            foreach (var seat in orderedSeats)
+            {
+                var player = context.Players.First(p => p.PlayerId == seat.PlayerId);
+                var isWinner = winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase);
+
+                if (isWinner)
+                {
+                    // Winner: increment win counters and update scores
+                    player.GamesWon++;
+                    player.TotalWin += gameDTO.BetAmount;
+                    player.BestWin = Math.Max(player.BestWin, gameDTO.BetAmount);
+                }
+                else
+                {
+                    // Loser: increment loss counters and track total losses
+                    player.GamesLost++;
+                    player.TotalLost += gameDTO.BetAmount;
+                }
+
+                // Common updates for both winners and losers
+                player.Score += engine.EngineHelper.getPlayer(seat.PlayerColor.ToLower()).Score;
+                player.GamesPlayed++;
+                context.Players.Update(player);
+            }
+        }
+
+
         public async Task<User> PlayerLeft(string connectionId,string roomCode)
         {
             // Try to find the user in the game room's user list using the connection ID.
