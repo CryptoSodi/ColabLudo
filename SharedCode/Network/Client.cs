@@ -234,8 +234,9 @@ namespace SharedCode.Network
             {
                 info = await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerID).ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception wx)
             {
+                Console.WriteLine(wx.Message);
             }
             return info;
         }

@@ -1,4 +1,5 @@
 using LudoServer.Data;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
 
@@ -19,17 +20,33 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false) );// Turn off verbose logging
-
+// 1) Register Data Protection so IDataProtectionProvider can be injected:
+builder.Services.AddDataProtection();
 // Replace your existing CryptoHelper registration with this:
 builder.Services.AddSingleton<CryptoHelper>(sp =>
 {
     var env = sp.GetRequiredService<IHostEnvironment>();
-    // "Data/wallets.json" is relative to ContentRoot, i.e. your project folder
-    return new CryptoHelper(
-        env,
-        network: "DevNet",
-        relativeStoragePath: "Data/wallets.json"
-    );
+    
+    var factory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
+    var protector = sp.GetRequiredService<IDataProtectionProvider>();
+    // Use the factory to create a new DbContext instance
+    const string masterUserId = "MASTER_ACCOUNT"; // your chosen ID
+    try
+    {
+        return new CryptoHelper(
+            factory,
+            env,
+            protector,
+            masterUserId,
+            network: "DevNet",
+            relativeStoragePath: "Data/wallets.json"
+        );
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Failed to create CryptoHelper: " + ex);
+        throw;
+    }
 });
 // Build the app
 var app = builder.Build();

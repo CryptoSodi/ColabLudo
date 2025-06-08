@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Data\" />
     <Folder Include="Interfaces\" />
     <Folder Include="CoreEngine\" />
     <Folder Include="Constants\" />

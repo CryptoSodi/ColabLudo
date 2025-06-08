@@ -1,5 +1,6 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
+using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -31,8 +32,8 @@ namespace SignalR.Server
             _hubContext = hubContext;
             if (!_initialized)
             {
-                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
                 _initialized = true;
+                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
         public override async Task OnConnectedAsync()
@@ -83,19 +84,17 @@ namespace SignalR.Server
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
 
                 // 2) Await the wallet creation/restoration
-                string address = await _crypto.GetOrCreateDepositAccountAsync(playerId.ToString());
+                string address = await _crypto.GetOrCreateSubAccountAsync(playerId.ToString());
                 Console.WriteLine($"Send SOL here: {address}");
 
                 // 3) Await the balance fetch
-                ulong lamports = await _crypto.GetSolBalanceAsync(address);
-                double sol = lamports / 1_000_000_000.0;
-                string solBalance = sol.ToString();
-                Console.WriteLine($"Balance: {sol} SOL");
+                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
+                Console.WriteLine($"Balance: {totalBalance} SOL");
                 //4) Return a DTO
                 return new DepositInfo
                 {
                     Address = address,
-                    SolBalance = solBalance
+                    SolBalance = totalBalance.ToString()
                 };
                 
             }
@@ -116,18 +115,36 @@ namespace SignalR.Server
         }
         public async Task<String> SendSol(int playerID, string destination, double amountInSol)
         {
+            var userId = playerID.ToString();
+
             try
             {
-            // 1) Store SignalR connection
-            PlayerConnections[playerID] = Context.ConnectionId;
-            string sig = await _crypto.SendSolAsync(playerID.ToString(), destination, amountInSol);
-            Console.WriteLine($"Sent {amountInSol} SOL — tx signature: {sig}");
-                return sig;
+                // 0) Check total balance (on-chain + off-chain)
+                var totalBalance = await _crypto.GetTotalBalanceAsync(userId);
+                if (totalBalance < (decimal)amountInSol)
+                {
+                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {userId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
+                    return "INSUFFICIENT_FUNDS";
+                }
+
+                // 1) Debit from off-chain ledger (credit master balance)
+                var debited = await _crypto.RefundOffChainAsync(userId, (decimal)amountInSol);
+                if (!debited)
+                {
+                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {userId}");
+                    return "INSUFFICIENT_OFFCHAIN";
+                }
+
+                // 2) Send on-chain using master wallet
+                var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
+                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {userId} sent from master. Tx: {txSignature}");
+                return txSignature;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine($"Error during withdrawal for {userId}: {ex.Message}");
+                return "ERROR";
             }
-            return "ERROR";
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {

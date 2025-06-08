@@ -27,12 +27,12 @@ namespace SignalR.Server
         private readonly CryptoHelper _crypto;
 
         public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, SharedCode.GameDto gameDTO)
-            //string roomCode, string gameType, decimal gameCost)
+        //string roomCode, string gameType, decimal gameCost)
         {
             this.gameDTO = gameDTO;
             _hubContext = hubContext;
             _contextFactory = contextFactory;
-            _crypto = crypto;        
+            _crypto = crypto;
             Users = new List<User>();
         }
         public delegate Task<string> TimerTimeoutHandler(string SeatName);
@@ -48,7 +48,7 @@ namespace SignalR.Server
             engine.StartProgressAnimation += StartProgressAnimation;
             engine.StopProgressAnimation += StopProgressAnimation;
             TimerTimeout += engine.TimerTimeoutAsync;
-            
+
             StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
         }
@@ -78,21 +78,18 @@ namespace SignalR.Server
 
             orderedSeats = seats.OrderByDescending(seat => winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase)).ToList();
 
-            try
-            {
-                // 1) Update player statistics in the DB
-                UpdatePlayerStats(context, orderedSeats, winnerIds);
-            }
-            catch { }
+            // 1) Update player statistics in the DB
+            UpdatePlayerStats(context, orderedSeats, winnerIds);
+
+
             // 2) Update game state in DM and database
             var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
             if (existingGame != null)
             {
                 existingGame.Winner1 = winnerIds[0];
                 if (winnerIds.Count > 1)
-                {
                     existingGame.Winner2 = winnerIds[1];
-                }
+
                 existingGame.State = "Completed";
                 context.Games.Update(existingGame);
             }
@@ -103,8 +100,7 @@ namespace SignalR.Server
             // After EF commit, perform SOL transfers in saga-like flow
             List<string> loserids = orderedSeats
                 .Where(seat => !winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase))
-                .Select(s => s.PlayerId.ToString())
-                .ToList();
+                .Select(s => s.PlayerId.ToString()).ToList();
 
             // Sort the seats based on the winner and losers
             for (int i = 0; i < loserids.Count && gameDTO.BetAmount > 0; i++)
@@ -114,28 +110,38 @@ namespace SignalR.Server
 
                 try
                 {
-                    // Retrieve wallets and check balance
-                    var loserAddress = await _crypto.GetOrCreateDepositAccountAsync(loserId);
-                    var balance = await _crypto.GetSolBalanceAsync(loserAddress);
-                    var lamports = (ulong)(gameDTO.BetAmount * 1_000_000_000);
+                    // 1) Fetch the user's total off-chain + on-chain balance
+                    decimal totalBalance = await _crypto.GetTotalBalanceAsync(loserId);
+                    decimal betAmount = gameDTO.BetAmount; // in SOL
 
-                    if (balance >= lamports)
+                    if (totalBalance < gameDTO.BetAmount)
                     {
-                        // Transfer SOL
-                        string winnerAddress = await _crypto.GetOrCreateDepositAccountAsync(winnerId);
-                        // Transfer the SOL
-                        string signature = await _crypto.SendSolAsync(loserId, winnerAddress, Double.Parse(gameDTO.BetAmount + ""));
-                        Console.WriteLine($"Transferred {gameDTO.BetAmount} SOL from {loserId} X {loserAddress} to {winnerId} X {winnerAddress}. Tx: {signature}");
+                        Console.WriteLine($"Insufficient total balance for {loserId}: {totalBalance} SOL");
+                        continue;
                     }
-                    else
+                    // Perform off-chain transfer: deduct from loser, credit to winner
+                    bool debited = await _crypto.RefundOffChainAsync(loserId, gameDTO.BetAmount);
+                    if (!debited)
                     {
-                        Console.WriteLine($"Insufficient balance for player {loserId} X {loserAddress}. Skipping transfer.");
+                        Console.WriteLine($"Failed to debit {loserId}. Skipping.");
+                        continue;
                     }
+                    bool credited = await _crypto.AllocateOffChainAsync(winnerId, gameDTO.BetAmount);
+                    if (!credited)
+                    {
+                        // Roll back loser’s deduction
+                        await _crypto.AllocateOffChainAsync(loserId, gameDTO.BetAmount);
+                        Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");
+                        continue;
+                    }
+
+                    Console.WriteLine($"Off-chain transferred {gameDTO.BetAmount} SOL from {loserId} to {winnerId}.");
+
                 }
                 catch (Exception ex)
                 {
                     // Log and optionally compensate later
-                    Console.WriteLine($"Failed to transfer SOL from {loserId} to {winnerId}: {ex.Message}");
+                    Console.WriteLine($"Error paying out from {loserId} to {winnerId}: {ex.Message}");
                 }
             }
 
@@ -145,7 +151,7 @@ namespace SignalR.Server
             await _hubContext.Clients.Group(gameDTO.RoomCode).SendAsync("ShowResults", JsonConvert.SerializeObject(orderedSeats), gameDTO.GameType, gameDTO.BetAmount.ToString());
         }
 
-        private void UpdatePlayerStats(LudoDbContext context,List<SharedCode.PlayerDto> orderedSeats,List<string> winnerIds)
+        private void UpdatePlayerStats(LudoDbContext context, List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds)
         {
             foreach (var seat in orderedSeats)
             {
@@ -173,8 +179,7 @@ namespace SignalR.Server
             }
         }
 
-
-        public async Task<User> PlayerLeft(string connectionId,string roomCode)
+        public async Task<User> PlayerLeft(string connectionId, string roomCode)
         {
             // Try to find the user in the game room's user list using the connection ID.
             var user = Users.FirstOrDefault(u => u.ConnectionId == connectionId);
@@ -184,7 +189,7 @@ namespace SignalR.Server
                 Users.Remove(user);
 
                 engine.PlayerLeft(user.PlayerColor);
-                
+
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "PlayerLeft",
@@ -228,7 +233,7 @@ namespace SignalR.Server
             if (engine.EngineHelper.stopAnimate)
             {
                 await Task.Delay(200);
-             //   result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
+                //   result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
                 Console.WriteLine($"TIMEOUT : {result}");
                 return;
             }
@@ -249,7 +254,7 @@ namespace SignalR.Server
             {
 
             }
-           // result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
+            // result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
             Console.WriteLine($"TIMEOUT : {result}");
         }
         internal async Task<GameCommand> MovePieceAsync(GameCommand commandValue)
@@ -278,7 +283,7 @@ namespace SignalR.Server
             return null;
         }
         internal async Task<GameCommand> SeatTurn(GameCommand commandValue)
-        {   
+        {
             if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
             {
                 String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
