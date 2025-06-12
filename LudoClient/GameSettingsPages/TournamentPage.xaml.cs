@@ -1,7 +1,9 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Models;
+using SharedCode;
 using SharedCode.Constants;
+using System.Collections.Generic;
 using System.Text.Json;
 namespace LudoClient;
 public partial class TournamentPage : ContentPage
@@ -21,8 +23,9 @@ public partial class TournamentPage : ContentPage
         // 1) Clear old items
         TournamentListStack.Children.Clear();
 
-        // 2) Fetch all tournaments from the API
-        List<Tournament> tournaments = await GetTournamentsAsync();
+        // 2) Fetch all tournaments from the API        
+
+        List<TournamentDTO> tournaments = await GlobalConstants.MatchMaker.GetAllTournaments("All");
 
         // 3) If "Local" tab is requested, filter by user's city
         if (TabType == "Local")
@@ -61,24 +64,6 @@ public partial class TournamentPage : ContentPage
         {
             var tournamentDetail = new TournamentDetailList(tournament);
             TournamentListStack.Children.Add(tournamentDetail);
-        }
-    }
-    private async Task<List<Tournament>> GetTournamentsAsync()
-    {
-        String type = "All"; // Default type to fetch running tournaments
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/tournament/type/{type}/player/{UserInfo.Instance.Id}");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var tournaments = JsonSerializer.Deserialize<List<Tournament>>(responseBody, new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
-
-            return tournaments ?? new List<Tournament>();
-        }
-        else
-        {
-            // Handle the error case as needed (logging, message, etc.)
-            return new List<Tournament>();
         }
     }
     private void TabRequestedActivate(object sender, EventArgs e)

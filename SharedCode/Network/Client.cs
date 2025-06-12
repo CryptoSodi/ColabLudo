@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.ComponentModel;
-using System.Diagnostics;
 
 namespace SharedCode.Network
 {
@@ -229,16 +228,15 @@ namespace SharedCode.Network
         }
         public async Task<DepositInfo> UserConnectedSetID()
         {
-            DepositInfo info = new DepositInfo();
             try
             {
-                info = await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerID).ConfigureAwait(false);
+                return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerID).ConfigureAwait(false);
             }
             catch (Exception wx)
             {
                 Console.WriteLine(wx.Message);
+                return new DepositInfo();
             }
-            return info;
         }
 
         /// <summary>
@@ -249,6 +247,15 @@ namespace SharedCode.Network
             // Use the generic InvokeAsync<DepositInfo>
             String info = await _hubConnection.InvokeAsync<String>("SendSol", playerID, destination, solAmount).ConfigureAwait(false);
             return info;
+        }
+
+        internal async Task<List<TournamentDTO>> GetAllTournaments(string type)
+        {
+            return await _hubConnection.InvokeAsync<List<TournamentDTO>>("GetAllTournaments", type).ConfigureAwait(false);
+        }
+        internal async Task<TournamentDTO> JoinTournament(int TournamentID)
+        {
+            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
         }
     }
 }

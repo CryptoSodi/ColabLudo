@@ -60,7 +60,7 @@
                                 </Image.GestureRecognizers>
                             </Image>
 
-                            <Image Source="btn_create.png" HorizontalOptions="StartAndExpand" VerticalOptions="Fill">
+                            <Image Source="btn_create.png" HorizontalOptions="StartAndExpand" VerticalOptions="Fill" >
                                 <Image.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="CreateRoom_Clicked" />
                                 </Image.GestureRecognizers>

@@ -112,8 +112,7 @@ public partial class CashGame : ContentPage
 
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
-        gameDto.IsPracticeGame = true; // Set the practice game flag
-        gameDto.BetAmount = 0;
+        gameDto.BetAmount = (decimal)entry;
         gameDto.RoomCode = "";
         gameDto.PlayerCount = int.Parse(gameType);
         if (gameDto.PlayerCount == 22)

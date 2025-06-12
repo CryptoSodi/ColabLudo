@@ -20,6 +20,8 @@ builder.Services.AddSignalR();
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false) );// Turn off verbose logging
+
+builder.Services.AddHostedService<SweeperService>();
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection();
 // Replace your existing CryptoHelper registration with this:
@@ -31,6 +33,7 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
     var protector = sp.GetRequiredService<IDataProtectionProvider>();
     // Use the factory to create a new DbContext instance
     const string masterUserId = "MASTER_ACCOUNT"; // your chosen ID
+
     try
     {
         return new CryptoHelper(
@@ -39,7 +42,8 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
             protector,
             masterUserId,
             network: "DevNet",
-            relativeStoragePath: "Data/wallets.json"
+            relativeStoragePath: "Data/wallets.json",
+            protectorKey : "CryptoHelper.WalletProtector"
         );
     }
     catch (Exception ex)

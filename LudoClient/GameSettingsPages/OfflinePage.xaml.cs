@@ -79,9 +79,9 @@ public partial class OfflinePage : ContentPage
     private void JoinOfflineTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        Game game = new Game(gameMode, gameType, playerColor);
-        ClientGlobalConstants.game = game;
-        ClientGlobalConstants.dashBoard.Navigation.PushAsync(game);
+        
+        ClientGlobalConstants.game = new Game(gameMode, gameType, playerColor);
+        ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
 
         ClientGlobalConstants.FlushOld();
     }

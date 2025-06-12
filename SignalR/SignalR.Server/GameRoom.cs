@@ -120,7 +120,7 @@ namespace SignalR.Server
                         continue;
                     }
                     // Perform off-chain transfer: deduct from loser, credit to winner
-                    bool debited = await _crypto.RefundOffChainAsync(loserId, gameDTO.BetAmount);
+                    bool debited = await _crypto.DebitToMasterOffChainAsync(loserId, gameDTO.BetAmount);
                     if (!debited)
                     {
                         Console.WriteLine($"Failed to debit {loserId}. Skipping.");

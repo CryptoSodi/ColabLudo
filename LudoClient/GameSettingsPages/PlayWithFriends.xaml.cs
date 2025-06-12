@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using SharedCode;
 using SharedCode.Constants;
 
 namespace LudoClient;
@@ -114,6 +115,33 @@ public partial class PlayWithFriends : ContentPage
     private void CreateJoinTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        string gameType = "2";
+        if (Tab1.IsActive)
+            gameType = "2";
+        if (Tab2.IsActive)
+            gameType = "3";
+        if (Tab3.IsActive)
+            gameType = "4";
+        if (Tab4.IsActive)
+            gameType = "22";
+
+        PlayerDto player = new PlayerDto();
+        player.PlayerId = UserInfo.Instance.Id;
+        player.PlayerName = UserInfo.Instance.Name;
+        player.PlayerPicture = UserInfo.Instance.PictureUrl;
+
+        GameDto gameDto = new GameDto();
+        gameDto.GameType = gameType; // Set the game type based on the active tab
+        gameDto.IsPracticeGame = false; // Set the practice game flag
+        gameDto.IsPrivateGame = true;
+        gameDto.BetAmount = (decimal)entry;
+        gameDto.RoomCode = "";
+        gameDto.PlayerCount = int.Parse(gameType);
+        if (gameDto.PlayerCount == 22)
+            gameDto.PlayerCount = 4;
+
+        //Navigation.PushAsync(new GameRoom(gameType, entry));
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
     }
     private async void BtnPaste(object sender, EventArgs e)
     {

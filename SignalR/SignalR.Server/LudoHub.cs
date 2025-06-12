@@ -1,11 +1,13 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Cms;
 using SharedCode;
 using System.Collections.Concurrent;
+using System.Threading.Tasks;
 using PlayerDto = SharedCode.PlayerDto;
 
 namespace SignalR.Server
@@ -128,7 +130,7 @@ namespace SignalR.Server
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.RefundOffChainAsync(userId, (decimal)amountInSol);
+                var debited = await _crypto.DebitToMasterOffChainAsync(userId, (decimal)amountInSol);
                 if (!debited)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {userId}");
@@ -339,7 +341,6 @@ namespace SignalR.Server
                 }
                 return chatMessagesList.Take(30).ToList();
             }
-            return new List<ChatMessages>();
         }
         /* END CHAT AND FRIENDS MANAGEMENT */
 
@@ -491,8 +492,169 @@ namespace SignalR.Server
             };
         }
         /* END DAILY BONUS */
-        public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
+        /* TOURNAMENT API */
+        public List<TournamentDTO> GetAllTournaments(string type)
         {
+            using var ctx = _contextFactory.CreateDbContext();
+            var playerId = GetCurrentPlayerId();
+            var nowUtc = DateTime.UtcNow;
+
+            // 1) Begin queryable for efficiency
+            IQueryable<Tournament> query = ctx.Tournaments.AsNoTracking();
+
+            // 2) Apply tournament type filter
+            if (!string.IsNullOrWhiteSpace(type))
+            {
+                query = type switch
+                {
+                    "Completed" => query.Where(t => nowUtc > t.EndDate),
+                    "Running" => query.Where(t => nowUtc >= t.StartDate && nowUtc <= t.EndDate),
+                    "Upcoming" => query.Where(t => nowUtc < t.StartDate),
+                    _ => query // Return all if type is unknown
+                };
+            }
+
+            var tournaments = query.ToList();
+
+            if (tournaments.Count == 0)
+                return new List<TournamentDTO>();
+
+            // 3) Fetch all tournament IDs this player has joined
+            var joinedIds = ctx.TournamentChallengers
+                .Where(tc => tc.PlayerId == playerId)
+                .Select(tc => tc.TournamentId)
+                .ToHashSet();
+
+            // 4) Build DTOs
+            var result = tournaments.Select(t => new TournamentDTO
+            {
+                TournamentId = t.TournamentId,
+                Name = t.Name,
+                Winner1 = t.Winner1,
+                Winner2 = t.Winner2,
+                Winner3 = t.Winner3,
+                Prize1 = t.Prize1,
+                Prize2 = t.Prize2,
+                Prize3 = t.Prize3,
+                EntryFee = t.EntryFee,
+                City = t.City,
+                ServerDateTime = nowUtc,
+                StartDate = t.StartDate.Date,
+                EndDate = t.EndDate.Date,
+                IsJoined = joinedIds.Contains(t.TournamentId)
+            }).ToList();
+
+            return result;
+        }
+
+
+        public async Task<TournamentDTO> JoinTournament(int tournamentId)
+        {
+            var playerId = GetCurrentPlayerId();
+            using var ctx = _contextFactory.CreateDbContext();
+
+            var balance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
+            var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
+
+            if (tournament == null)
+            {
+                return await BuildTournamentDto(ctx, tournament, playerId, "NOTFOUND");
+            }
+
+            if (tournament.EntryFee > balance)
+            {
+                return await BuildTournamentDto(ctx, tournament, playerId, "INSUFFICIENT_BALANCE");
+            }
+
+            var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+
+            bool isNewChallenger = false;
+
+            if (existingChallenger != null)
+            {
+                switch (existingChallenger.Status)
+                {
+                    case "JOINEND":
+                        return await BuildTournamentDto(ctx, tournament, playerId, "JOINEND");
+
+                    case "FAILED":
+                        existingChallenger.RetryCount++;
+                        existingChallenger.Status = "JOINEND";
+                        break;
+
+                    case "NOTPAID":
+                        existingChallenger.Status = "JOINEND";
+                        break;
+
+                    default:
+                        return await BuildTournamentDto(ctx, tournament, playerId, "UNKNOWN_STATE");
+                }
+            }
+            else
+            {
+                existingChallenger = new TournamentChallenger
+                {
+                    TournamentId = tournamentId,
+                    PlayerId = playerId,
+                    RetryCount = 1,
+                    Status = "JOINEND"
+                };
+                isNewChallenger = true;
+            }
+
+            var debited = await _crypto.DebitToMasterOffChainAsync(playerId.ToString(), tournament.EntryFee);
+            if (!debited)
+            {
+                if (!isNewChallenger)
+                {
+                    existingChallenger.Status = "NOTPAID";
+                    ctx.TournamentChallengers.Update(existingChallenger);
+                }
+
+                await ctx.SaveChangesAsync();
+                return await BuildTournamentDto(ctx, tournament, playerId, "NOTPAID");
+            }
+
+            if (isNewChallenger)
+                await ctx.TournamentChallengers.AddAsync(existingChallenger);
+            else
+                ctx.TournamentChallengers.Update(existingChallenger);
+
+            await ctx.SaveChangesAsync();
+            return await BuildTournamentDto(ctx, tournament, playerId, "JOINEND");
+        }
+
+
+
+        private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
+        {
+            var joinedIds = await ctx.TournamentChallengers
+                .Where(tc => tc.PlayerId == playerId)
+                .Select(tc => tc.TournamentId)
+                .ToHashSetAsync();
+
+            return new TournamentDTO
+            {
+                TournamentId = tournament.TournamentId,
+                Name = tournament.Name,
+                Winner1 = tournament.Winner1,
+                Winner2 = tournament.Winner2,
+                Winner3 = tournament.Winner3,
+                Prize1 = tournament.Prize1,
+                Prize2 = tournament.Prize2,
+                Prize3 = tournament.Prize3,
+                EntryFee = tournament.EntryFee,
+                City = tournament.City,
+                ServerDateTime = DateTime.Now,
+                StartDate = tournament.StartDate.Date,
+                EndDate = tournament.EndDate.Date,
+                IsJoined = joinedIds.Contains(tournament.TournamentId),
+                StatusCode = StatusCode
+            };
+        }
+        /* END TOURNAMENT API */
+        public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
+        {   
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
 
             if (gameRoom == null)
@@ -544,70 +706,6 @@ namespace SignalR.Server
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
-        }
-        //Logic for 4 players game in tournament road to final
-        static void RunTournament(List<string> players)
-        {
-            int roundNumber = 1;
-
-            while (players.Count > 4)
-            {
-                Console.WriteLine($"\nRound {roundNumber}: {players.Count} players remaining");
-
-                // Handle cases where player count is not divisible by 4
-                if (players.Count % 4 != 0)
-                {
-                    HandleUnevenPlayers(players);
-                }
-
-                // Divide players into groups of 4 and play matches
-                List<string> winners = new List<string>();
-                for (int i = 0; i < players.Count; i += 4)
-                {
-                    var group = players.Skip(i).Take(4).ToList();
-                    string winner = PlayMatch(group);
-                    winners.Add(winner);
-                }
-
-                players = winners;
-                roundNumber++;
-            }
-
-            // Final round with the last 4 players
-            Console.WriteLine("\nFinal Round:");
-            string tournamentWinner = PlayMatch(players);
-            Console.WriteLine($"\nThe tournament winner is {tournamentWinner}!");
-        }
-        static void HandleUnevenPlayers(List<string> players)
-        {
-            int remainder = players.Count % 4;
-
-            if (remainder == 1)
-            {
-                // 1 player left, play against a bot
-                string lonePlayer = players.Last();
-                players.RemoveAt(players.Count - 1);
-                Console.WriteLine($"{lonePlayer} plays against a bot.");
-                string winner = PlayMatch(new List<string> { lonePlayer, "Bot" });
-                players.Add(winner);
-            }
-            else if (remainder == 2 || remainder == 3)
-            {
-                // 2 or 3 players left, play a match among them
-                var group = players.Skip(players.Count - remainder).ToList();
-                players.RemoveRange(players.Count - remainder, remainder);
-                Console.WriteLine($"{string.Join(", ", group)} play a match.");
-                string winner = PlayMatch(group);
-                players.Add(winner);
-            }
-        }
-        static string PlayMatch(List<string> players)
-        {
-            Console.WriteLine($"Match: {string.Join(" vs ", players)}");
-            Random rand = new Random();
-            string winner = players[rand.Next(players.Count)];
-            Console.WriteLine($"Winner: {winner}");
-            return winner;
         }
     }
     public class User

@@ -1,22 +1,27 @@
+using LudoClient.Constants;
 using LudoClient.Models;
+using Newtonsoft.Json.Serialization;
+using SharedCode;
 using SharedCode.Constants;
+using System.Security.AccessControl;
 using System.Text.Json;
 using System.Timers;
+using static Google.Apis.Requests.BatchRequest;
 
 namespace LudoClient.ControlView
 {
     public partial class TournamentDetailList : ContentView
     {
-        Tournament tournament;
+        TournamentDTO tournament;
         DateTime ServerDateTime;
         private System.Timers.Timer? countdownTimer;
         
-        public TournamentDetailList(Tournament tournament)
+        public TournamentDetailList(TournamentDTO tournament)
         {
             InitializeComponent();
             SetTournamentDetails(tournament);
         }
-        internal void SetTournamentDetails(Tournament tournament)
+        internal void SetTournamentDetails(TournamentDTO tournament)
         {
             ServerDateTime = tournament.ServerDateTime;
             this.tournament = tournament;
@@ -124,39 +129,38 @@ namespace LudoClient.ControlView
         bool joining = false;
         private async void Join_Clicked(object sender, EventArgs e)
         {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (joining)
                 return;
             joining = true;
 
             if (ButtonText.Text == "WAIT") return;
-            if (ButtonText.Text == "PLAY") {
+            if (ButtonText.Text == "PLAY") 
+            {
+                PlayerDto player = new PlayerDto();
+                player.PlayerId = UserInfo.Instance.Id;
+                player.PlayerName = UserInfo.Instance.Name;
+                player.PlayerPicture = UserInfo.Instance.PictureUrl;
 
+                GameDto gameDto = new GameDto();
+                gameDto.IsTournamentGame = true; // Set the tournament game flag
+                gameDto.IsPracticeGame = true; // Set the practice game flag
+                gameDto.GameType = "4";
+                gameDto.PlayerCount = 4;
+                gameDto.RoomCode = tournament.TournamentId.ToString();
+                
+                //Navigation.PushAsync(new GameRoom(gameType, entry));
+                _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
                 return;
             }
-            int playerId = Preferences.Get("PlayerId", UserInfo.Instance.Id);
-            int tournamentId = Int32.Parse(TournamentId.Text);
-
-            // Build the URL with query parameters
-            var url = $"api/tournament/join?playerId={playerId}&tournamentId={tournamentId}";
-
-            // Send the POST request without a body, as parameters are in the query string
-            var response = await GlobalConstants.httpClient.PostAsync(url, null);
-
-            if (response.IsSuccessStatusCode)
+            tournament = await GlobalConstants.MatchMaker.JoinTournament(int.Parse(TournamentId.Text));
+            Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
+            if (tournament == null)
+                //No tournament running with this ID
+                return;
+            if (tournament.StatusCode == "FAILED")
             {
-                var responseBody = await response.Content.ReadAsStringAsync();
-                tournament = JsonSerializer.Deserialize<Tournament>(responseBody, new JsonSerializerOptions{PropertyNameCaseInsensitive = true});
-            }
-            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                // Handle failure, e.g., show an error message
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
-            } else if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
-            {
-                // Handle failure, e.g., show an error message
-                var errorContent = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"Failed to join the tournament. Error: {response.StatusCode}, Details: {errorContent}");
+                Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
             }
             joining = false;
         }

@@ -27,57 +27,60 @@ namespace SignalR.Server
         }
         public async Task<Game> JoinGameLobby(string ConnectionId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
         {
-            Game existingGame;
-            if (gameDTO.IsPracticeGame && string.IsNullOrWhiteSpace(gameDTO.RoomCode))
-            {
-                existingGame = games.FirstOrDefault(g => g.BetAmount == gameDTO.BetAmount && g.PlayerCount == gameDTO.PlayerCount && g.GameType == gameDTO.GameType && g.State == "Active");//await _context.
-                if (existingGame == null)
-                {
-                    if (string.IsNullOrWhiteSpace(gameDTO.RoomCode))
-                        // Generates a unique room name
-                        gameDTO.RoomCode = GenerateUniqueRoomId(gameDTO);
-                    // Check if the RoomCode already exists in the database
+            Game existingGame = null;
+            int? tournamentId = null;
 
-                    existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);//await _context.FirstOrDefaultAsync
-                }
+            if (gameDTO.IsTournamentGame)
+            {
+                if (!int.TryParse(gameDTO.RoomCode, out int parsedId))
+                    throw new ArgumentException("Invalid tournament ID format in RoomCode.");
+                tournamentId = parsedId;
+                existingGame = games.FirstOrDefault(g => g.TournamentId == tournamentId && g.State == "Active");
             }
+            else if (gameDTO.IsPracticeGame)
+                existingGame = games.FirstOrDefault(g => g.GameType == gameDTO.GameType && g.State == "Active");
             else
-            {
-                //Generate a new room name if roomName is empty
-                if (string.IsNullOrWhiteSpace(gameDTO.RoomCode))
-                    // Generates a unique room name
-                    gameDTO.RoomCode = GenerateUniqueRoomId(gameDTO);
-                // Check if the RoomCode already exists in the database
-                existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);//await _context.FirstOrDefaultAsync
-            }
+                existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode && g.State == "Active");
 
-            MultiPlayer multiPlayer = await GetGamePlayers(player.PlayerId, existingGame);
-
-            if (multiPlayer == null)
-            {
-                return null;//All Player Seats taken
-            }
             if (existingGame == null)
             {
+                do
+                {
+                    gameDTO.RoomCode = new Random().Next(10000000, 99999999).ToString();// Generates a unique room name
+                    existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);// Check if the RoomCode already exists in the database
+                } while (existingGame != null && _gameRooms.ContainsKey(gameDTO.RoomCode));
+
+                _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
+
+                MultiPlayer multiPlayer = GetGamePlayers(player.PlayerId, null);
+
                 multiPlayer.RoomCode = int.Parse(gameDTO.RoomCode);
                 // RoomCode does not exist, create a new game entry
                 existingGame = new Game
                 {
                     MultiPlayerId = multiPlayer.MultiPlayerId,
                     PlayerCount = gameDTO.PlayerCount,
-                    GameType= gameDTO.GameType,
+                    GameType = gameDTO.GameType,
                     BetAmount = gameDTO.BetAmount,
                     RoomCode = gameDTO.RoomCode,
+                    IsPrivate = gameDTO.IsPrivateGame,
+                    TournamentId = tournamentId,
                     Owner = player.PlayerId.ToString(),
-                    State = "Active"
+                    State = "Active",
+                    MultiPlayer = multiPlayer
                 };
-                existingGame.MultiPlayer = multiPlayer;
                 games.Add(existingGame);
+                //Deduct the bet amount from the player's balance if it's a paid game
+
                 // await _context.SaveChangesAsync(); // Save the game entry to the database
+            }
+            else
+            {
+                existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
             }
 
             // Create or retrieve the room
-            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto,  gameDTO));
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
 
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
             var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.PlayerName, "Color");
@@ -86,58 +89,11 @@ namespace SignalR.Server
             gameRoom.Users.Add(user);
             // Add the user to the specified group (room)
 
-
-
-            SaveData(); // Run save in a background thread (non-blocking)
+            await SaveData(); // Run save in a background thread (non-blocking)
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
             return existingGame;
         }
-        public async Task<(Game game, User user)> LeaveGameLobby(string ConnectionId, int playerId, string roomCode)
-        {
-            Game existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
-            if (existingGame != null && existingGame.State == "Active")
-            {
-                if (existingGame?.MultiPlayer.P1 == playerId)
-                    existingGame.MultiPlayer.P1 = null;
-                else if (existingGame?.MultiPlayer.P2 == playerId)
-                    existingGame.MultiPlayer.P2 = null;
-                else if (existingGame?.MultiPlayer.P3 == playerId)
-                    existingGame.MultiPlayer.P3 = null;
-                else if (existingGame?.MultiPlayer.P4 == playerId)
-                    existingGame.MultiPlayer.P4 = null;
-
-                if (existingGame.MultiPlayer.P1 == null && existingGame.MultiPlayer.P2 == null && existingGame.MultiPlayer.P3 == null && existingGame.MultiPlayer.P4 == null)
-                {
-                    existingGame.State = "Terminated";
-                }
-            }
-
-            if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
-            {
-                gameRoom.PlayerLeft(ConnectionId, roomCode);
-            }
-            if (_users.TryRemove(ConnectionId, out User user))
-            {
-                Console.WriteLine("User not removed for connection: " + ConnectionId);
-            }
-            SaveData(); // Run save in a background thread (non-blocking)
-            return (existingGame, user);
-        }
-        private string GenerateUniqueRoomId(SharedCode.GameDto gameDTO)
-            //string gameType, decimal gameCost)
-        {
-            string roomCode;
-            do
-            {
-                roomCode = new Random().Next(10000000, 99999999).ToString();
-            }
-            while (_gameRooms.ContainsKey(roomCode));
-
-            _gameRooms.TryAdd(roomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
-
-            return roomCode;
-        }
-        private async Task<MultiPlayer?> GetGamePlayers(int playerId, Game existingGame)
+        private MultiPlayer GetGamePlayers(int playerId, Game existingGame)
         {
             if (existingGame == null)
             {
@@ -153,26 +109,45 @@ namespace SignalR.Server
             }
             else
             {
-                MultiPlayer multiPlayer = multiPlayers.FirstOrDefault(m => m.MultiPlayerId == existingGame.MultiPlayerId);//await _context. MultiPlayers
-
-                if (multiPlayer.P1 == null)
-                    multiPlayer.P1 = playerId;
-                else if (multiPlayer.P2 == null)
-                    multiPlayer.P2 = playerId;
-                else if (multiPlayer.P3 == null)
-                    multiPlayer.P3 = playerId;
-                else if (multiPlayer.P4 == null)
-                    multiPlayer.P4 = playerId;
-                else
-                    // All player slots are full
-                    return null;
-                existingGame.MultiPlayer = multiPlayer;
-                // Save the updated multiplayer record
-                //  _context.MultiPlayers.Update(multiPlayer);
-                //  await _context.SaveChangesAsync();
-
-                return multiPlayer;
+                if (existingGame.MultiPlayer.P1 == null) existingGame.MultiPlayer.P1 = playerId;
+                else if (existingGame.MultiPlayer.P2 == null) existingGame.MultiPlayer.P2 = playerId;
+                else if (existingGame.MultiPlayer.P3 == null) existingGame.MultiPlayer.P3 = playerId;
+                else if (existingGame.MultiPlayer.P4 == null) existingGame.MultiPlayer.P4 = playerId;
+                else return null;
+                
+                return existingGame.MultiPlayer;
             }
+        }
+        public async Task<(Game game, User user)> LeaveGameLobby(string ConnectionId, int playerId, string roomCode)
+        {
+            Game existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
+            if (existingGame != null && existingGame.State == "Active")
+            {
+                if (existingGame?.MultiPlayer.P1 == playerId)
+                    existingGame.MultiPlayer.P1 = null;
+                else if (existingGame?.MultiPlayer.P2 == playerId)
+                    existingGame.MultiPlayer.P2 = null;
+                else if (existingGame?.MultiPlayer.P3 == playerId)
+                    existingGame.MultiPlayer.P3 = null;
+                else if (existingGame?.MultiPlayer.P4 == playerId)
+                    existingGame.MultiPlayer.P4 = null;
+
+                if (existingGame?.MultiPlayer.P1 == null && existingGame?.MultiPlayer.P2 == null && existingGame?.MultiPlayer.P3 == null && existingGame?.MultiPlayer.P4 == null)
+                {
+                    existingGame.State = "Terminated";
+                }
+            }
+
+            if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+            {
+                gameRoom.PlayerLeft(ConnectionId, roomCode);
+            }
+            if (_users.TryRemove(ConnectionId, out User user))
+            {
+                Console.WriteLine("User not removed for connection: " + ConnectionId);
+            }
+            await SaveData(); // Run save in a background thread (non-blocking)
+            return (existingGame, user);
         }
         public async Task SaveData()
         {

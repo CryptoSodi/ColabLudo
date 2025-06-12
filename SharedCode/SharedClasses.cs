@@ -33,7 +33,25 @@
         public bool IsPracticeGame { get; set; } = false; // Flag for practice games
         public bool IsTournamentGame { get; set; } = false; // Flag for tournament games
         public bool IsPrivateGame { get; set; } = false; // Flag for private games
-        public string playerColor { get; set; }
+        public string playerColor { get; set; } = "";
+    }
+    public class TournamentDTO
+    {
+        public int TournamentId { get; set; }
+        public string Name { get; set; } = "";
+        public string City { get; set; } = "";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public DateTime ServerDateTime { get; set; }
+        public decimal EntryFee { get; set; } = 0;
+        public decimal Prize1 { get; set; } = 0;
+        public decimal Prize2 { get; set; } = 0;
+        public decimal Prize3 { get; set; } = 0;
+        public string? Winner1 { get; set; }
+        public string? Winner2 { get; set; }
+        public string? Winner3 { get; set; }
+        public bool IsJoined { get; set; } = false; // Flag to indicate if the player has joined the tournament
+        public string StatusCode { get; set; }
     }
     public class GameCommand
     {
