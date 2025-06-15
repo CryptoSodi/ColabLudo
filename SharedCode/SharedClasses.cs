@@ -5,9 +5,9 @@
         public int GamesPlayed { get; set; } = 0;
         public int GamesWon { get; set; } = 0;
         public int GamesLost { get; set; } = 0;
-        public decimal BestWin { get; set; } = 0;
-        public decimal TotalWin { get; set; } = 0;
-        public decimal TotalLost { get; set; } = 0;
+        public decimal BestWin { get; set; }
+        public decimal TotalWin { get; set; }
+        public decimal TotalLost { get; set; }
         public int Score { get; set; } = 0;
         public string? PhoneNumber { get; internal set; }
     }

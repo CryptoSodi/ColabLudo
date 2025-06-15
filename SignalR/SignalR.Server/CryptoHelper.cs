@@ -1,6 +1,5 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Solnet.Programs;
@@ -109,9 +108,9 @@ namespace SignalR.Server
                 Console.WriteLine($"Master wallet created: {account.PublicKey.Key}");
                 // Inside CryptoHelper constructor, after PersistWallets():
                 using (var ctx = _dbFactory.CreateDbContext())
-                {   
+                {
                     EnsurePlayerWalletExists(_masterUserId);
-                    
+
                 }
             }
         }
@@ -191,12 +190,12 @@ namespace SignalR.Server
             EnsurePlayerWalletExists(_masterUserId);
             var sub = await ctx.PlayerWallets.FindAsync(subUserId);
             var master = await ctx.PlayerWallets.FindAsync(_masterUserId);
-            if (sub == null || master == null )
+            if (sub == null || master == null)
                 return false;
 
             // Debit sub-account and credit master in DB
-            sub.AvailableBalance += solAmount;
-            master.AvailableBalance -= solAmount;
+            sub.AvailableBalance -= solAmount;
+            master.AvailableBalance += solAmount;
             ctx.PlayerWallets.Update(sub);
             ctx.PlayerWallets.Update(master);
             await ctx.SaveChangesAsync();
@@ -227,21 +226,21 @@ namespace SignalR.Server
             var acct = new Account(rawPriv, w.PublicKey);
 
             // Convert SOL to lamports and fetch latest blockhash
+            
             var lamports = (ulong)(solAmount * LamportsPerSol);
             var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
 
             var balance = (await _rpc.GetBalanceAsync(acct.PublicKey)).Result.Value;
 
-            // 1) Query current fee schedule
-            var feesResponse = await _rpc.GetFeesAsync(commitment: Commitment.Confirmed);
-            if (!feesResponse.WasSuccessful)
-                throw new Exception($"RPC error fetching fees: {feesResponse.Reason}");
+            // Optional: Fetch required minimum lamports for a system account
+            var rentExemptMin = (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result;
 
-            ulong feeBuffer = (feesResponse.Result.Value.FeeCalculator.LamportsPerSignature * (ulong)1) * 2;
-
+            // Add this to the transfer amount if you're sending to a fresh public key
             ulong lamportsToSend = (ulong)(solAmount * LamportsPerSol);
+          
+            ulong feeBuffer = await getFeeBuffer();
 
-            if (lamportsToSend + feeBuffer >= balance)
+            if (lamportsToSend + feeBuffer > balance)
                 throw new InvalidOperationException("Not enough funds to cover fee buffer.");
 
             var tx = new TransactionBuilder()
@@ -253,9 +252,13 @@ namespace SignalR.Server
 
             var s = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
             Console.WriteLine($"Tx failed: {s.Reason}");
-            if (s.WasSuccessful)
-                return s.Result;
-            throw new Exception(s.Reason);
+            if (!s.WasSuccessful)
+            {
+                var errorJson = JsonSerializer.Serialize(s);
+                Console.WriteLine($"Tx failed: {errorJson}");
+                throw new Exception("Transaction failed.");
+            }
+            return s.Result;
         }
 
         /// <summary>
@@ -303,24 +306,27 @@ namespace SignalR.Server
             // Get or create sub-account, sum on-chain and off-chain balances
             var pub = await GetOrCreateSubAccountAsync(userId, cancellationToken);
             // 1) Query current fee schedule
-            var feesResponse = await _rpc.GetFeesAsync(commitment: Commitment.Confirmed);
-            if (!feesResponse.WasSuccessful)
-                throw new Exception($"RPC error fetching fees: {feesResponse.Reason}");
 
-            ulong feeBuffer = (feesResponse.Result.Value.FeeCalculator.LamportsPerSignature * (ulong)1) * 2;
+            ulong feeBuffer = await getFeeBuffer();
 
             var onChain = await GetOnChainBalanceAsync(pub, cancellationToken);
             decimal onSol;
             if (onChain > feeBuffer)
                 onSol = (onChain - feeBuffer) / (decimal)LamportsPerSol;
             else
-                onSol = (onChain ) / (decimal)LamportsPerSol;
+                onSol = (onChain) / (decimal)LamportsPerSol;
 
             using var ctx = _dbFactory.CreateDbContext();
             var off = await ctx.PlayerWallets.FindAsync(userId);
             var offSol = off?.AvailableBalance ?? 0m;
 
             return onSol + offSol;
+        }
+
+        private async Task<ulong> getFeeBuffer(CancellationToken ct = default)
+        {
+
+            return  (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
 
         private void EnsurePlayerWalletExists(string userId)
@@ -354,40 +360,59 @@ namespace SignalR.Server
         {
             using var ctx = _dbFactory.CreateDbContext();
             var masterPub = await GetOrCreateMasterAccountAsync();
-            foreach (var kv in _wallets)
+
+            foreach (var kv in _wallets.Where(w => !w.Value.IsMaster))
             {
-                if (kv.Key == _masterUserId) continue;
                 var userId = kv.Key;
                 var pub = kv.Value.PublicKey;
                 ulong lamports = await GetOnChainBalanceAsync(pub);
-                // 1) Query current fee schedule
-                var feesResponse = await _rpc.GetFeesAsync(commitment: Commitment.Confirmed);
-                if (!feesResponse.WasSuccessful)
-                    throw new Exception($"RPC error fetching fees: {feesResponse.Reason}");
-                
+                // 1) Optional: dynamically get accurate fee estimate
+                /*
+                var message = new TransactionBuilder()
+                    .SetFeePayer(new PublicKey(pub))
+                    .AddInstruction(SystemProgram.Transfer(...))
+                    .BuildMessage();
+                var feeEstimate = await _rpc.GetFeeForMessageAsync(Convert.ToBase64String(message));
+                if (feeEstimate.Value > feeBuffer)
+                    feeBuffer = feeEstimate.Value;
+                */
+
+
                 // 2) Apply a safety multiplier (e.g. ×2) for headroom
-                ulong feeBuffer = (feesResponse.Result.Value.FeeCalculator.LamportsPerSignature * (ulong)1) * 2;
+
+                ulong feeBuffer = await getFeeBuffer();
 
                 if (lamports > feeBuffer)
                 {
-                    decimal sol = lamports - feeBuffer / (decimal)LamportsPerSol;
-                    
+                    decimal sol = (lamports - feeBuffer) / (decimal)LamportsPerSol;
+
                     var txId = await SendOnChainAsync(userId, masterPub, sol);
                     Console.WriteLine($"On-chain sweep successful: {sol} SOL, tx {txId}");
 
                     EnsurePlayerWalletExists(userId);
-                    var sub = await ctx.PlayerWallets.FindAsync(userId);
+                    var sub = await ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
 
                     // Debit sub-account and credit master in DB
                     sub.AvailableBalance += sol;
+                    // Record the sweep transaction
+                    sub.Transactions.Add(new WalletTransaction
+                    {
+                        PlayerId = userId,
+                        PlayerWallet = sub, // 👈 ensures navigation is linked
+                        Amount = sol,
+                        BalanceAfter = sub.AvailableBalance,
+                        Type = TransactionType.Sweep,
+                        Description = $"On-chain sweep tx: {txId}",
+                        IsOnChain = true
+                    });
                     ctx.PlayerWallets.Update(sub);
+                    await ctx.SaveChangesAsync();
                 }
                 else
                 {
                     Console.WriteLine($"Skipped sweep, balance {lamports} ≤ fee buffer");
                 }
             }
-            await ctx.SaveChangesAsync();
         }
     }
 

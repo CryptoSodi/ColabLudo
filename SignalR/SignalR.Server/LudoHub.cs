@@ -115,36 +115,36 @@ namespace SignalR.Server
                 return pid;
             throw new HubException("Player not recognized.");
         }
-        public async Task<String> SendSol(int playerID, string destination, double amountInSol)
+        public async Task<String> SendSol(string destination, double amountInSol)
         {
-            var userId = playerID.ToString();
+            int playerId = GetCurrentPlayerId();
 
             try
             {
                 // 0) Check total balance (on-chain + off-chain)
-                var totalBalance = await _crypto.GetTotalBalanceAsync(userId);
+                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
                 if (totalBalance < (decimal)amountInSol)
                 {
-                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {userId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
+                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {playerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
                     return "INSUFFICIENT_FUNDS";
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.DebitToMasterOffChainAsync(userId, (decimal)amountInSol);
+                var debited = await _crypto.DebitToMasterOffChainAsync(playerId.ToString(), (decimal)amountInSol);
                 if (!debited)
                 {
-                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {userId}");
+                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {playerId}");
                     return "INSUFFICIENT_OFFCHAIN";
                 }
 
                 // 2) Send on-chain using master wallet
                 var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
-                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {userId} sent from master. Tx: {txSignature}");
+                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {playerId} sent from master. Tx: {txSignature}");
                 return txSignature;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during withdrawal for {userId}: {ex.Message}");
+                Console.WriteLine($"Error during withdrawal for {playerId}: {ex.Message}");
                 return "ERROR";
             }
         }
