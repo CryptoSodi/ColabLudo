@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Maui.ApplicationModel.Communication;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
@@ -80,8 +81,7 @@ namespace SignalR.Server
             if (File.Exists(_storageFile))
             {
                 var json = File.ReadAllText(_storageFile);
-                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(json)
-                          ?? new Dictionary<int, Wallet>();
+                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(json) ?? new Dictionary<int, Wallet>();
             }
             else
             {
@@ -91,7 +91,25 @@ namespace SignalR.Server
             // Ensure the master (hot) wallet exists; if not, generate and persist it.
             if (!_wallets.ContainsKey(_masterUserId))
             {
-                GetOrCreateAccount(_masterUserId, true, false);
+                using var ctx = _dbFactory.CreateDbContext();
+                
+                bool playerExists = ctx.Players.Any(p => p.PlayerId == _masterUserId);
+                if (!playerExists)
+                {
+                    Player admin = new Player
+                    {
+                        GoogleId = "",
+                        Name = "Admin",
+                        Email = "Admin@LudoNFT.com",
+                        PictureUrl = "",
+                        City = "Global",
+                        CountryCode = "+1"
+                    };
+                    ctx.Players.Add(admin);
+                    // Save changes to the database
+                    ctx.SaveChangesAsync();
+                }
+                GetOrCreateAccount(_masterUserId, true, true);
             }
         }
         /// <summary>
@@ -116,7 +134,7 @@ namespace SignalR.Server
                 PublicKey = pub,
                 IsMaster = isMaster
             };
-            EnsurePlayerWalletExists(_masterUserId);
+            EnsurePlayerWalletExists(playerId, pub);
             if(save)
                 PersistWallets(); // Persist updated store
             Console.WriteLine($"Sub-account created: {playerId} -> {pub}");
@@ -289,20 +307,22 @@ namespace SignalR.Server
             Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
             return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
-        private Task<PlayerWallet?> EnsurePlayerWalletExists(int userId)
+        private Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var exists = ctx.PlayerWallets.Any(p => p.PlayerId == userId);
+            var exists = ctx.PlayerWallets.Any(p => p.PlayerId == playerId);
             if (!exists)
             {
                 ctx.PlayerWallets.Add(new PlayerWallet
                 {
-                    PlayerId = userId,
+                    PlayerId = playerId,
+                    AddressType = "Solana",
+                    WalletAddress = WalletAddress,
                     AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
                 });
                 ctx.SaveChangesAsync();
             }
-            var sub = ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
+            var sub = ctx.PlayerWallets.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             return sub;
         }
         /// <summary>
