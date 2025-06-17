@@ -1,6 +1,4 @@
-﻿using System.Text.Json.Serialization;
-
-namespace LudoClient.Models
+﻿namespace LudoClient.Models
 {
     public class Game
     {
@@ -14,12 +12,5 @@ namespace LudoClient.Models
         public string? Owner { get; set; }
         public string? State { get; set; }
         public string? Recording { get; set; }
-
-        [JsonIgnore] // Prevents circular reference during serialization
-        public MultiPlayer MultiPlayer { get; set; }
-        [JsonIgnore] // Prevents circular reference during serialization
-        public Tournament Tournament { get; set; }
-        [JsonIgnore] // Prevents circular reference during serialization
-        public ICollection<GameChallenger> GameChallengers { get; set; }
     }
 }

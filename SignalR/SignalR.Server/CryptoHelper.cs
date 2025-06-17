@@ -2,7 +2,6 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Maui.ApplicationModel.Communication;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
@@ -322,6 +321,7 @@ namespace SignalR.Server
                 });
                 ctx.SaveChangesAsync();
             }
+            //  var sub = ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
             var sub = ctx.PlayerWallets.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             return sub;
         }
