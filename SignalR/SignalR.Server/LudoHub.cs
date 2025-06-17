@@ -1,5 +1,6 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
+using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -86,11 +87,11 @@ namespace SignalR.Server
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
 
                 // 2) Await the wallet creation/restoration
-                string address = await _crypto.GetOrCreateSubAccountAsync(playerId.ToString());
+                string address = await _crypto.GetOrCreateAccount(playerId);
                 Console.WriteLine($"Send SOL here: {address}");
 
                 // 3) Await the balance fetch
-                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
+                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
                 Console.WriteLine($"Balance: {totalBalance} SOL");
                 //4) Return a DTO
                 return new DepositInfo
@@ -121,8 +122,10 @@ namespace SignalR.Server
 
             try
             {
+                var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
+
                 // 0) Check total balance (on-chain + off-chain)
-                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
+                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
                 if (totalBalance < (decimal)amountInSol)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient total balance for {playerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
@@ -130,7 +133,7 @@ namespace SignalR.Server
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.DebitToMasterOffChainAsync(playerId.ToString(), (decimal)amountInSol);
+                var debited = await _crypto.OffChainTransaction(playerId, -(decimal)amountInSol, $"Withdraw from Account {txSignature}");
                 if (!debited)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {playerId}");
@@ -138,7 +141,7 @@ namespace SignalR.Server
                 }
 
                 // 2) Send on-chain using master wallet
-                var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
+                
                 Console.WriteLine($"Withdrawal of {amountInSol} SOL for {playerId} sent from master. Tx: {txSignature}");
                 return txSignature;
             }
@@ -354,8 +357,7 @@ namespace SignalR.Server
             using var ctx = _contextFactory.CreateDbContext();
 
             // Fetch the record (or null)
-            var bonus = await ctx.DailyBonus
-                                 .FirstOrDefaultAsync(x => x.PlayerId == playerId);
+            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == playerId);
             var now = DateTime.UtcNow;
             var today = now.Date;
             var weekdayIndex = (int)now.DayOfWeek; // Sunday=0, Monday=1, …
@@ -553,7 +555,7 @@ namespace SignalR.Server
             var playerId = GetCurrentPlayerId();
             using var ctx = _contextFactory.CreateDbContext();
 
-            var balance = await _crypto.GetTotalBalanceAsync(playerId.ToString());
+            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
             var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
 
             if (tournament == null)
@@ -602,7 +604,7 @@ namespace SignalR.Server
                 isNewChallenger = true;
             }
 
-            var debited = await _crypto.DebitToMasterOffChainAsync(playerId.ToString(), tournament.EntryFee);
+            var debited = await _crypto.OffChainTransaction(playerId, -tournament.EntryFee, "Tounrnament Joined");
             if (!debited)
             {
                 if (!isNewChallenger)
@@ -654,8 +656,9 @@ namespace SignalR.Server
         }
         /* END TOURNAMENT API */
         public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
-        {   
-            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
+        {
+            int playerId = GetCurrentPlayerId();
+            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, playerId, player, gameDTO);
 
             if (gameRoom == null)
             {

@@ -18,7 +18,7 @@ namespace SignalR.Server
     public class Wallet
     {
         /// <summary>User or manager identifier.</summary>
-        public string UserId { get; set; }
+        public int PlayerId { get; set; }
 
         /// <summary>Encrypted Base58 private key for signing transactions.</summary>
         public string EncryptedPrivateKey { get; set; }
@@ -43,8 +43,8 @@ namespace SignalR.Server
         private readonly string _storageFile;                   // File path for JSON wallet store
         private readonly IDbContextFactory<LudoDbContext> _dbFactory; // EF factory for ledger DB
         private readonly IDataProtector _protector;             // Data protector for encrypt/decrypt
-        private readonly Dictionary<string, Wallet> _wallets;   // In-memory wallet cache
-        private readonly string _masterUserId;                  // Identifier for the master wallet
+        private readonly Dictionary<int, Wallet> _wallets;   // In-memory wallet cache
+        private readonly int _masterUserId;                  // Identifier for the master wallet
 
         /// <summary>
         /// Constructor sets up RPC client, loads or creates wallets, and ensures
@@ -54,7 +54,7 @@ namespace SignalR.Server
             IDbContextFactory<LudoDbContext> dbFactory,
             IHostEnvironment env,
             IDataProtectionProvider dataProtectionProvider,
-            string masterUserId,
+            int masterUserId,
             string network = "MainNetBeta",
             string relativeStoragePath = "wallets.json",
             string protectorKey = "CryptoHelper.WalletProtector")
@@ -80,58 +80,27 @@ namespace SignalR.Server
             if (File.Exists(_storageFile))
             {
                 var json = File.ReadAllText(_storageFile);
-                _wallets = JsonSerializer.Deserialize<Dictionary<string, Wallet>>(json)
-                          ?? new Dictionary<string, Wallet>();
+                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(json)
+                          ?? new Dictionary<int, Wallet>();
             }
             else
             {
-                _wallets = new Dictionary<string, Wallet>();
+                _wallets = new Dictionary<int, Wallet>();
             }
 
             // Ensure the master (hot) wallet exists; if not, generate and persist it.
             if (!_wallets.ContainsKey(_masterUserId))
             {
-                var account = new Account();
-                // Base58-encode the raw private key
-                var rawPriv = new Base58Encoder().EncodeData(account.PrivateKey);
-                // Protect (encrypt) the private key before storing
-                var cipherPriv = _protector.Protect(rawPriv);
-
-                _wallets[_masterUserId] = new Wallet
-                {
-                    UserId = _masterUserId,
-                    EncryptedPrivateKey = cipherPriv,            // store only encrypted blob
-                    PublicKey = account.PublicKey.Key,
-                    IsMaster = true
-                };
-                PersistWallets();                              // Save JSON to disk
-                Console.WriteLine($"Master wallet created: {account.PublicKey.Key}");
-                // Inside CryptoHelper constructor, after PersistWallets():
-                using (var ctx = _dbFactory.CreateDbContext())
-                {
-                    EnsurePlayerWalletExists(_masterUserId);
-
-                }
+                GetOrCreateAccount(_masterUserId, true, false);
             }
         }
-
-        /// <summary>
-        /// Returns the master wallet's public key (for deposits).
-        /// </summary>
-        public Task<string> GetOrCreateMasterAccountAsync(CancellationToken cancellationToken = default)
-        {
-            if (_wallets.TryGetValue(_masterUserId, out var w))
-                return Task.FromResult(w.PublicKey);
-            throw new InvalidOperationException("Master wallet missing");
-        }
-
         /// <summary>
         /// Returns an existing sub-account public key, or generates one if missing.
         /// </summary>
-        public Task<string> GetOrCreateSubAccountAsync(string userId, CancellationToken cancellationToken = default)
+        public Task<string> GetOrCreateAccount(int playerId, bool isMaster = false, bool save = true, CancellationToken cancellationToken = default)
         {
             // If already exists, return the public key
-            if (_wallets.TryGetValue(userId, out var w) && w.PublicKey != null)
+            if (_wallets.TryGetValue(playerId, out var w) && w.PublicKey != null)
                 return Task.FromResult(w.PublicKey);
 
             var account = new Account();
@@ -140,72 +109,46 @@ namespace SignalR.Server
             var cipherPriv = _protector.Protect(rawPriv);
             var pub = account.PublicKey.Key;
 
-            _wallets[userId] = new Wallet
+            _wallets[playerId] = new Wallet
             {
-                UserId = userId,
+                PlayerId = playerId,
                 EncryptedPrivateKey = cipherPriv,
                 PublicKey = pub,
-                IsMaster = false
+                IsMaster = isMaster
             };
-
-            PersistWallets(); // Persist updated store
-            Console.WriteLine($"Sub-account created: {userId} -> {pub}");
+            EnsurePlayerWalletExists(_masterUserId);
+            if(save)
+                PersistWallets(); // Persist updated store
+            Console.WriteLine($"Sub-account created: {playerId} -> {pub}");
             return Task.FromResult(pub);
         }
 
         /// <summary>
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
         /// </summary>
-        public async Task<bool> AllocateOffChainAsync(string subUserId, decimal solAmount)
+        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description)
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var master = await ctx.PlayerWallets.FindAsync(_masterUserId);//MASTER_ACCOUNT
-            if (master == null || master.AvailableBalance < solAmount)
-                return false;
-
-            // Debit master and credit sub-account in DB
-            master.AvailableBalance -= solAmount;
-            var sub = await ctx.PlayerWallets.FindAsync(subUserId);
-            if (sub == null)
-                ctx.PlayerWallets.Add(new PlayerWallet
-                {
-                    PlayerId = subUserId,
-                    AvailableBalance = solAmount
-                });
-            else
-                sub.AvailableBalance += solAmount;
-
-            ctx.PlayerWallets.Update(master);
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-
-        /// <summary>
-        /// Returns SOL off-chain from sub-account ledger back to master ledger.
-        /// </summary>
-        public async Task<bool> DebitToMasterOffChainAsync(string subUserId, decimal solAmount)
-        {
-            using var ctx = _dbFactory.CreateDbContext();
-            EnsurePlayerWalletExists(subUserId);
-            EnsurePlayerWalletExists(_masterUserId);
-            var sub = await ctx.PlayerWallets.FindAsync(subUserId);
-            var master = await ctx.PlayerWallets.FindAsync(_masterUserId);
-            if (sub == null || master == null)
-                return false;
-
-            // Debit sub-account and credit master in DB
-            sub.AvailableBalance -= solAmount;
-            master.AvailableBalance += solAmount;
+            var sub = await EnsurePlayerWalletExists(playerId);
+            sub.AvailableBalance += solAmount;
+            sub.Transactions.Add(new WalletTransaction
+            {
+                PlayerId = playerId,
+                PlayerWallet = sub, // 👈 ensures navigation is linked
+                Amount = solAmount,
+                BalanceAfter = sub.AvailableBalance,
+                Type = TransactionType.Sweep,
+                Description = description,
+                IsOnChain = true
+            });
             ctx.PlayerWallets.Update(sub);
-            ctx.PlayerWallets.Update(master);
             await ctx.SaveChangesAsync();
             return true;
         }
-
         /// <summary>
         /// Queries the on-chain SOL balance (in lamports) for a given public key.
         /// </summary>
-        public async Task<ulong> GetOnChainBalanceAsync(string pubKey, CancellationToken cancellationToken = default)
+        public async Task<ulong> GetOnChainBalanceAsync(string pubKey)
         {
             var r = await _rpc.GetBalanceAsync(pubKey);
             if (r.WasSuccessful)
@@ -216,9 +159,9 @@ namespace SignalR.Server
         /// <summary>
         /// Builds, signs, and sends a SOL transfer transaction on-chain.
         /// </summary>
-        public async Task<string> SendOnChainAsync(string fromUserId, string toPubKey, decimal solAmount)
+        public async Task<string> SendOnChainAsync(int fromPlayerId, string toPubKey, decimal solAmount)
         {
-            if (!_wallets.TryGetValue(fromUserId, out var w))
+            if (!_wallets.TryGetValue(fromPlayerId, out var w))
                 throw new InvalidOperationException("Wallet not found");
 
             // Decrypt (unprotect) the stored private key
@@ -260,7 +203,6 @@ namespace SignalR.Server
             }
             return s.Result;
         }
-
         /// <summary>
         /// Sends SOL on-chain directly from the master account to an external address.
         /// Useful for withdrawals if you prefer using the main hot wallet.
@@ -301,15 +243,15 @@ namespace SignalR.Server
         /// <summary>
         /// Combines on-chain deposits and off-chain ledger balances for a user.
         /// </summary>
-        public async Task<decimal> GetTotalBalanceAsync(string userId, CancellationToken cancellationToken = default)
+        public async Task<decimal> GetTotalBalanceAsync(int playerId)
         {
             // Get or create sub-account, sum on-chain and off-chain balances
-            var pub = await GetOrCreateSubAccountAsync(userId, cancellationToken);
+            var pub = await GetOrCreateAccount(playerId);
             // 1) Query current fee schedule
 
             ulong feeBuffer = await getFeeBuffer();
 
-            var onChain = await GetOnChainBalanceAsync(pub, cancellationToken);
+            var onChain = await GetOnChainBalanceAsync(pub);
             decimal onSol;
             if (onChain > feeBuffer)
                 onSol = (onChain - feeBuffer) / (decimal)LamportsPerSol;
@@ -317,19 +259,37 @@ namespace SignalR.Server
                 onSol = (onChain) / (decimal)LamportsPerSol;
 
             using var ctx = _dbFactory.CreateDbContext();
-            var off = await ctx.PlayerWallets.FindAsync(userId);
+            var off = await ctx.PlayerWallets.FindAsync(playerId);
             var offSol = off?.AvailableBalance ?? 0m;
 
             return onSol + offSol;
         }
+        public async Task<decimal> GetOffChainBalanceAsync(int playerId)
+        {
+            using var ctx = _dbFactory.CreateDbContext();
+            var off = await ctx.PlayerWallets.FindAsync(playerId);
+            if(off == null)
+            {
 
+            }
+            return off?.AvailableBalance ?? 0m;
+        }
         private async Task<ulong> getFeeBuffer(CancellationToken ct = default)
         {
-
-            return  (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
+            // 1) Optional: dynamically get accurate fee estimate
+            /*
+            var message = new TransactionBuilder()
+                .SetFeePayer(new PublicKey(pub))
+                .AddInstruction(SystemProgram.Transfer(...))
+                .BuildMessage();
+            var feeEstimate = await _rpc.GetFeeForMessageAsync(Convert.ToBase64String(message));
+            if (feeEstimate.Value > feeBuffer)
+                feeBuffer = feeEstimate.Value;
+            */
+            Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
+            return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
-
-        private void EnsurePlayerWalletExists(string userId)
+        private Task<PlayerWallet?> EnsurePlayerWalletExists(int userId)
         {
             using var ctx = _dbFactory.CreateDbContext();
             var exists = ctx.PlayerWallets.Any(p => p.PlayerId == userId);
@@ -342,8 +302,9 @@ namespace SignalR.Server
                 });
                 ctx.SaveChangesAsync();
             }
+            var sub = ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
+            return sub;
         }
-
         /// <summary>
         /// Serializes in-memory wallet records back to the JSON storage file.
         /// </summary>
@@ -352,31 +313,19 @@ namespace SignalR.Server
             var json = JsonSerializer.Serialize(_wallets, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_storageFile, json);
         }
-
         /// <summary>
         /// Sweeps any positive on-chain balances from sub-account addresses back to master.
         /// </summary>
         public async Task SweepAllSubAccountsAsync()
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var masterPub = await GetOrCreateMasterAccountAsync();
+            var masterPub = await GetOrCreateAccount(_masterUserId, true, true);
 
             foreach (var kv in _wallets.Where(w => !w.Value.IsMaster))
             {
-                var userId = kv.Key;
+                var playerId = kv.Key;
                 var pub = kv.Value.PublicKey;
                 ulong lamports = await GetOnChainBalanceAsync(pub);
-                // 1) Optional: dynamically get accurate fee estimate
-                /*
-                var message = new TransactionBuilder()
-                    .SetFeePayer(new PublicKey(pub))
-                    .AddInstruction(SystemProgram.Transfer(...))
-                    .BuildMessage();
-                var feeEstimate = await _rpc.GetFeeForMessageAsync(Convert.ToBase64String(message));
-                if (feeEstimate.Value > feeBuffer)
-                    feeBuffer = feeEstimate.Value;
-                */
-
 
                 // 2) Apply a safety multiplier (e.g. ×2) for headroom
 
@@ -386,24 +335,25 @@ namespace SignalR.Server
                 {
                     decimal sol = (lamports - feeBuffer) / (decimal)LamportsPerSol;
 
-                    var txId = await SendOnChainAsync(userId, masterPub, sol);
+                    var txId = await SendOnChainAsync(playerId, masterPub, sol);
                     Console.WriteLine($"On-chain sweep successful: {sol} SOL, tx {txId}");
 
-                    EnsurePlayerWalletExists(userId);
-                    var sub = await ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
+                    var sub = await EnsurePlayerWalletExists(playerId);                    
 
                     // Debit sub-account and credit master in DB
                     sub.AvailableBalance += sol;
                     // Record the sweep transaction
                     sub.Transactions.Add(new WalletTransaction
                     {
-                        PlayerId = userId,
+                        PlayerId = playerId,
                         PlayerWallet = sub, // 👈 ensures navigation is linked
                         Amount = sol,
                         BalanceAfter = sub.AvailableBalance,
                         Type = TransactionType.Sweep,
-                        Description = $"On-chain sweep tx: {txId}",
-                        IsOnChain = true
+                        Description = $"On-chain sweep",
+                        IsOnChain = true,
+                        RoomCode = "",
+                        txId = txId
                     });
                     ctx.PlayerWallets.Update(sub);
                     await ctx.SaveChangesAsync();
@@ -415,7 +365,6 @@ namespace SignalR.Server
             }
         }
     }
-
     /// <summary>
     /// Background worker that calls the sweeper method on a fixed interval.
     /// </summary>

@@ -67,6 +67,7 @@ namespace SignalR.Server
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
+            //check this code for correctness
             using var context = _contextFactory.CreateDbContext();
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
@@ -81,14 +82,13 @@ namespace SignalR.Server
             // 1) Update player statistics in the DB
             UpdatePlayerStats(context, orderedSeats, winnerIds);
 
-
             // 2) Update game state in DM and database
             var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
             if (existingGame != null)
             {
-                existingGame.Winner1 = winnerIds[0];
+                existingGame.Winner1 = int.Parse(winnerIds[0]);
                 if (winnerIds.Count > 1)
-                    existingGame.Winner2 = winnerIds[1];
+                    existingGame.Winner2 = int.Parse(winnerIds[1]);
 
                 existingGame.State = "Completed";
                 context.Games.Update(existingGame);
@@ -98,45 +98,29 @@ namespace SignalR.Server
             LudoHub.DM.SaveData();
 
             // After EF commit, perform SOL transfers in saga-like flow
-            List<string> loserids = orderedSeats
+            List<int> loserids = orderedSeats
                 .Where(seat => !winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase))
-                .Select(s => s.PlayerId.ToString()).ToList();
+                .Select(s => s.PlayerId).ToList();
 
             // Sort the seats based on the winner and losers
             for (int i = 0; i < loserids.Count && gameDTO.BetAmount > 0; i++)
             {
                 var loserId = loserids[i];
-                var winnerId = winnerIds.Count == 1 ? winnerIds[0] : winnerIds[i];
+                var winnerId = winnerIds.Count == 1 ? int.Parse(winnerIds[0]) : int.Parse(winnerIds[i]);
 
                 try
                 {
                     // 1) Fetch the user's total off-chain + on-chain balance
                     decimal totalBalance = await _crypto.GetTotalBalanceAsync(loserId);
                     decimal betAmount = gameDTO.BetAmount; // in SOL
-
-                    if (totalBalance < gameDTO.BetAmount)
-                    {
-                        Console.WriteLine($"Insufficient total balance for {loserId}: {totalBalance} SOL");
-                        continue;
-                    }
-                    // Perform off-chain transfer: deduct from loser, credit to winner
-                    bool debited = await _crypto.DebitToMasterOffChainAsync(loserId, gameDTO.BetAmount);
-                    if (!debited)
-                    {
-                        Console.WriteLine($"Failed to debit {loserId}. Skipping.");
-                        continue;
-                    }
-                    bool credited = await _crypto.AllocateOffChainAsync(winnerId, gameDTO.BetAmount);
+                    
+                    bool credited = await _crypto.OffChainTransaction(winnerId, gameDTO.BetAmount, "Game Won");
                     if (!credited)
                     {
-                        // Roll back loser’s deduction
-                        await _crypto.AllocateOffChainAsync(loserId, gameDTO.BetAmount);
                         Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");
                         continue;
                     }
-
                     Console.WriteLine($"Off-chain transferred {gameDTO.BetAmount} SOL from {loserId} to {winnerId}.");
-
                 }
                 catch (Exception ex)
                 {

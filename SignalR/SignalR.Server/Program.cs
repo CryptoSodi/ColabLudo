@@ -32,7 +32,7 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
     var factory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var protector = sp.GetRequiredService<IDataProtectionProvider>();
     // Use the factory to create a new DbContext instance
-    const string masterUserId = "MASTER_ACCOUNT"; // your chosen ID
+    const int masterUserId = -1; // your chosen ID
 
     try
     {

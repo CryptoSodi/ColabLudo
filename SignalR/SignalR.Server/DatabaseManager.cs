@@ -20,16 +20,40 @@ namespace SignalR.Server
 
         public DatabaseManager(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto)
         {
+            _crypto = crypto;
             _hubContext = hubContext;
             _contextFactory = contextFactory;
-            _crypto = crypto;
             Task.Run(LoadData); // Run async without blocking constructor
         }
-        public async Task<Game> JoinGameLobby(string ConnectionId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
+        public async Task<Game> JoinGameLobby(string ConnectionId, int playerId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
         {
+            Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
             int? tournamentId = null;
+            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
+            if (!gameDTO.IsPracticeGame)
+            {
+                if (gameDTO.IsTournamentGame)
+                {
+                    using var ctx = _contextFactory.CreateDbContext();
+                    var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+                    if(existingChallenger.Status == "FAILED")
+                    {
+                        existingChallenger.RetryCount++;
+                        existingChallenger.Status = "JOINEND";
+                    }
+                }
 
+
+                if (gameDTO.BetAmount > 0 && balance < gameDTO.BetAmount)
+                {
+                    throw new ArgumentException("Insufficient balance to join the game.");
+                }
+                else if (gameDTO.BetAmount > 0 && !gameDTO.IsPracticeGame)
+                {
+                    var debited = await _crypto.OffChainTransaction(playerId, -gameDTO.BetAmount, "Game Fee");
+                }
+            }
             if (gameDTO.IsTournamentGame)
             {
                 if (!int.TryParse(gameDTO.RoomCode, out int parsedId))
@@ -38,7 +62,7 @@ namespace SignalR.Server
                 existingGame = games.FirstOrDefault(g => g.TournamentId == tournamentId && g.State == "Active");
             }
             else if (gameDTO.IsPracticeGame)
-                existingGame = games.FirstOrDefault(g => g.GameType == gameDTO.GameType && g.State == "Active");
+                existingGame = games.FirstOrDefault(g => g.GameType == gameDTO.GameType && g.BetAmount == 0 && g.State == "Active");
             else
                 existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode && g.State == "Active");
 
@@ -65,7 +89,7 @@ namespace SignalR.Server
                     RoomCode = gameDTO.RoomCode,
                     IsPrivate = gameDTO.IsPrivateGame,
                     TournamentId = tournamentId,
-                    Owner = player.PlayerId.ToString(),
+                    Owner = player.PlayerId,
                     State = "Active",
                     MultiPlayer = multiPlayer
                 };
@@ -88,6 +112,7 @@ namespace SignalR.Server
             // Add the user to the room's user list
             gameRoom.Users.Add(user);
             // Add the user to the specified group (room)
+
 
             await SaveData(); // Run save in a background thread (non-blocking)
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
