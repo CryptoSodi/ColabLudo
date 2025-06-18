@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 
@@ -11,7 +12,7 @@ namespace LudoClient.ControlView
         {
             InitializeComponent();
         }
-        public DetailList(PlayerCard playerCard , String type)
+        public DetailList(PlayerCard playerCard, String type)
         {
             InitializeComponent();
             if (playerCard != null)
@@ -93,12 +94,12 @@ namespace LudoClient.ControlView
                     BlockAction.IsVisible = false;
                     break;
             }
-            if(type!= "Header")
+            if (type != "Header")
                 RankingText.Text = playerCard.rank > 99 ? "99+" : playerCard.rank.ToString();
         }
         private async void Block_Action_Tapped(object sender, EventArgs e)
         {
-            SendFriendRequestAsync(UserInfo.Instance.Id, playerCard.playerID, BlockActionText.Text);
+            SendFriendRequestAsync(playerCard.playerID, BlockActionText.Text);
         }
         private async void Action_Tapped(object sender, EventArgs e)
         {
@@ -110,58 +111,47 @@ namespace LudoClient.ControlView
 
                 Navigation.PushAsync(cp).Wait();
             }
-            else 
-                SendFriendRequestAsync(UserInfo.Instance.Id, playerCard.playerID, TappedActionText.Text);
+            else
+                SendFriendRequestAsync(playerCard.playerID, TappedActionText.Text);
 
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
             //_ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, betAmount, RoomCode);
         }
 
-        public async Task SendFriendRequestAsync(int senderId, int receiverId, string status)
+        public async Task SendFriendRequestAsync(int receiverId, string status)
         {
-            try
+            // Send the HTTP POST request
+            string responseBody = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<string>("SendFriendRequest", receiverId, status);
+            if (status == responseBody)
             {
-                // Send the HTTP POST request
-                HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/friends/friendrequest/?senderId={senderId}&receiverId={receiverId}&status={status}");
-                if (response.IsSuccessStatusCode)
+                playerCard.status = status;
+                switch (status)
                 {
-                    var responseBody = await response.Content.ReadAsStringAsync();
-                    if(status == responseBody)
-                    {
-                        playerCard.status = status;
-                        switch (status)
+                    case "ADD FRIEND":
+                        TappedActionText.Text = "UN FRIEND";
+                        BlockActionText.Text = "BLOCK";
+                        break;
+                    case "UN FRIEND":
+                    case "UN BLOCK":
+                        if (cardActionType == "Friend")
                         {
-                            case "ADD FRIEND":
-                                TappedActionText.Text = "UN FRIEND";
-                                BlockActionText.Text = "BLOCK";
-                                break;
-                            case "UN FRIEND":
-                            case "UN BLOCK":
-                                if (cardActionType == "Friend")
-                                {
-                                    TappedActionText.Text = "MESSAGE";
-                                    BlockAction.IsVisible = false;
-                                    TappedAction.IsVisible = true;
-                                }
-                                else
-                                {
-                                    TappedActionText.Text = "ADD FRIEND";
-                                    BlockActionText.Text = "BLOCK";
-                                    TappedAction.IsVisible = true;
-                                }   
-                                break;
-                            case "BLOCK":
-                                TappedAction.IsVisible = false;
-                                BlockActionText.Text = "UN BLOCK";
-                                break;
+                            TappedActionText.Text = "MESSAGE";
+                            BlockAction.IsVisible = false;
+                            TappedAction.IsVisible = true;
                         }
-                    }
+                        else
+                        {
+                            TappedActionText.Text = "ADD FRIEND";
+                            BlockActionText.Text = "BLOCK";
+                            TappedAction.IsVisible = true;
+                        }
+                        break;
+                    case "BLOCK":
+                        TappedAction.IsVisible = false;
+                        BlockActionText.Text = "UN BLOCK";
+                        break;
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error: " + ex.Message);
             }
         }
     }

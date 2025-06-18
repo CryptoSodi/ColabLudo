@@ -6,10 +6,8 @@ namespace SharedCode.Network
 {
     public class Client
     {
-        public int playerID;
         private bool _connected;
         public HubConnection _hubConnection;
-        private string _messages;
 
         // Event Definitions using standard .NET event patterns
 
@@ -29,9 +27,8 @@ namespace SharedCode.Network
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Connected)));
             }
         }
-        public Client(int playerID)
+        public Client()
         {
-            this.playerID = playerID;
             Connected = false;
             // Build connection with automatic reconnect
             _hubConnection = new HubConnectionBuilder()
@@ -54,9 +51,8 @@ namespace SharedCode.Network
             // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
-                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));
-                _messages = $"{playerType}: {userName} has joined.";
-                Console.WriteLine(_messages);
+                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));                
+                Console.WriteLine($"{playerType}: {userName} has joined.");
             });
             // Game start event
             _hubConnection.On<string, string, string>("GameStarted", (GameType, seatsData, rollsString) =>
@@ -73,9 +69,8 @@ namespace SharedCode.Network
             });
             // Message event
             _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-            {
-                _messages = $"{user} says {message}";
-                Console.WriteLine(_messages);
+            {   
+                Console.WriteLine($"{user} says {message}");
             });
             // Connection lifecycle events
             _hubConnection.Reconnecting += error =>
@@ -91,7 +86,7 @@ namespace SharedCode.Network
             _hubConnection.Reconnected += connectionId =>
             {
                 Connected = true;
-                UserConnectedSetID();
+                UserConnectedSetID(playerId);
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
@@ -115,7 +110,7 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
-                UserConnectedSetID();
+                UserConnectedSetID(playerId);
                 Console.WriteLine("Already connected.");
                 return;
             }
@@ -123,7 +118,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Connected = true;
-                UserConnectedSetID();
+                UserConnectedSetID(playerId);
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
@@ -208,7 +203,7 @@ namespace SharedCode.Network
         }
         public async Task<List<GameCommand>> PullCommands(int lastSeenIndex, string RoomCode)
         {
-            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode);
+            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode).ConfigureAwait(false);
         }
         /// <summary>
         /// Send a message to the server.
@@ -226,17 +221,14 @@ namespace SharedCode.Network
                 return null;
             }
         }
-        public async Task<DepositInfo> UserConnectedSetID()
+        
+        private int playerId;
+        public async Task<DepositInfo> UserConnectedSetID(int playerId)
         {
-            try
-            {
-                return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerID).ConfigureAwait(false);
-            }
-            catch (Exception wx)
-            {
-                Console.WriteLine(wx.Message);
-                return new DepositInfo();
-            }
+            if (playerId == null)
+                return null;
+            this.playerId = playerId;
+            return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerId).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -245,7 +237,7 @@ namespace SharedCode.Network
         public async Task<string> SendSolAsync(string destination, double solAmount)
         {
             // Use the generic InvokeAsync<DepositInfo>
-            String info = await _hubConnection.InvokeAsync<String>("SendSol", playerID, destination, solAmount).ConfigureAwait(false);
+            String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount).ConfigureAwait(false);
             return info;
         }
 

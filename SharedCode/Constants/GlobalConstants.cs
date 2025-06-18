@@ -7,7 +7,6 @@ namespace SharedCode.Constants
     public static class GlobalConstants
     {
         public static int GameHistorySaveIndex = 0;
-        public static readonly HttpClient httpClient;
         public static readonly double initialEntry = 0.1;
         public static readonly bool Debug = true;
         public static readonly string Url;
@@ -39,12 +38,7 @@ if(Debug){
                 ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
             };
 
-            httpClient = new HttpClient(handler)
-            {
-                BaseAddress = new Uri(BaseUrl) // Set the base URL
-            };
         }
-
         public static int lastSeenIndex = -1;
         public static string RoomCode { get; internal set; }
         public static double GameCost { get; internal set; }

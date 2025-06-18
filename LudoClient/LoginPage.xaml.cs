@@ -1,6 +1,8 @@
 using Acr.UserDialogs;
 using LudoClient.Constants;
+using LudoClient.Models;
 using LudoClient.Services;
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.Text.Json;
 
@@ -23,27 +25,27 @@ namespace LudoClient
             string build = VersionTracking.CurrentBuild;
             VersionText.Text = "Version : " + build;
         }
-        void SetupInstance(Dictionary<string, JsonElement>? result)
+        void SetupInstance(Player result)
         {
-            UserInfo.Instance.Id = result["id"].GetInt32();
-            UserInfo.Instance.GoogleId = result?["googleId"].GetString();
-            UserInfo.Instance.Name = result?["name"].GetString();
-            UserInfo.Instance.Email = result?["email"].GetString();
-            UserInfo.Instance.PictureUrl = result?["pictureUrl"].GetString();
+            UserInfo.Instance.Id = result.PlayerId;
+            UserInfo.Instance.GoogleId = result.GoogleId;
+            UserInfo.Instance.Name = result.Name;
+            UserInfo.Instance.Email = result.Email;
+            UserInfo.Instance.PictureUrl = result.PictureUrl;
 
             UserInfo.Instance.PictureUrlBlob = UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl).GetAwaiter().GetResult();
             
-            UserInfo.Instance.PhoneNumber = result?["phoneNumber"].GetString();
-            UserInfo.Instance.CountryCode = result?["countryCode"].GetString();
-            UserInfo.Instance.City = result?["city"].GetString();
+            UserInfo.Instance.PhoneNumber = result.PhoneNumber;
+            UserInfo.Instance.CountryCode = result.CountryCode;
+            UserInfo.Instance.City = result.City;
 
-            UserInfo.Instance.GamesPlayed = result["gamesPlayed"].GetInt32();
-            UserInfo.Instance.GamesWon = result["gamesWon"].GetInt32();
-            UserInfo.Instance.GamesLost = result["gamesLost"].GetInt32();
+            UserInfo.Instance.GamesPlayed = result.GamesPlayed;
+            UserInfo.Instance.GamesWon = result.GamesWon;
+            UserInfo.Instance.GamesLost = result.GamesLost;
 
-            UserInfo.Instance.BestWin = result["bestWin"].GetDecimal();
-            UserInfo.Instance.TotalWin = result["totalWin"].GetDecimal();
-            UserInfo.Instance.TotalLost = result["totalLost"].GetDecimal();
+            UserInfo.Instance.BestWin = result.BestWin;
+            UserInfo.Instance.TotalWin = result.TotalWin;
+            UserInfo.Instance.TotalLost = result.TotalLost;
         }
        
         private async void GooleSignup_Clicked(object sender, EventArgs e)
@@ -66,11 +68,11 @@ namespace LudoClient
             IGoogleAuthService authService = null;
             try
             {
-                authService = DependencyService.Get<IGoogleAuthService>();                
+                authService = DependencyService.Get<IGoogleAuthService>();
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Google Sign-In FAILED", "Sign-in returned no token.", "OK");            
+                await DisplayAlert("Google Sign-In FAILED", "Sign-in returned no token.", "OK");
                 return;
             }
             if (authService != null)
@@ -82,7 +84,7 @@ namespace LudoClient
             }
             else
             {
-                await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");                
+                await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");
             }
 #if ANDROID
             UserDialogs.Instance.HideLoading();
@@ -95,31 +97,19 @@ namespace LudoClient
             {
                 if (GlobalConstants.online)
                 {
-                    string url = $"api/GoogleAuthentication?idToken={idToken}&city={city}&countryCode={countryCode}";
+                    Player player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<Player>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
 
-                    Dictionary<string, JsonElement>? result = null;
-                    
-                    try
+                    if (player != null)
                     {
-                        HttpResponseMessage response = GlobalConstants.httpClient.GetAsync(url).GetAwaiter().GetResult();
-                        string responseBody = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                        result = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(responseBody);
-                    }
-                    catch (Exception ex)
-                    {
-                        await DisplayAlert("Server Error", $"An error occurred: {ex.Message}", "OK");
-                    }
-                    string message = result?["message"].GetString();
-
-                    if (message == "Player login successfully." || message == "Player updated successfully." || message == "Player created successfully." || message == "Attach Phone.")
-                    {
-                        SetupInstance(result);
-
+                        SetupInstance(player);
                         await UserInfo.SaveState();
                         UserInfo.LoadState();
-
-                        Application.Current.MainPage = new AppShell();
-                    }
+                        MainThread.BeginInvokeOnMainThread(() => {
+                            Application.Current.MainPage = new AppShell();
+                        });
+                        
+                    } else
+                        await DisplayAlert("Error", $"An error occurred: Player not created", "OK");
                 }
             }
             catch (Exception ex)

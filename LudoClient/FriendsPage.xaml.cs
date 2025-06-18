@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 using System.Text.Json;
@@ -25,10 +26,8 @@ public partial class FriendsPage : ContentPage
     }
     public async Task InitializeFriendsAsync()
     {
-        List<PlayerCard> playerCard = await GetPlayerCards(UserInfo.Instance.Id);
+        List<PlayerCard> playerCard = await GetPlayerCards();
         var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
-
-        
 
         // Identify which items are currently displayed
         var existingItems = FriendsListStack.Children.OfType<DetailList>().ToList();
@@ -62,27 +61,14 @@ public partial class FriendsPage : ContentPage
             }
         }
     }
-    private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
+    private async Task<List<PlayerCard>> GetPlayerCards()
     {
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/Friends?playerId={playerId}");
-        if (response.IsSuccessStatusCode)
-        {
-            var responseBody = await response.Content.ReadAsStringAsync();
-            List<PlayerCard> Friends = JsonSerializer.Deserialize<List<PlayerCard>>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            if(Filter == "BLOCK") // Remove friends where status is "Block"
-                Friends = Friends.Where(f => f.status == "BLOCK").ToList();
-            else
-                Friends = Friends.Where(f => f.status != "BLOCK").ToList();
-            return Friends;
-        }
+        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends").ConfigureAwait(false);
+        if (Filter == "BLOCK") // Remove friends where status is "Block"
+            Friends = Friends.Where(f => f.status == "BLOCK").ToList();
         else
-        {
-            // Handle the error case as needed
-            return new List<PlayerCard>();
-        }
+            Friends = Friends.Where(f => f.status != "BLOCK").ToList();
+        return Friends;
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {

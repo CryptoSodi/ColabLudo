@@ -1,4 +1,5 @@
-﻿using LudoServer.Data;
+﻿using Google.Apis.Auth;
+using LudoServer.Data;
 using LudoServer.Models;
 using LudoServer.Models.AdminPanel;
 using Microsoft.AspNetCore.Mvc;
@@ -39,6 +40,68 @@ namespace SignalR.Server
                 DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
+
+        public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            // Example: extract useful info
+            String email = "";
+            String name = "";
+            String pictureUrl = "";// ✅ profile picture URL
+            String googleId = "";// Unique Google user ID
+            if (idToken == "Guest1")
+            {
+                email = "Sodi@gmail.com";
+                name = "Sodi";
+                pictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";// ✅ profile picture URL
+                googleId = idToken;
+            }
+            else
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+
+                // Example: extract useful info
+                email = payload.Email;
+                name = payload.Name;
+                pictureUrl = payload.Picture; // ✅ profile picture URL
+                googleId = payload.Subject; // Unique Google user ID
+            }
+
+            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
+
+            // If player exists by email, return with Player Id to login
+            if (existingPlayer != null)
+            {
+                // 1) Store SignalR connection
+                PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
+                return existingPlayer;
+            }
+
+            Player newPlayer = new Player
+            {
+                GoogleId = googleId,
+                Name = name,
+                Email = email,
+                PictureUrl = pictureUrl,
+                City = city,
+                CountryCode = countryCode
+            };
+            ctx.Players.Add(newPlayer);
+            // Save changes to the database
+            await ctx.SaveChangesAsync();
+
+            existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
+            
+            if (existingPlayer != null)
+            {
+                PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
+                return existingPlayer;
+            }   
+            // If player creation failed, return null
+            return null;
+        }
         public override async Task OnConnectedAsync()
         {
             Console.WriteLine($"User connected: {Context.ConnectionId}");
@@ -53,7 +116,6 @@ namespace SignalR.Server
             }
             await base.OnDisconnectedAsync(exception);
         }
-
         public async Task<StateInfo> LoadPlayerData(int playerId)
         {
             // 1) Store SignalR connection
@@ -345,12 +407,8 @@ namespace SignalR.Server
                 return chatMessagesList.Take(30).ToList();
             }
         }
-        /* END CHAT AND FRIENDS MANAGEMENT */
-
-        // ----------------
-        // DAILY BONUS API
-        // ----------------
-        // Fetch or initialize the player's daily bonus record
+        /* END CHAT AND FRIENDS MANAGEMENT */        
+        /* DAILY BONUS */
         public async Task<DailyBonusDto> GetDailyBonus()
         {
             var playerId = GetCurrentPlayerId();
@@ -548,8 +606,6 @@ namespace SignalR.Server
 
             return result;
         }
-
-
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
             var playerId = GetCurrentPlayerId();
@@ -625,9 +681,6 @@ namespace SignalR.Server
             await ctx.SaveChangesAsync();
             return await BuildTournamentDto(ctx, tournament, playerId, "JOINEND");
         }
-
-
-
         private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
         {
             var joinedIds = await ctx.TournamentChallengers
@@ -655,6 +708,136 @@ namespace SignalR.Server
             };
         }
         /* END TOURNAMENT API */
+        /* FRIENDS API */
+        public List<PlayerCard> GetFriends(String Type="All") {
+            List<PlayerCard> result = new List<PlayerCard>();
+            using var ctx = _contextFactory.CreateDbContext();
+            int playerId = GetCurrentPlayerId();
+
+            // First, get the last game players
+            var lastGame = ctx.MultiPlayers
+                .Where(m => m.P1 == playerId || m.P2 == playerId || m.P3 == playerId || m.P4 == playerId)
+                .OrderByDescending(m => m.MultiPlayerId)
+                .FirstOrDefault();
+
+            if (lastGame != null)
+            {
+                var playerIds = new List<int?> { lastGame.P1, lastGame.P2, lastGame.P3, lastGame.P4 }
+                    .Where(id => id.HasValue && id.Value != playerId)
+                    .Select(id => id.Value)
+                    .ToList();
+
+                if (playerIds.Any())
+                {
+                    var lastGamePlayers = ctx.Players
+                        .Where(p => playerIds.Contains(p.PlayerId))
+                        .Select(p => new PlayerCard
+                        {
+                            playerID = p.PlayerId,
+                            name = p.Name,
+                            pictureUrl = p.PictureUrl,
+                            rank = 31, // No rank info available, setting 0 or you can later compute
+                            status = "",
+                            lastGame = true
+                        })
+                        .ToList();
+
+                    result.AddRange(lastGamePlayers);
+                }
+            }
+            // Now, get friends (all statuses)
+            var friends = ctx.FriendsRequests
+                .Where(fr => fr.SenderId == playerId || fr.ReceiverId == playerId)
+                .Select(fr => new
+                {
+                    OtherPlayer = fr.SenderId == playerId ? fr.Receiver : fr.Sender,
+                    Status = fr.Status
+                }).ToList();
+
+
+            foreach (var fr in friends)
+            {
+                // try to find an existing card (e.g. from lastGame)
+                var existing = result.FirstOrDefault(x => x.playerID == fr.OtherPlayer.PlayerId);
+
+                if (existing != null)
+                {
+                    // update the status (and sender/receiver flag) on the existing card
+                    existing.status = fr.Status.ToString();
+                }
+                else
+                {
+                    // still need to add brand-new friends
+                    result.Add(new PlayerCard
+                    {
+                        playerID = fr.OtherPlayer.PlayerId,
+                        name = fr.OtherPlayer.Name,
+                        pictureUrl = fr.OtherPlayer.PictureUrl,
+                        rank = 31,
+                        status = fr.Status.ToString(),
+                        lastGame = false
+                    });
+                }
+            }
+            foreach (var fr in result)
+            {       // update the status (and sender/receiver flag) on the existing card
+                if (fr.status.ToString() == "")
+                    fr.status = "UN FRIEND";
+            }
+            if (!result.Any())
+                return new List<PlayerCard>();
+            return result;
+        }
+        public string SendFriendRequest(int ReceiverId, string status)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            int playerId = GetCurrentPlayerId();
+
+            if (playerId == ReceiverId)
+                return "Cannot send friend request to yourself.";
+
+            var sender = ctx.Players.Find(playerId);
+            var receiver = ctx.Players.Find(ReceiverId);
+
+            if (sender == null || receiver == null)
+                return "Sender or Receiver not found.";
+
+            //var existingRequest = _context.FriendsRequests
+            //    .FirstOrDefault(fr =>
+            //        (fr.SenderId == SenderId && fr.ReceiverId == ReceiverId) ||
+            //        (fr.SenderId == ReceiverId && fr.ReceiverId == SenderId));
+
+            //if (existingRequest != null)
+            //    return Conflict(new { Message = "Friend request already exists or is pending." });
+
+            FriendRequest request = new FriendRequest();
+            request.Status = status;
+            request.RequestDate = DateTime.UtcNow;
+
+            // Make sure navigation properties are not set by client
+            request.SenderId = playerId;
+            request.ReceiverId = ReceiverId;
+
+            ctx.FriendsRequests.Add(request);
+            ctx.SaveChanges();
+            return status;
+            //switch (status)
+            //{
+            //    case "UN BLOCK":
+            //        return Ok(new { Message = "UN BLOCK" });
+            //        break;
+            //    case "BLOCK":
+            //        return Ok(new { Message = "BLOCK" });
+            //        break;
+            //    case "FIREND":
+            //        return Ok(new { Message = "PENDING" });
+            //        break;
+            //    case "UN FRIEND":
+            //        return Ok(new { Message = "UN FRIEND" });
+            //        break;
+            //}
+        }
+        /* END FRIENDS API */
         public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
         {
             int playerId = GetCurrentPlayerId();

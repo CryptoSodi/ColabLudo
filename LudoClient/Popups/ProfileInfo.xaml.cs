@@ -34,7 +34,7 @@ public partial class ProfileInfo : BasePopup
         // ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try
         {
-            StateInfo dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<StateInfo>("LoadPlayerData", UserInfo.Instance.Id);
+            StateInfo dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<StateInfo>("LoadPlayerData", UserInfo.Instance.Id).ConfigureAwait(false);
             C1.setValue(dto.GamesPlayed + "");
             C2.setValue(dto.GamesWon + "");
             C3.setValue(dto.GamesLost + "");

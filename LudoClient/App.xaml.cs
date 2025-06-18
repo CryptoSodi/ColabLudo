@@ -1,6 +1,8 @@
 ﻿
 using LudoClient.Constants;
 using LudoClient.CoreEngine;
+using LudoClient.Models;
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -37,37 +39,23 @@ namespace LudoClient
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
             //MainPage = new Game();
-            if (!isUserLoggedIn)
+            UserInfo.LoadState();
+            GlobalConstants.MatchMaker = new Client();
+            GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+            GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+            GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+
+            if (isUserLoggedIn)
             {
-                UserInfo.LoadState();
-                MainPage = new LoginPage();
-
-                Task.Run(async () =>
-                {
-                    while (ClientGlobalConstants.dashBoard == null)
-                    {
-                        await Task.Delay(100);
-                    }
-
-                    GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
-
-                    GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-                    GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                    GlobalConstants.MatchMaker.ShowResults += OnShowResults;
-                });
+                GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id);
+                
+                MainPage = new AppShell();
+                // MainPage = new ChatPage();
+                //MainPage = new Game("local", "2", "Red");
             }
             else
             {
-                UserInfo.LoadState();
-                GlobalConstants.MatchMaker = new Client(UserInfo.Instance.Id);
-                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
-
-                MainPage = new AppShell();
-                
-                // MainPage = new ChatPage();
-                //MainPage = new Game("local", "2", "Red");
+                MainPage = new LoginPage();
             }
             Task.Run(async () =>
             {
@@ -180,7 +168,7 @@ namespace LudoClient
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 GlobalConstants.lastSeenIndex = -1;
-                ClientGlobalConstants.game = new Game("Client", args.GameType, "", args.seatsData, args.rollsString);
+                ClientGlobalConstants.game = new LudoClient.CoreEngine.Game("Client", args.GameType, "", args.seatsData, args.rollsString);
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
                 ClientGlobalConstants.FlushOld();
             });

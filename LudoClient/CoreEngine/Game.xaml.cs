@@ -68,9 +68,7 @@ public partial class Game : ContentPage
         InitializeComponent();
         /* CHAT MANAGEMENT*/
         
-        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;        
-        
-        GlobalConstants.MatchMaker.UserConnectedSetID();
+        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
 
         ChatMessages cm = new();
         cm.SenderId = UserInfo.Instance.Id;

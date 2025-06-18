@@ -22,7 +22,7 @@ public partial class WithdrawPopup : BasePopup
     public async Task GenerateQRCodeAsync()
     {
         const string BaseUrl = "https://quickchart.io/qr";
-        DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
+        DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id).GetAwaiter().GetResult();
         // You can tweak these hex colors and size as you like:
         var lightColor = "4031af";
         var darkColor = "ededed";

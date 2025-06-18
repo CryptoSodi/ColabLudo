@@ -321,6 +321,7 @@ namespace SignalR.Server
                 });
                 ctx.SaveChangesAsync();
             }
+            //if ()ctx.PlayerWallet.transactions == null)
             //  var sub = ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
             var sub = ctx.PlayerWallets.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             return sub;

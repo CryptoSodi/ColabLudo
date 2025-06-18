@@ -1,8 +1,9 @@
-using SharedCode.Constants;
+using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Models;
+using Microsoft.AspNetCore.SignalR.Client;
+using SharedCode.Constants;
 using System.Text.Json;
-using LudoClient.Constants;
 namespace LudoClient;
 public partial class GamesListPage : ContentPage
 { 
@@ -72,21 +73,8 @@ public partial class GamesListPage : ContentPage
 
     private async Task<List<Game>> GetGamesAsync()
     {
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync("api/Game");
-        if (response.IsSuccessStatusCode)
-        {
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var games = JsonSerializer.Deserialize<List<Game>>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            return games?.Where(g => g.State == "Active").ToList() ?? new List<Game>();
-        }
-        else
-        {
-            // Handle the error case as needed
-            return new List<Game>();
-        }
+        List<Game> games = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<Game>>("GetGame").ConfigureAwait(false);
+        return games?.Where(g => g.State == "Active").ToList() ?? new List<Game>();
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {

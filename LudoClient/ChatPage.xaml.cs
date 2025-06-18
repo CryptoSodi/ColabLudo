@@ -1,8 +1,6 @@
 
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 
@@ -27,9 +25,6 @@ public partial class ChatPage : ContentPage
         SetDetails(playerCard, new List<ChatMessages>());
 
         GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;        
-
-        GlobalConstants.MatchMaker.UserConnectedSetID();
-        
 
         ChatMessages cm = new();
         cm.SenderId = UserInfo.Instance.Id;

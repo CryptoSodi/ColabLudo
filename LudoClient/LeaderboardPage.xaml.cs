@@ -1,8 +1,8 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
+using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
-using System.Text.Json;
 
 namespace LudoClient;
 
@@ -59,25 +59,12 @@ public partial class LeaderboardPage : ContentPage
     }
     private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
     {
-        HttpResponseMessage response = await GlobalConstants.httpClient.GetAsync($"api/Friends?playerId={playerId}");
-        if (response.IsSuccessStatusCode)
+        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends").ConfigureAwait(false);
+        if (Filter == "ADD FRIEND")
         {
-            var responseBody = await response.Content.ReadAsStringAsync();
-            var Friends = JsonSerializer.Deserialize<List<PlayerCard>>(responseBody, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-            if (Filter == "ADD FRIEND")
-            {
-                Friends = Friends.Where(f => f.status == "ADD FRIEND").ToList();
-            }
-            return Friends;
+            Friends = Friends.Where(f => f.status == "ADD FRIEND").ToList();
         }
-        else
-        {
-            // Handle the error case as needed
-            return new List<PlayerCard>();
-        }
+        return Friends;
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
