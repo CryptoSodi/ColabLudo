@@ -72,7 +72,7 @@
         }
         public static void Logout()
         {
-            Preferences.Clear();
+            Preferences.Clear();            
         }
         // Method to load state
         public static void LoadState()

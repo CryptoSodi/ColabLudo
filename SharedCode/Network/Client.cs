@@ -221,11 +221,11 @@ namespace SharedCode.Network
                 return null;
             }
         }
-        
-        private int playerId;
+
+        public int playerId = -1;
         public async Task<DepositInfo> UserConnectedSetID(int playerId)
         {
-            if (playerId == null)
+            if (playerId == -1)
                 return null;
             this.playerId = playerId;
             return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerId).ConfigureAwait(false);

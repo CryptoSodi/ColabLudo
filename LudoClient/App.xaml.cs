@@ -50,7 +50,7 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id);
                 
                 MainPage = new AppShell();
-                // MainPage = new ChatPage();
+                //MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
             }
             else

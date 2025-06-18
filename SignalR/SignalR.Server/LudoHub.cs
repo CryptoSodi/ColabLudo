@@ -75,6 +75,16 @@ namespace SignalR.Server
                 // 1) Store SignalR connection
                 PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
+                existingPlayer.Wallets = new List<PlayerWallet>
+                {
+                    new PlayerWallet
+                    {
+                        PlayerId = existingPlayer.PlayerId,
+                        AddressType = "SOL",
+                        WalletAddress = await _crypto.GetOrCreateAccount(existingPlayer.PlayerId),
+                        AvailableBalance = await _crypto.GetOffChainBalanceAsync(existingPlayer.PlayerId)
+                    }
+                };
                 return existingPlayer;
             }
 
@@ -97,8 +107,20 @@ namespace SignalR.Server
             {
                 PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
+                
+                existingPlayer.Wallets = new List<PlayerWallet>
+                {
+                    new PlayerWallet
+                    {
+                        PlayerId = existingPlayer.PlayerId,
+                        AddressType = "SOL",
+                        WalletAddress = await _crypto.GetOrCreateAccount(existingPlayer.PlayerId),
+                        AvailableBalance = await _crypto.GetOffChainBalanceAsync(existingPlayer.PlayerId)
+                    }
+                };
+
                 return existingPlayer;
-            }   
+            }
             // If player creation failed, return null
             return null;
         }
@@ -144,6 +166,9 @@ namespace SignalR.Server
         {
             try
             {
+                if (playerId == -1)
+                    return new DepositInfo{Address = "",SolBalance = "0"};
+                    
                 // 1) Store SignalR connection
                 PlayerConnections[playerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
