@@ -14,7 +14,10 @@ public partial class GamesListPage : ContentPage
         InitializeComponent();
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
-        _ = InitializeTournamentsAsync();
+        // _ = InitializeTournamentsAsync();
+        var gameDetail = new GameDetailList();
+        gameDetail.SetTournamentDetails(13, "123", "4", 3);
+        TournamentListStack.Children.Add(gameDetail);
     }
 
     [Obsolete]
@@ -22,14 +25,18 @@ public partial class GamesListPage : ContentPage
     {
         base.OnAppearing();
         // Initial load when page appears
-        _ = InitializeTournamentsAsync();
+        MainThread.BeginInvokeOnMainThread(async () =>
+        {
+            _ = InitializeTournamentsAsync();
+        });
+        
         _isRunning = true;
         Device.StartTimer(TimeSpan.FromSeconds(5), () =>
         {
             // Run the async method on the main thread
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                await InitializeTournamentsAsync();
+                //await InitializeTournamentsAsync();
             });
             return _isRunning; // Return true to repeat, false to stop
         });
@@ -55,9 +62,12 @@ public partial class GamesListPage : ContentPage
         {
             if (!existingGameIds.Contains(game.GameId))
             {
-                var gameDetail = new GameDetailList();
-                gameDetail.SetTournamentDetails(game.GameId, game.RoomCode, game.Type, game.BetAmount);
-                TournamentListStack.Children.Add(gameDetail);
+                MainThread.BeginInvokeOnMainThread(async () =>
+                {
+                    var gameDetail = new GameDetailList();
+                    gameDetail.SetTournamentDetails(game.GameId, game.RoomCode, game.GameType, game.BetAmount);
+                    TournamentListStack.Children.Add(gameDetail);
+                });
             }
             else
             {
@@ -65,7 +75,7 @@ public partial class GamesListPage : ContentPage
                 var existingItem = existingItems.FirstOrDefault(i => i.gameId == game.GameId);
                 if (existingItem != null)
                 {
-                    existingItem.SetTournamentDetails(game.GameId, game.RoomCode, game.Type, game.BetAmount);
+                    existingItem.SetTournamentDetails(game.GameId, game.RoomCode, game.GameType, game.BetAmount);
                 }
             }
         }
@@ -73,7 +83,7 @@ public partial class GamesListPage : ContentPage
 
     private async Task<List<Game>> GetGamesAsync()
     {
-        List<Game> games = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<Game>>("GetGame").ConfigureAwait(false);
+        List<Game> games = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<Game>>("GetGame", false).ConfigureAwait(false);
         return games?.Where(g => g.State == "Active").ToList() ?? new List<Game>();
     }
     private void TabRequestedActivate(object sender, EventArgs e)

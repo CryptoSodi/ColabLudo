@@ -4,16 +4,14 @@
              x:Class="LudoClient.ControlView.GameDetailList"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid>
-        <local:Capsule ImageSource="total_available_bal_bg_a.png" HorizontalOptions="Fill" VerticalOptions="Start">
+        <local:Capsule ImageSource="tournament_bg.png" HorizontalOptions="Fill" VerticalOptions="Start">
             <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="2*,1.2*,2*">
 
-                <local:Capsule ImageSource="total_available_bal_title_a.png" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Start">
-                    <Grid Margin="23,0,10,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-                        <Label x:Name="GameId" Text="" FontSize="10" TextColor="Black" HorizontalOptions="Start"/>
-                        <Label x:Name="TotalPlayersLabel" Text="2 Players - 1 Winner" FontSize="10" TextColor="Black" HorizontalOptions="Center"/>
-                        <Label Text="Regular" FontSize="10" TextColor="Black" HorizontalOptions="End"/>
-                    </Grid>
-                </local:Capsule>
+                <Grid Margin="1" HeightRequest="16" Grid.ColumnSpan="4" HorizontalOptions="Fill" VerticalOptions="Start" BackgroundColor="DarkOrange">
+                    <Label x:Name="GameId" Text="" FontSize="10" TextColor="White" HorizontalOptions="Start" Margin="6,0,0,0"/>
+                    <Label x:Name="TotalPlayersLabel" Text="2 Players - 1 Winner" FontSize="10" TextColor="White" HorizontalOptions="Center"/>
+                    <Label Text="Regular" FontSize="10" TextColor="White" HorizontalOptions="End" Margin="0,0,6,0"/>
+                </Grid>
 
                 <StackLayout Spacing="5" HorizontalOptions="Center" VerticalOptions="Center">
                     <Label Text="Prize Pool" TextColor="White" VerticalOptions="CenterAndExpand"/>

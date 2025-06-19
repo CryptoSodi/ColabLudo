@@ -24,6 +24,7 @@
                 </Grid>
                 <ScrollView Margin="20,5,20,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                     <VerticalStackLayout x:Name="TournamentListStack" Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+                        <controlview:GameDetailList></controlview:GameDetailList>
                     </VerticalStackLayout>
                 </ScrollView>
             </Grid>

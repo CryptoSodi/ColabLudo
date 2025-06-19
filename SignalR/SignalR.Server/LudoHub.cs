@@ -881,7 +881,13 @@ namespace SignalR.Server
             await BroadcastPlayersAsync(gameRoom);
             return gameRoom.RoomCode; // Return the room name to the client
         }
-
+        /// Gets a list of all games.
+        public async Task<List<Game>> GetGame(bool IsPrivate)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            //g.State == "Active"
+            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate).ToListAsync();
+        }
 
         private async Task BroadcastPlayersAsync(Game existingGame)
         {

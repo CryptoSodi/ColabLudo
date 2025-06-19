@@ -68,7 +68,7 @@ namespace SignalR.Server
                     BetAmount = gameDTO.BetAmount,
                     RoomCode = gameDTO.RoomCode,
                     IsPrivate = gameDTO.IsPrivateGame,
-                    TournamentId = tournamentId,
+                    TournamentId = gameDTO.IsTournamentGame?tournamentId:null,
                     Owner = player.PlayerId,
                     State = "Active",
                     MultiPlayer = multiPlayer
