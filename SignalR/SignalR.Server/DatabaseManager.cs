@@ -29,31 +29,8 @@ namespace SignalR.Server
         {
             Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
-            int? tournamentId = null;
-            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
-            if (!gameDTO.IsPracticeGame)
-            {
-                if (gameDTO.IsTournamentGame)
-                {
-                    using var ctx = _contextFactory.CreateDbContext();
-                    var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
-                    if(existingChallenger.Status == "FAILED")
-                    {
-                        existingChallenger.RetryCount++;
-                        existingChallenger.Status = "JOINEND";
-                    }
-                }
+            int tournamentId = -1;
 
-
-                if (gameDTO.BetAmount > 0 && balance < gameDTO.BetAmount)
-                {
-                    throw new ArgumentException("Insufficient balance to join the game.");
-                }
-                else if (gameDTO.BetAmount > 0 && !gameDTO.IsPracticeGame)
-                {
-                    var debited = await _crypto.OffChainTransaction(playerId, -gameDTO.BetAmount, "Game Fee");
-                }
-            }
             if (gameDTO.IsTournamentGame)
             {
                 if (!int.TryParse(gameDTO.RoomCode, out int parsedId))
@@ -73,6 +50,9 @@ namespace SignalR.Server
                     gameDTO.RoomCode = new Random().Next(10000000, 99999999).ToString();// Generates a unique room name
                     existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);// Check if the RoomCode already exists in the database
                 } while (existingGame != null && _gameRooms.ContainsKey(gameDTO.RoomCode));
+
+                //DEDUCT GAME FEE
+                await deductGameFee(playerId, tournamentId, player, gameDTO);
 
                 _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
 
@@ -100,6 +80,8 @@ namespace SignalR.Server
             }
             else
             {
+                //DEDUCT GAME FEE
+                await deductGameFee(playerId, tournamentId, player, gameDTO);
                 existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
             }
 
@@ -117,6 +99,35 @@ namespace SignalR.Server
             await SaveData(); // Run save in a background thread (non-blocking)
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
             return existingGame;
+        }
+        private async Task<bool> deductGameFee(int playerId, int tournamentId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
+        {
+            bool debited = false;            
+            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
+            if (!gameDTO.IsPracticeGame)
+            {
+                if (gameDTO.IsTournamentGame)
+                {
+                    using var ctx = _contextFactory.CreateDbContext();
+                    var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+                    if (existingChallenger.Status == "FAILED")
+                    {
+                        existingChallenger.RetryCount++;
+                        existingChallenger.Status = "JOINEND";
+                    }
+                }
+
+
+                if (gameDTO.BetAmount > 0 && balance < gameDTO.BetAmount)
+                {
+                    throw new ArgumentException("Insufficient balance to join the game.");
+                }
+                else if (gameDTO.BetAmount > 0 && !gameDTO.IsPracticeGame)
+                {
+                    debited = await _crypto.OffChainTransaction(playerId, -gameDTO.BetAmount, "Game Fee", gameDTO.RoomCode);
+                }
+            }
+            return debited;
         }
         private MultiPlayer GetGamePlayers(int playerId, Game existingGame)
         {
@@ -165,11 +176,11 @@ namespace SignalR.Server
 
             if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
             {
-                gameRoom.PlayerLeft(ConnectionId, roomCode);
+                gameRoom.PlayerLeft(playerId, roomCode);
             }
             if (_users.TryRemove(ConnectionId, out User user))
             {
-                Console.WriteLine("User not removed for connection: " + ConnectionId);
+                Console.WriteLine("User not removed for connection: " + playerId);
             }
             await SaveData(); // Run save in a background thread (non-blocking)
             return (existingGame, user);

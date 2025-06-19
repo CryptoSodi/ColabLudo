@@ -60,6 +60,14 @@ namespace SignalR.Server
             {
                 var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
 
+                // ✅ Validate issuer and audience (REPLACE with your real Google OAuth client ID)
+                var expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
+                //973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com
+                if (payload.Audience+"" != expectedAudience || (payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com"))
+                {
+                    return null;
+                }
+
                 // Example: extract useful info
                 email = payload.Email;
                 name = payload.Name;
@@ -124,6 +132,39 @@ namespace SignalR.Server
             // If player creation failed, return null
             return null;
         }
+        // Call this once after authentication or lobby-join to establish mapping.
+        public async Task<DepositInfo> UserConnectedSetID(int playerId)
+        {
+            try
+            {
+                if (playerId == -1)
+                    return new DepositInfo { Address = "", SolBalance = "0" };
+
+                // 1) Store SignalR connection
+                PlayerConnections[playerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = playerId;
+
+                // 2) Await the wallet creation/restoration
+                string address = await _crypto.GetOrCreateAccount(playerId);
+                Console.WriteLine($"Send SOL here: {address}");
+
+                // 3) Await the balance fetch
+                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
+                Console.WriteLine($"Balance: {totalBalance} SOL");
+                //4) Return a DTO
+                return new DepositInfo
+                {
+                    Address = address,
+                    SolBalance = totalBalance.ToString()
+                };
+
+            }
+            catch (Exception)
+            {
+                Thread.Sleep(100);
+                return await UserConnectedSetID(playerId);
+            }
+        }
         public override async Task OnConnectedAsync()
         {
             Console.WriteLine($"User connected: {Context.ConnectionId}");
@@ -158,45 +199,8 @@ namespace SignalR.Server
                 PhoneNumber = P.PhoneNumber,
                 Score = P.Score
             };
-        }
-        /// <summary>
-        /// Call this once after authentication or lobby-join to establish mapping.
-        /// </summary>
-        public async Task<DepositInfo> UserConnectedSetID(int playerId)
-        {
-            try
-            {
-                if (playerId == -1)
-                    return new DepositInfo{Address = "",SolBalance = "0"};
-                    
-                // 1) Store SignalR connection
-                PlayerConnections[playerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = playerId;
-
-                // 2) Await the wallet creation/restoration
-                string address = await _crypto.GetOrCreateAccount(playerId);
-                Console.WriteLine($"Send SOL here: {address}");
-
-                // 3) Await the balance fetch
-                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
-                Console.WriteLine($"Balance: {totalBalance} SOL");
-                //4) Return a DTO
-                return new DepositInfo
-                {
-                    Address = address,
-                    SolBalance = totalBalance.ToString()
-                };
-                
-            }
-            catch (Exception)
-            {
-                Thread.Sleep(100);
-                return await UserConnectedSetID(playerId);
-            }
-        }
-        /// <summary>
-        /// Helper to fetch the current caller's player ID from the connection map.
-        /// </summary>
+        }        
+        /// Helper to fetch the current caller's player ID from the connection map.        
         private int GetCurrentPlayerId()
         {
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var pid))
@@ -248,8 +252,9 @@ namespace SignalR.Server
             
             return gameRoom.PullCommands(lastSeenIndex);
         }
-        public async Task LeaveCloseLobby(int playerId, string roomCode)
+        public async Task LeaveCloseLobby(string roomCode)
         {
+            int playerId = GetCurrentPlayerId();
             if (roomCode != null)
                 try
                 {
@@ -356,7 +361,6 @@ namespace SignalR.Server
             }
             return null;
         }
-
         /* CHAT AND FRIENDS MANAGEMENT */
         public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
         {
@@ -874,11 +878,11 @@ namespace SignalR.Server
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, gameRoom.RoomCode);
-
             await BroadcastPlayersAsync(gameRoom);
-
             return gameRoom.RoomCode; // Return the room name to the client
         }
+
+
         private async Task BroadcastPlayersAsync(Game existingGame)
         {
             using var context = _contextFactory.CreateDbContext();
@@ -923,13 +927,12 @@ namespace SignalR.Server
     {
         public User(string connectionId, string roomCode, int playerId, string userName, string playerColor)
         {
-            ConnectionId = connectionId;
+            this.ConnectionId = connectionId;
             this.roomCode = roomCode;
-            PlayerId = playerId;
+            this.PlayerId = playerId;
             this.PlayerName = userName;
             this.PlayerColor = playerColor;
         }
-
         public string ConnectionId { get; init; }
         public string roomCode { get; init; }
         public int PlayerId { get; init; }

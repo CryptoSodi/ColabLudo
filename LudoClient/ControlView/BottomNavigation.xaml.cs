@@ -12,7 +12,7 @@ public partial class BottomNavigation : ContentView
     async void OnBackButtonClicked(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
+        GlobalConstants.MatchMaker.LeaveCloseLobby();
         await Navigation.PopAsync();
         //await Shell.Current.GoToAsync("..");
     }

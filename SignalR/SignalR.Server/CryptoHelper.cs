@@ -143,22 +143,23 @@ namespace SignalR.Server
         /// <summary>
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
         /// </summary>
-        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description)
+        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String RoomCode="")
         {
             using var ctx = _dbFactory.CreateDbContext();
             var sub = await EnsurePlayerWalletExists(playerId);
             sub.AvailableBalance += solAmount;
-            sub.Transactions.Add(new WalletTransaction
+
+            ctx.WalletTransaction.Add(new WalletTransaction
             {
                 PlayerId = playerId,
-                PlayerWallet = sub, // 👈 ensures navigation is linked
                 Amount = solAmount,
                 BalanceAfter = sub.AvailableBalance,
                 Type = TransactionType.Sweep,
                 Description = description,
+                RoomCode = RoomCode,
                 IsOnChain = true
             });
-            ctx.PlayerWallets.Update(sub);
+            ctx.PlayerWallet.Update(sub);
             await ctx.SaveChangesAsync();
             return true;
         }
@@ -203,12 +204,7 @@ namespace SignalR.Server
             if (lamportsToSend + feeBuffer > balance)
                 throw new InvalidOperationException("Not enough funds to cover fee buffer.");
 
-            var tx = new TransactionBuilder()
-                .SetRecentBlockHash(blockhash)
-                .SetFeePayer(acct.PublicKey)
-                .AddInstruction(
-                    SystemProgram.Transfer(acct.PublicKey, new PublicKey(toPubKey), lamportsToSend))
-                .Build(acct);
+            var tx = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(acct.PublicKey).AddInstruction(SystemProgram.Transfer(acct.PublicKey, new PublicKey(toPubKey), lamportsToSend)).Build(acct);
 
             var s = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
             Console.WriteLine($"Tx failed: {s.Reason}");
@@ -276,7 +272,7 @@ namespace SignalR.Server
                 onSol = (onChain) / (decimal)LamportsPerSol;
 
             using var ctx = _dbFactory.CreateDbContext();
-            var off = await ctx.PlayerWallets.FindAsync(playerId);
+            var off = await ctx.PlayerWallet.FindAsync(playerId);
             var offSol = off?.AvailableBalance ?? 0m;
 
             return onSol + offSol;
@@ -284,14 +280,14 @@ namespace SignalR.Server
         public async Task<decimal> GetOffChainBalanceAsync(int playerId)
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var off = await ctx.PlayerWallets.FindAsync(playerId);
+            var off = await ctx.PlayerWallet.FindAsync(playerId);
             if(off == null)
             {
 
             }
             return off?.AvailableBalance ?? 0m;
         }
-        private async Task<ulong> getFeeBuffer(CancellationToken ct = default)
+        private async Task<ulong> getFeeBuffer()
         {
             // 1) Optional: dynamically get accurate fee estimate
             /*
@@ -306,24 +302,24 @@ namespace SignalR.Server
             Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
             return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
-        private Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
+        private async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var exists = ctx.PlayerWallets.Any(p => p.PlayerId == playerId);
+            var exists = ctx.PlayerWallet.Any(p => p.PlayerId == playerId);
             if (!exists)
             {
-                ctx.PlayerWallets.Add(new PlayerWallet
+                ctx.PlayerWallet.Add(new PlayerWallet
                 {
                     PlayerId = playerId,
                     AddressType = "Solana",
                     WalletAddress = WalletAddress,
                     AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
                 });
-                ctx.SaveChangesAsync();
+                await ctx.SaveChangesAsync();
             }
             //if ()ctx.PlayerWallet.transactions == null)
-            //  var sub = ctx.PlayerWallets.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == userId);
-            var sub = ctx.PlayerWallets.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            //var sub = ctx.PlayerWallet.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            var sub = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             return sub;
         }
         /// <summary>
@@ -364,10 +360,9 @@ namespace SignalR.Server
                     // Debit sub-account and credit master in DB
                     sub.AvailableBalance += sol;
                     // Record the sweep transaction
-                    sub.Transactions.Add(new WalletTransaction
+                    ctx.WalletTransaction.Add(new WalletTransaction
                     {
                         PlayerId = playerId,
-                        PlayerWallet = sub, // 👈 ensures navigation is linked
                         Amount = sol,
                         BalanceAfter = sub.AvailableBalance,
                         Type = TransactionType.Sweep,
@@ -376,7 +371,8 @@ namespace SignalR.Server
                         RoomCode = "",
                         txId = txId
                     });
-                    ctx.PlayerWallets.Update(sub);
+
+                    ctx.PlayerWallet.Update(sub);
                     await ctx.SaveChangesAsync();
                 }
                 else

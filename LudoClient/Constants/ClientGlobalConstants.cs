@@ -1,11 +1,5 @@
-﻿using CommunityToolkit.Maui.Views;
-using LudoClient.CoreEngine;
+﻿using LudoClient.CoreEngine;
 using LudoClient.Popups;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LudoClient.Constants
 {

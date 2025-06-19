@@ -108,8 +108,13 @@ namespace LudoClient
                             Application.Current.MainPage = new AppShell();
                         });
                         
-                    } else
-                        await DisplayAlert("Error", $"An error occurred: Player not created", "OK");
+                    }
+                    else
+                    {
+                        MainThread.BeginInvokeOnMainThread(() => {
+                            DisplayAlert("Error", $"An error occurred: Player not created", "OK");
+                        });
+                    }
                 }
             }
             catch (Exception ex)

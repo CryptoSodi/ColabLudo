@@ -86,9 +86,9 @@ namespace SignalR.Server
             var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
             if (existingGame != null)
             {
-                existingGame.Winner1 = int.Parse(winnerIds[0]);
+                existingGame.Winner1 = orderedSeats.FirstOrDefault(seat =>string.Equals(seat.PlayerColor, winnerIds[0], StringComparison.OrdinalIgnoreCase)).PlayerId;
                 if (winnerIds.Count > 1)
-                    existingGame.Winner2 = int.Parse(winnerIds[1]);
+                    existingGame.Winner2 = orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[1], StringComparison.OrdinalIgnoreCase)).PlayerId;
 
                 existingGame.State = "Completed";
                 context.Games.Update(existingGame);
@@ -106,7 +106,8 @@ namespace SignalR.Server
             for (int i = 0; i < loserids.Count && gameDTO.BetAmount > 0; i++)
             {
                 var loserId = loserids[i];
-                var winnerId = winnerIds.Count == 1 ? int.Parse(winnerIds[0]) : int.Parse(winnerIds[i]);
+                var winnerId = winnerIds.Count == 1 ? orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[0], StringComparison.OrdinalIgnoreCase)).PlayerId
+                    : orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[i], StringComparison.OrdinalIgnoreCase)).PlayerId;
 
                 try
                 {
@@ -163,10 +164,10 @@ namespace SignalR.Server
             }
         }
 
-        public async Task<User> PlayerLeft(string connectionId, string roomCode)
+        public async Task<User> PlayerLeft(int playerId, string roomCode)
         {
             // Try to find the user in the game room's user list using the connection ID.
-            var user = Users.FirstOrDefault(u => u.ConnectionId == connectionId);
+            var user = Users.FirstOrDefault(u => u.PlayerId == playerId);
             if (user != null && engine != null)
             {
                 // Remove the user from the room.
@@ -187,7 +188,7 @@ namespace SignalR.Server
             }
             else
             {
-                Console.WriteLine("User not found for connection: " + connectionId);
+                Console.WriteLine("User not found for connection: " + playerId);
             }
             return user;
         }

@@ -40,11 +40,13 @@ namespace LudoClient
             // Register routes for pages
             //MainPage = new Game();
             UserInfo.LoadState();
-            GlobalConstants.MatchMaker = new Client();
-            GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-            GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-            GlobalConstants.MatchMaker.ShowResults += OnShowResults;
-
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                GlobalConstants.MatchMaker = new Client();
+                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+            });
             if (isUserLoggedIn)
             {
                 GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id);

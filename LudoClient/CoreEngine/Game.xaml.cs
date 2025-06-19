@@ -1126,7 +1126,7 @@ public partial class Game : ContentPage
         if (result == "Approve")
         {
             if (engine.EngineHelper.gameMode == "Client")
-                GlobalConstants.MatchMaker.LeaveCloseLobby(UserInfo.Instance.Id);
+                GlobalConstants.MatchMaker.LeaveCloseLobby();
             else
             {
                 try

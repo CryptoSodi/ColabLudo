@@ -193,11 +193,11 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error in ReadyAsync: {ex.Message}");
             }
         }
-        public void LeaveCloseLobby(int playerId)
+        public void LeaveCloseLobby()
         {
             if (GlobalConstants.RoomCode != "")
             {
-                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", playerId, GlobalConstants.RoomCode).ConfigureAwait(false);
+                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", GlobalConstants.RoomCode).ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
             }
         }
