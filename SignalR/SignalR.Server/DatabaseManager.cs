@@ -172,9 +172,11 @@ namespace SignalR.Server
                     existingGame.MultiPlayer.P4 = null;
 
                 if (existingGame?.MultiPlayer.P1 == null && existingGame?.MultiPlayer.P2 == null && existingGame?.MultiPlayer.P3 == null && existingGame?.MultiPlayer.P4 == null)
-                {
                     existingGame.State = "Terminated";
-                }
+
+                decimal betAmount = existingGame.BetAmount;
+                if (betAmount>0 && existingGame.TournamentId != null)
+                    await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", existingGame.RoomCode);
             }
 
             if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))

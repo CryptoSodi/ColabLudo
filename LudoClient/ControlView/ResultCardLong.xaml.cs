@@ -31,7 +31,6 @@ public partial class ResultCardLong : ContentView
 
         ChipCountHolder.IsVisible = !((Amount == "+0")|| (Amount == "-0"));
         
-        
         PlayerNameItem.Text = playerName;
         PlayerImageItem.Source = playerPicture;
         StarNumberItem.Text = Position.Replace("*","");

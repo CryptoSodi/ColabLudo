@@ -886,7 +886,7 @@ namespace SignalR.Server
         {
             using var ctx = _contextFactory.CreateDbContext();
             //g.State == "Active"
-            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate).ToListAsync();
+            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && g.IsPractice).ToListAsync();
         }
 
         private async Task BroadcastPlayersAsync(Game existingGame)
