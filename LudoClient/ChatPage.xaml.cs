@@ -33,7 +33,7 @@ public partial class ChatPage : ContentPage
         cm.ReceiverId = playerCard.playerID;
         cm.ReceiverName = playerCard.name;
         cm.Message = "";
-        cm.Time = DateTime.Now;
+        cm.CreatedDate = DateTime.UtcNow;
 
         GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
         {
@@ -92,7 +92,7 @@ public partial class ChatPage : ContentPage
             cm.SenderColor = "";
             //cm.ReceiverPicture = playerCard.playerPicture;
             cm.Message = MessageEntry.Text;
-            cm.Time = DateTime.Now;
+            cm.CreatedDate = DateTime.UtcNow;
             MessageEntry.Text = "";
 
             GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>

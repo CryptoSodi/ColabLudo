@@ -15,7 +15,7 @@ namespace LudoClient.ControlView
             this.Message = Message;
             PlayerImage.Source = Message.SenderPicture;
             MessageText.Text = Message.Message;
-            TimeText.Text = Message.Time.ToShortTimeString();
+            TimeText.Text = Message.CreatedDate.ToShortTimeString();
             //detailgold.png
             switch (color)
             {

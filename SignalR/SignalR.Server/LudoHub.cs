@@ -391,9 +391,8 @@ namespace SignalR.Server
                 using var context = _contextFactory.CreateDbContext();
                 if(CM.Message != "")
                 {
-                    // 1️⃣ Save the new message to the database
-                    CM.Time = DateTime.UtcNow;
-                    ChatMessageEntity newMessage = new ChatMessageEntity
+                    // 1️⃣ Save the new message to the database                    
+                    ChatMessage newMessage = new ChatMessage
                     {
                         SenderId = CM.SenderId,
                         SenderName = CM.SenderName,
@@ -402,13 +401,13 @@ namespace SignalR.Server
                         ReceiverId = CM.ReceiverId,
                         ReceiverName = CM.ReceiverName,
                         Message = CM.Message,
-                        Time = DateTime.UtcNow  // Set the timestamp here
+                        CreatedDate = DateTime.UtcNow  // Set the timestamp here
                     };
                     context.ChatMessages.Add(newMessage);
                     context.SaveChanges();
                 }
 
-                List<ChatMessageEntity> chatHistory = context.ChatMessages.Where(cm => 
+                List<ChatMessage> chatHistory = context.ChatMessages.Where(cm => 
                 (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
                 (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
 
@@ -423,7 +422,7 @@ namespace SignalR.Server
                     ReceiverId = cm.ReceiverId,
                     ReceiverName = cm.ReceiverName,
                     Message = cm.Message,
-                    Time = cm.Time
+                    CreatedDate = cm.CreatedDate
                 }).ToList();
 
                 //chatMessagesList.Add(CM);
@@ -841,7 +840,7 @@ namespace SignalR.Server
 
             FriendRequest request = new FriendRequest();
             request.Status = status;
-            request.RequestDate = DateTime.UtcNow;
+            request.CreatedDate = DateTime.UtcNow;
 
             // Make sure navigation properties are not set by client
             request.SenderId = playerId;
@@ -886,7 +885,7 @@ namespace SignalR.Server
         {
             using var ctx = _contextFactory.CreateDbContext();
             //g.State == "Active"
-            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && g.IsPractice).ToListAsync();
+            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && !g.IsPractice).ToListAsync();
         }
 
         private async Task BroadcastPlayersAsync(Game existingGame)

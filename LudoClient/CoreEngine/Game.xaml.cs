@@ -77,7 +77,7 @@ public partial class Game : ContentPage
         cm.ReceiverId = -1;
         cm.ReceiverName = "";
         cm.Message = "";
-        cm.Time = DateTime.Now;
+        cm.CreatedDate = DateTime.UtcNow;
 
         GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
         {
@@ -97,7 +97,7 @@ public partial class Game : ContentPage
         }
             /* END CHAT MANAGEMENT*/
             // Create RedPlayerSeat
-            RedPlayerSeat = new PlayerSeat("red")
+        RedPlayerSeat = new PlayerSeat("red")
         {
             PlayerBG = "red_container.png",
             HorizontalOptions = LayoutOptions.FillAndExpand,
@@ -1215,7 +1215,7 @@ public partial class Game : ContentPage
             //cm.ReceiverName = playerCard.playerName;
             //cm.ReceiverPicture = playerCard.playerPicture;
             cm.Message = MessageEntry.Text;
-            cm.Time = DateTime.Now;
+            cm.CreatedDate = DateTime.UtcNow;
             MessageEntry.Text = "";
 
             GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>

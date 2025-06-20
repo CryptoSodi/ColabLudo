@@ -99,7 +99,7 @@ namespace LudoClient.ControlView
         }
         private async void Block_Action_Tapped(object sender, EventArgs e)
         {
-            SendFriendRequestAsync(playerCard.playerID, BlockActionText.Text);
+            await SendFriendRequestAsync(playerCard.playerID, BlockActionText.Text);
         }
         private async void Action_Tapped(object sender, EventArgs e)
         {
@@ -112,7 +112,7 @@ namespace LudoClient.ControlView
                 Navigation.PushAsync(cp).Wait();
             }
             else
-                SendFriendRequestAsync(playerCard.playerID, TappedActionText.Text);
+                await SendFriendRequestAsync(playerCard.playerID, TappedActionText.Text);
 
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName

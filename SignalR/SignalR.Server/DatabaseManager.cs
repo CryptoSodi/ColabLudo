@@ -128,7 +128,7 @@ namespace SignalR.Server
             }
             else if (betAmount > 0)
             {
-                debited = await _crypto.OffChainTransaction(playerId, -betAmount, isTournamentGame ? "Tournament Fee":"Game Fee", roomCode);
+                debited = await _crypto.OffChainTransaction(playerId, -betAmount, isTournamentGame ? "Tournament Fee":"Game Fee", "", false, roomCode);
             }
             return debited;
         }

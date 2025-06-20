@@ -117,7 +117,7 @@ namespace SignalR.Server
                     else
                         betAmount = betAmount* int.Parse(existingGame.GameType); // For 1 vs 1 games
 
-                    bool credited = await _crypto.OffChainTransaction(winnerId, betAmount, "Game Won");
+                    bool credited = await _crypto.OffChainTransaction(winnerId, betAmount, "Game Won", "", false, existingGame.GameId.ToString());
                     if (!credited)
                     {
                         Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");

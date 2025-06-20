@@ -1,4 +1,6 @@
-﻿namespace LudoClient.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace LudoClient.Models
 {
     public class Game
     {
@@ -9,6 +11,7 @@
         public int? MultiPlayerId { get; set; }
         public int? TournamentId { get; set; }
         public bool IsPrivate { get; set; } = false;
+        [Column(TypeName = "decimal(18,8)")]
         public decimal BetAmount { get; set; }
         public int? Winner1 { get; set; }
         public int? Winner2 { get; set; }
