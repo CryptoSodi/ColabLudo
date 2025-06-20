@@ -52,7 +52,12 @@ namespace SignalR.Server
                 } while (existingGame != null && _gameRooms.ContainsKey(gameDTO.RoomCode));
 
                 //DEDUCT GAME FEE
-                await deductGameFee(playerId, tournamentId, player, gameDTO);
+                if(!gameDTO.IsPracticeGame)
+                    if(!await deductGameFee(playerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
+                    {
+                        Console.WriteLine($"Game fee FAILED TO deduct for player {playerId} in room {gameDTO.RoomCode}.");
+                        return null;
+                    }
 
                 _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
 
@@ -68,6 +73,7 @@ namespace SignalR.Server
                     BetAmount = gameDTO.BetAmount,
                     RoomCode = gameDTO.RoomCode,
                     IsPrivate = gameDTO.IsPrivateGame,
+                    IsPractice = gameDTO.IsPracticeGame,
                     TournamentId = gameDTO.IsTournamentGame?tournamentId:null,
                     Owner = player.PlayerId,
                     State = "Active",
@@ -75,57 +81,54 @@ namespace SignalR.Server
                 };
                 games.Add(existingGame);
                 //Deduct the bet amount from the player's balance if it's a paid game
-
                 // await _context.SaveChangesAsync(); // Save the game entry to the database
             }
             else
             {
-                //DEDUCT GAME FEE
-                await deductGameFee(playerId, tournamentId, player, gameDTO);
+                if (!existingGame.IsPractice)
+                    if (!await deductGameFee(playerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
+                    {
+                        Console.WriteLine($"Game fee FAILED TO deduct for player {playerId} in room {gameDTO.RoomCode}.");
+                        return null;
+                    }
+                //DEDUCT GAME FEE                
                 existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
             }
-
             // Create or retrieve the room
             GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
-
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
             var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.PlayerName, "Color");
             _users.GetOrAdd(ConnectionId, user);
             // Add the user to the room's user list
             gameRoom.Users.Add(user);
             // Add the user to the specified group (room)
-
-
             await SaveData(); // Run save in a background thread (non-blocking)
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
             return existingGame;
         }
-        private async Task<bool> deductGameFee(int playerId, int tournamentId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
+        private async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
         {
-            bool debited = false;            
+            bool debited = false;
             var balance = await _crypto.GetOffChainBalanceAsync(playerId);
-            if (!gameDTO.IsPracticeGame)
+
+            if (isTournamentGame)
             {
-                if (gameDTO.IsTournamentGame)
+                using var ctx = _contextFactory.CreateDbContext();
+                var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+                if (existingChallenger.Status == "FAILED")
                 {
-                    using var ctx = _contextFactory.CreateDbContext();
-                    var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
-                    if (existingChallenger.Status == "FAILED")
-                    {
-                        existingChallenger.RetryCount++;
-                        existingChallenger.Status = "JOINEND";
-                    }
+                    existingChallenger.RetryCount++;
+                    existingChallenger.Status = "JOINEND";
                 }
+            }
 
-
-                if (gameDTO.BetAmount > 0 && balance < gameDTO.BetAmount)
-                {
-                    throw new ArgumentException("Insufficient balance to join the game.");
-                }
-                else if (gameDTO.BetAmount > 0 && !gameDTO.IsPracticeGame)
-                {
-                    debited = await _crypto.OffChainTransaction(playerId, -gameDTO.BetAmount, "Game Fee", gameDTO.RoomCode);
-                }
+            if (betAmount > 0 && balance < betAmount)
+            {
+                return debited;
+            }
+            else if (betAmount > 0)
+            {
+                debited = await _crypto.OffChainTransaction(playerId, -betAmount, isTournamentGame ? "Tournament Fee":"Game Fee", roomCode);
             }
             return debited;
         }

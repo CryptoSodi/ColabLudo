@@ -224,7 +224,7 @@ namespace SignalR.Server
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.OffChainTransaction(playerId, -(decimal)amountInSol, $"Withdraw from Account {txSignature}");
+                var debited = await _crypto.OffChainTransaction(playerId, -(decimal)amountInSol, "Withdraw", txSignature, true);
                 if (!debited)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {playerId}");
@@ -689,7 +689,7 @@ namespace SignalR.Server
                 isNewChallenger = true;
             }
 
-            var debited = await _crypto.OffChainTransaction(playerId, -tournament.EntryFee, "Tounrnament Joined");
+            var debited = await _crypto.OffChainTransaction(playerId, -tournament.EntryFee, "Tounrnament Fee");
             if (!debited)
             {
                 if (!isNewChallenger)

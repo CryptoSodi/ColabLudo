@@ -15,9 +15,6 @@ public partial class GamesListPage : ContentPage
         Tab1.SwitchSource = Tab1.SwitchOn;
         Tab2.SwitchSource = Tab2.SwitchOff;
         // _ = InitializeTournamentsAsync();
-        var gameDetail = new GameDetailList();
-        gameDetail.SetTournamentDetails(13, "123", "4", 3);
-        TournamentListStack.Children.Add(gameDetail);
     }
 
     [Obsolete]
@@ -29,14 +26,13 @@ public partial class GamesListPage : ContentPage
         {
             _ = InitializeTournamentsAsync();
         });
-        
         _isRunning = true;
-        Device.StartTimer(TimeSpan.FromSeconds(5), () =>
+        Device.StartTimer(TimeSpan.FromSeconds(10), () =>
         {
             // Run the async method on the main thread
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                //await InitializeTournamentsAsync();
+                await InitializeTournamentsAsync();
             });
             return _isRunning; // Return true to repeat, false to stop
         });
@@ -80,7 +76,6 @@ public partial class GamesListPage : ContentPage
             }
         }
     }
-
     private async Task<List<Game>> GetGamesAsync()
     {
         List<Game> games = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<Game>>("GetGame", false).ConfigureAwait(false);

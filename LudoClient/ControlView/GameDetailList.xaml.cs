@@ -38,7 +38,7 @@ namespace LudoClient.ControlView
             else
                 priceamount = Int32.Parse(gameType) * betAmount;
 
-            PrizeAmountLabel.Text = $"{(int)priceamount}";
+            PrizeAmountLabel.Text = $"{priceamount}";
         }
         private async void Join_Tapped(object sender, EventArgs e)
         {
@@ -51,8 +51,8 @@ namespace LudoClient.ControlView
 
             GameDto gameDto = new GameDto();
             gameDto.GameType = gameType; // Set the game type based on the active tab
-            gameDto.IsPracticeGame = true; // Set the practice game flag
-            gameDto.BetAmount = betAmount;
+            gameDto.IsPracticeGame = false; // Set the practice game flag
+            gameDto.BetAmount = betAmount;            
             gameDto.RoomCode = RoomCode;
             gameDto.PlayerCount = int.Parse(gameType);
             if (gameDto.PlayerCount == 22)

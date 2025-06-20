@@ -18,13 +18,13 @@ public partial class ResultCardLong : ContentView
         // BackGroundImage = "user_main_bg_gold.png" BorderImage = "gold_border.png" StarImage = "star_gold.png" PlayerName = "Tassaduq"
         if (Position.Contains("*"))
         {
-            BgImageItem.Source = "user_main_bg_gold.png";
+            BgImageItem.ImageSource = "user_main_bg_gold.png";
             StarTypeItem.Source = "star_gold.png";
             BorderImageItem.Source = "gold_border.png";
         }
         else
         {
-            BgImageItem.Source = "user_main_bg.png";
+            BgImageItem.ImageSource = "user_main_bg.png";
             StarTypeItem.Source = "star_silver.png";
             BorderImageItem.Source = "silver_border.png";
         }

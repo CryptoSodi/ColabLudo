@@ -18,7 +18,7 @@
         </Grid>
         
         <local:Capsule x:Name="SubSheet" ImageSource="tournament_bg.png" HorizontalOptions="Fill" VerticalOptions="Fill">
-            <Grid ColumnSpacing="10" RowSpacing="4" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".05*,.1*,.01*" Padding="0,0,0,0">
+            <Grid ColumnSpacing="10" RowSpacing="4" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".05*,.1*,.01*">
                 <Frame BackgroundColor="DarkBlue" CornerRadius="2" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="1,0,1,0"/>
                 
                 <Grid Margin="8,2,5,0" HorizontalOptions="Fill" VerticalOptions="Center">

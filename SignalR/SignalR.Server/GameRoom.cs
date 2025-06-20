@@ -95,7 +95,7 @@ namespace SignalR.Server
             }
             // Commit all EF changes
             await context.SaveChangesAsync();
-            LudoHub.DM.SaveData();
+            await LudoHub.DM.SaveData();
 
             // After EF commit, perform SOL transfers in saga-like flow
             List<int> loserids = orderedSeats
@@ -103,7 +103,7 @@ namespace SignalR.Server
                 .Select(s => s.PlayerId).ToList();
 
             // Sort the seats based on the winner and losers
-            for (int i = 0; i < loserids.Count && gameDTO.BetAmount > 0; i++)
+            for (int i = 0; i < loserids.Count && existingGame.BetAmount > 0; i++)
             {
                 var loserId = loserids[i];
                 var winnerId = winnerIds.Count == 1 ? orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[0], StringComparison.OrdinalIgnoreCase)).PlayerId
@@ -111,11 +111,13 @@ namespace SignalR.Server
 
                 try
                 {
-                    // 1) Fetch the user's total off-chain + on-chain balance
-                    decimal totalBalance = await _crypto.GetTotalBalanceAsync(loserId);
-                    decimal betAmount = gameDTO.BetAmount; // in SOL
-                    
-                    bool credited = await _crypto.OffChainTransaction(winnerId, gameDTO.BetAmount, "Game Won");
+                    decimal betAmount = existingGame.BetAmount; // in SOL
+                    if(existingGame.GameType == "22")
+                        betAmount = betAmount*2; // Split the bet amount for 2 vs 2 games
+                    else
+                        betAmount = betAmount* int.Parse(existingGame.GameType); // For 1 vs 1 games
+
+                    bool credited = await _crypto.OffChainTransaction(winnerId, betAmount, "Game Won");
                     if (!credited)
                     {
                         Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");
@@ -129,7 +131,6 @@ namespace SignalR.Server
                     Console.WriteLine($"Error paying out from {loserId} to {winnerId}: {ex.Message}");
                 }
             }
-
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)

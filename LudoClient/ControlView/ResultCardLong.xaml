@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
              x:Class="LudoClient.ControlView.ResultCardLong">
     <Grid Margin="25,0,25,0">
-        <Image x:Name="BgImageItem" Source="user_main_bg.png" />
-        <Grid HeightRequest="{Binding Source={x:Reference BgImageItem}, Path=Height}"
-               RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,3.5*,.3*" >
+        <local:Capsule ImageSource="user_main_bg.png" x:Name="BgImageItem">
+        <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".7*,1*,.8*" ColumnDefinitions=".2*,1.5*,2.5*,5*,3.5*,.3*" >
             <Grid Grid.Row="1" Grid.Column="1">
                 <Image x:Name="StarTypeItem" Source="star_silver.png" />
                 <Label x:Name="StarNumberItem" Text="1" FontSize="14" TextColor="Black" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
             </Grid>
-            <Grid Margin="0,-4,0,-4" Grid.Column="2" Grid.RowSpan="3" HorizontalOptions="Start">
+            <Grid Margin="0,-4,0,-4" Grid.Column="2" Grid.RowSpan="3" HorizontalOptions="Start" >
                 <Frame HorizontalOptions="Fill" VerticalOptions="Fill" CornerRadius="90" IsClippedToBounds="True" Padding="0" BorderColor="Gray" Margin="5">
                     <Image x:Name="PlayerImageItem" Source="player.png" HorizontalOptions="Fill" VerticalOptions="Fill" />
                 </Frame>
@@ -25,5 +25,6 @@
                 </StackLayout>
             </Grid>
         </Grid>
+        </local:Capsule>
     </Grid>
 </ContentView>

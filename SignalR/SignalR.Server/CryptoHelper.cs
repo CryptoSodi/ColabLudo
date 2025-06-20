@@ -143,7 +143,7 @@ namespace SignalR.Server
         /// <summary>
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
         /// </summary>
-        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String RoomCode="")
+        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode="")
         {
             using var ctx = _dbFactory.CreateDbContext();
             var sub = await EnsurePlayerWalletExists(playerId);
@@ -157,7 +157,8 @@ namespace SignalR.Server
                 Type = TransactionType.Sweep,
                 Description = description,
                 RoomCode = RoomCode,
-                IsOnChain = true
+                IsOnChain = IsOnChain,
+                txId = txId
             });
             ctx.PlayerWallet.Update(sub);
             await ctx.SaveChangesAsync();
