@@ -37,13 +37,7 @@ public partial class PracticePage : ContentPage
     private void JoinPracticeTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        // Add logic here to join an offline game
-        //Application.Current.MainPage = new Game(gametype, playerCount, playerColor);
-        PlayerDto player = new PlayerDto();
-        player.PlayerId = UserInfo.Instance.Id;
-        player.PlayerName = UserInfo.Instance.Name;
-        player.PlayerPicture = UserInfo.Instance.PictureUrl;
-
+        
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
         gameDto.IsPracticeGame = true; // Set the practice game flag
@@ -53,6 +47,6 @@ public partial class PracticePage : ContentPage
         if (gameDto.PlayerCount == 22)
             gameDto.PlayerCount = 4;
 
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
     }
 }

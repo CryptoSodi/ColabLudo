@@ -125,11 +125,6 @@ public partial class PlayWithFriends : ContentPage
         if (Tab4.IsActive)
             gameType = "22";
 
-        PlayerDto player = new PlayerDto();
-        player.PlayerId = UserInfo.Instance.Id;
-        player.PlayerName = UserInfo.Instance.Name;
-        player.PlayerPicture = UserInfo.Instance.PictureUrl;
-
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
         gameDto.IsPracticeGame = false; // Set the practice game flag
@@ -141,7 +136,7 @@ public partial class PlayWithFriends : ContentPage
             gameDto.PlayerCount = 4;
 
         //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
     }
     private async void BtnPaste(object sender, EventArgs e)
     {

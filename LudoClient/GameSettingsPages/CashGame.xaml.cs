@@ -105,11 +105,6 @@ public partial class CashGame : ContentPage
         if (Tab4.IsActive)
             gameType = "22";
 
-        PlayerDto player = new PlayerDto();
-        player.PlayerId = UserInfo.Instance.Id;
-        player.PlayerName = UserInfo.Instance.Name;
-        player.PlayerPicture = UserInfo.Instance.PictureUrl;
-
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
         gameDto.BetAmount = (decimal)entry;
@@ -119,6 +114,6 @@ public partial class CashGame : ContentPage
             gameDto.PlayerCount = 4;
 
         //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
+        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
     }
 }

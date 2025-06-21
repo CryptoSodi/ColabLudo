@@ -150,11 +150,11 @@ namespace SharedCode.Network
         /// <summary>
         /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
         /// </summary>
-        public async Task CreateJoinLobbyAsync(PlayerDto player, GameDto gameDto)//string gameType, double gameCost, string roomCode
+        public async Task CreateJoinLobbyAsync(GameDto gameDto)//string gameType, double gameCost, string roomCode
         {
             try
             {
-                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", player, gameDto).ConfigureAwait(false);
+                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto).ConfigureAwait(false);
                 Console.WriteLine($"Joined room: {roomCode}");
                 RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, roomCode));
             }

@@ -44,11 +44,7 @@ namespace LudoClient.ControlView
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Console.WriteLine("Join Tapped");
-            PlayerDto player = new PlayerDto();
-            player.PlayerId = UserInfo.Instance.Id;
-            player.PlayerName = UserInfo.Instance.Name;
-            player.PlayerPicture = UserInfo.Instance.PictureUrl;
-
+            
             GameDto gameDto = new GameDto();
             gameDto.GameType = gameType; // Set the game type based on the active tab
             gameDto.IsPracticeGame = false; // Set the practice game flag
@@ -58,7 +54,7 @@ namespace LudoClient.ControlView
             if (gameDto.PlayerCount == 22)
                 gameDto.PlayerCount = 4;
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
-            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
         }
     }
 }

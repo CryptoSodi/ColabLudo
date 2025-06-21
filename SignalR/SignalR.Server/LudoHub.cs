@@ -33,7 +33,6 @@ namespace SignalR.Server
                 DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
-
         public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             using var ctx = _contextFactory.CreateDbContext();
@@ -540,7 +539,6 @@ namespace SignalR.Server
                 };
                 ctx.DailyBonus.Add(bonus);
             }
-
 
             bool alreadyClaimed = weekdayIndex switch
             {

@@ -137,11 +137,6 @@ namespace LudoClient.ControlView
             if (ButtonText.Text == "WAIT") return;
             if (ButtonText.Text == "PLAY") 
             {
-                PlayerDto player = new PlayerDto();
-                player.PlayerId = UserInfo.Instance.Id;
-                player.PlayerName = UserInfo.Instance.Name;
-                player.PlayerPicture = UserInfo.Instance.PictureUrl;
-
                 GameDto gameDto = new GameDto();
                 gameDto.IsTournamentGame = true; // Set the tournament game flag
                 gameDto.IsPracticeGame = true; // Set the practice game flag
@@ -150,7 +145,7 @@ namespace LudoClient.ControlView
                 gameDto.RoomCode = tournament.TournamentId.ToString();
                 
                 //Navigation.PushAsync(new GameRoom(gameType, entry));
-                _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(player, gameDto);
+                _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
                 return;
             }
             tournament = await GlobalConstants.MatchMaker.JoinTournament(int.Parse(TournamentId.Text));
