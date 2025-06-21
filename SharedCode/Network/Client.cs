@@ -35,6 +35,7 @@ namespace SharedCode.Network
                 .WithUrl(GlobalConstants.HubUrl + "LudoHub")
                 .WithAutomaticReconnect()
                 .Build();
+            
             _ = ConnectAsync();
             RegisterHubEvents();
         }
@@ -86,7 +87,7 @@ namespace SharedCode.Network
             _hubConnection.Reconnected += connectionId =>
             {
                 Connected = true;
-                UserConnectedSetID(playerId);
+                UserConnectedSetID();
                 Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
@@ -110,7 +111,7 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
-                UserConnectedSetID(playerId);
+                await UserConnectedSetID();
                 Console.WriteLine("Already connected.");
                 return;
             }
@@ -118,7 +119,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Connected = true;
-                UserConnectedSetID(playerId);
+                await UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
@@ -223,12 +224,12 @@ namespace SharedCode.Network
         }
 
         public int playerId = -1;
-        public async Task<DepositInfo> UserConnectedSetID(int playerId)
+        public async Task<DepositInfo> UserConnectedSetID()
         {
-            if (playerId == -1)
+            String AuthToken = Preferences.Get("AuthToken",""); // or however you're storing it
+            if (AuthToken == "")
                 return null;
-            this.playerId = playerId;
-            return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", playerId).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
 
         /// <summary>

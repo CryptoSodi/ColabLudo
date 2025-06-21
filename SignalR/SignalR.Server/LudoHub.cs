@@ -1,16 +1,11 @@
 ﻿using Google.Apis.Auth;
 using LudoServer.Data;
 using LudoServer.Models;
-using LudoServer.Models.AdminPanel;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Cms;
 using SharedCode;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
-using PlayerDto = SharedCode.PlayerDto;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
@@ -27,9 +22,7 @@ namespace SignalR.Server
         public static DatabaseManager DM;
         private static bool _initialized = false;
 
-        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory,
-                      IHubContext<LudoHub> hubContext,
-                      CryptoHelper crypto)
+        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto)
         {
             _crypto = crypto;
             _contextFactory = contextFactory;
@@ -75,14 +68,15 @@ namespace SignalR.Server
                 googleId = payload.Subject; // Unique Google user ID
             }
 
-            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
-
+            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);            
             // If player exists by email, return with Player Id to login
             if (existingPlayer != null)
             {
+                existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
+                SetPlayerOnlineState(existingPlayer.PlayerId, true).GetAwaiter().GetResult();
                 // 1) Store SignalR connection
                 PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
+                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;                
                 existingPlayer.Wallets = new List<PlayerWallet>
                 {
                     new PlayerWallet
@@ -93,6 +87,7 @@ namespace SignalR.Server
                         AvailableBalance = await _crypto.GetOffChainBalanceAsync(existingPlayer.PlayerId)
                     }
                 };
+                await ctx.SaveChangesAsync();
                 return existingPlayer;
             }
 
@@ -103,7 +98,9 @@ namespace SignalR.Server
                 Email = email,
                 PictureUrl = pictureUrl,
                 City = city,
-                CountryCode = countryCode
+                CountryCode = countryCode,
+                IsOnline = true,
+                AuthToken = ""
             };
             ctx.Players.Add(newPlayer);
             // Save changes to the database
@@ -113,6 +110,7 @@ namespace SignalR.Server
             
             if (existingPlayer != null)
             {
+                existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString());
                 PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
                 
@@ -127,14 +125,16 @@ namespace SignalR.Server
                     }
                 };
 
+                await ctx.SaveChangesAsync();
                 return existingPlayer;
             }
             // If player creation failed, return null
             return null;
         }
         // Call this once after authentication or lobby-join to establish mapping.
-        public async Task<DepositInfo> UserConnectedSetID(int playerId)
+        public async Task<DepositInfo> UserConnectedSetID(String AuthToken)
         {
+            int playerId = int.Parse(_crypto.Decrypt(AuthToken));
             try
             {
                 if (playerId == -1)
@@ -161,21 +161,30 @@ namespace SignalR.Server
             }
             catch (Exception)
             {
-                Thread.Sleep(100);
-                return await UserConnectedSetID(playerId);
             }
+            return null;
         }
         public override async Task OnConnectedAsync()
         {
             Console.WriteLine($"User connected: {Context.ConnectionId}");
+
+            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
+            {
+                PlayerConnections[playerId] = Context.ConnectionId;
+                await SetPlayerOnlineState(playerId, true);
+            }
+
             await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            // Clean up our connection mappings
-            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var pid))
+            Player player = GetCurrentPlayerId();
+            await SetPlayerOnlineState(player.PlayerId, false);
+
+            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerId))
             {
-                PlayerConnections.TryRemove(pid, out _);
+                PlayerConnections.TryRemove(playerId, out _);
+                
             }
             await base.OnDisconnectedAsync(exception);
         }
@@ -201,44 +210,50 @@ namespace SignalR.Server
             };
         }        
         /// Helper to fetch the current caller's player ID from the connection map.        
-        private int GetCurrentPlayerId()
+        private Player GetCurrentPlayerId()
         {
-            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var pid))
-                return pid;
+            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                Player sender = ctx.Players.Find(playerId);
+                if (sender == null)
+                    throw new HubException("Player not recognized.");
+                return sender;
+            }   
             throw new HubException("Player not recognized.");
         }
         public async Task<String> SendSol(string destination, double amountInSol)
         {
-            int playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
 
             try
             {
                 var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
 
                 // 0) Check total balance (on-chain + off-chain)
-                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
+                var totalBalance = await _crypto.GetTotalBalanceAsync(player.PlayerId);
                 if (totalBalance < (decimal)amountInSol)
                 {
-                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {playerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
+                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {player.PlayerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
                     return "INSUFFICIENT_FUNDS";
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.OffChainTransaction(playerId, -(decimal)amountInSol, "Withdraw", txSignature, true);
+                var debited = await _crypto.OffChainTransaction(player.PlayerId, -(decimal)amountInSol, "Withdraw", txSignature, true);
                 if (!debited)
                 {
-                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {playerId}");
+                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
                     return "INSUFFICIENT_OFFCHAIN";
                 }
 
                 // 2) Send on-chain using master wallet
                 
-                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {playerId} sent from master. Tx: {txSignature}");
+                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {player.PlayerId} sent from master. Tx: {txSignature}");
                 return txSignature;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error during withdrawal for {playerId}: {ex.Message}");
+                Console.WriteLine($"Error during withdrawal for {player.PlayerId}: {ex.Message}");
                 return "ERROR";
             }
         }
@@ -254,11 +269,11 @@ namespace SignalR.Server
         }
         public async Task LeaveCloseLobby(string roomCode)
         {
-            int playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
             if (roomCode != null)
                 try
                 {
-                    var (existingGame, user) = await DM.LeaveGameLobby(Context.ConnectionId, playerId, roomCode);
+                    var (existingGame, user) = await DM.LeaveGameLobby(Context.ConnectionId, player.PlayerId, roomCode);
                     // Optionally, perform additional cleanup or update the game engine state.
                     // For example: engine.RemoveUser(user); // if your engine supports this
                     await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
@@ -439,11 +454,11 @@ namespace SignalR.Server
         /* DAILY BONUS */
         public async Task<DailyBonusDto> GetDailyBonus()
         {
-            var playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
             using var ctx = _contextFactory.CreateDbContext();
 
             // Fetch the record (or null)
-            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == playerId);
+            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
             var now = DateTime.UtcNow;
             var today = now.Date;
             var weekdayIndex = (int)now.DayOfWeek; // Sunday=0, Monday=1, …
@@ -453,7 +468,7 @@ namespace SignalR.Server
                 // First‐time setup
                 bonus = new DailyBonus
                 {
-                    PlayerId = playerId,
+                    PlayerId = player.PlayerId,
                     Day1 = false,
                     Day2 = false,
                     Day3 = false,
@@ -500,10 +515,10 @@ namespace SignalR.Server
         // New function: Claim today's bonus and update LastResetDate
         public async Task<DailyBonusDto> ClaimTodayBonus()
         {
-            var playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
             using var ctx = _contextFactory.CreateDbContext();
 
-            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == playerId);
+            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
             var today = DateTime.UtcNow.Date;
             var weekdayIndex = (int)DateTime.UtcNow.DayOfWeek; // Sunday=0, Monday=1, …
 
@@ -512,7 +527,7 @@ namespace SignalR.Server
                 // Initialize record if missing
                 bonus = new DailyBonus
                 {
-                    PlayerId = playerId,
+                    PlayerId = player.PlayerId,
                     Day1 = false,
                     Day2 = false,
                     Day3 = false,
@@ -584,7 +599,7 @@ namespace SignalR.Server
         public List<TournamentDTO> GetAllTournaments(string type)
         {
             using var ctx = _contextFactory.CreateDbContext();
-            var playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
             var nowUtc = DateTime.UtcNow;
 
             // 1) Begin queryable for efficiency
@@ -609,7 +624,7 @@ namespace SignalR.Server
 
             // 3) Fetch all tournament IDs this player has joined
             var joinedIds = ctx.TournamentChallengers
-                .Where(tc => tc.PlayerId == playerId)
+                .Where(tc => tc.PlayerId == player.PlayerId)
                 .Select(tc => tc.TournamentId)
                 .ToHashSet();
 
@@ -636,23 +651,23 @@ namespace SignalR.Server
         }
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
-            var playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
             using var ctx = _contextFactory.CreateDbContext();
 
-            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
+            var balance = await _crypto.GetOffChainBalanceAsync(player.PlayerId);
             var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
 
             if (tournament == null)
             {
-                return await BuildTournamentDto(ctx, tournament, playerId, "NOTFOUND");
+                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTFOUND");
             }
 
             if (tournament.EntryFee > balance)
             {
-                return await BuildTournamentDto(ctx, tournament, playerId, "INSUFFICIENT_BALANCE");
+                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
             }
 
-            var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+            var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == player.PlayerId);
 
             bool isNewChallenger = false;
 
@@ -661,7 +676,7 @@ namespace SignalR.Server
                 switch (existingChallenger.Status)
                 {
                     case "JOINEND":
-                        return await BuildTournamentDto(ctx, tournament, playerId, "JOINEND");
+                        return await BuildTournamentDto(ctx, tournament, player.PlayerId, "JOINEND");
 
                     case "FAILED":
                         existingChallenger.RetryCount++;
@@ -673,7 +688,7 @@ namespace SignalR.Server
                         break;
 
                     default:
-                        return await BuildTournamentDto(ctx, tournament, playerId, "UNKNOWN_STATE");
+                        return await BuildTournamentDto(ctx, tournament, player.PlayerId, "UNKNOWN_STATE");
                 }
             }
             else
@@ -681,14 +696,14 @@ namespace SignalR.Server
                 existingChallenger = new TournamentChallenger
                 {
                     TournamentId = tournamentId,
-                    PlayerId = playerId,
+                    PlayerId = player.PlayerId,
                     RetryCount = 1,
                     Status = "JOINEND"
                 };
                 isNewChallenger = true;
             }
 
-            var debited = await _crypto.OffChainTransaction(playerId, -tournament.EntryFee, "Tounrnament Fee");
+            var debited = await _crypto.OffChainTransaction(player.PlayerId, -tournament.EntryFee, "Tounrnament Fee");
             if (!debited)
             {
                 if (!isNewChallenger)
@@ -698,7 +713,7 @@ namespace SignalR.Server
                 }
 
                 await ctx.SaveChangesAsync();
-                return await BuildTournamentDto(ctx, tournament, playerId, "NOTPAID");
+                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTPAID");
             }
 
             if (isNewChallenger)
@@ -707,7 +722,7 @@ namespace SignalR.Server
                 ctx.TournamentChallengers.Update(existingChallenger);
 
             await ctx.SaveChangesAsync();
-            return await BuildTournamentDto(ctx, tournament, playerId, "JOINEND");
+            return await BuildTournamentDto(ctx, tournament, player.PlayerId, "JOINEND");
         }
         private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
         {
@@ -740,18 +755,18 @@ namespace SignalR.Server
         public List<PlayerCard> GetFriends(String Type="All") {
             List<PlayerCard> result = new List<PlayerCard>();
             using var ctx = _contextFactory.CreateDbContext();
-            int playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
 
             // First, get the last game players
             var lastGame = ctx.MultiPlayers
-                .Where(m => m.P1 == playerId || m.P2 == playerId || m.P3 == playerId || m.P4 == playerId)
+                .Where(m => m.P1 == player.PlayerId || m.P2 == player.PlayerId || m.P3 == player.PlayerId || m.P4 == player.PlayerId)
                 .OrderByDescending(m => m.MultiPlayerId)
                 .FirstOrDefault();
 
             if (lastGame != null)
             {
                 var playerIds = new List<int?> { lastGame.P1, lastGame.P2, lastGame.P3, lastGame.P4 }
-                    .Where(id => id.HasValue && id.Value != playerId)
+                    .Where(id => id.HasValue && id.Value != player.PlayerId)
                     .Select(id => id.Value)
                     .ToList();
 
@@ -775,10 +790,10 @@ namespace SignalR.Server
             }
             // Now, get friends (all statuses)
             var friends = ctx.FriendsRequests
-                .Where(fr => fr.SenderId == playerId || fr.ReceiverId == playerId)
+                .Where(fr => fr.SenderId == player.PlayerId || fr.ReceiverId == player.PlayerId)
                 .Select(fr => new
                 {
-                    OtherPlayer = fr.SenderId == playerId ? fr.Receiver : fr.Sender,
+                    OtherPlayer = fr.SenderId == player.PlayerId ? fr.Receiver : fr.Sender,
                     Status = fr.Status
                 }).ToList();
 
@@ -819,15 +834,14 @@ namespace SignalR.Server
         public string SendFriendRequest(int ReceiverId, string status)
         {
             using var ctx = _contextFactory.CreateDbContext();
-            int playerId = GetCurrentPlayerId();
+            Player player = GetCurrentPlayerId();
 
-            if (playerId == ReceiverId)
+            if (player.PlayerId == ReceiverId)
                 return "Cannot send friend request to yourself.";
-
-            var sender = ctx.Players.Find(playerId);
+            
             var receiver = ctx.Players.Find(ReceiverId);
 
-            if (sender == null || receiver == null)
+            if (player == null || receiver == null)
                 return "Sender or Receiver not found.";
 
             //var existingRequest = _context.FriendsRequests
@@ -843,7 +857,7 @@ namespace SignalR.Server
             request.CreatedDate = DateTime.UtcNow;
 
             // Make sure navigation properties are not set by client
-            request.SenderId = playerId;
+            request.SenderId = player.PlayerId;
             request.ReceiverId = ReceiverId;
 
             ctx.FriendsRequests.Add(request);
@@ -866,10 +880,10 @@ namespace SignalR.Server
             //}
         }
         /* END FRIENDS API */
-        public async Task<string> CreateJoinLobby(PlayerDto player, SharedCode.GameDto gameDTO)
+        public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
-            int playerId = GetCurrentPlayerId();
-            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, playerId, player, gameDTO);
+            Player player = GetCurrentPlayerId();
+            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
 
             if (gameRoom == null)
             {
@@ -926,6 +940,24 @@ namespace SignalR.Server
             }
             else
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
+        }
+        // 2. Update the player's IsOnline state in the DB
+        private async Task SetPlayerOnlineState(int playerId, bool isOnline)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+                if (player != null)
+                {
+                    player.IsOnline = isOnline;
+                    await ctx.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
+            }
         }
     }
     public class User

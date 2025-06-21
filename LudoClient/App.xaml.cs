@@ -49,7 +49,7 @@ namespace LudoClient
             });
             if (isUserLoggedIn)
             {
-                GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id);
+                GlobalConstants.MatchMaker.UserConnectedSetID();
                 
                 MainPage = new AppShell();
                 //MainPage = new ChatPage();

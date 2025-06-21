@@ -29,6 +29,7 @@ namespace LudoClient
         {
             UserInfo.Instance.Id = result.PlayerId;
             UserInfo.Instance.GoogleId = result.GoogleId;
+            UserInfo.Instance.AuthToken = result.AuthToken;
             UserInfo.Instance.Name = result.Name;
             UserInfo.Instance.Email = result.Email;
             UserInfo.Instance.PictureUrl = result.PictureUrl;
@@ -102,7 +103,7 @@ namespace LudoClient
                     if (player != null)
                     {
                         SetupInstance(player);
-                        await UserInfo.SaveState();
+                        UserInfo.SaveState();
                         UserInfo.LoadState();
                         MainThread.BeginInvokeOnMainThread(() => {
                             Application.Current.MainPage = new AppShell();

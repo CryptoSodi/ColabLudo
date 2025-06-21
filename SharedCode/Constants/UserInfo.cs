@@ -2,11 +2,12 @@
 {
     public class UserInfo
     {
-        private static UserInfo _instance;
+        private static UserInfo? _instance;
         private static readonly object _lock = new object();
         
         public int Id { get; set; }
-        public string GoogleId { get; set; }
+        public string? GoogleId { get; set; }
+        public string? AuthToken { get; set; }
         public string? Name { get; set; }
         public string? Email { get; set; }
         public string? PictureUrl { get; set; }
@@ -25,7 +26,7 @@
         public int Score { get; set; } = 0;
 
         public double? LudoCoins { get; set; } = 0;
-        public string CryptoAddress { get; set; }
+        public string? CryptoAddress { get; set; }
 
         public static UserInfo Instance
         {
@@ -47,7 +48,7 @@
 
 
         // Method to save state
-        public static async Task SaveState()
+        public static async void SaveState()
         {
             var instance = Instance;
             Preferences.Set(nameof(Id), instance.Id); 
@@ -65,8 +66,9 @@
             Preferences.Set(nameof(BestWin), instance.BestWin + "");
             Preferences.Set(nameof(TotalLost), instance.TotalLost + "");
             Preferences.Set(nameof(TotalWin), instance.TotalWin + "");
-            Preferences.Set(nameof(IsActive), instance.IsActive);
+            Preferences.Set(nameof(IsActive), instance.IsActive);            
             Preferences.Set(nameof(Score), instance.Score);
+            Preferences.Set(nameof(AuthToken), instance.AuthToken);
 
             Preferences.Set("IsUserLoggedIn", true);
         }
@@ -96,6 +98,7 @@
             instance.TotalWin = decimal.Parse(Preferences.Get(nameof(TotalWin), "0"));
             instance.IsActive = Preferences.Get(nameof(IsActive), true);
             instance.Score = Preferences.Get(nameof(Score), 0);
+            instance.AuthToken =  Preferences.Get(nameof(AuthToken), "");
         }
         public static async Task<string> DownloadImageAsBase64Async(string imageUrl)
         {

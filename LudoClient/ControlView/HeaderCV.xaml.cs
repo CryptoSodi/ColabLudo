@@ -35,7 +35,9 @@ public partial class HeaderCV : ContentView
         {
             try
             {
-                DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID(UserInfo.Instance.Id).GetAwaiter().GetResult();
+                DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
+                if (info == null)
+                    return;
                 // You can tweak these hex colors and size as you like:
                 // Update the image source asynchronously (UI thread)
                 UserInfo.Instance.CryptoAddress = info.Address;

@@ -2,12 +2,15 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
 using Solnet.Wallet.Utilities;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 namespace SignalR.Server
@@ -46,10 +49,8 @@ namespace SignalR.Server
         private readonly Dictionary<int, Wallet> _wallets;   // In-memory wallet cache
         private readonly int _masterUserId;                  // Identifier for the master wallet
 
-        /// <summary>
         /// Constructor sets up RPC client, loads or creates wallets, and ensures
         /// master wallet is present in the JSON store.
-        /// </summary>
         public CryptoHelper(
             IDbContextFactory<LudoDbContext> dbFactory,
             IHostEnvironment env,
@@ -59,6 +60,9 @@ namespace SignalR.Server
             string relativeStoragePath = "wallets.json",
             string protectorKey = "CryptoHelper.WalletProtector")
         {
+            Key = SHA256.HashData(Encoding.UTF8.GetBytes(protectorKey));
+            IV = new byte[16]; // 16 bytes IV for AES
+
             _dbFactory = dbFactory;
             // Create a protector instance scoped to this class
             _protector = dataProtectionProvider.CreateProtector(protectorKey);
@@ -71,21 +75,15 @@ namespace SignalR.Server
             _rpc = ClientFactory.GetClient(cluster);
 
             // Ensure the folder for storing JSON exists
-            var dataFolder = Path.Combine(env.ContentRootPath,
-                Path.GetDirectoryName(relativeStoragePath) ?? string.Empty);
+            var dataFolder = Path.Combine(env.ContentRootPath, Path.GetDirectoryName(relativeStoragePath) ?? string.Empty);
             Directory.CreateDirectory(dataFolder);
             _storageFile = Path.Combine(env.ContentRootPath, relativeStoragePath);
 
             // Load existing wallets or initialize empty dictionary
             if (File.Exists(_storageFile))
-            {
-                var json = File.ReadAllText(_storageFile);
-                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(json) ?? new Dictionary<int, Wallet>();
-            }
+                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(File.ReadAllText(_storageFile)) ?? new Dictionary<int, Wallet>();
             else
-            {
                 _wallets = new Dictionary<int, Wallet>();
-            }
 
             // Ensure the master (hot) wallet exists; if not, generate and persist it.
             if (!_wallets.ContainsKey(_masterUserId))
@@ -217,10 +215,8 @@ namespace SignalR.Server
             }
             return s.Result;
         }
-        /// <summary>
         /// Sends SOL on-chain directly from the master account to an external address.
         /// Useful for withdrawals if you prefer using the main hot wallet.
-        /// </summary>
         public async Task<string> SendFromMasterAsync(string toPubKey, decimal solAmount)
         {
             if (!_wallets.TryGetValue(_masterUserId, out var master))
@@ -253,10 +249,7 @@ namespace SignalR.Server
             Console.WriteLine($"Master send failed: {resp.Reason}");
             throw new Exception(resp.Reason);
         }
-
-        /// <summary>
         /// Combines on-chain deposits and off-chain ledger balances for a user.
-        /// </summary>
         public async Task<decimal> GetTotalBalanceAsync(int playerId)
         {
             // Get or create sub-account, sum on-chain and off-chain balances
@@ -323,17 +316,13 @@ namespace SignalR.Server
             var sub = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             return sub;
         }
-        /// <summary>
         /// Serializes in-memory wallet records back to the JSON storage file.
-        /// </summary>
         private void PersistWallets()
         {
             var json = JsonSerializer.Serialize(_wallets, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(_storageFile, json);
         }
-        /// <summary>
         /// Sweeps any positive on-chain balances from sub-account addresses back to master.
-        /// </summary>
         public async Task SweepAllSubAccountsAsync()
         {
             using var ctx = _dbFactory.CreateDbContext();
@@ -382,10 +371,40 @@ namespace SignalR.Server
                 }
             }
         }
+
+        /// AES encryption helper methods for securely storing PlayerIDs.
+        private readonly byte[] Key;
+        private readonly byte[] IV;
+        public string Encrypt(string plainText)
+        {
+            using var aes = Aes.Create();
+            aes.Key = Key;
+            aes.IV = IV;
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+            using var ms = new MemoryStream();
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            using (var sw = new StreamWriter(cs))
+            {
+                sw.Write(plainText);
+            }
+            return Convert.ToBase64String(ms.ToArray());
+        }
+
+        public string Decrypt(string cipherText)
+        {
+            using var aes = Aes.Create();
+            aes.Key = Key;
+            aes.IV = IV;
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+            using var ms = new MemoryStream(Convert.FromBase64String(cipherText));
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var sr = new StreamReader(cs);
+            return sr.ReadToEnd();
+        }
     }
-    /// <summary>
     /// Background worker that calls the sweeper method on a fixed interval.
-    /// </summary>
     public class SweeperService : BackgroundService
     {
         private readonly CryptoHelper _cryptoHelper;

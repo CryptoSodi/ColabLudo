@@ -25,7 +25,7 @@ namespace SignalR.Server
             _contextFactory = contextFactory;
             Task.Run(LoadData); // Run async without blocking constructor
         }
-        public async Task<Game> JoinGameLobby(string ConnectionId, int playerId, SharedCode.PlayerDto player, SharedCode.GameDto gameDTO)
+        public async Task<Game> JoinGameLobby(string ConnectionId, Player player, SharedCode.GameDto gameDTO)
         {
             Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
@@ -53,9 +53,9 @@ namespace SignalR.Server
 
                 //DEDUCT GAME FEE
                 if(!gameDTO.IsPracticeGame)
-                    if(!await deductGameFee(playerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
+                    if(!await deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
                     {
-                        Console.WriteLine($"Game fee FAILED TO deduct for player {playerId} in room {gameDTO.RoomCode}.");
+                        Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
                     }
 
@@ -86,9 +86,9 @@ namespace SignalR.Server
             else
             {
                 if (!existingGame.IsPractice)
-                    if (!await deductGameFee(playerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
+                    if (!await deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
-                        Console.WriteLine($"Game fee FAILED TO deduct for player {playerId} in room {gameDTO.RoomCode}.");
+                        Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
                     }
                 //DEDUCT GAME FEE                
@@ -97,7 +97,7 @@ namespace SignalR.Server
             // Create or retrieve the room
             GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
             // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
-            var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.PlayerName, "Color");
+            var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.Name, "Color");
             _users.GetOrAdd(ConnectionId, user);
             // Add the user to the room's user list
             gameRoom.Users.Add(user);
