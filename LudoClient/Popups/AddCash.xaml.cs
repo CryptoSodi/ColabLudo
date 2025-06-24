@@ -12,32 +12,17 @@ public partial class AddCash : BasePopup
     public AddCash()
     {
         InitializeComponent();
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            GenerateQRCodeAsync();
-        });
+        GenerateQRCodeAsync();
     }
-    public async Task GenerateQRCodeAsync()
+    public void GenerateQRCodeAsync()
     {
-        const string BaseUrl = "https://quickchart.io/qr";        
-        // You can tweak these hex colors and size as you like:
-        var lightColor = "4031af";
-        var darkColor = "ededed";
-        var size = 200;
-
-        String QrUrl = $"{BaseUrl}"
-              + $"?text={UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress}"
-              + $"&light={lightColor}"
-              + $"&dark={darkColor}"
-              + $"&size={size}";
-        
-        Address = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            Address = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
             Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " SOL";
             AddressText.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
-            QRCodeImage.Source = QrUrl;
+            QRCodeImage.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.AddressQRBlob);
         });
     }
     private void OnCopyButtonClicked(object sender, TappedEventArgs e)

@@ -6,8 +6,16 @@
         private static readonly object _lock = new object();
         public PlayerInfo player;
         public string? PictureUrlBlob { get; set; }
+        public string? AddressQRBlob { get; set; }
+        
         public string? WalletAddress { get; set; }
         public decimal AvailableBalance { get; set; }
+
+        const string BaseUrl = "https://quickchart.io/qr";
+        // You can tweak these hex colors and size as you like:
+        const string lightColor = "4031af";
+        const string darkColor = "ededed";
+
         public static UserInfo Instance
         {
             get
@@ -36,6 +44,15 @@
             Preferences.Set(nameof(player.PictureUrl), instance.player.PictureUrl);
             instance.PictureUrlBlob = await DownloadImageAsBase64Async(instance.player.PictureUrl);
             Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
+
+            String QrUrl = $"{BaseUrl}"
+              + $"?text={UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress}"
+              + $"&light={lightColor}"
+              + $"&dark={darkColor}"
+              + $"&size=200";
+            instance.AddressQRBlob = await DownloadImageAsBase64Async(QrUrl);
+            Preferences.Set(nameof(instance.AddressQRBlob), instance.AddressQRBlob);
+            
             Preferences.Set(nameof(player.PhoneNumber), instance.player.PhoneNumber);
             Preferences.Set(nameof(player.CountryCode), instance.player.CountryCode);
             Preferences.Set(nameof(player.City), instance.player.City);
@@ -71,7 +88,8 @@
             instance.player.Email = Preferences.Get(nameof(player.Email), string.Empty);
             instance.player.Name = Preferences.Get(nameof(player.Name), string.Empty);
             instance.player.PictureUrl = Preferences.Get(nameof(player.PictureUrl), string.Empty);
-            instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);            
+            instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);
+            instance.AddressQRBlob = Preferences.Get(nameof(instance.AddressQRBlob), string.Empty);
             instance.player.PhoneNumber = Preferences.Get(nameof(player.PhoneNumber), "###########");
             instance.player.CountryCode = Preferences.Get(nameof(player.CountryCode), "###");
             instance.player.City = Preferences.Get(nameof(player.City), "###########");
