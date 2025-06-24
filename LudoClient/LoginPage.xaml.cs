@@ -1,6 +1,5 @@
 using Acr.UserDialogs;
 using LudoClient.Constants;
-using LudoClient.Models;
 using LudoClient.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
@@ -24,29 +23,6 @@ namespace LudoClient
 
             string build = VersionTracking.CurrentBuild;
             VersionText.Text = "Version : " + build;
-        }
-        void SetupInstance(Player result)
-        {
-            UserInfo.Instance.Id = result.PlayerId;
-            UserInfo.Instance.GoogleId = result.GoogleId;
-            UserInfo.Instance.AuthToken = result.AuthToken;
-            UserInfo.Instance.Name = result.Name;
-            UserInfo.Instance.Email = result.Email;
-            UserInfo.Instance.PictureUrl = result.PictureUrl;
-
-            UserInfo.Instance.PictureUrlBlob = UserInfo.DownloadImageAsBase64Async(UserInfo.Instance.PictureUrl).GetAwaiter().GetResult();
-            
-            UserInfo.Instance.PhoneNumber = result.PhoneNumber;
-            UserInfo.Instance.CountryCode = result.CountryCode;
-            UserInfo.Instance.City = result.City;
-
-            UserInfo.Instance.GamesPlayed = result.GamesPlayed;
-            UserInfo.Instance.GamesWon = result.GamesWon;
-            UserInfo.Instance.GamesLost = result.GamesLost;
-
-            UserInfo.Instance.BestWin = result.BestWin;
-            UserInfo.Instance.TotalWin = result.TotalWin;
-            UserInfo.Instance.TotalLost = result.TotalLost;
         }
        
         private async void GooleSignup_Clicked(object sender, EventArgs e)
@@ -98,21 +74,20 @@ namespace LudoClient
             {
                 if (GlobalConstants.online)
                 {
-                    Player player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<Player>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
+                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
 
-                    if (player != null)
+                    if (UserInfo.Instance.player != null)
                     {
-                        SetupInstance(player);
                         UserInfo.SaveState();
-                        UserInfo.LoadState();
-                        MainThread.BeginInvokeOnMainThread(() => {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
                             Application.Current.MainPage = new AppShell();
                         });
-                        
                     }
                     else
                     {
-                        MainThread.BeginInvokeOnMainThread(() => {
+                        MainThread.BeginInvokeOnMainThread(() =>
+                        {
                             DisplayAlert("Error", $"An error occurred: Player not created", "OK");
                         });
                     }

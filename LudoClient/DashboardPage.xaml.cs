@@ -1,7 +1,9 @@
 namespace LudoClient;
 
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -48,7 +50,7 @@ public partial class DashboardPage : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        if(UserInfo.Instance.LudoCoins >= GlobalConstants.initialEntry)
+        if(UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.cashGame = new CashGame();
             Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
@@ -71,7 +73,7 @@ public partial class DashboardPage : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        if (UserInfo.Instance.LudoCoins >= GlobalConstants.initialEntry)
+        if (UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.playWithFriends = new PlayWithFriends();
             Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done

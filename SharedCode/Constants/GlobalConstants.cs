@@ -7,7 +7,7 @@ namespace SharedCode.Constants
     public static class GlobalConstants
     {
         public static int GameHistorySaveIndex = 0;
-        public static readonly double initialEntry = 0.1;
+        public static readonly decimal initialEntry = (decimal)0.1;
         public static readonly bool Debug = true;
         public static readonly string Url;
         public static readonly string BaseUrl;

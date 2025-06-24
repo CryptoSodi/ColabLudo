@@ -27,9 +27,9 @@ public partial class ChatPage : ContentPage
         GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;        
 
         ChatMessages cm = new();
-        cm.SenderId = UserInfo.Instance.Id;
-        cm.SenderName = UserInfo.Instance.Name;
-        cm.SenderPicture = UserInfo.Instance.PictureUrl;
+        cm.SenderId = UserInfo.Instance.player.PlayerId;
+        cm.SenderName = UserInfo.Instance.player.Name;
+        cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
         cm.ReceiverId = playerCard.playerID;
         cm.ReceiverName = playerCard.name;
         cm.Message = "";
@@ -59,7 +59,7 @@ public partial class ChatPage : ContentPage
         {
             ChatCard cc = new();
             
-            if (UserInfo.Instance.Id == cm.SenderId)
+            if (UserInfo.Instance.player.PlayerId == cm.SenderId)
                 cc.SetDetails(cm, "Right", "blue");
             else
                 cc.SetDetails(cm, "Left", "white");
@@ -84,9 +84,9 @@ public partial class ChatPage : ContentPage
         if (MessageEntry.Text != "")
         {
             ChatMessages cm = new();
-            cm.SenderId = UserInfo.Instance.Id;
-            cm.SenderName = UserInfo.Instance.Name;
-            cm.SenderPicture = UserInfo.Instance.PictureUrl;
+            cm.SenderId = UserInfo.Instance.player.PlayerId;
+            cm.SenderName = UserInfo.Instance.player.Name;
+            cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
             cm.ReceiverId = playerCard.playerID;
             cm.ReceiverName = playerCard.name;
             cm.SenderColor = "";
@@ -128,7 +128,7 @@ public partial class ChatPage : ContentPage
                     ChatCard cc = new();
                     MessagesListStack.Children.Add(cc);
 
-                    if (UserInfo.Instance.Id == cm.SenderId)
+                    if (UserInfo.Instance.player.PlayerId == cm.SenderId)
                         cc.SetDetails(cm, "Right", "yellow");
                     else
                         cc.SetDetails(cm, "Left", "white");

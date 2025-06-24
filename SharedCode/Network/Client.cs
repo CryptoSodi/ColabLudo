@@ -111,7 +111,7 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
-                await UserConnectedSetID();
+                UserConnectedSetID();
                 Console.WriteLine("Already connected.");
                 return;
             }
@@ -119,7 +119,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Connected = true;
-                await UserConnectedSetID();
+                UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
@@ -224,18 +224,18 @@ namespace SharedCode.Network
         }
 
         public int playerId = -1;
-        public async Task<DepositInfo> UserConnectedSetID()
+        public async void UserConnectedSetID()
         {
             String AuthToken = Preferences.Get("AuthToken",""); // or however you're storing it
             if (AuthToken == "")
-                return null;
-            return await _hubConnection.InvokeAsync<DepositInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
+                return;
+            await _hubConnection.InvokeAsync("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Converts SOL to lamports and calls your lamport‐based SendSolAsync.
         /// </summary>
-        public async Task<string> SendSolAsync(string destination, double solAmount)
+        public async Task<string> SendSolAsync(string destination, decimal solAmount)
         {
             // Use the generic InvokeAsync<DepositInfo>
             String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount).ConfigureAwait(false);

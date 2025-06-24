@@ -13,7 +13,7 @@ public partial class WithdrawPopup : BasePopup
 {
     String Address = "";
     String recAddress = "";
-    double SolBalance=0;
+    decimal SolBalance=0;
     public WithdrawPopup()
     {
         InitializeComponent();
@@ -22,25 +22,24 @@ public partial class WithdrawPopup : BasePopup
     public async Task GenerateQRCodeAsync()
     {
         const string BaseUrl = "https://quickchart.io/qr";
-        DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
         // You can tweak these hex colors and size as you like:
         var lightColor = "4031af";
         var darkColor = "ededed";
         var size = 200;
 
         String QrUrl = $"{BaseUrl}"
-              + $"?text={info.Address}"
+              + $"?text={UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress}"
               + $"&light={lightColor}"
               + $"&dark={darkColor}"
               + $"&size={size}";
-        Address = info.Address;
+        Address = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Coins.Text = Math.Floor(double.Parse(info.SolBalance) * 100) / 100.0 + "";
-            AddressText.Text = info.Address;
-            AmmountEntry.entryField.Text = info.SolBalance;
-            SolBalance = double.Parse(info.SolBalance);
+            Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " SOL";
+            AddressText.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
+            AmmountEntry.entryField.Text = Coins.Text + " SOL";
+            SolBalance = (decimal)UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance;
         });
     }
     private void OnSendButtonClicked(object sender, TappedEventArgs e)
@@ -48,7 +47,7 @@ public partial class WithdrawPopup : BasePopup
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         string amountInSoltext = AmmountEntry.entryField.Text;
 
-        if (double.TryParse(amountInSoltext, out double amountInSol))
+        if (decimal.TryParse(amountInSoltext, out decimal amountInSol))
         {
             if (SolBalance < amountInSol)
             {

@@ -30,7 +30,7 @@ public partial class TournamentPage : ContentPage
         // 3) If "Local" tab is requested, filter by user's city
         if (TabType == "Local")
         {
-            var userCity = UserInfo.Instance.City?.Trim() ?? string.Empty;
+            var userCity = UserInfo.Instance.player.City?.Trim() ?? string.Empty;
 
             tournaments = tournaments.Where(t =>string.Equals(t.City?.Trim(), userCity, StringComparison.OrdinalIgnoreCase)).ToList();
         }

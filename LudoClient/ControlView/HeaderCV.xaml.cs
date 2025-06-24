@@ -3,6 +3,7 @@ using LudoClient.Constants;
 using LudoClient.Popups;
 using SharedCode;
 using SharedCode.Constants;
+using System.Net;
 namespace LudoClient;
 
 public partial class HeaderCV : ContentView
@@ -12,7 +13,12 @@ public partial class HeaderCV : ContentView
     {
         InitializeComponent();
 
-        loadHeaderImage();
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            while (UserInfo.Instance.PictureUrlBlob == "")
+                Task.Delay(10);
+            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
+        });
 
         // Initialize and start the timer
         _qrCodeTimer = new System.Timers.Timer(30000); // 60,000 milliseconds = 60 seconds
@@ -22,39 +28,19 @@ public partial class HeaderCV : ContentView
 
         UpdateBalance();
     }
-    private async void loadHeaderImage()
-    {
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
-        });
-    }
     public async Task UpdateBalance()
     {
         if (GlobalConstants.MatchMaker != null)
         {
-            try
+            MainThread.BeginInvokeOnMainThread(() =>
             {
-                DepositInfo info = GlobalConstants.MatchMaker.UserConnectedSetID().GetAwaiter().GetResult();
-                if (info == null)
-                    return;
-                // You can tweak these hex colors and size as you like:
-                // Update the image source asynchronously (UI thread)
-                UserInfo.Instance.CryptoAddress = info.Address;
-                UserInfo.Instance.LudoCoins = Double.Parse(info.SolBalance);
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    Coins.Text = info.SolBalance + " SOL";
-                });
-            }
-            catch (Exception)
-            {
-            }
+                Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " SOL";
+            });
         }
         else
         {
-          await Task.Delay(100);
-          UpdateBalance();
+            await Task.Delay(500);
+            UpdateBalance();
         }
     }
     private void Navigate_Settings(object sender, EventArgs e)

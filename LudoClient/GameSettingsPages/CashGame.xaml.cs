@@ -7,8 +7,8 @@ namespace LudoClient;
 
 public partial class CashGame : ContentPage
 {
-    public double entry = GlobalConstants.initialEntry;
-    public double win = GlobalConstants.initialEntry * 2;
+    public decimal entry = GlobalConstants.initialEntry;
+    public decimal win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
     public bool defaultTabSelection = true;
     public CashGame()
@@ -47,7 +47,7 @@ public partial class CashGame : ContentPage
     private void BtnPlus(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (UserInfo.Instance.LudoCoins > entry + GlobalConstants.initialEntry)
+        if (UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
 
@@ -107,7 +107,7 @@ public partial class CashGame : ContentPage
 
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
-        gameDto.BetAmount = (decimal)entry;
+        gameDto.BetAmount = entry;
         gameDto.RoomCode = "";
         gameDto.PlayerCount = int.Parse(gameType);
         if (gameDto.PlayerCount == 22)

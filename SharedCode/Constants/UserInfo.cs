@@ -4,30 +4,10 @@
     {
         private static UserInfo? _instance;
         private static readonly object _lock = new object();
-        
-        public int Id { get; set; }
-        public string? GoogleId { get; set; }
-        public string? AuthToken { get; set; }
-        public string? Name { get; set; }
-        public string? Email { get; set; }
-        public string? PictureUrl { get; set; }
+        public PlayerInfo player;
         public string? PictureUrlBlob { get; set; }
-        public string? PhoneNumber { get; set; }
-        public string? CountryCode { get; set; }
-        public string? City { get; set; }
-        public string? Otp { get; set; }
-        public bool IsActive { get; set; } = true;
-        public int GamesPlayed { get; set; }
-        public int GamesWon { get; set; }
-        public int GamesLost { get; set; }
-        public decimal BestWin { get; set; }
-        public decimal TotalLost { get; set; }
-        public decimal TotalWin { get; set; }
-        public int Score { get; set; } = 0;
-
-        public double? LudoCoins { get; set; } = 0;
-        public string? CryptoAddress { get; set; }
-
+        public string? WalletAddress { get; set; }
+        public decimal AvailableBalance { get; set; }
         public static UserInfo Instance
         {
             get
@@ -51,24 +31,31 @@
         public static async void SaveState()
         {
             var instance = Instance;
-            Preferences.Set(nameof(Id), instance.Id); 
-            Preferences.Set(nameof(GoogleId), instance.GoogleId);
-            Preferences.Set(nameof(Email), instance.Email);
-            Preferences.Set(nameof(Name), instance.Name);
-            Preferences.Set(nameof(PictureUrl), instance.PictureUrl);
-            Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);            
-            Preferences.Set(nameof(PhoneNumber), instance.PhoneNumber);
-            Preferences.Set(nameof(CountryCode), instance.CountryCode);
-            Preferences.Set(nameof(City), instance.City);
-            Preferences.Set(nameof(GamesPlayed), instance.GamesPlayed);
-            Preferences.Set(nameof(GamesWon), instance.GamesWon);
-            Preferences.Set(nameof(GamesLost), instance.GamesLost);
-            Preferences.Set(nameof(BestWin), instance.BestWin + "");
-            Preferences.Set(nameof(TotalLost), instance.TotalLost + "");
-            Preferences.Set(nameof(TotalWin), instance.TotalWin + "");
-            Preferences.Set(nameof(IsActive), instance.IsActive);            
-            Preferences.Set(nameof(Score), instance.Score);
-            Preferences.Set(nameof(AuthToken), instance.AuthToken);
+            Preferences.Set(nameof(player.PlayerId), instance.player.PlayerId);
+            Preferences.Set(nameof(player.GoogleId), instance.player.GoogleId);
+            Preferences.Set(nameof(player.Email), instance.player.Email);
+            Preferences.Set(nameof(player.Name), instance.player.Name);
+            Preferences.Set(nameof(player.PictureUrl), instance.player.PictureUrl);
+            instance.PictureUrlBlob = await DownloadImageAsBase64Async(instance.player.PictureUrl);
+            Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
+            Preferences.Set(nameof(player.PhoneNumber), instance.player.PhoneNumber);
+            Preferences.Set(nameof(player.CountryCode), instance.player.CountryCode);
+            Preferences.Set(nameof(player.City), instance.player.City);
+            Preferences.Set(nameof(player.GamesPlayed), instance.player.GamesPlayed);
+            Preferences.Set(nameof(player.GamesWon), instance.player.GamesWon);
+            Preferences.Set(nameof(player.GamesLost), instance.player.GamesLost);
+            Preferences.Set(nameof(player.BestWin), instance.player.BestWin + "");
+            Preferences.Set(nameof(player.TotalLost), instance.player.TotalLost + "");
+            Preferences.Set(nameof(player.TotalWin), instance.player.TotalWin + "");
+            Preferences.Set(nameof(player.IsActive), instance.player.IsActive);
+            Preferences.Set(nameof(player.Score), instance.player.Score);
+            Preferences.Set(nameof(player.AuthToken), instance.player.AuthToken);
+            
+            Preferences.Set(nameof(WalletAddress), instance.player.Wallets.FirstOrDefault()?.WalletAddress);
+            
+            decimal? balance = instance.player.Wallets.FirstOrDefault()?.AvailableBalance;
+            if (balance.HasValue)
+                Preferences.Set(nameof(AvailableBalance), (double)balance.Value);
 
             Preferences.Set("IsUserLoggedIn", true);
         }
@@ -80,29 +67,38 @@
         public static void LoadState()
         {
             var instance = Instance;
+            instance.player = new PlayerInfo(); // Ensure player is initialized
+            instance.player.PlayerId = Preferences.Get(nameof(player.PlayerId), -1);
+            instance.player.GoogleId = Preferences.Get(nameof(player.GoogleId), string.Empty);
+            instance.player.Email = Preferences.Get(nameof(player.Email), string.Empty);
+            instance.player.Name = Preferences.Get(nameof(player.Name), string.Empty);
+            instance.player.PictureUrl = Preferences.Get(nameof(player.PictureUrl), string.Empty);
+            instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);            
+            instance.player.PhoneNumber = Preferences.Get(nameof(player.PhoneNumber), "###########");
+            instance.player.CountryCode = Preferences.Get(nameof(player.CountryCode), "###");
+            instance.player.City = Preferences.Get(nameof(player.City), "###########");
+            instance.player.GamesPlayed = Preferences.Get(nameof(player.GamesPlayed), 0);
+            instance.player.GamesWon = Preferences.Get(nameof(player.GamesWon), 0);
+            instance.player.GamesLost = Preferences.Get(nameof(player.GamesLost), 0);
+            instance.player.BestWin = decimal.Parse(Preferences.Get(nameof(player.BestWin), "0"));
+            instance.player.TotalLost = decimal.Parse(Preferences.Get(nameof(player.TotalLost), "0"));
+            instance.player.TotalWin = decimal.Parse(Preferences.Get(nameof(player.TotalWin), "0"));
+            instance.player.IsActive = Preferences.Get(nameof(player.IsActive), true);
+            instance.player.Score = Preferences.Get(nameof(player.Score), 0);
+            instance.player.AuthToken =  Preferences.Get(nameof(player.AuthToken), "");
+            double savedBalance = Preferences.Get(nameof(AvailableBalance), 0.0);
 
-            instance.Id = Preferences.Get(nameof(Id), -1);
-            instance.GoogleId = Preferences.Get(nameof(GoogleId), string.Empty);
-            instance.Email = Preferences.Get(nameof(Email), string.Empty);
-            instance.Name = Preferences.Get(nameof(Name), string.Empty);
-            instance.PictureUrl = Preferences.Get(nameof(PictureUrl), string.Empty);
-            instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);
-            instance.PhoneNumber = Preferences.Get(nameof(PhoneNumber), "###########");
-            instance.CountryCode = Preferences.Get(nameof(CountryCode), "###");
-            instance.City = Preferences.Get(nameof(City), "###########");
-            instance.GamesPlayed = Preferences.Get(nameof(GamesPlayed), 0);
-            instance.GamesWon = Preferences.Get(nameof(GamesWon), 0);
-            instance.GamesLost = Preferences.Get(nameof(GamesLost), 0);
-            instance.BestWin = decimal.Parse(Preferences.Get(nameof(BestWin), "0"));
-            instance.TotalLost = decimal.Parse(Preferences.Get(nameof(TotalLost), "0"));
-            instance.TotalWin = decimal.Parse(Preferences.Get(nameof(TotalWin), "0"));
-            instance.IsActive = Preferences.Get(nameof(IsActive), true);
-            instance.Score = Preferences.Get(nameof(Score), 0);
-            instance.AuthToken =  Preferences.Get(nameof(AuthToken), "");
+            instance.player.Wallets = new List<PlayerWallet>{
+                    new PlayerWallet{
+                        PlayerId = instance.player.PlayerId,
+                        AddressType = "SOL",
+                        WalletAddress = Preferences.Get(nameof(WalletAddress), ""),
+                        AvailableBalance = (decimal)savedBalance
+                    }};
         }
         public static async Task<string> DownloadImageAsBase64Async(string imageUrl)
         {
-            byte[] imageBytes = await new HttpClient().GetByteArrayAsync(imageUrl).ConfigureAwait(false);            
+            byte[] imageBytes = await new HttpClient().GetByteArrayAsync(imageUrl).ConfigureAwait(false);
             return Convert.ToBase64String(imageBytes);
         }
         public static ImageSource ConvertBase64ToImage(string base64String)

@@ -8,7 +8,11 @@ public partial class WalletPage : ContentPage
     public WalletPage()
     {
         InitializeComponent();
-        Coins.Text = UserInfo.Instance.LudoCoins + "";
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + "SOL";
+        });
         //this.ShowPopup(new AddCash());
     }
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)

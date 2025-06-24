@@ -33,8 +33,6 @@ namespace LudoClient
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
-            
-            
             //Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
@@ -49,8 +47,6 @@ namespace LudoClient
             });
             if (isUserLoggedIn)
             {
-                GlobalConstants.MatchMaker.UserConnectedSetID();
-                
                 MainPage = new AppShell();
                 //MainPage = new ChatPage();
                 //MainPage = new Game("local", "2", "Red");
@@ -59,36 +55,17 @@ namespace LudoClient
             {
                 MainPage = new LoginPage();
             }
-            Task.Run(async () =>
-            {
-                await PollForCommandsAsync();
-            });
         }
-        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece1, string Piece2) args)
+        private CancellationTokenSource _pollingTokenSource;
+        private async Task PollForCommandsAsync(CancellationToken cancellationToken)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
-                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece1, args.Piece2, false);
-            });
-        }
-        private void OnPieceMove(object? sender, string Piece1, string Piece2)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                    ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
-            });
-        }
-        private async Task PollForCommandsAsync()
-        {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
                     if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null && GlobalConstants.RoomCode != null && GlobalConstants.RoomCode != "")
                     {
-                        if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State + "" != "Disconnected")
+                        if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State != HubConnectionState.Disconnected)
                         {
                             // Invoke the hub method to pull commands newer than _lastSeenIndex.
                             int lastSeen = ClientGlobalConstants.game.engine.EngineHelper.indexServer;
@@ -134,13 +111,35 @@ namespace LudoClient
                         }
                     }
                 }
+                catch (TaskCanceledException)
+                {
+                    // Normal exit
+
+                    Console.WriteLine($"Error pulling commands: EXIT 101");
+                    break;
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error pulling commands: {ex.Message}");
                 }
-                // Wait a bit before polling again.
-                await Task.Delay(1000);
+                await Task.Delay(1000, cancellationToken); // Polling interval - also cancellable
             }
+        }
+        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece1, string Piece2) args)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
+                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece1, args.Piece2, false);
+            });
+        }
+        private void OnPieceMove(object? sender, string Piece1, string Piece2)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                    ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
+            });
         }
         private void OnPlayerLeft(object? sender, string PlayerColor)
         {
@@ -157,6 +156,10 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
+                _pollingTokenSource.Cancel();
+                _pollingTokenSource.Dispose();
+                _pollingTokenSource = null;
+
                 await ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
 
                 ClientGlobalConstants.game.engine.cleanGame();
@@ -169,10 +172,13 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                _pollingTokenSource = new CancellationTokenSource();
+               
                 GlobalConstants.lastSeenIndex = -1;
                 ClientGlobalConstants.game = new LudoClient.CoreEngine.Game("Client", args.GameType, "", args.seatsData, args.rollsString);
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
                 ClientGlobalConstants.FlushOld();
+                Task.Run(() => PollForCommandsAsync(_pollingTokenSource.Token));
             });
         }
         private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)

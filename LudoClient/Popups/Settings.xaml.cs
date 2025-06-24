@@ -2,9 +2,6 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using SharedCode.Constants;
 namespace LudoClient.Popups;
-
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using LudoClient.Services;
 public partial class Settings : BasePopup
 {

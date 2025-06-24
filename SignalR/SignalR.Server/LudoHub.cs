@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
+using SharedCode.Constants;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -13,7 +14,7 @@ namespace SignalR.Server
     public class LudoHub : Hub
     {
         // Thread-safe connection mappings
-        public static ConcurrentDictionary<int, string> PlayerConnections = new ConcurrentDictionary<int, string>();
+        public static ConcurrentDictionary<int, string> PlayerToConnection = new ConcurrentDictionary<int, string>();
         public static ConcurrentDictionary<string, int> ConnectionToPlayer = new ConcurrentDictionary<string, int>();
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
@@ -33,7 +34,37 @@ namespace SignalR.Server
                 DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
-        public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
+        private PlayerInfo CastPlayerToInfo(Player player)
+        {
+            PlayerInfo playerInfo = new PlayerInfo
+            {
+                PlayerId = player.PlayerId,
+                Name = player.Name,
+                Email = player.Email,
+                PictureUrl = player.PictureUrl,
+                PhoneNumber = player.PhoneNumber,
+                City = player.City,
+                CountryCode = player.CountryCode,
+                IsOnline = player.IsOnline,
+                AuthToken = _crypto.Encrypt(player.PlayerId.ToString()), // or a JWT with playerId claim
+                GamesPlayed = player.GamesPlayed,
+                GamesWon = player.GamesWon,
+                GamesLost = player.GamesLost,
+                BestWin = player.BestWin,
+                TotalWin = player.TotalWin,
+                TotalLost = player.TotalLost,
+                Score = player.Score,
+                Wallets = player.Wallets.Select(w => new SharedCode.Constants.PlayerWallet
+                {
+                    PlayerId = w.PlayerId,
+                    AddressType = w.AddressType,
+                    WalletAddress = w.WalletAddress,
+                    AvailableBalance = w.AvailableBalance
+                }).ToList()
+            };
+            return playerInfo;
+        }
+        public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             using var ctx = _contextFactory.CreateDbContext();
             // Example: extract useful info
@@ -74,11 +105,11 @@ namespace SignalR.Server
                 existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                 SetPlayerOnlineState(existingPlayer.PlayerId, true).GetAwaiter().GetResult();
                 // 1) Store SignalR connection
-                PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
+                PlayerToConnection[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;                
-                existingPlayer.Wallets = new List<PlayerWallet>
+                existingPlayer.Wallets = new List<LudoServer.Models.PlayerWallet>
                 {
-                    new PlayerWallet
+                    new LudoServer.Models.PlayerWallet
                     {
                         PlayerId = existingPlayer.PlayerId,
                         AddressType = "SOL",
@@ -87,7 +118,7 @@ namespace SignalR.Server
                     }
                 };
                 await ctx.SaveChangesAsync();
-                return existingPlayer;
+                return CastPlayerToInfo(existingPlayer);
             }
 
             Player newPlayer = new Player
@@ -110,12 +141,12 @@ namespace SignalR.Server
             if (existingPlayer != null)
             {
                 existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString());
-                PlayerConnections[existingPlayer.PlayerId] = Context.ConnectionId;
+                PlayerToConnection[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
                 
-                existingPlayer.Wallets = new List<PlayerWallet>
+                existingPlayer.Wallets = new List<LudoServer.Models.PlayerWallet>
                 {
-                    new PlayerWallet
+                    new LudoServer.Models.PlayerWallet
                     {
                         PlayerId = existingPlayer.PlayerId,
                         AddressType = "SOL",
@@ -125,43 +156,27 @@ namespace SignalR.Server
                 };
 
                 await ctx.SaveChangesAsync();
-                return existingPlayer;
+                return CastPlayerToInfo(existingPlayer);
             }
             // If player creation failed, return null
             return null;
         }
         // Call this once after authentication or lobby-join to establish mapping.
-        public async Task<DepositInfo> UserConnectedSetID(String AuthToken)
+        public async void UserConnectedSetID(String AuthToken)
         {
             int playerId = int.Parse(_crypto.Decrypt(AuthToken));
             try
             {
                 if (playerId == -1)
-                    return new DepositInfo { Address = "", SolBalance = "0" };
+                    return;
 
                 // 1) Store SignalR connection
-                PlayerConnections[playerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = playerId;
-
-                // 2) Await the wallet creation/restoration
-                string address = await _crypto.GetOrCreateAccount(playerId);
-                Console.WriteLine($"Send SOL here: {address}");
-
-                // 3) Await the balance fetch
-                var totalBalance = await _crypto.GetTotalBalanceAsync(playerId);
-                Console.WriteLine($"Balance: {totalBalance} SOL");
-                //4) Return a DTO
-                return new DepositInfo
-                {
-                    Address = address,
-                    SolBalance = totalBalance.ToString()
-                };
-
+                PlayerToConnection[playerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = playerId;                              
             }
             catch (Exception)
             {
-            }
-            return null;
+            }            
         }
         public override async Task OnConnectedAsync()
         {
@@ -169,7 +184,7 @@ namespace SignalR.Server
 
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
             {
-                PlayerConnections[playerId] = Context.ConnectionId;
+                PlayerToConnection[playerId] = Context.ConnectionId;
                 await SetPlayerOnlineState(playerId, true);
             }
 
@@ -182,33 +197,27 @@ namespace SignalR.Server
 
             if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerId))
             {
-                PlayerConnections.TryRemove(playerId, out _);
+                PlayerToConnection.TryRemove(playerId, out _);
                 
             }
             await base.OnDisconnectedAsync(exception);
         }
-        public async Task<StateInfo> LoadPlayerData(int playerId)
+        public async Task<StateInfo> LoadPlayerData()
         {
-            // 1) Store SignalR connection
-            PlayerConnections[playerId] = Context.ConnectionId;
-            ConnectionToPlayer[Context.ConnectionId] = playerId;
-
-            using var context = _contextFactory.CreateDbContext();
-            LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-
+            Player player = GetCurrentPlayerId();
             return new StateInfo
             {
-                GamesPlayed = P.GamesPlayed,
-                GamesWon = P.GamesWon,
-                GamesLost = P.GamesLost,
-                BestWin = P.BestWin,
-                TotalWin = P.TotalWin,
-                TotalLost = P.TotalLost,
-                PhoneNumber = P.PhoneNumber,
-                Score = P.Score
+                GamesPlayed = player.GamesPlayed,
+                GamesWon = player.GamesWon,
+                GamesLost = player.GamesLost,
+                BestWin = player.BestWin,
+                TotalWin = player.TotalWin,
+                TotalLost = player.TotalLost,
+                PhoneNumber = player.PhoneNumber,
+                Score = player.Score
             };
-        }        
-        /// Helper to fetch the current caller's player ID from the connection map.        
+        }
+        /// Helper to fetch the current caller's player ID from the connection map.
         private Player GetCurrentPlayerId()
         {
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
@@ -221,24 +230,24 @@ namespace SignalR.Server
             }   
             throw new HubException("Player not recognized.");
         }
-        public async Task<String> SendSol(string destination, double amountInSol)
+        public async Task<String> SendSol(string destination, decimal amountInSol)
         {
             Player player = GetCurrentPlayerId();
 
             try
             {
-                var txSignature = await _crypto.SendFromMasterAsync(destination, (decimal)amountInSol);
+                var txSignature = await _crypto.SendFromMasterAsync(destination, amountInSol);
 
                 // 0) Check total balance (on-chain + off-chain)
                 var totalBalance = await _crypto.GetTotalBalanceAsync(player.PlayerId);
-                if (totalBalance < (decimal)amountInSol)
+                if (totalBalance < amountInSol)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient total balance for {player.PlayerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
                     return "INSUFFICIENT_FUNDS";
                 }
 
                 // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.OffChainTransaction(player.PlayerId, -(decimal)amountInSol, "Withdraw", txSignature, true);
+                var debited = await _crypto.OffChainTransaction(player.PlayerId, -amountInSol, "Withdraw", txSignature, true);
                 if (!debited)
                 {
                     Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
@@ -396,7 +405,7 @@ namespace SignalR.Server
                 foreach (User u in otherUsers)
                 {
                     if (CM.Message != "")
-                        Clients.Client(PlayerConnections[u.PlayerId]).SendAsync("ReceiveChatHistory", CM);
+                        Clients.Client(PlayerToConnection[u.PlayerId]).SendAsync("ReceiveChatHistory", CM);
                 }
                 return gameRoom.chatMessages.Take(20).ToList();
             }
@@ -442,7 +451,7 @@ namespace SignalR.Server
                 //chatMessagesList.Add(CM);
                 // Optionally, also send back the last 50 messages to the sender
                 // send only to the receiver
-                if (PlayerConnections.TryGetValue(CM.ReceiverId, out var connId) && CM.Message != "")
+                if (PlayerToConnection.TryGetValue(CM.ReceiverId, out var connId) && CM.Message != "")
                 {
                     Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
                 }
@@ -741,7 +750,7 @@ namespace SignalR.Server
                 Prize3 = tournament.Prize3,
                 EntryFee = tournament.EntryFee,
                 City = tournament.City,
-                ServerDateTime = DateTime.Now,
+                ServerDateTime = DateTime.UtcNow,
                 StartDate = tournament.StartDate.Date,
                 EndDate = tournament.EndDate.Date,
                 IsJoined = joinedIds.Contains(tournament.TournamentId),
@@ -899,7 +908,6 @@ namespace SignalR.Server
             //g.State == "Active"
             return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && !g.IsPractice).ToListAsync();
         }
-
         private async Task BroadcastPlayersAsync(Game existingGame)
         {
             using var context = _contextFactory.CreateDbContext();

@@ -116,7 +116,7 @@ namespace LudoClient.ControlView
 
             Console.WriteLine("Join Tapped");
             //playerId, userName, pictureUrl, gameType, gameCost, roomName
-            //_ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.Id, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, betAmount, RoomCode);
+            //_ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(UserInfo.Instance.PlayerId, UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, gameType, betAmount, RoomCode);
         }
 
         public async Task SendFriendRequestAsync(int receiverId, string status)

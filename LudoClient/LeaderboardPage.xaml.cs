@@ -22,7 +22,7 @@ public partial class LeaderboardPage : ContentPage
     }
     public async Task InitializeLeaderboardAsync()
     {
-        List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.Id);
+        List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.player.PlayerId);
         var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
 
         // Identify which items are currently displayed

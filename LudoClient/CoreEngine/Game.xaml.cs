@@ -9,7 +9,6 @@ using SimpleToolkit.Core;
 using System.Text.Json;
 
 namespace LudoClient.CoreEngine;
-
 public partial class Game : ContentPage
 {
     //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
@@ -53,7 +52,7 @@ public partial class Game : ContentPage
         if (seatsData != "")
         {
             seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
-            var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.Id);
+            var player = seats?.FirstOrDefault(p => p.PlayerId == UserInfo.Instance.player.PlayerId);
             this.playerColor = player.PlayerColor;
             Build("Client", gameType, seats.Count + "", player.PlayerColor, rollsString);
         }
@@ -71,9 +70,9 @@ public partial class Game : ContentPage
         GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
 
         ChatMessages cm = new();
-        cm.SenderId = UserInfo.Instance.Id;
-        cm.SenderName = UserInfo.Instance.Name;
-        cm.SenderPicture = UserInfo.Instance.PictureUrl;
+        cm.SenderId = UserInfo.Instance.player.PlayerId;
+        cm.SenderName = UserInfo.Instance.player.Name;
+        cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
         cm.ReceiverId = -1;
         cm.ReceiverName = "";
         cm.Message = "";
@@ -372,7 +371,7 @@ public partial class Game : ContentPage
                     else
                         seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
 
-            GetPlayerSeat(playerColor)?.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);
+            GetPlayerSeat(playerColor)?.showAuto(UserInfo.Instance.player.Name, UserInfo.Instance.player.PictureUrl, false, false);
         }
         engine = new Engine(gameMode, gameType, playerCount, playerColor, rollsString);
 
@@ -1208,9 +1207,9 @@ public partial class Game : ContentPage
         if (MessageEntry.Text != "")
         {
             ChatMessages cm = new();
-            cm.SenderId = UserInfo.Instance.Id;
-            cm.SenderName = UserInfo.Instance.Name;
-            cm.SenderPicture = UserInfo.Instance.PictureUrl;
+            cm.SenderId = UserInfo.Instance.player.PlayerId;
+            cm.SenderName = UserInfo.Instance.player.Name;
+            cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
             //cm.ReceiverId = playerCard.playerID;
             //cm.ReceiverName = playerCard.playerName;
             //cm.ReceiverPicture = playerCard.playerPicture;
@@ -1238,7 +1237,7 @@ public partial class Game : ContentPage
                 ChatCard cc = new();
                 MessagesListStack.Children.Add(cc);
 
-                if (UserInfo.Instance.Id == cm.SenderId)
+                if (UserInfo.Instance.player.PlayerId == cm.SenderId)
                     cc.SetDetails(cm, "Right", cm.SenderColor);
                 else
                     cc.SetDetails(cm, "Left", cm.SenderColor);

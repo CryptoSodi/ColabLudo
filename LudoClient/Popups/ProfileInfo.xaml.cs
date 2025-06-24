@@ -14,27 +14,26 @@ public partial class ProfileInfo : BasePopup
         MainThread.BeginInvokeOnMainThread(() =>
         {
             player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
-            player.PlayerName = UserInfo.Instance.Name;
-            Email.Text = UserInfo.Instance.Email;
-            Number.Text = UserInfo.Instance.PhoneNumber;
-            Location.Text = UserInfo.Instance.City;
+            player.PlayerName = UserInfo.Instance.player.Name;
+            Email.Text = UserInfo.Instance.player.Email;
+            Number.Text = UserInfo.Instance.player.PhoneNumber;
+            Location.Text = UserInfo.Instance.player.City;
 
-            C1.setValue(UserInfo.Instance.GamesPlayed + "");
-            C2.setValue(UserInfo.Instance.GamesWon + "");
-            C3.setValue(UserInfo.Instance.GamesLost + "");
-            C4.setValue(UserInfo.Instance.BestWin + "");
-            C5.setValue(UserInfo.Instance.TotalWin + "");
-            C6.setValue(UserInfo.Instance.TotalLost + "");
-            player.SetScore(UserInfo.Instance.Score, UserInfo.Instance.PhoneNumber != "###########");
+            C1.setValue(UserInfo.Instance.player.GamesPlayed + "");
+            C2.setValue(UserInfo.Instance.player.GamesWon + "");
+            C3.setValue(UserInfo.Instance.player.GamesLost + "");
+            C4.setValue(UserInfo.Instance.player.BestWin + "");
+            C5.setValue(UserInfo.Instance.player.TotalWin + "");
+            C6.setValue(UserInfo.Instance.player.TotalLost + "");
+            player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
             loadValues();
         });
     }
     public async void loadValues()
     {
-        // ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try
         {
-            StateInfo dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<StateInfo>("LoadPlayerData", UserInfo.Instance.Id).ConfigureAwait(false);
+            StateInfo dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<StateInfo>("LoadPlayerData").ConfigureAwait(false);
             C1.setValue(dto.GamesPlayed + "");
             C2.setValue(dto.GamesWon + "");
             C3.setValue(dto.GamesLost + "");
@@ -43,14 +42,14 @@ public partial class ProfileInfo : BasePopup
             C6.setValue(dto.TotalLost + "");
             if (dto.PhoneNumber != null)
             {
-                Preferences.Set(nameof(UserInfo.Instance.PhoneNumber), dto.PhoneNumber);
-                Preferences.Set(nameof(UserInfo.Instance.Score), dto.Score);
+                Preferences.Set(nameof(UserInfo.Instance.player.PhoneNumber), dto.PhoneNumber);
+                Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
                 player.SetScore(dto.Score, true);
                 Number.Text = dto.PhoneNumber;
             }
             else
             {
-                Preferences.Set(nameof(UserInfo.Instance.Score), dto.Score);
+                Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
                 player.SetScore(dto.Score, false);
             }
             //Score.setValue(dto.Score + "");

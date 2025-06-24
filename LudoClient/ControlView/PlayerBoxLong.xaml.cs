@@ -1,8 +1,5 @@
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
-using LudoClient.Popups;
-using SharedCode.Constants;
-
 namespace LudoClient.ControlView;
 
 public partial class PlayerBoxLong : ContentView
