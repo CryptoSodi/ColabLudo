@@ -223,7 +223,6 @@ namespace SharedCode.Network
             }
         }
 
-        public int playerId = -1;
         public async Task<PlayerInfo> UserConnectedSetID()
         {
             String AuthToken = Preferences.Get("AuthToken", ""); // or however you're storing it

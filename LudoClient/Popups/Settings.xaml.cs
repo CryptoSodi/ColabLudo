@@ -50,12 +50,10 @@ public partial class Settings : BasePopup
         catch (Exception)
         {   
         }
-        GlobalConstants.MatchMaker.playerId = -1;
         Close(); // If this is your cleanup method
         UserInfo.Logout();
         Application.Current.MainPage = new LoginPage();
 #else
-        GlobalConstants.MatchMaker.playerId = -1;
         Close();
         UserInfo.Logout();
         Application.Current.MainPage = new LoginPage();
