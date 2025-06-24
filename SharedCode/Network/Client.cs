@@ -224,12 +224,12 @@ namespace SharedCode.Network
         }
 
         public int playerId = -1;
-        public async void UserConnectedSetID()
+        public async Task<PlayerInfo> UserConnectedSetID()
         {
-            String AuthToken = Preferences.Get("AuthToken",""); // or however you're storing it
+            String AuthToken = Preferences.Get("AuthToken", ""); // or however you're storing it
             if (AuthToken == "")
-                return;
-            await _hubConnection.InvokeAsync("UserConnectedSetID", AuthToken).ConfigureAwait(false);
+                return null;
+            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
 
         /// <summary>

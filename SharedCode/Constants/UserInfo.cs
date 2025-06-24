@@ -25,8 +25,6 @@
                 return _instance;
             }
         }
-
-
         // Method to save state
         public static async void SaveState()
         {

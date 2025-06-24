@@ -33,7 +33,7 @@ public partial class ProfileInfo : BasePopup
     {
         try
         {
-            StateInfo dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<StateInfo>("LoadPlayerData").ConfigureAwait(false);
+            PlayerInfo dto = await GlobalConstants.MatchMaker.UserConnectedSetID();
             C1.setValue(dto.GamesPlayed + "");
             C2.setValue(dto.GamesWon + "");
             C3.setValue(dto.GamesLost + "");
