@@ -39,14 +39,13 @@
            string result = "";
            switch (EngineHelper.gameState){
                 case "RollDice":
-                //    result = await SeatTurn(SeatName, "", "");
+                    result = await SeatTurn(SeatName, "", "", "");
                     return result;
                 case "MovePiece":
                     Player player = EngineHelper.currentPlayer;
                     List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-                    
-               //     await MovePieceAsync(moveablePieces[GlobalConstants.rnd.Next(0,moveablePieces.Count)].Name);
                     result = moveablePieces[random.Next(0, moveablePieces.Count)].Name;
+                    await MovePieceAsync(result,"");
                     return result;
             }
             return "";

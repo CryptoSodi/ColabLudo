@@ -1,12 +1,9 @@
 ﻿using LudoServer.Data;
-using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
-using System.Linq;
 
 namespace SignalR.Server
 {
@@ -36,7 +33,7 @@ namespace SignalR.Server
             Users = new List<User>();
         }
         public delegate Task<string> TimerTimeoutHandler(string SeatName);
-        public event TimerTimeoutHandler TimerTimeout;
+        
         private CancellationTokenSource _animationCancellationTokenSource;
         // You might include a method to initialize the Engine when the game is ready.
         public void InitializeEngine(string initialPlayerColor)
@@ -46,8 +43,7 @@ namespace SignalR.Server
             engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
             engine.StartProgressAnimation += StartProgressAnimation;
-            engine.StopProgressAnimation += StopProgressAnimation;
-            TimerTimeout += engine.TimerTimeoutAsync;
+            engine.StopProgressAnimation += StopProgressAnimation;            
 
             StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
             //engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
@@ -55,14 +51,8 @@ namespace SignalR.Server
         public Task<List<GameCommand>> PullCommands(int lastSeenIndexServer)
         {
             List<GameCommand> newCommands;
-            lock (_commandStoreLock)
-            {
-                // Return only commands that have not been seen based on IndexServer
-                newCommands = _commandStore
-                    .Where(cmd => cmd.IndexServer > lastSeenIndexServer)
-                    .OrderBy(cmd => cmd.IndexServer)
-                    .ToList();
-            }
+            lock (_commandStoreLock)// Return only commands that have not been seen based on IndexServer
+                newCommands = _commandStore.Where(cmd => cmd.IndexServer > lastSeenIndexServer).OrderBy(cmd => cmd.IndexServer).ToList();
             return Task.FromResult(newCommands);
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
@@ -136,7 +126,6 @@ namespace SignalR.Server
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await _hubContext.Clients.Group(gameDTO.RoomCode).SendAsync("ShowResults", JsonConvert.SerializeObject(orderedSeats), gameDTO.GameType, gameDTO.BetAmount.ToString());
         }
-
         private void UpdatePlayerStats(LudoDbContext context, List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds)
         {
             foreach (var seat in orderedSeats)
@@ -164,7 +153,6 @@ namespace SignalR.Server
                 context.Players.Update(player);
             }
         }
-
         public async Task<User> PlayerLeft(int playerId, string roomCode)
         {
             // Try to find the user in the game room's user list using the connection ID.
@@ -216,31 +204,52 @@ namespace SignalR.Server
             const int interval = 20;    // Delay interval per iteration in milliseconds
             int steps = duration / interval; // This gives 500 iterations
             string result = "";
-            if (engine.EngineHelper.stopAnimate)
-            {
-                await Task.Delay(200);
-                //   result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
-                Console.WriteLine($"TIMEOUT : {result}");
-                return;
-            }
-
             try
             {
                 for (int i = 0; i < steps; i++)
                 {
                     // Check if cancellation has been requested
                     if (token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("TIMER Animation cancelled.");
                         return;
+                    }
                     if (i > 50 && engine.EngineHelper.animationBlock)
                         break;
                     await Task.Delay((int)interval);
                 }
             }
-            catch (Exception)
-            {
+            catch (Exception) { }
 
+            if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "RollDice")) {
+                String currentPlayer = engine.EngineHelper.currentPlayer.Color;
+                result = await engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "DiceRoll",
+                    seatName = currentPlayer,
+                    diceValue = result.Split(",")[0],
+                    piece1 = result.Split(",")[1],
+                    piece2 = result.Split(",")[2],
+                    Index = _commandStore.Count,
+                    IndexServer = ++engine.EngineHelper.index
+                };
+                lock (_commandStoreLock)
+                    _commandStore.Add(command);
             }
-            // result = await TimerTimeout?.Invoke(engine.EngineHelper.currentPlayer.Color);
+            else if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "MovePiece"))
+            {
+                //GameCommand command = new GameCommand
+                //{
+                //    SendToClientFunctionName = "MovePiece",
+                //    seatName = engine.EngineHelper.currentPlayer.Color,
+                //    diceValue = commandValue.diceValue,
+                //    piece1 = result.Split(",")[0],
+                //    piece2 = result.Split(",")[1],
+                //    Index = _commandStore.Count,
+                //    IndexServer = ++engine.EngineHelper.index
+                //};
+            }
             Console.WriteLine($"TIMEOUT : {result}");
         }
         internal async Task<GameCommand> MovePieceAsync(GameCommand commandValue)

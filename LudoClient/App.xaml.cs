@@ -129,7 +129,7 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
+                //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
                     ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece1, args.Piece2, false);
             });
         }
