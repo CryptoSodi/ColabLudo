@@ -965,7 +965,7 @@ public partial class Game : ContentPage
     public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
     {
         TokenSelector.IsVisible = false;
-
+        
         if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             gui.red.reset();

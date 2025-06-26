@@ -56,15 +56,16 @@
     public class GameCommand
     {
         // Your command properties
-        public string SendToClientFunctionName { get; set; }
-        public string seatName { get; set; }
-        public string diceValue { get; set; }
-        public string piece1 { get; set; }
-        public string piece2 { get; set; }
+        public string? SendToClientFunctionName { get; set; }
+        public string? seatName { get; set; }
+        public string? diceValue { get; set; }
+        public string? piece1 { get; set; }
+        public string? piece2 { get; set; }
         // Index to uniquely identify the command order
         public int Index { get; set; }
         public int IndexServer { get; set; }
-        public String Result { get; set; }
+        public String? Result { get; set; }
+        
     }
 
     public class PlayerCard

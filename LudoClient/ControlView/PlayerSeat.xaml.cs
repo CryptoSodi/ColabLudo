@@ -14,7 +14,7 @@ public partial class PlayerSeat : ContentView
     public bool IsRendered { get; private set; } = false;
 
     public delegate void DiceClickedHandler(string SeatName, String DiceValue, String Piece1, String Piece2, bool SendToServer = true);
-    public event DiceClickedHandler OnDiceClicked;    
+    public event DiceClickedHandler OnDiceClicked;
 
     public delegate Task<string> TimerTimeoutHandler(string SeatName);
     public event TimerTimeoutHandler TimerTimeout;
@@ -131,7 +131,7 @@ public partial class PlayerSeat : ContentView
                         if (EngineHelper.checkTurn(EngineHelper.currentPlayer.Color, "RollDice"))
                         {
                             Console.WriteLine("Client AI Requesting Dice Roll");
-                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;                            
                             OnDiceClicked?.Invoke(seatColor, "", "", "", true);
                         }
                         else
@@ -144,7 +144,7 @@ public partial class PlayerSeat : ContentView
                             string result = await ClientGlobalConstants.game.engine.MovePieceAsync(piece1String, piece2String);
                             ClientGlobalConstants.game.engine.EngineHelper.index++;
                             ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                            List<string> results = result.Split(",").ToList();
+                            List<string> results = result.Split(",").ToList();                            
                             GameCommand command = new GameCommand
                             {
                                 SendToClientFunctionName = "MovePiece",
