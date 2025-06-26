@@ -903,39 +903,40 @@ public partial class Game : ContentPage
         { }
         //stop animmation
     }
-    private async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
+    public async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
     {
-        string result = await engine.MovePieceAsync(piece1String, piece2String);
-        ClientGlobalConstants.game.engine.EngineHelper.index++;
+        string result = "";
         if (engine.EngineHelper.gameMode == "Client" && SendToServer)
         {
-            List<string> results = result.Split(",").ToList();
             GameCommand command = new GameCommand
             {
                 SendToClientFunctionName = "MovePiece",
                 seatName = "",
                 diceValue = "",
-                piece1 = results[0],
-                piece2 = results[1],
-                Index = engine.EngineHelper.index,
+                piece1 = piece1String,
+                piece2 = piece2String,
+                Index = engine.EngineHelper.index + 1,
                 IndexServer = 0
             };
+            
+            GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
+            result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+            ClientGlobalConstants.game.engine.EngineHelper.index++;
+            List<string> results = result.Split(",").ToList();
 
-            GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece").ContinueWith(t =>
+            if (command.Index != resultCommand.Index)
             {
-                if (t.Status == TaskStatus.RanToCompletion)
-                {
-                    GameCommand resultCommand = t.Result;
-                    if (command.Index != resultCommand.Index)
-                    {
-                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
-                    }
-                }
-                else
-                {
-                    //ServerpieceName = "Error"; // Handle failure
-                }
-            });
+                Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+            }
+            else
+            {
+                //ServerpieceName = "Error"; // Handle failure
+            }
+        }
+        else
+        {
+            result = await engine.MovePieceAsync(piece1String, piece2String);
+            ClientGlobalConstants.game.engine.EngineHelper.index++;
         }
         Console.WriteLine(result);
     }
@@ -987,37 +988,36 @@ public partial class Game : ContentPage
 
             seat.AnimateDice();
 
-            String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
-            Console.WriteLine($"Local : {result}");
-            ClientGlobalConstants.game.engine.EngineHelper.index++;
             if (engine.EngineHelper.gameMode == "Client" && SendToServer)
             {
-                List<string> results = result.Split(",").ToList();
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "DiceRoll",
                     seatName = SeatColor,
-                    diceValue = results[0],
-                    piece1 = results[1],
-                    piece2 = results[2],
-                    Index = engine.EngineHelper.index,
+                    diceValue = DiceValue,
+                    piece1 = Piece1,
+                    piece2 = Piece2,
+                    Index = engine.EngineHelper.index + 1,
                     IndexServer = 0
                 };
-                GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll").ContinueWith(t =>
+                GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
+                if (resultCommand != null)
                 {
-                    if (t.Status == TaskStatus.RanToCompletion)
-                    {
-                        GameCommand resultCommand = t.Result;
-                        if (command.Index != resultCommand.Index)
-                        {
-                            Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
-                        }
-                    }
-                    else
-                    {
-                        //ServerpieceName = "Error"; // Handle failure
-                    }
-                });
+                    String result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
+                    List<string> results = result.Split(",").ToList();
+                    Console.WriteLine($"Local : {result}");
+                    ClientGlobalConstants.game.engine.EngineHelper.index++;
+                }
+                if (command.Index != resultCommand.Index)
+                {
+                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                }
+            }
+            else
+            {
+                String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
+                Console.WriteLine($"Local : {result}");
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
             }
         }
 

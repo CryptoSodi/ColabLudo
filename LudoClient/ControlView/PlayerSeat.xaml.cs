@@ -131,8 +131,8 @@ public partial class PlayerSeat : ContentView
                         if (EngineHelper.checkTurn(EngineHelper.currentPlayer.Color, "RollDice"))
                         {
                             Console.WriteLine("Client AI Requesting Dice Roll");
-                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;                            
-                            OnDiceClicked?.Invoke(seatColor, "", "", "", true);
+                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                            ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", true);
                         }
                         else
                         {
@@ -141,37 +141,8 @@ public partial class PlayerSeat : ContentView
                             string piece1String = result1.Split(",")[0];
                             string piece2String = result1.Split(",")[1];
 
-                            string result = await ClientGlobalConstants.game.engine.MovePieceAsync(piece1String, piece2String);
-                            ClientGlobalConstants.game.engine.EngineHelper.index++;
                             ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                            List<string> results = result.Split(",").ToList();                            
-                            GameCommand command = new GameCommand
-                            {
-                                SendToClientFunctionName = "MovePiece",
-                                seatName = "",
-                                diceValue = "",
-                                piece1 = results[0],
-                                piece2 = results[1],
-                                Index = ClientGlobalConstants.game.engine.EngineHelper.index,
-                                IndexServer = 0
-                            };
-
-                            GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece").ContinueWith(t =>
-                            {
-                                if (t.Status == TaskStatus.RanToCompletion)
-                                {
-                                    GameCommand resultCommand = t.Result;
-                                    if (command.Index != resultCommand.Index)
-                                    {
-                                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
-                                    }
-                                }
-                                else
-                                {
-                                    //ServerpieceName = "Error"; // Handle failure
-                                }
-                            });
-                            Console.WriteLine(result);
+                            await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, true);
                         }
                     }
                     await Task.Delay(500);
@@ -190,10 +161,13 @@ public partial class PlayerSeat : ContentView
     private void Dice_Clicked(object sender, EventArgs e)
     {
         if ((EngineHelper.gameMode == "Computer" || EngineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
-            OnDiceClicked?.Invoke(seatColor, "", "", "");
+        {
+            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+            ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", true);
+        }
         else
             if (EngineHelper.gameMode != "Computer" && EngineHelper.gameMode != "Client")
-            OnDiceClicked?.Invoke(seatColor, "", "", "");
+                ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "");
     }
     internal void AnimateDice()
     {

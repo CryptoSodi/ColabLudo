@@ -651,8 +651,8 @@ namespace SharedCode.CoreEngine
     }
     public class EngineHelper
     {
-        public int index = -1;
-        internal int indexServer = -1;
+        public int index = 0;
+        internal int indexServer = 0;
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString = "";
