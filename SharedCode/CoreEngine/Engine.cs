@@ -1,4 +1,6 @@
-﻿namespace SharedCode.CoreEngine
+﻿using System;
+
+namespace SharedCode.CoreEngine
 {
     public class Engine
     {
@@ -42,11 +44,8 @@
                     result = await SeatTurn(SeatName, "", "", "");
                     return result;
                 case "MovePiece":
-                    Player player = EngineHelper.currentPlayer;
-                    List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-                    result = moveablePieces[random.Next(0, moveablePieces.Count)].Name;
-                    await MovePieceAsync(result,"");
-                    return result;
+                    result = EngineHelper.AIRequestPiece();
+                    return await MovePieceAsync(result.Split(",")[0], result.Split(",")[1]);
             }
             return "";
         }
@@ -162,6 +161,10 @@
             PlayState = "Active";
             if (EngineHelper.stopAnimate)
                 TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
+
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(6);
+            EngineHelper.rolls.Add(3);
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
@@ -1036,6 +1039,14 @@
         public Player getPlayer(String color)
         {
             return players.FirstOrDefault(p => p.Color == color);
+        }
+        public string AIRequestPiece(string seatColor = "")
+        {
+            Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
+            Player player = this.currentPlayer;
+            List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
+            String result = moveablePieces[random.Next(0, moveablePieces.Count)].Name;
+            return result+",";
         }
     }
 }

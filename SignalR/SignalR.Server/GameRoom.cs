@@ -221,13 +221,14 @@ namespace SignalR.Server
             }
             catch (Exception) { }
 
-            if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "RollDice")) {
-                String currentPlayer = engine.EngineHelper.currentPlayer.Color;
+            String seatName = engine.EngineHelper.currentPlayer.Color;
+            if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "RollDice"))
+            {
                 result = await engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "DiceRoll",
-                    seatName = currentPlayer,
+                    seatName = seatName,
                     diceValue = result.Split(",")[0],
                     piece1 = result.Split(",")[1],
                     piece2 = result.Split(",")[2],
@@ -239,16 +240,21 @@ namespace SignalR.Server
             }
             else if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "MovePiece"))
             {
-                //GameCommand command = new GameCommand
-                //{
-                //    SendToClientFunctionName = "MovePiece",
-                //    seatName = engine.EngineHelper.currentPlayer.Color,
-                //    diceValue = commandValue.diceValue,
-                //    piece1 = result.Split(",")[0],
-                //    piece2 = result.Split(",")[1],
-                //    Index = _commandStore.Count,
-                //    IndexServer = ++engine.EngineHelper.index
-                //};
+                int diceValue = engine.EngineHelper.diceValue;
+                result = await engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+                Console.WriteLine(result);
+                GameCommand command = new GameCommand
+                {
+                    SendToClientFunctionName = "MovePiece",
+                    seatName = seatName,
+                    diceValue = diceValue.ToString(),
+                    piece1 = result.Split(",")[0],
+                    piece2 = result.Split(",")[1],
+                    Index = _commandStore.Count,
+                    IndexServer = ++engine.EngineHelper.index
+                };
+                lock (_commandStoreLock)
+                    _commandStore.Add(command);
             }
             Console.WriteLine($"TIMEOUT : {result}");
         }

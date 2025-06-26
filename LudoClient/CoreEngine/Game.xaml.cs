@@ -416,7 +416,7 @@ public partial class Game : ContentPage
         YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         RedPlayerSeat.OnDiceClicked += PlayerDiceClicked;
         BluePlayerSeat.OnDiceClicked += PlayerDiceClicked;
-
+        
         red1.OnPieceClicked += PlayerPieceClicked;
         red2.OnPieceClicked += PlayerPieceClicked;
         red3.OnPieceClicked += PlayerPieceClicked;

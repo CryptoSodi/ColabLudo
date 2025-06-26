@@ -106,8 +106,8 @@ namespace LudoClient
                                     ClientGlobalConstants.game.engine.EngineHelper.indexServer = commands.Max(c => c.IndexServer);
                             }
                             if(ClientGlobalConstants.game!=null)
-                            if (lastSeen != ClientGlobalConstants.game.engine.EngineHelper.index)
-                                Console.WriteLine("DESYNC WARNING!");
+                                if (lastSeen != ClientGlobalConstants.game.engine.EngineHelper.index)
+                                    Console.WriteLine("DESYNC WARNING!");
                         }
                     }
                 }
@@ -137,7 +137,7 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
                     ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
             });
         }
