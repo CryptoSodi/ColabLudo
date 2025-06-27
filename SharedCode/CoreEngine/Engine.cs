@@ -29,26 +29,9 @@ namespace SharedCode.CoreEngine
         public event CallbackEventHandlerPlayerLeft PlayerLeftSeat;
         // Game logic helpers
         public Dictionary<string, List<Piece>>? board;
-
         public EngineHelper EngineHelper = new EngineHelper();
         
         public bool processing = false;
-
-        public async Task<string> TimerTimeoutAsync(String SeatName)
-        {
-           if (StartProgressAnimation != null)
-                StartProgressAnimation(SeatName);
-           string result = "";
-           switch (EngineHelper.gameState){
-                case "RollDice":
-                    result = await SeatTurn(SeatName, "", "", "");
-                    return result;
-                case "MovePiece":
-                    result = EngineHelper.AIRequestPiece();
-                    return await MovePieceAsync(result.Split(",")[0], result.Split(",")[1]);
-            }
-            return "";
-        }
         public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
         {
             processing = false;            
@@ -159,8 +142,6 @@ namespace SharedCode.CoreEngine
             EngineHelper.currentPlayer = EngineHelper.players[0];
 
             PlayState = "Active";
-            if (EngineHelper.stopAnimate)
-                TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
 
             EngineHelper.rolls.Add(6);
             EngineHelper.rolls.Add(6);
@@ -196,10 +177,7 @@ namespace SharedCode.CoreEngine
 
                 if (EngineHelper.gameMode != "Server")
                 {
-                    if (!EngineHelper.stopAnimate)
-                        await Task.Delay(200);
-                    else
-                        await Task.Delay(30);
+                    await Task.Delay(200);
                 }
 
                 if (StopDice!=null)
@@ -274,7 +252,7 @@ namespace SharedCode.CoreEngine
                     if (StopProgressAnimation != null)
                         StopProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
-                    if (!EngineHelper.stopAnimate && StartProgressAnimation != null)
+                    if (StartProgressAnimation != null)
                         StartProgressAnimation(EngineHelper.currentPlayer.Color);
                     EngineHelper.gameState = "RollDice";
                 }
@@ -304,13 +282,10 @@ namespace SharedCode.CoreEngine
                     }
                     else
                     {
-                        if (!EngineHelper.stopAnimate)
-                            // Start timer for auto play or prompt for user action
+                        // Start timer for auto play or prompt for user action
+                        if (StartProgressAnimation != null)
                             StartProgressAnimation(EngineHelper.currentPlayer.Color);
-                        else
-                        {
-                            Console.WriteLine("PREVENT ANIMATION TIER");
-                        }
+                     
                     }
                 }
                 else if (moveablePieces.Count == 0 && DoubleMoveablePieces.Count > 1)
@@ -322,26 +297,18 @@ namespace SharedCode.CoreEngine
                     }
                     else
                     {
-                        if (!EngineHelper.stopAnimate)
-                            // Start timer for auto play or prompt for user action
+                        // Start timer for auto play or prompt for user action
+                        if (StartProgressAnimation != null)
                             StartProgressAnimation(EngineHelper.currentPlayer.Color);
-                        else
-                        {
-                            Console.WriteLine("PREVENT ANIMATION TIER");
-                        }
                     }
                 }
                 else if (moveablePieces.Count > 1 && DoubleMoveablePieces.Count > 1)
                 {
                     moveSeat = true;
                     moveDouble = true;
-                    if (!EngineHelper.stopAnimate)
                         // Start timer for auto play or prompt for user action
+                    if (StartProgressAnimation != null)
                         StartProgressAnimation(EngineHelper.currentPlayer.Color);
-                    else
-                    {
-                        Console.WriteLine("PREVENT ANIMATION TIER");
-                    }
                 }
 
                 if (moveablePieces.Count > 0 && DoubleMoveablePieces.Count>1)
@@ -350,7 +317,7 @@ namespace SharedCode.CoreEngine
                     EngineHelper.animationBlock = false;
                     if (StopProgressAnimation != null)
                         StopProgressAnimation(EngineHelper.currentPlayer.Color);
-                    if (!EngineHelper.stopAnimate && StartProgressAnimation != null)
+                    if (StartProgressAnimation != null)
                         StartProgressAnimation(EngineHelper.currentPlayer.Color);
                 }
 
@@ -433,10 +400,10 @@ namespace SharedCode.CoreEngine
                 if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
                     piece1.Jump(this, EngineHelper.diceValue);
-                    
+
                     relocatedPieces.Add(piece1);
                     if (RelocateAsync != null)
-                       await RelocateAsync(relocatedPieces, piece1.Clone(), "move");
+                        await RelocateAsync(relocatedPieces, piece1.Clone(), "move");
                 }
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
@@ -444,18 +411,18 @@ namespace SharedCode.CoreEngine
                     string oldBox = EngineHelper.getPieceBox(piece1);
                     if (piece2 != null)
                     {
-                        piece2.Jump(this, EngineHelper.diceValue/2);
-                        piece1.Jump(this, EngineHelper.diceValue/2);
+                        piece2.Jump(this, EngineHelper.diceValue / 2);
+                        piece1.Jump(this, EngineHelper.diceValue / 2);
                     }
                     else
                         piece1.Jump(this, EngineHelper.diceValue);
-                    
+
                     string newBox = EngineHelper.getPieceBox(piece1);
                     int ownAtDest = board?[newBox].Count(x => x.Color == piece1.Color) ?? 0;
 
                     // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
                     List<Piece> kilablePieces = board?[newBox].Where(p => p.Color != piece1.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece1.Color, p.Color))).ToList();
-                    
+
                     var tokensInOldBox = board?[oldBox];
 
                     if (tokensInOldBox != null && tokensInOldBox.Count != 0 && !EngineHelper.safeZone.Contains(oldPosition))
@@ -473,7 +440,8 @@ namespace SharedCode.CoreEngine
                             board?[oldBox].Remove(ownTrapped);
                             board?[EngineHelper.getPieceBox(ownTrapped)].Add(ownTrapped);
 
-                            if (RelocateAsync != null) {
+                            if (RelocateAsync != null)
+                            {
                                 relocatedPieces.Add(ownTrapped);
                                 EngineHelper.currentPlayer.Score -= 5; // Lose points in case of getting own piece beat by moveing a piece
                                 RelocateAsync(relocatedPieces, piece1Clone, "kill");
@@ -488,12 +456,12 @@ namespace SharedCode.CoreEngine
                         if (RelocateAsync != null)
                         {
                             relocatedPieces.Add(piece1);
-                            if (piece2!=null)
+                            if (piece2 != null)
                                 relocatedPieces.Add(piece2);
-                            
+
                             await RelocateAsync(relocatedPieces, piece1Clone, "move");
                         }
-                        
+
                         foreach (var enemy in kilablePieces)
                         {
                             enemy.Position = -1;
@@ -502,7 +470,7 @@ namespace SharedCode.CoreEngine
                             board?[EngineHelper.getPieceBox(enemy)].Add(enemy);
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
-                            
+
                             if (RelocateAsync != null)
                             {
                                 EngineHelper.currentPlayer.Score += 5; // INCREASE SCORE BY KILLED PIECE
@@ -514,7 +482,7 @@ namespace SharedCode.CoreEngine
                     }
                     else if ((kilablePieces?.Count == 1 || kilablePieces?.Count == 3) && !EngineHelper.safeZone.Contains(piece1.Position))
                     {// Prevent killing if there are two or more opponent pieces
-                        
+
                         EngineHelper.currentPlayer.CanEnterGoal = true;//Pieces can move into home now as player killed an opponent
                         Piece killedPiece = kilablePieces[0];
                         killedPiece.Position = -1; // Send opponent's piece back to base
@@ -535,7 +503,7 @@ namespace SharedCode.CoreEngine
                             EngineHelper.currentPlayer.Score += 5;
                             await RelocateAsync(relocatedPieces, kilablePieces[0], "kill");
                         }
-                            
+
                     }
                     if (!killed && RelocateAsync != null)
                     {
@@ -545,7 +513,7 @@ namespace SharedCode.CoreEngine
                             relocatedPieces.Add(piece2);
                         await RelocateAsync(relocatedPieces, piece1Clone, "move");
                     }
-                    
+
                     if (piece1.Location == 57)
                     {
                         EngineHelper.currentPlayer.Score += 10; // Piece reached home score bonus
@@ -568,7 +536,7 @@ namespace SharedCode.CoreEngine
                 //checkKills(player,piece);
                 EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
 
-                if (!EngineHelper.stopAnimate)
+                if (StartProgressAnimation != null)
                     StartProgressAnimation(EngineHelper.currentPlayer.Color);
 
                 // Check if piece has reached the end
@@ -584,15 +552,11 @@ namespace SharedCode.CoreEngine
                         //GANE OVER
                         GameOver(winners);
                         processing = false;
-                        return piece1String+","+piece2String;
+                        return piece1String + "," + piece2String;
                     }
                 }
-
-                if (!EngineHelper.stopAnimate)
-                    //perform turn turn check
+                if (StartProgressAnimation != null)
                     StartProgressAnimation(EngineHelper.currentPlayer.Color);
-                else
-                    TimerTimeoutAsync(EngineHelper.currentPlayer.Color);
             }
             else
             {
@@ -620,7 +584,6 @@ namespace SharedCode.CoreEngine
                 GameOver(winners);
             }
         }
-       
         private void GameOver(List<Player> winners)
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client" && ShowResults != null)
@@ -656,7 +619,6 @@ namespace SharedCode.CoreEngine
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString = "";
-        public bool stopAnimate = !true;
         public Player currentPlayer = null;
         public string gameType = "";
         public string gameMode = "";

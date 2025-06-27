@@ -224,7 +224,7 @@ namespace SignalR.Server
             String seatName = engine.EngineHelper.currentPlayer.Color;
             if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "RollDice"))
             {
-                result = await engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+                result = await engine.SeatTurn(engine.EngineHelper.currentPlayer.Color, "", "", "");                
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "DiceRoll",
@@ -241,7 +241,10 @@ namespace SignalR.Server
             else if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "MovePiece"))
             {
                 int diceValue = engine.EngineHelper.diceValue;
-                result = await engine.TimerTimeoutAsync(engine.EngineHelper.currentPlayer.Color);
+                
+                result = engine.EngineHelper.AIRequestPiece();
+                result = await engine.MovePieceAsync(result.Split(",")[0], result.Split(",")[1]);
+                
                 Console.WriteLine(result);
                 GameCommand command = new GameCommand
                 {

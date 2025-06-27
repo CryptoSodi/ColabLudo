@@ -321,7 +321,6 @@ public partial class Game : ContentPage
                     break;
             }
 
-
         Alayout.Remove(gui.red1);
         Alayout.Remove(gui.red2);
         Alayout.Remove(gui.red3);
@@ -353,14 +352,16 @@ public partial class Game : ContentPage
                     var playerSeat = GetPlayerSeat(color);
                     PlayerDto player = seats?.FirstOrDefault(p => p.PlayerColor.ToLower() == playerSeat.seatColor);
                     if (player != null)
-                        playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
+                        if (playerColor == color)
+                            playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
+                        else
+                            playerSeat.hideAuto(player.PlayerName, player.PlayerPicture, true, true);
                 }
                 catch (Exception) { }
             //    if (playerColor != color)
             //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
-
             //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);            
-            playerColor = "Red";
+            playerColor = "Red";//This makes sure that the first player on the engine is red to match the same state as on the server
         }
         else
         {
@@ -375,12 +376,12 @@ public partial class Game : ContentPage
         }
         engine = new Engine(gameMode, gameType, playerCount, playerColor, rollsString);
 
-        gui.red.EngineHelper = engine.EngineHelper;
-        gui.green.EngineHelper = engine.EngineHelper;
-        gui.yellow.EngineHelper = engine.EngineHelper;
-        gui.blue.EngineHelper = engine.EngineHelper;
-        if (!engine.EngineHelper.stopAnimate)
-            StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
+        gui.red.engineHelper = engine.EngineHelper;
+        gui.green.engineHelper = engine.EngineHelper;
+        gui.yellow.engineHelper = engine.EngineHelper;
+        gui.blue.engineHelper = engine.EngineHelper;
+        
+        StartProgressAnimation(engine.EngineHelper.currentPlayer.Color);
 
         engine.StopDice += new Engine.CallbackEventHandler(StopDice);
         engine.AnimateDice += new Engine.Callback_AnimateDice_EventHandler(AnimateDice);
@@ -402,37 +403,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
         // Handle layout size changes
-        Alayout.SizeChanged += (sender, e) =>
-        {
-            Pupulate(rotation);
-        };
-
-        // Pupulate(rotation);
-        foreach (var seat in new[] { gui.red, gui.green, gui.yellow, gui.blue })
-            seat.TimerTimeout += engine.TimerTimeoutAsync;
-
-        //Event Handelers
-        GreenPlayerSeat.OnDiceClicked += PlayerDiceClicked;
-        YellowPlayerSeat.OnDiceClicked += PlayerDiceClicked;
-        RedPlayerSeat.OnDiceClicked += PlayerDiceClicked;
-        BluePlayerSeat.OnDiceClicked += PlayerDiceClicked;
-        
-        red1.OnPieceClicked += PlayerPieceClicked;
-        red2.OnPieceClicked += PlayerPieceClicked;
-        red3.OnPieceClicked += PlayerPieceClicked;
-        red4.OnPieceClicked += PlayerPieceClicked;
-        gre1.OnPieceClicked += PlayerPieceClicked;
-        gre2.OnPieceClicked += PlayerPieceClicked;
-        gre3.OnPieceClicked += PlayerPieceClicked;
-        gre4.OnPieceClicked += PlayerPieceClicked;
-        yel1.OnPieceClicked += PlayerPieceClicked;
-        yel2.OnPieceClicked += PlayerPieceClicked;
-        yel3.OnPieceClicked += PlayerPieceClicked;
-        yel4.OnPieceClicked += PlayerPieceClicked;
-        blu1.OnPieceClicked += PlayerPieceClicked;
-        blu2.OnPieceClicked += PlayerPieceClicked;
-        blu3.OnPieceClicked += PlayerPieceClicked;
-        blu4.OnPieceClicked += PlayerPieceClicked;
+        Alayout.SizeChanged += (sender, e) => { Pupulate(rotation); };
 
         RedPlayerSeat.reset();
         GreenPlayerSeat.reset();
@@ -566,11 +537,6 @@ public partial class Game : ContentPage
         engine.EngineHelper.animationBlock = true;
 
         uint animTime = 200;
-        if (engine.EngineHelper.stopAnimate)
-        {
-            animTime = 40;
-            pieceClone = pieces[0].Clone();
-        }
 
         if (playsound != "")
            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback(playsound);

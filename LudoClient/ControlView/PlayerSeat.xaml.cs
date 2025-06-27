@@ -10,14 +10,8 @@ public partial class PlayerSeat : ContentView
     public String seatColor = "";
     public String PlayerName = "";
     public String PlayerImageSource = "";
-    public EngineHelper EngineHelper { get; internal set; }
+    public EngineHelper engineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
-
-    public delegate void DiceClickedHandler(string SeatName, String DiceValue, String Piece1, String Piece2, bool SendToServer = true);
-    public event DiceClickedHandler OnDiceClicked;
-
-    public delegate Task<string> TimerTimeoutHandler(string SeatName);
-    public event TimerTimeoutHandler TimerTimeout;
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
     {
@@ -109,12 +103,7 @@ public partial class PlayerSeat : ContentView
         double interval = 20; // Update every 20 milliseconds
         double steps = duration / interval; // Number of steps for the animation
         double widthChange = totalWidth / steps; // Width increment per step
-        if (EngineHelper.stopAnimate)
-        {
-            await Task.Delay(400);
-            TimerTimeout?.Invoke(seatColor);
-            return;
-        }
+        
         ProgressBox.WidthRequest = 0; // Start with 0 width
 
         try
@@ -124,28 +113,10 @@ public partial class PlayerSeat : ContentView
                 // Check if cancellation has been requested
                 if (token.IsCancellationRequested)
                     return;
-                if (autoPlayFlag && i > 50 && !EngineHelper.animationBlock)
+                if (autoPlayFlag && i > 50 && !engineHelper.animationBlock)
                 {
-                    if (EngineHelper.gameMode == "Client")
-                    {
-                        if (EngineHelper.checkTurn(EngineHelper.currentPlayer.Color, "RollDice"))
-                        {
-                            Console.WriteLine("Client AI Requesting Dice Roll");
-                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                            ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", true);
-                        }
-                        else
-                        {
-                            String result1 = EngineHelper.AIRequestPiece(EngineHelper.currentPlayer.Color);
-
-                            string piece1String = result1.Split(",")[0];
-                            string piece2String = result1.Split(",")[1];
-
-                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                            await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, true);
-                        }
-                    }
-                    await Task.Delay(500);
+                    if (engineHelper.gameMode == "Client")
+                        await ExecuteAutoPlayLogic();
                     break;
                 }   
                 ProgressBox.WidthRequest = i * widthChange;
@@ -155,18 +126,40 @@ public partial class PlayerSeat : ContentView
         catch (Exception)
         {
         }
-        if(EngineHelper.gameMode != "Client")
-            TimerTimeout?.Invoke(seatColor);
+        if(engineHelper.gameMode != "Client")
+        {
+            await ExecuteAutoPlayLogic();
+        }
+    }
+    private async Task ExecuteAutoPlayLogic()
+    {
+        if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
+        {
+            Console.WriteLine("Client AI Requesting Dice Roll");
+            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+            ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
+        }
+        else
+        {
+            string result1 = engineHelper.AIRequestPiece(engineHelper.currentPlayer.Color);
+            string piece1String = result1.Split(",")[0];
+            string piece2String = result1.Split(",")[1];
+
+            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+            await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
+        }
+
+        await Task.Delay(500);
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {
-        if ((EngineHelper.gameMode == "Computer" || EngineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
+        if ((engineHelper.gameMode == "Computer" || engineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
         {
             ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
             ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", true);
         }
         else
-            if (EngineHelper.gameMode != "Computer" && EngineHelper.gameMode != "Client")
+            if (engineHelper.gameMode != "Computer" && engineHelper.gameMode != "Client")
                 ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "");
     }
     internal void AnimateDice()
