@@ -111,7 +111,7 @@ namespace SharedCode.Network
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
-                UserConnectedSetID();
+                await UserConnectedSetID();
                 Console.WriteLine("Already connected.");
                 return;
             }
@@ -119,7 +119,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Connected = true;
-                UserConnectedSetID();
+                await UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)
@@ -147,9 +147,7 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error while disconnecting: {ex.Message}");
             }
         }
-        /// <summary>
         /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
-        /// </summary>
         public async Task CreateJoinLobbyAsync(GameDto gameDto)//string gameType, double gameCost, string roomCode
         {
             try
@@ -163,14 +161,15 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error in CreateJoinLobbyAsync: {ex.Message}");
             }
         }
-        /// <summary>
-        /// Send a message to the server.
-        /// </summary>
-        public async Task<GameCommand> SendMessageAsync(GameCommand line, string command)
+        /// Send a message to the server.        
+        public async Task<GameCommand> SendMessageAsync(GameCommand commandValue, string command)
         {
+            String AuthToken = getAuthToken();
+            if (AuthToken == "")
+                return null;
             try
             {
-                GameCommand result = await _hubConnection.InvokeAsync<GameCommand>("Send", "client", line, command, GlobalConstants.RoomCode).ConfigureAwait(false);
+                GameCommand result = await _hubConnection.InvokeAsync<GameCommand>("Send", AuthToken, commandValue, command, GlobalConstants.RoomCode).ConfigureAwait(false);
                 return result;
             }
             catch (Exception ex)
@@ -196,6 +195,9 @@ namespace SharedCode.Network
         }
         public void LeaveCloseLobby()
         {
+            String AuthToken = getAuthToken();
+            if (AuthToken == "")
+                return;
             if (GlobalConstants.RoomCode != "")
             {
                 _ = _hubConnection.InvokeAsync("LeaveCloseLobby", GlobalConstants.RoomCode).ConfigureAwait(false);
@@ -225,7 +227,7 @@ namespace SharedCode.Network
 
         public async Task<PlayerInfo> UserConnectedSetID()
         {
-            String AuthToken = Preferences.Get("AuthToken", ""); // or however you're storing it
+            String AuthToken = getAuthToken();
             if (AuthToken == "")
                 return null;
             return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
@@ -248,6 +250,11 @@ namespace SharedCode.Network
         internal async Task<TournamentDTO> JoinTournament(int TournamentID)
         {
             return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
+        }
+
+        public string getAuthToken()
+        {
+            return Preferences.Get("AuthToken", "");
         }
     }
 }

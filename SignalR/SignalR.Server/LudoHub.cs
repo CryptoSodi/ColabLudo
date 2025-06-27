@@ -176,7 +176,7 @@ namespace SignalR.Server
                 // 1) Store SignalR connection
                 PlayerToConnection[playerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
-                return CastPlayerToInfo(await GetCurrentPlayerId());
+                return CastPlayerToInfo(await GetCallerPlayer());
             }
             catch (Exception ex)
             {
@@ -198,7 +198,7 @@ namespace SignalR.Server
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             await SetPlayerOnlineState(player.PlayerId, false);
 
             if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerId))
@@ -209,7 +209,7 @@ namespace SignalR.Server
             await base.OnDisconnectedAsync(exception);
         }
         /// Helper to fetch the current caller's player ID from the connection map.
-        private async Task<Player> GetCurrentPlayerId()
+        private async Task<Player> GetCallerPlayer()
         {
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
             {
@@ -235,7 +235,7 @@ namespace SignalR.Server
         }
         public async Task<String> SendSol(string destination, decimal amountInSol)
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
 
             try
             {
@@ -280,7 +280,7 @@ namespace SignalR.Server
         }
         public async Task LeaveCloseLobby(string roomCode)
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             if (roomCode != null)
                 try
                 {
@@ -299,15 +299,17 @@ namespace SignalR.Server
         {
             using var context = _contextFactory.CreateDbContext();
             List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
-
+            List<Player> playerList = new List<Player>();
             if (existingGame.MultiPlayer.P1 != null)
             {
-                LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Red" });
+                Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
+                playerList.Add(P);
+                seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Red" });                
             }
             if (existingGame.MultiPlayer.P2 != null)
             {
-                LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
+                Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
+                playerList.Add(P);
                 if (existingGame.GameType == "2")
                     seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Yellow" });
                 else
@@ -315,12 +317,14 @@ namespace SignalR.Server
             }
             if (existingGame.MultiPlayer.P3 != null)
             {
-                LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
+                Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
+                playerList.Add(P);
                 seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Yellow" });
             }
             if (existingGame.MultiPlayer.P4 != null)
             {
-                LudoServer.Models.Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
+                Player P = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
+                playerList.Add(P);
                 seats.Add(new SharedCode.PlayerDto { PlayerId = P.PlayerId, PlayerName = P.Name, PlayerPicture = P.PictureUrl, PlayerColor = "Blue" });
             }
 
@@ -335,10 +339,11 @@ namespace SignalR.Server
                 gameRoom.seats = seats;
                 gameRoom.InitializeEngine(seats[0].PlayerColor);
                 for (int i = 0; i < gameRoom.Users.Count; i++)
+                {
                     gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
-
+                    gameRoom.Users[i].AuthToken = playerList[i].AuthToken;
+                }
                 // _engine.TryAdd(existingGame.RoomCode, gameRoom);
-                
                 await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.GameType, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
             }
         }
@@ -351,10 +356,14 @@ namespace SignalR.Server
             //await BroadcastPlayersAsync(existingGame, roomCode);
             return "ready";
         }
-        public GameCommand Send(string name, GameCommand commandValue, string commandtype, string roomCode)
+        public async Task<GameCommand> Send(string AuthToken, GameCommand commandValue, string commandtype, string roomCode)
         {
+            Player player = await GetCallerPlayer();
+            if (player.AuthToken != AuthToken)
+                return null;
+            
             GameCommand Result = new GameCommand();
-            Console.WriteLine($"{name}: {commandValue}:{commandtype}");
+            Console.WriteLine($"{player.Name}: {commandValue}:{commandtype}");
             // Now use the user's Room property to get the GameRoom.
             if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
             {
@@ -364,7 +373,7 @@ namespace SignalR.Server
                 return Result;
             }
             // For logging purposes, show which room this command is coming from.
-            Console.WriteLine($"{name} (room {roomCode}): {commandValue}:{commandtype}");
+            Console.WriteLine($"{player.Name} (room {roomCode}): {commandValue}:{commandtype}");
             // Ensure the game room's engine is initialized.
             if (gameRoom.engine == null)
             {
@@ -375,14 +384,14 @@ namespace SignalR.Server
             // Process command based on the type.
             if (commandtype == "MovePiece")
             {
-                Result = gameRoom.MovePieceAsync(commandValue).GetAwaiter().GetResult();
+                Result = gameRoom.MovePieceAsync(AuthToken, commandValue).GetAwaiter().GetResult();
                 return Result;
             }
             else if (commandtype == "DiceRoll")
             {
                 // For other command types, for example, SeatTurn:
                 // If SeatTurn returns a string, you can wait for it.
-                Result = gameRoom.SeatTurn(commandValue).GetAwaiter().GetResult();
+                Result = gameRoom.SeatTurn(AuthToken, commandValue).GetAwaiter().GetResult();
                 return Result;
             }
             return null;
@@ -465,7 +474,7 @@ namespace SignalR.Server
         /* DAILY BONUS */
         public async Task<DailyBonusDto> GetDailyBonus()
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             using var ctx = _contextFactory.CreateDbContext();
 
             // Fetch the record (or null)
@@ -526,7 +535,7 @@ namespace SignalR.Server
         // New function: Claim today's bonus and update LastResetDate
         public async Task<DailyBonusDto> ClaimTodayBonus()
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             using var ctx = _contextFactory.CreateDbContext();
 
             var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
@@ -609,7 +618,7 @@ namespace SignalR.Server
         public List<TournamentDTO> GetAllTournaments(string type)
         {
             using var ctx = _contextFactory.CreateDbContext();
-            Player player = GetCurrentPlayerId().GetAwaiter().GetResult();
+            Player player = GetCallerPlayer().GetAwaiter().GetResult();
             var nowUtc = DateTime.UtcNow;
 
             // 1) Begin queryable for efficiency
@@ -661,7 +670,7 @@ namespace SignalR.Server
         }
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             using var ctx = _contextFactory.CreateDbContext();
 
             var balance = await _crypto.GetOffChainBalanceAsync(player.PlayerId);
@@ -765,7 +774,7 @@ namespace SignalR.Server
         public async Task<List<PlayerCard>> GetFriends(String Type="All") {
             List<PlayerCard> result = new List<PlayerCard>();
             using var ctx = _contextFactory.CreateDbContext();
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
 
             // First, get the last game players
             var lastGame = ctx.MultiPlayers
@@ -844,7 +853,7 @@ namespace SignalR.Server
         public string SendFriendRequest(int ReceiverId, string status)
         {
             using var ctx = _contextFactory.CreateDbContext();
-            Player player =  GetCurrentPlayerId().GetAwaiter().GetResult();
+            Player player =  GetCallerPlayer().GetAwaiter().GetResult();
 
             if (player.PlayerId == ReceiverId)
                 return "Cannot send friend request to yourself.";
@@ -892,7 +901,7 @@ namespace SignalR.Server
         /* END FRIENDS API */
         public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
-            Player player = await GetCurrentPlayerId();
+            Player player = await GetCallerPlayer();
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
 
             if (gameRoom == null)
@@ -984,5 +993,6 @@ namespace SignalR.Server
         public int PlayerId { get; init; }
         public string PlayerName { get; init; }
         public string PlayerColor { get; set; }  // Now mutable
+        public string AuthToken { get; set; }  // Now mutable
     }
 }

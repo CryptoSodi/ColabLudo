@@ -7,6 +7,7 @@ namespace LudoClient.ControlView;
 public partial class PlayerSeat : ContentView
 {
     public bool autoPlayFlag = false;
+    public bool isAutoPlayDisabled = false;//Set it to true to prevent Auto Play of other players on localclient
     public String seatColor = "";
     public String PlayerName = "";
     public String PlayerImageSource = "";
@@ -24,7 +25,7 @@ public partial class PlayerSeat : ContentView
         set => SetValue(PlayerImageProperty, value);
     }
 
-    public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
+    public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag, bool isAutoPlayDisabled = false)
     {
         this.PlayerName = PlayerName;
         PlayerImageSource = PictureUrl;
@@ -37,8 +38,9 @@ public partial class PlayerSeat : ContentView
         CheckBox.IsVisible = true;
         ProgressBoxText.IsVisible = true;
         ProgressBoxParentContainer.IsVisible = true;
+        this.isAutoPlayDisabled = isAutoPlayDisabled;
     }
-    public void hideAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag)
+    public void hideAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag, bool isAutoPlayDisabled = false)
     {
         this.PlayerName = PlayerName;
         PlayerImageSource = PictureUrl;
@@ -51,6 +53,7 @@ public partial class PlayerSeat : ContentView
         Grid.SetColumnSpan(ProgressBoxParent, 2);
         CheckBox.IsVisible = false;
         ProgressBoxText.IsVisible = false;
+        this.isAutoPlayDisabled = isAutoPlayDisabled;
     }
     public PlayerSeat(string seatColor)
     {
@@ -133,22 +136,22 @@ public partial class PlayerSeat : ContentView
     }
     private async Task ExecuteAutoPlayLogic()
     {
-        if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
-        {
-            Console.WriteLine("Client AI Requesting Dice Roll");
-            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-            ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
-        }
-        else
-        {
-            string result1 = engineHelper.AIRequestPiece(engineHelper.currentPlayer.Color);
-            string piece1String = result1.Split(",")[0];
-            string piece2String = result1.Split(",")[1];
+        if(!isAutoPlayDisabled)
+            if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
+            {
+                Console.WriteLine("Client AI Requesting Dice Roll");
+                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
+            }
+            else
+            {
+                string result1 = engineHelper.AIRequestPiece(engineHelper.currentPlayer.Color);
+                string piece1String = result1.Split(",")[0];
+                string piece2String = result1.Split(",")[1];
 
-            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-            await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
-        }
-
+                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
+            }
         await Task.Delay(500);
     }
     private void Dice_Clicked(object sender, EventArgs e)

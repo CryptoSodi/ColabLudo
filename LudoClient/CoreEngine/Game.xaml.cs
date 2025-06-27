@@ -355,7 +355,7 @@ public partial class Game : ContentPage
                         if (playerColor == color)
                             playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
                         else
-                            playerSeat.hideAuto(player.PlayerName, player.PlayerPicture, true, true);
+                            playerSeat.hideAuto(player.PlayerName, player.PlayerPicture, true, false, true);
                 }
                 catch (Exception) { }
             //    if (playerColor != color)

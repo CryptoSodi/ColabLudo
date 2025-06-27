@@ -261,8 +261,21 @@ namespace SignalR.Server
             }
             Console.WriteLine($"TIMEOUT : {result}");
         }
-        internal async Task<GameCommand> MovePieceAsync(GameCommand commandValue)
+        internal async Task<GameCommand> MovePieceAsync(string authToken, GameCommand commandValue)
         {
+            // Authenticate user
+            var user = Users.FirstOrDefault(u => u.AuthToken == authToken);
+            if (user == null)
+            {
+                Console.WriteLine("Authentication failed: Invalid token.");
+                return null; // or throw an UnauthorizedAccessException
+            }
+            // Check if user's seat matches the command's seat and current player's turn
+            if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
+            {
+                Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
+                return null; // or throw an InvalidOperationException
+            }
             if (engine.EngineHelper.checkTurn(commandValue.piece1, "MovePiece"))
             {
                 String result = "FAILED";
@@ -286,8 +299,20 @@ namespace SignalR.Server
             }
             return null;
         }
-        internal async Task<GameCommand> SeatTurn(GameCommand commandValue)
+        internal async Task<GameCommand> SeatTurn(string authToken, GameCommand commandValue)
         {
+            var user = Users.FirstOrDefault(u => u.AuthToken == authToken);
+            if (user == null)
+            {
+                Console.WriteLine("Authentication failed: Invalid token.");
+                return null; // or throw an UnauthorizedAccessException
+            }
+            // Check if user's seat matches the command's seat and current player's turn
+            if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
+            {
+                Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
+                return null; // or throw an InvalidOperationException
+            }
             if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
             {
                 String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
