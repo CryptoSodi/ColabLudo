@@ -6,11 +6,11 @@ using SharedCode.CoreEngine;
 namespace LudoClient.ControlView;
 public partial class PlayerSeat : ContentView
 {
-    public bool autoPlayFlag = false;
+    public bool autoPlayFlag { get; set; }
     public bool isAutoPlayDisabled = false;//Set it to true to prevent Auto Play of other players on localclient
-    public String seatColor = "";
-    public String PlayerName = "";
-    public String PlayerImageSource = "";
+    public String seatColor { get; set; }
+    public String PlayerName { get; set; }
+    public String PlayerImageSource { get; set; }
     public EngineHelper engineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;
 
@@ -25,34 +25,40 @@ public partial class PlayerSeat : ContentView
         set => SetValue(PlayerImageProperty, value);
     }
 
-    public void showAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag, bool isAutoPlayDisabled = false)
+    public void initAuto(String PlayerName, String PictureUrl, string checkBoxFlag="Show", bool autoPlayFlag = true, bool isAutoPlayDisabled = false)
     {
         this.PlayerName = PlayerName;
+        PlayerNameText.Text = this.PlayerName;
         PlayerImageSource = PictureUrl;
+        PlayerImage.Source = PlayerImageSource;
 
-        PlayerImage.Source = PictureUrl;
-        PlayerNameText.Text = PlayerName;
+        switch (checkBoxFlag)
+        {
+            case "ShowAuto":
+                CheckBox.IsVisible = true;
+                ProgressBoxText.IsVisible = true;
+                Grid.SetColumn(ProgressBoxParent, 1);
+                Grid.SetColumnSpan(ProgressBoxParent, 1);
+                ProgressBoxParentContainer.IsVisible = true;
+                break;
+            case "HideAuto":
+                CheckBox.IsVisible = false;
+                ProgressBoxText.IsVisible = false;
+                Grid.SetColumn(ProgressBoxParent, 0);
+                Grid.SetColumnSpan(ProgressBoxParent, 2);
+                ProgressBoxParentContainer.IsVisible = true;
+                break;
+            case "HideAll":
+                CheckBox.IsVisible = false;
+                ProgressBoxText.IsVisible = false;
+                ProgressBoxParent.IsVisible = false;
+                ProgressBoxParentContainer.IsVisible = false;
+                Grid.SetColumn(ProgressBoxParent, 0);
+                Grid.SetColumnSpan(ProgressBoxParent, 2);
+                break;
+        }
+        
         this.autoPlayFlag = autoPlayFlag;
-        Grid.SetColumn(ProgressBoxParent, 1);
-        Grid.SetColumnSpan(ProgressBoxParent, 1);
-        CheckBox.IsVisible = true;
-        ProgressBoxText.IsVisible = true;
-        ProgressBoxParentContainer.IsVisible = true;
-        this.isAutoPlayDisabled = isAutoPlayDisabled;
-    }
-    public void hideAuto(String PlayerName, String PictureUrl, bool hideAll, bool autoPlayFlag, bool isAutoPlayDisabled = false)
-    {
-        this.PlayerName = PlayerName;
-        PlayerImageSource = PictureUrl;
-
-        PlayerImage.Source = PictureUrl;
-        PlayerNameText.Text = PlayerName;
-        this.autoPlayFlag = autoPlayFlag;
-        ProgressBoxParentContainer.IsVisible = false;
-        Grid.SetColumn(ProgressBoxParent, 0);
-        Grid.SetColumnSpan(ProgressBoxParent, 2);
-        CheckBox.IsVisible = false;
-        ProgressBoxText.IsVisible = false;
         this.isAutoPlayDisabled = isAutoPlayDisabled;
     }
     public PlayerSeat(string seatColor)
@@ -136,20 +142,20 @@ public partial class PlayerSeat : ContentView
     }
     private async Task ExecuteAutoPlayLogic()
     {
-        if(!isAutoPlayDisabled)
+        if(!isAutoPlayDisabled && ClientGlobalConstants.game != null)
             if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
             {
                 Console.WriteLine("Client AI Requesting Dice Roll");
-
-                ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
+                
+                    ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
             }
             else
             {
                 string result1 = engineHelper.AIRequestPiece(engineHelper.currentPlayer.Color);
                 string piece1String = result1.Split(",")[0];
                 string piece2String = result1.Split(",")[1];
-
-                await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
+                
+                    await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
             }
         await Task.Delay(500);
     }
@@ -179,7 +185,6 @@ public partial class PlayerSeat : ContentView
             DiceLayer.Source = $"dice_{DiceValue}.png";
         });
     }
-
     internal void reset()
     {
         MainThread.BeginInvokeOnMainThread(() =>

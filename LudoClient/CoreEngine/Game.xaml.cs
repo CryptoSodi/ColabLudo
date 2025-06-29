@@ -353,9 +353,9 @@ public partial class Game : ContentPage
                     PlayerDto player = seats?.FirstOrDefault(p => p.PlayerColor.ToLower() == playerSeat.seatColor);
                     if (player != null)
                         if (playerColor == color)
-                            playerSeat.showAuto(player.PlayerName, player.PlayerPicture, false, false);
+                            playerSeat.initAuto(player.PlayerName, player.PlayerPicture, "ShowAuto", false);
                         else
-                            playerSeat.hideAuto(player.PlayerName, player.PlayerPicture, true, false, true);
+                            playerSeat.initAuto(player.PlayerName, player.PlayerPicture, "HideAuto", false, true);
                 }
                 catch (Exception) { }
             //    if (playerColor != color)
@@ -368,11 +368,11 @@ public partial class Game : ContentPage
             foreach (var (color, seat) in colors)
                 if (playerColor != color)
                     if (gameMode == "Computer")
-                        seat.hideAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", true, true);
+                        seat.initAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", "HideAll", true);
                     else
-                        seat.showAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+                        seat.initAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", "ShowAuto", false);
 
-            GetPlayerSeat(playerColor)?.showAuto(UserInfo.Instance.player.Name, UserInfo.Instance.player.PictureUrl, false, false);
+            GetPlayerSeat(playerColor)?.initAuto(UserInfo.Instance.player.Name, UserInfo.Instance.player.PictureUrl, "ShowAuto", false);
         }
         engine = new Engine(gameMode, gameType, playerCount, playerColor, rollsString);
 
@@ -975,10 +975,10 @@ public partial class Game : ContentPage
                     List<string> results = result.Split(",").ToList();
                     Console.WriteLine($"Local : {result}");
                     ClientGlobalConstants.game.engine.EngineHelper.index++;
-                }
-                if (command.Index != resultCommand.Index)
-                {
-                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                    if (command.Index != resultCommand.Index)
+                    {
+                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                    }
                 }
             }
             else

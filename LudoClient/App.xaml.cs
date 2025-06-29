@@ -86,10 +86,10 @@ namespace LudoClient
                                         switch (command.SendToClientFunctionName)
                                         {
                                             case "MovePiece":
-                                                MainThread.BeginInvokeOnMainThread(() =>
+                                                MainThread.BeginInvokeOnMainThread(async () =>
                                                 {
                                                     //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                                                    ClientGlobalConstants.game.MovePiece(command.piece1, command.piece2, false);
+                                                    await ClientGlobalConstants.game.MovePiece(command.piece1, command.piece2, false);
                                                 });
                                                 break;
                                             case "DiceRoll":
