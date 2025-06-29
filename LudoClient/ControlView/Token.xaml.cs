@@ -166,7 +166,6 @@ public partial class Token : ContentView
     {
         if ((ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Computer" || ClientGlobalConstants.game.engine.EngineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower().Contains(name.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
         {
-            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
             ClientGlobalConstants.game.PlayerPieceClicked(name, "", true);
         }
         else

@@ -140,7 +140,7 @@ public partial class PlayerSeat : ContentView
             if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
             {
                 Console.WriteLine("Client AI Requesting Dice Roll");
-                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+
                 ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
             }
             else
@@ -149,7 +149,6 @@ public partial class PlayerSeat : ContentView
                 string piece1String = result1.Split(",")[0];
                 string piece2String = result1.Split(",")[1];
 
-                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
                 await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
             }
         await Task.Delay(500);
@@ -158,7 +157,6 @@ public partial class PlayerSeat : ContentView
     {
         if ((engineHelper.gameMode == "Computer" || engineHelper.gameMode == "Client") && ClientGlobalConstants.game.playerColor.ToLower() == seatColor)
         {
-            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
             ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", true);
         }
         else

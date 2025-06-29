@@ -86,15 +86,31 @@ namespace LudoClient
                                         switch (command.SendToClientFunctionName)
                                         {
                                             case "MovePiece":
-                                                OnPieceMove(this, command.piece1, command.piece2);
+                                                MainThread.BeginInvokeOnMainThread(() =>
+                                                {
+                                                    //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                                                    ClientGlobalConstants.game.MovePiece(command.piece1, command.piece2, false);
+                                                });
                                                 break;
                                             case "DiceRoll":
                                                 // For other command types, for example, SeatTurn:
                                                 // If SeatTurn returns a string, you can wait for it.
-                                                OnDiceRoll(this, (command.seatName, command.diceValue, command.piece1, command.piece2));
+                                                MainThread.BeginInvokeOnMainThread(() =>
+                                                {
+                                                    //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
+                                                    ClientGlobalConstants.game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                });
                                                 break;
                                             case "PlayerLeft":
-                                                OnPlayerLeft(this, command.seatName);
+                                                MainThread.BeginInvokeOnMainThread(() =>
+                                                {
+                                                    ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                                                    ClientGlobalConstants.game.engine.EngineHelper.index++;
+                                                    if (ClientGlobalConstants.game != null)
+                                                        ClientGlobalConstants.game.engine.PlayerLeft(command.seatName, false);
+
+                                                    ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                });
                                                 break;
                                         }
                                         // Wait a bit before polling again.
@@ -124,33 +140,6 @@ namespace LudoClient
                 }
                 await Task.Delay(1000, cancellationToken); // Polling interval - also cancellable
             }
-        }
-        private void OnDiceRoll(object? sender, (string SeatColor, string DiceValue, string Piece1, string Piece2) args)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
-                    ClientGlobalConstants.game.PlayerDiceClicked(args.SeatColor, args.DiceValue, args.Piece1, args.Piece2, false);
-            });
-        }
-        private void OnPieceMove(object? sender, string Piece1, string Piece2)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                    ClientGlobalConstants.game.PlayerPieceClicked(Piece1, Piece2, false);
-            });
-        }
-        private void OnPlayerLeft(object? sender, string PlayerColor)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
-                if (ClientGlobalConstants.game != null)
-                    ClientGlobalConstants.game.engine.PlayerLeft(PlayerColor, false);
-
-                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
-            });
         }
         private void OnShowResults(object? sender, (string seats, string GameType, string GameCost) e)
         {

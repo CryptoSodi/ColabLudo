@@ -871,20 +871,21 @@ public partial class Game : ContentPage
     }
     public async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
     {
-        string result = "";
+        String result = "";
+
         if (engine.EngineHelper.gameMode == "Client" && SendToServer)
         {
             GameCommand command = new GameCommand
             {
                 SendToClientFunctionName = "MovePiece",
-                seatName = "",
+                seatName = ClientGlobalConstants.game.playerColor.ToLower(),
                 diceValue = "",
                 piece1 = piece1String,
                 piece2 = piece2String,
                 Index = engine.EngineHelper.index + 1,
                 IndexServer = 0
             };
-            
+            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
             GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
             result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
             ClientGlobalConstants.game.engine.EngineHelper.index++;
@@ -966,6 +967,7 @@ public partial class Game : ContentPage
                     Index = engine.EngineHelper.index + 1,
                     IndexServer = 0
                 };
+                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
                 GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
                 if (resultCommand != null)
                 {
