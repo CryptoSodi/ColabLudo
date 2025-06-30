@@ -122,7 +122,7 @@ public partial class PlayerSeat : ContentView
                 // Check if cancellation has been requested
                 if (token.IsCancellationRequested)
                     return;
-                if (autoPlayFlag && i > 10 && !engineHelper.animationBlock)
+                if (autoPlayFlag && i > 2 && !engineHelper.animationBlock)
                 {
                     break;
                 }   

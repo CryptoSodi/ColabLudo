@@ -1,5 +1,6 @@
 ﻿using SharedCode.ControlView;
 using SharedCode.CoreEngine;
+using System.Diagnostics;
 namespace SharedCode
 {
     public partial class MainPage : ContentPage
@@ -25,6 +26,7 @@ namespace SharedCode
             else
                 return gui.blue;
         }
+        Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
         public MainPage()
         {
             InitializeComponent();
@@ -527,10 +529,10 @@ namespace SharedCode
             SetHomeBlock(gui.LockHome3, "yellow");
             SetHomeBlock(gui.LockHome4, "blue");
 
-            
-                string score = $"Score : {engine.EngineHelper.getPlayer(playerColor.ToLower()).Score}";
-                if (score != ScoreText.Text)
-                    ScoreText.Text = score;
+
+            string score = $"Score : {engine.EngineHelper.getPlayer(playerColor.ToLower()).Score}";
+            if (score != ScoreText.Text)
+                ScoreText.Text = score;
         }
         private string GetDefaultImage(string colorLetter, string suffics)
         {
@@ -614,31 +616,33 @@ namespace SharedCode
         }
         public async Task ShowResults(string seats, string GameType, string GameCost)
         {
-            await Task.Delay(2000);
-            
-                // Get seat details for both winners and add them to the list
-                List<PlayerDto> playerDtos = new List<PlayerDto>();
-                string winner1 = seats.Split(",")[0];
-                string winner2 = seats.Split(",")[1];
-                //public String seatColor = "";
-                //public String PlayerName = "";
-                //public String PlayerImageSource = "";
-                // Separate winners and losers
-                var winners = this.seats.Where(p => p.PlayerColor == winner1 || p.PlayerColor == winner2).ToList();
-                var losers = this.seats.Where(p => p.PlayerColor != winner1 && p.PlayerColor != winner2).ToList();
+            stopwatch.Stop();
+            Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds} ms");
 
-                // Add winners first
-                foreach (var winner in winners)
-                    if (winner != null)
-                        playerDtos.Add(winner);
 
-                // Add losers next
-                foreach (var loser in losers)
-                    if (loser != null)
-                        playerDtos.Add(loser);
-                // Pass the list to the UI for displaying results
-                
-                Console.WriteLine(playerDtos+ GameType+ GameCost);
+            // Get seat details for both winners and add them to the list
+            List<PlayerDto> playerDtos = new List<PlayerDto>();
+            string winner1 = seats.Split(",")[0];
+            string winner2 = seats.Split(",")[1];
+            //public String seatColor = "";
+            //public String PlayerName = "";
+            //public String PlayerImageSource = "";
+            // Separate winners and losers
+            var winners = this.seats.Where(p => p.PlayerColor == winner1 || p.PlayerColor == winner2).ToList();
+            var losers = this.seats.Where(p => p.PlayerColor != winner1 && p.PlayerColor != winner2).ToList();
+
+            // Add winners first
+            foreach (var winner in winners)
+                if (winner != null)
+                    playerDtos.Add(winner);
+
+            // Add losers next
+            foreach (var loser in losers)
+                if (loser != null)
+                    playerDtos.Add(loser);
+            // Pass the list to the UI for displaying results
+
+            Console.WriteLine(playerDtos + GameType + GameCost);
         }
         public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
         {
@@ -689,7 +693,7 @@ namespace SharedCode
 
         private void OnCounterClicked(object sender, EventArgs e)
         {
-           
+
         }
     }
 }

@@ -4,7 +4,6 @@ namespace SharedCode.CoreEngine
 {
     public class Engine
     {
-        public static Random random = new Random(DateTime.UtcNow.Millisecond);
         static string PlayState = "Active";
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
@@ -145,7 +144,7 @@ namespace SharedCode.CoreEngine
 
             if (gameMode == "Server")
                 for (int i = 0; i < 5000; i++)
-                    EngineHelper.rolls.Add(random.Next(1, 7));
+                    EngineHelper.rolls.Add(EngineHelper.random.Next(1, 7));
 
 
             if (gameMode == "Client" || gameMode == "AI")
@@ -169,7 +168,7 @@ namespace SharedCode.CoreEngine
                 EngineHelper.gameState = "RollingDice";
                 AnimateDice?.Invoke(seatName);
 
-                tempDice = EngineHelper.diceValue = EngineHelper.RollDice(random);                
+                tempDice = EngineHelper.diceValue = EngineHelper.RollDice();                
 
                 if (EngineHelper.gameMode != "Server" && EngineHelper.gameMode != "AI")
                     await Task.Delay(200);
@@ -815,7 +814,7 @@ namespace SharedCode.CoreEngine
                 SeatNameOrPiece = SeatNameOrPiece.Split(",")[0];
             return ((currentPlayer.Color == SeatNameOrPiece || currentPlayer.Color.ToLower().Contains(SeatNameOrPiece.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", ""))) && gameState == GameState);
         }
-        public int RollDice(Random random)
+        public int RollDice()
         {
             if (rolls.Count != 0)
             {
@@ -919,13 +918,26 @@ namespace SharedCode.CoreEngine
         {
             return players.FirstOrDefault(p => p.Color == color);
         }
+
+        public Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
         public string AIRequestPiece(string seatColor = "")
         {
-            Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
             Player player = this.currentPlayer;
             List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-            String result = moveablePieces[random.Next(0, moveablePieces.Count)].Name;
-            return result+",";
+            List<List<Piece>> DoubleMoveablePieces = player.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+            String result = "";
+            if (DoubleMoveablePieces.Count > 0 && random.Next(0, 10) > 1)
+            {
+                // If there are double moveable pieces, select one randomly
+                List<Piece> selectedGroup = DoubleMoveablePieces[random.Next(0, DoubleMoveablePieces.Count)];
+                result = selectedGroup[0].Name + "," + selectedGroup[1].Name;                
+            }
+            else
+            {
+                result = moveablePieces[random.Next(0, moveablePieces.Count)].Name + ",";
+            }
+
+            return result;
         }
     }
 }
