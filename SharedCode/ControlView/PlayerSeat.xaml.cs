@@ -151,7 +151,6 @@ public partial class PlayerSeat : ContentView
 
                 await game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
             }
-        await Task.Delay(500);
     }
     private void Dice_Clicked(object sender, EventArgs e)
     {
@@ -208,6 +207,11 @@ public partial class PlayerSeat : ContentView
                 }
             }
         }
+
+        List<Piece> moveablePieces = engineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
+        List<List<Piece>> DoubleMoveablePieces = engineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => engineHelper.getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+
+        Console.WriteLine($"{engineHelper.index} : {engineHelper.currentPlayer.Color} rolled a {engineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
 
     }
     internal void AnimateDice()

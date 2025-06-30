@@ -169,8 +169,7 @@ namespace SharedCode.CoreEngine
                 EngineHelper.gameState = "RollingDice";
                 AnimateDice?.Invoke(seatName);
 
-                EngineHelper.diceValue = EngineHelper.RollDice(random);
-                tempDice = EngineHelper.diceValue;
+                tempDice = EngineHelper.diceValue = EngineHelper.RollDice(random);                
 
                 if (EngineHelper.gameMode != "Server" && EngineHelper.gameMode != "AI")
                     await Task.Delay(200);
@@ -231,7 +230,7 @@ namespace SharedCode.CoreEngine
                 }
 
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
-                List<List<Piece>> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.GroupBy(p => EngineHelper.getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+                List<List<Piece>> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => EngineHelper.getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
 
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
 
@@ -799,27 +798,15 @@ namespace SharedCode.CoreEngine
                     : "p" + piece.Position;
 
             if (piece.Location > 51 && piece.Location < 58)
-            {
                 pj = piece.Name.Substring(0, 1) + (piece.Location - 1);
-            }
             return pj;
         }
         public void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
-
             if (!killed)
-            {
                 if (diceValue != 6)
-                {
                     ChangeTurn();
-                }
-                else
-                {
-                    // Auto Play logic here if enabled
-                    // Optionally move the piece automatically and then change the turn
-                }
-            }
             diceValue = 0;  // Reset dice value for the next turn
         }
         public bool checkTurn(String SeatNameOrPiece, String GameState)
