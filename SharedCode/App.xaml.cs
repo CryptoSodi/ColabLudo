@@ -1,15 +1,59 @@
-﻿namespace SharedCode
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using SharedCode;
+using SharedCode.Constants;
+using SharedCode.Network;
+using System.Runtime.InteropServices;
+namespace SharedCode
 {
     public partial class App : Application
-    {
+    {  //Integrated console to the MAUI app for better debugging
+        [DllImport("kernel32.dll")]
+        static extern bool AllocConsole();
+        [DllImport("kernel32.dll")]
+        static extern bool FreeConsole();
+        [DllImport("kernel32.dll", SetLastError = true)]
+        static extern IntPtr GetConsoleWindow();
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+        const uint SWP_NOSIZE = 0x0001;
+        static readonly IntPtr HWND_TOP = IntPtr.Zero;
         public App()
         {
+#if WINDOWS
+            AllocConsole();
+            IntPtr consoleWindow = GetConsoleWindow();
+            SetWindowPos(consoleWindow, HWND_TOP, 384, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
+            Console.WriteLine("Console started alongside MAUI app at custom position.");
+#endif
             InitializeComponent();
+            MainPage = new AppShell();
         }
-
-        protected override Window CreateWindow(IActivationState? activationState)
+#if WINDOWS
+        protected override Window CreateWindow(IActivationState activationState)
         {
-            return new Window(new AppShell());
+            var window = base.CreateWindow(activationState);
+            const int newWidth = 400;
+            const int newHeight = 800;
+            window.Width = newWidth;
+            window.Height = newHeight;
+            window.X = -5;
+            window.Y = 0;
+            window.Destroying += Window_Destroying;
+            return window;
         }
+        private void Window_Destroying(object sender, EventArgs e)
+        {
+            Window? window = sender as Window;
+            try
+            {
+                System.Diagnostics.Debug.WriteLine(window.X + "Destroying" + window.Y);
+            }
+            catch (Exception)
+            {
+            }
+            FreeConsole();
+        }
+#endif
     }
 }

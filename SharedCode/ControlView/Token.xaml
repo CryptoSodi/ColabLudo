@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SharedCode.ControlView.Token">
+    <Grid>
+        <Image x:Name="TokenIndicatorglow" Source="pawnindicator.png"/>
+        <Image x:Name="TokenIndicator" Source="pawnindicatortarget.png"/>
+
+        <Image x:Name="TokenBase" Source="token_round.png"/>
+        
+        <Image x:Name="Piece1" Source="red_token_large.png"/>
+        <Image x:Name="Piece2" Source="red_token_large_2.png"/>
+        <Image x:Name="Piece3" Source="red_token_large_3.png"/>
+        <Image x:Name="Piece4" Source="red_token_large_4.png"/>
+        
+        <ImageButton Clicked="Piece_Clicked"/>
+    </Grid>
+</ContentView>

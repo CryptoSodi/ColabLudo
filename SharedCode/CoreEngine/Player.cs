@@ -2,7 +2,7 @@
 {
     public class Player
     {
-        public int Score = 0;
+        public int Score { get; set; }
         public bool CanEnterGoal = false;
         public string Color { get; private set; }
         public List<Piece> Pieces { get; private set; }

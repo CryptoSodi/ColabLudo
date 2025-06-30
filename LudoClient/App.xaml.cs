@@ -1,7 +1,5 @@
 ﻿
 using LudoClient.Constants;
-using LudoClient.CoreEngine;
-using LudoClient.Models;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
@@ -29,7 +27,7 @@ namespace LudoClient
 #if WINDOWS
             AllocConsole();
             IntPtr consoleWindow = GetConsoleWindow();
-            SetWindowPos(consoleWindow, HWND_TOP, 490, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
+            SetWindowPos(consoleWindow, HWND_TOP, 384, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
             InitializeComponent();
@@ -189,7 +187,7 @@ namespace LudoClient
             const int newHeight = 800;
             window.Width = newWidth;
             window.Height = newHeight;
-            window.X = 0;
+            window.X = -5;
             window.Y = 0;
             window.Destroying += Window_Destroying;
             return window;

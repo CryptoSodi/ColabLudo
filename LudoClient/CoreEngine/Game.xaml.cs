@@ -806,12 +806,12 @@ public partial class Game : ContentPage
 
         if (!SendToServer || piece2String != "") {
             tempPiece = null;
-            MovePiece(piece1String, piece2String, SendToServer);
+            await MovePiece(piece1String, piece2String, SendToServer);
             return;
         }
         try
         {
-            Piece piece1 = engine.EngineHelper.GetPiece(engine.EngineHelper.currentPlayer.Pieces, piece1String);
+            Piece piece1 = engine.EngineHelper.currentPlayer.Pieces.Find(P => P.Name == piece1String);
             string currentBox = "";
             int ownAtBox = 0;
             

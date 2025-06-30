@@ -8,6 +8,7 @@
         public string Color { get; private set; }
         public int Position { get; set; }
         public bool DoubleMoveable { get; internal set; }
+        public int Score { get; set; }
 
         public Piece(string color, string name)
         {
