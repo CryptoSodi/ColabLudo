@@ -40,36 +40,107 @@ namespace SharedCode.CoreEngine
 
             for (int i = 0; i < 4; i++)
             {
-                Piece red1 = pRed.Pieces.Where(P => P.Name == "red" + i);
-                RedLocations[i] = pRed.Pieces[i].Location;
-                RedPositions[i] = pRed.Pieces[i].Position;
-                RedMoveable[i] = pRed.Pieces[i].Moveable ? 1 : 0;
-                RedDouble[i] = pRed.Pieces[i].DoubleMoveable ? 1 : 0;
-                RedInSafe[i] = engine.EngineHelper.safeZone.Contains(pRed.Pieces[i].Position) ? 1 : 0;
-
-                GreLocations[i] = pGre.Pieces[i].Location;
-                GrePositions[i] = pGre.Pieces[i].Position;
-                GreMoveable[i] = pGre.Pieces[i].Moveable ? 1 : 0;
-                GreDouble[i] = pGre.Pieces[i].DoubleMoveable ? 1 : 0;
-                GreInSafe[i] = engine.EngineHelper.safeZone.Contains(pGre.Pieces[i].Position) ? 1 : 0;
-
-                YelLocations[i] = pYel.Pieces[i].Location;
-                YelPositions[i] = pYel.Pieces[i].Position;
-                YelMoveable[i] = pYel.Pieces[i].Moveable ? 1 : 0;
-                YelDouble[i] = pYel.Pieces[i].DoubleMoveable ? 1 : 0;
-                YelInSafe[i] = engine.EngineHelper.safeZone.Contains(pYel.Pieces[i].Position) ? 1 : 0;
-
-                BluLocations[i] = pBlu.Pieces[i].Location;
-                BluPositions[i] = pBlu.Pieces[i].Position;
-                BluMoveable[i] = pBlu.Pieces[i].Moveable ? 1 : 0;
-                BluDouble[i] = pBlu.Pieces[i].DoubleMoveable ? 1 : 0;
-                BluInSafe[i] = engine.EngineHelper.safeZone.Contains(pBlu.Pieces[i].Position) ? 1 : 0;
+                if (pRed != null)
+                {
+                    Piece? piece = pRed.Pieces.FirstOrDefault(p => p.Name == ($"red{i + 1}"));
+                    if (piece != null)
+                    {
+                        RedLocations[i] = piece.Location;
+                        RedPositions[i] = piece.Position;
+                        RedMoveable[i] = piece.Moveable ? 1 : 0;
+                        RedDouble[i] = piece.DoubleMoveable ? 1 : 0;
+                        RedInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    else
+                    {
+                        piece = pRed.removedPieces.FirstOrDefault(p => p.Name == ($"red{i + 1}"));
+                        RedLocations[i] = piece.Location;
+                        RedPositions[i] = piece.Position;
+                        RedMoveable[i] = 0;
+                        RedDouble[i] = 0;
+                        RedInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    PlayerScores[0] = pRed.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0)) + pRed.Score;
+                }
+                else
+                {
+                }
+                if (pGre != null)
+                {
+                    Piece? piece = pGre.Pieces.FirstOrDefault(p => p.Name == ($"gre{i + 1}"));
+                    if (piece != null)
+                    {
+                        GreLocations[i] = piece.Location;
+                        GrePositions[i] = piece.Position;
+                        GreMoveable[i] = piece.Moveable ? 1 : 0;
+                        GreDouble[i] = piece.DoubleMoveable ? 1 : 0;
+                        GreInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    else
+                    {
+                        piece = pGre.removedPieces.FirstOrDefault(p => p.Name == ($"gre{i + 1}"));
+                        GreLocations[i] = piece.Location;
+                        GrePositions[i] = piece.Position;
+                        GreMoveable[i] = 0;
+                        GreDouble[i] = 0;
+                        GreInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    PlayerScores[1] = pGre.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0)) + pGre.Score;
+                }
+                else
+                {
+                }
+                if (pYel != null)
+                {
+                    Piece? piece = pYel.Pieces.FirstOrDefault(p => p.Name == ($"yel{i + 1}"));
+                    if (piece != null)
+                    {
+                        YelLocations[i] = piece.Location;
+                        YelPositions[i] = piece.Position;
+                        YelMoveable[i] = piece.Moveable ? 1 : 0;
+                        YelDouble[i] = piece.DoubleMoveable ? 1 : 0;
+                        YelInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    else
+                    {
+                        piece = pYel.removedPieces.FirstOrDefault(p => p.Name == ($"yel{i + 1}"));
+                        YelLocations[i] = piece.Location;
+                        YelPositions[i] = piece.Position;
+                        YelMoveable[i] = 0;
+                        YelDouble[i] = 0;
+                        YelInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    PlayerScores[2] = pYel.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0)) + pYel.Score;
+                }
+                else
+                {
+                }
+                if (pBlu != null)
+                {
+                    Piece? piece = pBlu.Pieces.FirstOrDefault(p => p.Name == ($"blu{i + 1}"));
+                    if (piece != null)
+                    {
+                        BluLocations[i] = piece.Location;
+                        BluPositions[i] = piece.Position;
+                        BluMoveable[i] = piece.Moveable ? 1 : 0;
+                        BluDouble[i] = piece.DoubleMoveable ? 1 : 0;
+                        BluInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    else
+                    {
+                        piece = pBlu.removedPieces.FirstOrDefault(p => p.Name == ($"blu{i + 1}"));
+                        BluLocations[i] = piece.Location;
+                        BluPositions[i] = piece.Position;
+                        BluMoveable[i] = 0;
+                        BluDouble[i] = 0;
+                        BluInSafe[i] = engine.EngineHelper.safeZone.Contains(piece.Position) ? 1 : 0;
+                    }
+                    PlayerScores[3] = pBlu.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0)) + pBlu.Score;
+                }
+                else
+                {
+                }
             }
-
-            PlayerScores[0] = pRed.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0));
-            PlayerScores[1] = pGre.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0));
-            PlayerScores[2] = pYel.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0));
-            PlayerScores[3] = pBlu.Pieces.Sum(p => p.Location + (p.Location == 57 ? 57 : 0));
         }
 
         [VectorType(4)] public float[]? RedLocations { get; set; }// [10,20,-1,57] Location on the board (distance towards goal)
@@ -102,7 +173,6 @@ namespace SharedCode.CoreEngine
 
     public class Experience
     {
-        public int GameIndex { get; set; } // Sequential index for the game
         public int TurnIndex { get; set; } // Sequential turn index for the game
         public BaseML StateBefore { get; set; } = default!; // Board state before the action
         [VectorType(4)] public float[]? CurrentPlayer { get; set; } //[1,0,0,0] for Red
@@ -110,7 +180,6 @@ namespace SharedCode.CoreEngine
         [VectorType(6)] public float[]? DiceValue { get; set; } //[0,0,1,0,0,0] for dice roll of 3    public BaseML StateAfter { get; set; } = default!; // Board state after the action
         public BaseML StateAfter { get; set; } = default!;
 
-        public float Score { get; set; } // 100 Total sum of the score
         public float Reward { get; set; } // Reward for this action 6
         public float SixBonusTurn { get; set; } // 1 if the extra turn was due to dice == 6
         public float HadExtraTurn { get; set; } // set 1 if this was because of the previous action kill or reached home, otherwise 0
@@ -127,9 +196,8 @@ namespace SharedCode.CoreEngine
         private float[]? currentPlayer { get; set; }
         private float[]? action { get; set; }
         private float[]? diceValue { get; set; }  // changed from float to float[] for one-hot vector
-        private BaseML? stateAfter { get; set; }
-        private float score { get; set; }
-        private float reward { get; set; }
+        private BaseML? stateAfter { get; set; }        
+        public float reward { get; set; }
         private float SixBonusTurn { get; set; }
         private float hadExtraTurn { get; set; }
         private float extraTurn { get; set; }
@@ -138,6 +206,7 @@ namespace SharedCode.CoreEngine
         // Set initial state before action
         public void SetStateBefore(BaseML state, string currentPlayerVector, int diceValue)
         {
+            reward = 0;
             stateBefore = state;
             SetDiceValue(diceValue);
             var arr = new float[4];
@@ -164,12 +233,20 @@ namespace SharedCode.CoreEngine
             this.gameIndex = gameIndex;
         }
         // Set the action taken during this turn (e.g. piece moved)
-        public void SetAction(int piece1, int piece2)
+        public void SetAction(string piece1, string piece2)
         {
+            int pi1 = -1;
+            int pi2 = -1;
+            if (piece1.Contains("1") || piece1.Contains("2") || piece1.Contains("3") || piece1.Contains("4"))
+                pi1 = int.Parse(piece1.Replace("red", "").Replace("gre", "").Replace("yel", "").Replace("blu", ""));
+            if (piece2.Contains("1") || piece2.Contains("2") || piece2.Contains("3") || piece2.Contains("4"))
+                pi2 = int.Parse(piece2.Replace("red", "").Replace("gre", "").Replace("yel", "").Replace("blu", ""));
+
             var arr = new float[4];
-            arr[piece1 - 1] = 1f;
-            if (piece2 > 0)
-                arr[piece2 - 1] = 1f; // If piece2 is valid, set it as well
+            if(pi1 != -1)
+            arr[pi1 - 1] = 1f;
+            if (pi2 != -1)
+                arr[pi2 - 1] = 1f; // If piece2 is valid, set it as well
             action = arr;
         }
 
@@ -188,16 +265,10 @@ namespace SharedCode.CoreEngine
             stateAfter = state;
         }
 
-        // Set the current total score of the player
-        public void SetScore(float score)
-        {
-            this.score = score;
-        }
-
         // Set the reward gained for this action
         public void SetReward(float reward)
         {
-            this.reward = reward;
+            this.reward += reward;
         }
 
         // Indicate if this turn was due to an extra turn from previous action
@@ -225,14 +296,12 @@ namespace SharedCode.CoreEngine
 
             var exp = new Experience
             {
-                GameIndex = gameIndex,
                 TurnIndex = turnIndex++,
                 StateBefore = stateBefore,
                 CurrentPlayer = currentPlayer,
                 Action = action,
                 DiceValue = diceValue,
                 StateAfter = stateAfter,
-                Score = score,
                 Reward = reward,
                 SixBonusTurn = SixBonusTurn,
                 HadExtraTurn = hadExtraTurn,
@@ -247,7 +316,6 @@ namespace SharedCode.CoreEngine
             currentPlayer = null;
             action = null;
             stateAfter = null;
-            score = 0;
             reward = 0;
             SixBonusTurn = 0;
             hadExtraTurn = 0;
@@ -271,6 +339,7 @@ namespace SharedCode.CoreEngine
     //   + (reached_goal? 57 : 0)
     public class GameExperienceExporter
     {
+        static int gameIndex = 0;
         public static void ExportToExcel(string filePath, IReadOnlyList<Experience> experiences)
         {
             using var workbook = new XLWorkbook();
@@ -344,7 +413,6 @@ namespace SharedCode.CoreEngine
 
             "After_Red_Score", "After_Gre_Score", "After_Yel_Score", "After_Blu_Score",
             // Other fields
-            "Score",
             "Reward",
             "SixBonusTurn",
             "HadExtraTurn",
@@ -362,7 +430,7 @@ namespace SharedCode.CoreEngine
             {
                 int col = 1;
 
-                worksheet.Cell(row, col++).Value = exp.GameIndex;
+                worksheet.Cell(row, col++).Value = gameIndex;
                 worksheet.Cell(row, col++).Value = exp.TurnIndex;
 
                 // Helper local function to write float[] safely (4 elements)
@@ -453,7 +521,6 @@ namespace SharedCode.CoreEngine
                 WriteVector4(exp.StateAfter.PlayerScores);
 
                 // Other simple float and bool fields
-                worksheet.Cell(row, col++).Value = exp.Score;
                 worksheet.Cell(row, col++).Value = exp.Reward;
                 worksheet.Cell(row, col++).Value = exp.SixBonusTurn;
                 worksheet.Cell(row, col++).Value = exp.HadExtraTurn;
@@ -463,7 +530,7 @@ namespace SharedCode.CoreEngine
                 row++;
             }
 
-            workbook.SaveAs(filePath);
+            workbook.SaveAs(filePath+ $"game_{gameIndex++}.xlsx");
         }
     }
 }

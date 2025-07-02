@@ -546,7 +546,7 @@ public partial class Game : ContentPage
             if (pieceClone.Location != pieces[0].Location)
                 pieceClone.Jump(engine, 1, true);
 
-            string PBC = engine.EngineHelper.getPieceBox(pieceClone);
+            string PBC = pieceClone.getPieceBox();
             double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
             double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
 
@@ -636,7 +636,7 @@ public partial class Game : ContentPage
             .ToList();
 
         // 3. Group those pieces by their board cell.
-        var boardGroups = sameColorPieces.GroupBy(p => engine.EngineHelper.getPieceBox(p));
+        var boardGroups = sameColorPieces.GroupBy(p => p.getPieceBox());
 
         // 4. Process each board group.
         foreach (var boardGroup in boardGroups)
@@ -659,7 +659,7 @@ public partial class Game : ContentPage
         List<Piece> allPieces = GetAllPieces();
 
         // Group pieces by their board key from getPieceBox.
-        var boardGroups = allPieces.GroupBy(piece => engine.EngineHelper.getPieceBox(piece));
+        var boardGroups = allPieces.GroupBy(piece => piece.getPieceBox());
         foreach (var boardGroup in boardGroups)
         {
             string boxKey = boardGroup.Key;
@@ -819,7 +819,7 @@ public partial class Game : ContentPage
             {
                 if (piece1 != null)
                 {
-                    currentBox = engine.EngineHelper.getPieceBox(piece1);
+                    currentBox = piece1.getPieceBox();
                     ownAtBox = engine.board?[currentBox].Count(x => x.Color == piece1.Color) ?? 0;
                 }
             }
@@ -917,7 +917,7 @@ public partial class Game : ContentPage
             Console.WriteLine($"CommandParameter: {parameter}");
             if (parameter == "2")
             {
-                string currentBox = engine.EngineHelper.getPieceBox(tempPiece);
+                string currentBox = tempPiece.getPieceBox();
                 List<Piece> Piece2 = engine.board?[currentBox].Where(x => x.Color == tempPiece.Color).ToList().Where(x => x.Name != tempPiece.Name).ToList();
 
                 PlayerPieceClicked(tempPiece.Name , Piece2?[0].Name, true);

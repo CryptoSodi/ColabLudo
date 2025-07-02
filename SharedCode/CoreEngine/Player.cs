@@ -2,14 +2,18 @@
 {
     public class Player
     {
-        public int Score { get; set; }
+        public float Score { get; set; }
         public bool CanEnterGoal = false;
         public string Color { get; private set; }
         public List<Piece> Pieces { get; private set; }
+        public List<Piece> removedPieces { get; set; }
         public int StartPosition { get; private set; }
         public string playState = "Playing";
+
         public Player(string color)
         {
+            removedPieces = new List<Piece>();
+            Score = 0;
             Color = color;
             Pieces = InitializePieces(color);
             
