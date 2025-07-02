@@ -1,10 +1,12 @@
 ﻿using SharedCode.ControlView;
 using SharedCode.CoreEngine;
 using System.Diagnostics;
+
 namespace SharedCode
 {
     public partial class MainPage : ContentPage
     {
+        int GameId = 0;
         String playerColor = "Red";
         String gameType = "4";
         String gameMode = "";
@@ -336,7 +338,7 @@ namespace SharedCode
                 .ToList();
 
             // 3. Group those pieces by their board cell.
-            var boardGroups = sameColorPieces.GroupBy(p => engine.EngineHelper.getPieceBox(p));
+            var boardGroups = sameColorPieces.GroupBy(p => p.getPieceBox());
 
             // 4. Process each board group.
             foreach (var boardGroup in boardGroups)
@@ -366,7 +368,7 @@ namespace SharedCode
                 if (pieceClone.Location != pieces[0].Location)
                     pieceClone.Jump(engine, 1, true);
 
-                string PBC = engine.EngineHelper.getPieceBox(pieceClone);
+                string PBC = pieceClone.getPieceBox();
                 double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
                 double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
 
@@ -417,7 +419,7 @@ namespace SharedCode
             List<Piece> allPieces = GetAllPieces();
 
             // Group pieces by their board key from getPieceBox.
-            var boardGroups = allPieces.GroupBy(piece => engine.EngineHelper.getPieceBox(piece));
+            var boardGroups = allPieces.GroupBy(piece => piece.getPieceBox());
             foreach (var boardGroup in boardGroups)
             {
                 string boxKey = boardGroup.Key;
@@ -553,7 +555,6 @@ namespace SharedCode
                     allPieces.Add(piece);
             return allPieces;
         }
-
         public void StartProgressAnimation(string SeatName)
         {
             List<Piece> allPieces = GetAllPieces();
@@ -568,7 +569,6 @@ namespace SharedCode
 
             GetPlayerSeat(SeatName).StartProgressAnimation();
         }
-
         public void StopDice(string SeatName, int dicevalue)
         {
             var seat = GreenPlayerSeat;
@@ -583,7 +583,6 @@ namespace SharedCode
 
             seat.StopDice(dicevalue);
         }
-
         public void AnimateDice(string SeatName)
         {
             var seat = GreenPlayerSeat;
@@ -605,7 +604,6 @@ namespace SharedCode
 
             seat.AnimateDice();
         }
-
         public void StopProgressAnimation(string SeatName)
         {
             GetPlayerSeat(SeatName).StopProgressAnimation();
@@ -665,9 +663,7 @@ namespace SharedCode
                 if (SeatColor == "blue")
                     seat = gui.blue;
 
-                seat.AnimateDice();
-
-
+                seat.AnimateDice();                
                 String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
                 Console.WriteLine($"1 Local : {result}");
                 engine.EngineHelper.index++;
@@ -684,16 +680,13 @@ namespace SharedCode
         public async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
         {
             String result = "";
-
             result = await engine.MovePieceAsync(piece1String, piece2String);
             engine.EngineHelper.index++;
-
             Console.WriteLine(result);
         }
-
         private void OnCounterClicked(object sender, EventArgs e)
         {
 
         }
-    }
+    } 
 }

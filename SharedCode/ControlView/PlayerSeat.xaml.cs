@@ -176,7 +176,7 @@ public partial class PlayerSeat : ContentView
                     {
                         Stepperpiece.Jump(game.engine, 1, true);
 
-                        string newBox = engineHelper.getPieceBox(Stepperpiece);
+                        string newBox = Stepperpiece.getPieceBox();
                         List<Piece> tokensAtIntermediate = game.engine.board?[newBox].Where(p => p.Color != piece.Color && !(engineHelper.gameType == "22" && engineHelper.IsTeammate(piece.Color, p.Color))).ToList();
 
                         if (tokensAtIntermediate?.Count > 1 && !engineHelper.safeZone.Contains(Stepperpiece.Position))
@@ -195,7 +195,7 @@ public partial class PlayerSeat : ContentView
                     {
                         // Check if another token is on the same position
                         var samePositionTokens = engineHelper.currentPlayer.Pieces
-                            .Where(p => engineHelper.getPieceBox(p) == engineHelper.getPieceBox(piece))
+                            .Where(p => p.getPieceBox() == piece.getPieceBox())
                             .ToList();
 
                         if (samePositionTokens.Count > 1 && (piece.Location + (engineHelper.diceValue / 2) <= 51))
@@ -209,7 +209,7 @@ public partial class PlayerSeat : ContentView
         }
 
         List<Piece> moveablePieces = engineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
-        List<List<Piece>> DoubleMoveablePieces = engineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => engineHelper.getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+        List<List<Piece>> DoubleMoveablePieces = engineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => p.getPieceBox()).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
 
         Console.WriteLine($"{engineHelper.index} : {engineHelper.currentPlayer.Color} rolled a {engineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
 

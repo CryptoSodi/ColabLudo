@@ -1,9 +1,8 @@
-﻿using System;
-
-namespace SharedCode.CoreEngine
+﻿namespace SharedCode.CoreEngine
 {
     public class Engine
     {
+        GameExperienceRecorder gameExperienceRecorder { get; set; }
         static string PlayState = "Active";
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
@@ -33,6 +32,7 @@ namespace SharedCode.CoreEngine
         public bool processing = false;
         public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
         {
+            gameExperienceRecorder = new GameExperienceRecorder();
             processing = false;            
             board = new Dictionary<string, List<Piece>>
     {
@@ -146,7 +146,6 @@ namespace SharedCode.CoreEngine
                 for (int i = 0; i < 5000; i++)
                     EngineHelper.rolls.Add(EngineHelper.random.Next(1, 7));
 
-
             if (gameMode == "Client" || gameMode == "AI")
                 EngineHelper.rolls = rollsString.Select(c => int.Parse(c.ToString())).ToList();
 
@@ -196,7 +195,7 @@ namespace SharedCode.CoreEngine
                             {
                                 Stepperpiece.Jump(this, 1, true);
 
-                                string newBox = EngineHelper.getPieceBox(Stepperpiece);
+                                string newBox = Stepperpiece.getPieceBox();
                                 List<Piece> tokensAtIntermediate = board?[newBox].Where(p => p.Color != piece.Color && !(EngineHelper.gameType == "22" && EngineHelper.IsTeammate(piece.Color, p.Color))).ToList();
 
                                 if (tokensAtIntermediate?.Count > 1 && !EngineHelper.safeZone.Contains(Stepperpiece.Position))
@@ -215,7 +214,7 @@ namespace SharedCode.CoreEngine
                             {
                                 // Check if another token is on the same position
                                 var samePositionTokens = EngineHelper.currentPlayer.Pieces
-                                    .Where(p => EngineHelper.getPieceBox(p) == EngineHelper.getPieceBox(piece))
+                                    .Where(p => p.getPieceBox() == piece.getPieceBox())
                                     .ToList();
 
                                 if (samePositionTokens.Count > 1 && (piece.Location + (EngineHelper.diceValue / 2) <= 51))
@@ -229,7 +228,7 @@ namespace SharedCode.CoreEngine
                 }
 
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
-                List<List<Piece>> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => EngineHelper.getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+                List<List<Piece>> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => p.getPieceBox()).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
 
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
 
@@ -325,12 +324,13 @@ namespace SharedCode.CoreEngine
 
             if (piece1 == null || EngineHelper.diceValue == 0)
                 return ","; // Exit if not the current player's piece or no dice roll
+            gameExperienceRecorder.SetStateBefore(new BaseML(this), EngineHelper.currentPlayer.Color, EngineHelper.diceValue);
 
             if ((piece1.Moveable || piece1.DoubleMoveable) && EngineHelper.checkTurn(piece1.Name, "MovePiece"))
             {
                 processing = true;
                 EngineHelper.gameState = "MovingPiece";
-
+                
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {piece1String} & {piece2String} with dicevalue{EngineHelper.diceValue}.");
 
                 bool killed = false;
@@ -348,7 +348,7 @@ namespace SharedCode.CoreEngine
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
                     int oldPosition = piece1.Position;
-                    string oldBox = EngineHelper.getPieceBox(piece1);
+                    string oldBox = piece1.getPieceBox();
                     if (piece2 != null)
                     {
                         piece2.Jump(this, EngineHelper.diceValue / 2);
@@ -357,7 +357,7 @@ namespace SharedCode.CoreEngine
                     else
                         piece1.Jump(this, EngineHelper.diceValue);
 
-                    string newBox = EngineHelper.getPieceBox(piece1);
+                    string newBox = piece1.getPieceBox();
                     int ownAtDest = board?[newBox].Count(x => x.Color == piece1.Color) ?? 0;
 
                     // List<Piece> kilablePieces = board[pj].Where(p => p.Color != piece.Color).ToList();
@@ -378,7 +378,7 @@ namespace SharedCode.CoreEngine
                             ownTrapped.Position = -1;
                             ownTrapped.Location = 0;
                             board?[oldBox].Remove(ownTrapped);
-                            board?[EngineHelper.getPieceBox(ownTrapped)].Add(ownTrapped);
+                            board?[ownTrapped.getPieceBox()].Add(ownTrapped);
 
                             if (RelocateAsync != null)
                             {
@@ -407,7 +407,7 @@ namespace SharedCode.CoreEngine
                             enemy.Position = -1;
                             enemy.Location = 0;
                             board?[newBox].Remove(enemy);
-                            board?[EngineHelper.getPieceBox(enemy)].Add(enemy);
+                            board?[enemy.getPieceBox()].Add(enemy);
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
 
@@ -428,7 +428,7 @@ namespace SharedCode.CoreEngine
                         killedPiece.Position = -1; // Send opponent's piece back to base
                         killedPiece.Location = 0;
                         board?[newBox].Remove(killedPiece);
-                        board?[EngineHelper.getPieceBox(killedPiece)].Add(killedPiece);
+                        board?[killedPiece.getPieceBox()].Add(killedPiece);
                         killed = true;
 
                         relocatedPieces.Add(piece1);
@@ -478,8 +478,6 @@ namespace SharedCode.CoreEngine
                 //checkKills(player,piece);
                 EngineHelper.PerformTurnChecks(killed, EngineHelper.diceValue);
 
-                StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
-
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
                 {
@@ -493,11 +491,9 @@ namespace SharedCode.CoreEngine
                         //GANE OVER
                         GameOver(winners);
                         processing = false;
-                        return piece1String + "," + piece2String;
                     }
-                }
-                
-                StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
+                }else
+                    StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
             }
             else
             {
@@ -506,7 +502,7 @@ namespace SharedCode.CoreEngine
             }
 
             processing = false;
-
+            gameExperienceRecorder.SetStateAfter(new BaseML(this));
             return piece1String + "," + piece2String;
         }
         public void PlayerLeft(String playerColor, bool SendToServer = true)
@@ -675,10 +671,6 @@ namespace SharedCode.CoreEngine
                         new Player("yellow")
                     };
             }
-            else
-            {
-                throw new ArgumentException("Invalid player color selected.");
-            }
         }
         public int SetRotation(string playerColor)
         {
@@ -788,18 +780,7 @@ namespace SharedCode.CoreEngine
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-        public string getPieceBox(Piece piece)
-        {
-            //piece.Position
-            //player.StartPosition
-            string pj = piece.Position == -1
-                    ? "h" + piece.Name.Substring(0, 1) + (int.Parse(piece.Name.Substring(3, 1)) - 1)
-                    : "p" + piece.Position;
-
-            if (piece.Location > 51 && piece.Location < 58)
-                pj = piece.Name.Substring(0, 1) + (piece.Location - 1);
-            return pj;
-        }
+       
         public void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
@@ -919,12 +900,12 @@ namespace SharedCode.CoreEngine
             return players.FirstOrDefault(p => p.Color == color);
         }
 
-        public Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
+        public static readonly Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
         public string AIRequestPiece(string seatColor = "")
         {
             Player player = this.currentPlayer;
             List<Piece> moveablePieces = player.Pieces.Where(p => p.Moveable).ToList();
-            List<List<Piece>> DoubleMoveablePieces = player.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => getPieceBox(p)).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
+            List<List<Piece>> DoubleMoveablePieces = player.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => p.getPieceBox()).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList();
             String result = "";
             if (DoubleMoveablePieces.Count > 0 && random.Next(0, 10) > 1)
             {
@@ -933,11 +914,24 @@ namespace SharedCode.CoreEngine
                 result = selectedGroup[0].Name + "," + selectedGroup[1].Name;                
             }
             else
-            {
                 result = moveablePieces[random.Next(0, moveablePieces.Count)].Name + ",";
-            }
-
             return result;
+        }
+        public string AIGetSnapShot(int GameId, String Action)
+        {
+            // Collect all relevant game states
+            string currentPlayerState = $"PlayerColor:{currentPlayer.Color},Score:{currentPlayer.Score},Pieces:{string.Join(";", currentPlayer.Pieces.Select(p => $"{p.Name}:{p.Position}:{p.Location}:{(p.Moveable ? "Moveable" : "Blocked")}"))}";
+
+            string opponentStates = string.Join("|", players.Where(p => p.Color != currentPlayer.Color)
+                .Select(opponent => $"OpponentColor:{opponent.Color},Score:{opponent.Score},Pieces:{string.Join(";", opponent.Pieces.Select(p => $"{p.Name}:{p.Position}:{p.Location}:{(p.Moveable ? "Moveable" : "Blocked")}"))}"));
+
+            
+
+            string safeZoneState = string.Join(",", safeZone);
+
+            // Combine the snapshot information
+            return $"GameId:{GameId},Action:{Action},GameType:{gameType},GameMode:{gameMode},GameState:{gameState},DiceValue:{diceValue},RollsString:{rollsString},CurrentPlayer:{currentPlayerState},OpponentStates:{opponentStates},SafeZones:{safeZoneState}";
+
         }
     }
 }
