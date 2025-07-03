@@ -339,9 +339,10 @@ namespace SharedCode.CoreEngine
     //   + (reached_goal? 57 : 0)
     public class GameExperienceExporter
     {
-        static int gameIndex = 0;
+        public static int gameIndex = 0;
         public static void ExportToExcel(string filePath, IReadOnlyList<Experience> experiences)
         {
+            gameIndex = Preferences.Get("GameIndexSave", 0);
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Experiences");
 
@@ -533,4 +534,5 @@ namespace SharedCode.CoreEngine
             workbook.SaveAs(filePath+ $"game_{gameIndex++}.xlsx");
         }
     }
+  
 }

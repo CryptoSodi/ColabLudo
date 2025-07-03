@@ -616,8 +616,6 @@ namespace SharedCode
         {
             stopwatch.Stop();
             Console.WriteLine($"Execution time: {stopwatch.ElapsedMilliseconds} ms");
-
-
             // Get seat details for both winners and add them to the list
             List<PlayerDto> playerDtos = new List<PlayerDto>();
             string winner1 = seats.Split(",")[0];
@@ -641,6 +639,7 @@ namespace SharedCode
             // Pass the list to the UI for displaying results
 
             Console.WriteLine(playerDtos + GameType + GameCost);
+            System.Environment.Exit(0);
         }
         public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
         {
