@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCode", "SharedCode\Sh
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiController", "AiController\AiController.csproj", "{7146D606-8A32-475E-B8DB-EE5EBBD45681}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AiEngine", "AiEngine\AiEngine.csproj", "{87B033AD-FE7C-4CF3-AEF9-DF290E4C7DA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{7146D606-8A32-475E-B8DB-EE5EBBD45681}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7146D606-8A32-475E-B8DB-EE5EBBD45681}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7146D606-8A32-475E-B8DB-EE5EBBD45681}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87B033AD-FE7C-4CF3-AEF9-DF290E4C7DA2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87B033AD-FE7C-4CF3-AEF9-DF290E4C7DA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87B033AD-FE7C-4CF3-AEF9-DF290E4C7DA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87B033AD-FE7C-4CF3-AEF9-DF290E4C7DA2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
