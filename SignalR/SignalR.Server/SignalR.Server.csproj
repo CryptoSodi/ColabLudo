@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\SharedCode\Constants\PlayerInfo.cs" Link="Constants\PlayerInfo.cs" />
-    <Compile Include="..\..\SharedCode\CoreEngine\BaseML.cs" Link="CoreEngine\BaseML.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Engine.cs" Link="CoreEngine\Engine.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
     <Compile Include="..\..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
@@ -26,17 +25,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.105.0" />
-    <PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.5">
+    <PackageReference Include="CommunityToolkit.Maui" Version="12.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.6">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
-    <PackageReference Include="Microsoft.ML" Version="4.0.2" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.73.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Solnet.Programs" Version="6.1.0" />
     <PackageReference Include="Solnet.Rpc" Version="6.1.0" />

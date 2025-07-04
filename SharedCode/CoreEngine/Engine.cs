@@ -2,7 +2,6 @@
 {
     public class Engine
     {
-        GameExperienceRecorder gameExperienceRecorder { get; set; }
         static string PlayState = "Active";
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
@@ -32,7 +31,6 @@
         public bool processing = false;
         public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
         {
-            gameExperienceRecorder = new GameExperienceRecorder();
             processing = false;            
             board = new Dictionary<string, List<Piece>>
     {
@@ -326,8 +324,7 @@
 
             if (piece1 == null || EngineHelper.diceValue == 0)
                 return ","; // Exit if not the current player's piece or no dice roll
-            gameExperienceRecorder.SetStateBefore(new BaseML(this), EngineHelper.currentPlayer.Color, EngineHelper.diceValue);
-
+            
             if ((piece1.Moveable || piece1.DoubleMoveable) && EngineHelper.checkTurn(piece1.Name, "MovePiece"))
             {
                 processing = true;
@@ -341,14 +338,12 @@
 
                 if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    gameExperienceRecorder.SetReward(10);
                     piece1.Jump(this, EngineHelper.diceValue);
                     relocatedPieces.Add(piece1);
                     await (RelocateAsync?.Invoke(relocatedPieces, piece1.Clone(), "move") ?? Task.CompletedTask);
                 }
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    gameExperienceRecorder.SetReward(EngineHelper.diceValue);
                     int oldPosition = piece1.Position;
                     string oldBox = piece1.getPieceBox();
                     if (piece2 != null)
@@ -384,8 +379,7 @@
 
                             if (RelocateAsync != null)
                             {
-                                relocatedPieces.Add(ownTrapped);
-                                gameExperienceRecorder.SetReward(-6);// Lose points in case of getting own piece beat by moveing a piece
+                                relocatedPieces.Add(ownTrapped);                                
                                 RelocateAsync(relocatedPieces, piece1Clone, "kill");
                             }
                         }
@@ -457,12 +451,9 @@
                         
                         await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);                        
                     }
-                    if (killed)
-                        gameExperienceRecorder.SetReward(EngineHelper.diceValue);
-
+                    
                     if (piece1.Location == 57)
                     {
-                        gameExperienceRecorder.SetReward(57);
                         killed = true;
                         player.Pieces.Remove(piece1);
                         player.removedPieces.Add(piece1);
@@ -472,8 +463,6 @@
                             killed = false;
                         }
                     }
-                    if (killed)
-                        gameExperienceRecorder.SetExtraTurn(1);
                 }
                 else
                 {
@@ -487,8 +476,7 @@
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
                 {
-                    player.playState = "Home";
-                    gameExperienceRecorder.SetReward(80); // All Pieces at home
+                    player.playState = "Home";                    
                     Console.WriteLine($"{player.Color} has won the game!");
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
@@ -504,29 +492,11 @@
             else
             {
                 processing = false;
-                player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER
-                gameExperienceRecorder.SetStateAfter(new BaseML(this));
-                gameExperienceRecorder.SetAction("", "");                
-                gameExperienceRecorder.SaveExperience();
                 return ",";
             }
-
             processing = false;
-            player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER
-            gameExperienceRecorder.SetStateAfter(new BaseML(this));
-            gameExperienceRecorder.SetAction(piece1String, piece2String);
-            if (!SaveGameFlag)
-                gameExperienceRecorder.SaveExperience();
-
-            
-            if(!SaveGameFlag && EngineHelper.currentPlayer.Color == player.Color)
-                gameExperienceRecorder.SetHadExtraTurn(1);
-            
             if (SaveGameFlag)
             {
-                gameExperienceRecorder.SetDone(true);
-                gameExperienceRecorder.SaveExperience();
-                GameExperienceExporter.ExportToExcel("D:/LudoAiData/", gameExperienceRecorder.GetAllExperiences());
                 //GAMEOVER
                 GameOver(EngineHelper.checkGameOver());
             }

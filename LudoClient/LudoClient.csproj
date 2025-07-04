@@ -467,7 +467,6 @@
 	  <Compile Include="..\SharedCode\Constants\GlobalConstants.cs" Link="Constants\GlobalConstants.cs" />
 	  <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="Constants\PlayerInfo.cs" />
 	  <Compile Include="..\SharedCode\Constants\UserInfo.cs" Link="Constants\UserInfo.cs" />
-	  <Compile Include="..\SharedCode\CoreEngine\BaseML.cs" Link="CoreEngine\BaseML.cs" />
 	  <Compile Include="..\SharedCode\CoreEngine\Engine.cs" Link="CoreEngine\Engine.cs" />
 	  <Compile Include="..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
 	  <Compile Include="..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
@@ -726,7 +725,6 @@
 	<ItemGroup>
 		<PackageReference Include="Acr.UserDialogs.Maui" Version="9.2.1" />
 		<PackageReference Include="AcrylicView.Maui" Version="2.1.3" />
-		<PackageReference Include="ClosedXML" Version="0.105.0" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.5" />
@@ -734,7 +732,6 @@
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.70" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
-		<PackageReference Include="Microsoft.ML" Version="4.0.2" />
 		<PackageReference Include="Plugin.Maui.Audio" Version="4.0.0" />
 		<PackageReference Include="SimpleToolkit.Core" Version="6.0.1" />
 		<PackageReference Include="SimpleToolkit.SimpleShell" Version="5.0.1" />
