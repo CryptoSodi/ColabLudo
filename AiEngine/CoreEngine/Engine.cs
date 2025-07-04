@@ -504,16 +504,14 @@
             else
             {
                 processing = false;
-                player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER
-                gameExperienceRecorder.SetStateAfter(new BaseML(this));
-                gameExperienceRecorder.SetAction("", "");                
+                player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER                
+                gameExperienceRecorder.SetAction("", "");
                 gameExperienceRecorder.SaveExperience();
                 return ",";
             }
 
             processing = false;
-            player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER
-            gameExperienceRecorder.SetStateAfter(new BaseML(this));
+            player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER            
             gameExperienceRecorder.SetAction(piece1String, piece2String);
             if (!SaveGameFlag)
                 gameExperienceRecorder.SaveExperience();
@@ -526,7 +524,7 @@
             {
                 gameExperienceRecorder.SetDone(true);
                 gameExperienceRecorder.SaveExperience();
-                GameExperienceExporter.ExportToExcel("D:/LudoAiData/", gameExperienceRecorder.GetAllExperiences());
+                GameExperienceExporter.ExportToCsv("D:/LudoAiData/", gameExperienceRecorder.GetAllExperiences());
                 //GAMEOVER
                 GameOver(EngineHelper.checkGameOver());
             }

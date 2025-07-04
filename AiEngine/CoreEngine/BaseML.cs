@@ -176,9 +176,9 @@ namespace SharedCode.CoreEngine
         public int TurnIndex { get; set; } // Sequential turn index for the game
         public BaseML StateBefore { get; set; } = default!; // Board state before the action
         [VectorType(4)] public float[]? CurrentPlayer { get; set; } //[1,0,0,0] for Red
-        [VectorType(4)] public float[]? Action { get; set; } //[0,1,0,0] -> R2 moved
+        public float? Action { get; set; } // Now a string label like "R1" or "R1+R2"
+        public string? ActionString { get; set; } // Now a string label like "R1" or "R1+R2"
         [VectorType(6)] public float[]? DiceValue { get; set; } //[0,0,1,0,0,0] for dice roll of 3    public BaseML StateAfter { get; set; } = default!; // Board state after the action
-        public BaseML StateAfter { get; set; } = default!;
 
         public float Reward { get; set; } // Reward for this action 6
         public float SixBonusTurn { get; set; } // 1 if the extra turn was due to dice == 6
@@ -189,14 +189,42 @@ namespace SharedCode.CoreEngine
 
     public class GameExperienceRecorder
     {
+        private static readonly Dictionary<string, float> ActionMap = GenerateActionMap();
+        private static Dictionary<string, float> GenerateActionMap()
+        {
+            var dict = new Dictionary<string, float>();
+            string[] colors = { "red", "gre", "yel", "blu" };
+            int counter = 1;
+
+            // Single-piece actions
+            foreach (var color in colors)
+                for (int i = 1; i <= 4; i++)
+                    dict[$"{color}{i}"] = counter++;
+
+            // Double-piece actions
+            var pieces = dict.Keys.ToList();
+            foreach (var first in pieces)
+            {
+                foreach (var second in pieces)
+                {
+                    if (first == second) continue; // Skip same piece
+                    var pair = string.Join("+", new[] { first, second }.OrderBy(x => x));
+                    if (!dict.ContainsKey(pair))
+                        dict[pair] = counter++;
+                }
+            }
+
+            return dict;
+        }
+
         private readonly List<Experience> experiences = new();
         private int gameIndex { get; set; }
         private int turnIndex { get; set; }
         private BaseML? stateBefore { get; set; }
         private float[]? currentPlayer { get; set; }
-        private float[]? action { get; set; }
+        public float? action { get; set; } // Now a string label like "R1" or "R1+R2"
+        public string? actionString { get; set; } // Now a string label like "R1" or "R1+R2"
         private float[]? diceValue { get; set; }  // changed from float to float[] for one-hot vector
-        private BaseML? stateAfter { get; set; }        
         public float reward { get; set; }
         private float SixBonusTurn { get; set; }
         private float hadExtraTurn { get; set; }
@@ -228,27 +256,22 @@ namespace SharedCode.CoreEngine
             currentPlayer = arr;
             stateBefore = state;
         }
-        public void SetGameIndex(int gameIndex)
-        {
-            this.gameIndex = gameIndex;
-        }
         // Set the action taken during this turn (e.g. piece moved)
         public void SetAction(string piece1, string piece2)
         {
-            int pi1 = -1;
-            int pi2 = -1;
-            if (piece1.Contains("1") || piece1.Contains("2") || piece1.Contains("3") || piece1.Contains("4"))
-                pi1 = int.Parse(piece1.Replace("red", "").Replace("gre", "").Replace("yel", "").Replace("blu", ""));
-            if (piece2.Contains("1") || piece2.Contains("2") || piece2.Contains("3") || piece2.Contains("4"))
-                pi2 = int.Parse(piece2.Replace("red", "").Replace("gre", "").Replace("yel", "").Replace("blu", ""));
+            string actionstring = piece1;
+            if (!string.IsNullOrEmpty(piece2))
+                actionstring += "+" + piece2;
+            var sortedAction = string.Join("+", actionstring.Split('+').OrderBy(x => x));
 
-            var arr = new float[4];
-            if(pi1 != -1)
-            arr[pi1 - 1] = 1f;
-            if (pi2 != -1)
-                arr[pi2 - 1] = 1f; // If piece2 is valid, set it as well
-            action = arr;
+            // Lookup in the map
+            if (!ActionMap.TryGetValue(sortedAction, out float actionFinal))
+                throw new InvalidOperationException($"Unknown action: {sortedAction}");
+
+            this.action = actionFinal;       // Save float encoding
+            this.actionString = sortedAction;   // Save float encoding
         }
+      
 
         // Set dice value (should be 1-hot vector of length 6)
         public void SetDiceValue(int diceValue)
@@ -257,12 +280,6 @@ namespace SharedCode.CoreEngine
             var arr = new float[6];
             arr[diceValue - 1] = 1f;
             this.diceValue = arr;
-        }
-
-        // Set the state after the action
-        public void SetStateAfter(BaseML state)
-        {
-            stateAfter = state;
         }
 
         // Set the reward gained for this action
@@ -291,7 +308,7 @@ namespace SharedCode.CoreEngine
         // Call this at the end of the turn to save the experience record
         public void SaveExperience()
         {
-            if (stateBefore == null || currentPlayer == null || action == null || stateAfter == null)
+            if (stateBefore == null || currentPlayer == null || action == null )
                 throw new InvalidOperationException("Incomplete data to save experience.");
 
             var exp = new Experience
@@ -300,8 +317,8 @@ namespace SharedCode.CoreEngine
                 StateBefore = stateBefore,
                 CurrentPlayer = currentPlayer,
                 Action = action,
+                ActionString = actionString,
                 DiceValue = diceValue,
-                StateAfter = stateAfter,
                 Reward = reward,
                 SixBonusTurn = SixBonusTurn,
                 HadExtraTurn = hadExtraTurn,
@@ -315,7 +332,7 @@ namespace SharedCode.CoreEngine
             stateBefore = null;
             currentPlayer = null;
             action = null;
-            stateAfter = null;
+            actionString = null;
             reward = 0;
             SixBonusTurn = 0;
             hadExtraTurn = 0;
@@ -340,198 +357,100 @@ namespace SharedCode.CoreEngine
     public class GameExperienceExporter
     {
         public static int gameIndex = 0;
-        public static void ExportToExcel(string filePath, IReadOnlyList<Experience> experiences)
+        public static void ExportToCsv(string filePath, IReadOnlyList<Experience> experiences)
         {
-            using var workbook = new XLWorkbook();
-            var worksheet = workbook.Worksheets.Add("Experiences");
+            using var writer = new StreamWriter(filePath + $"game_{gameIndex}.csv");
 
-            // Headers including GameIndex
+            // Headers
             var headers = new List<string>()
-        {
-            "GameIndex",
-            "TurnIndex",
-
-            // StateBefore - flatten all arrays to columns
-            "RedLocations_1", "RedLocations_2", "RedLocations_3", "RedLocations_4",
-            "RedPositions_1", "RedPositions_2", "RedPositions_3", "RedPositions_4",
-            "RedMoveable_1", "RedMoveable_2", "RedMoveable_3", "RedMoveable_4",
-            "RedDouble_1", "RedDouble_2", "RedDouble_3", "RedDouble_4",
-            "RedInSafe_1", "RedInSafe_2", "RedInSafe_3", "RedInSafe_4",
-
-            "GreLocations_1", "GreLocations_2", "GreLocations_3", "GreLocations_4",
-            "GrePositions_1", "GrePositions_2", "GrePositions_3", "GrePositions_4",
-            "GreMoveable_1", "GreMoveable_2", "GreMoveable_3", "GreMoveable_4",
-            "GreDouble_1", "GreDouble_2", "GreDouble_3", "GreDouble_4",
-            "GreInSafe_1", "GreInSafe_2", "GreInSafe_3", "GreInSafe_4",
-
-            "YelLocations_1", "YelLocations_2", "YelLocations_3", "YelLocations_4",
-            "YelPositions_1", "YelPositions_2", "YelPositions_3", "YelPositions_4",
-            "YelMoveable_1", "YelMoveable_2", "YelMoveable_3", "YelMoveable_4",
-            "YelDouble_1", "YelDouble_2", "YelDouble_3", "YelDouble_4",
-            "YelInSafe_1", "YelInSafe_2", "YelInSafe_3", "YelInSafe_4",
-
-            "BluLocations_1", "BluLocations_2", "BluLocations_3", "BluLocations_4",
-            "BluPositions_1", "BluPositions_2", "BluPositions_3", "BluPositions_4",
-            "BluMoveable_1", "BluMoveable_2", "BluMoveable_3", "BluMoveable_4",
-            "BluDouble_1", "BluDouble_2", "BluDouble_3", "BluDouble_4",
-            "BluInSafe_1", "BluInSafe_2", "BluInSafe_3", "BluInSafe_4",
-
-            "Red_Score", "Gre_Score", "Yel_Score", "Blu_Score",
-            // CurrentPlayer (4)
-            "CurrentPlayer_1", "CurrentPlayer_2", "CurrentPlayer_3", "CurrentPlayer_4",
-
-            // Action (4)
-            "Action_1", "Action_2", "Action_3", "Action_4",
-
-            // DiceValue (6)
-            "DiceValue_1", "DiceValue_2", "DiceValue_3", "DiceValue_4", "DiceValue_5", "DiceValue_6",
-
-            // StateAfter (same fields as StateBefore)
-            "After_RedLocations_1", "After_RedLocations_2", "After_RedLocations_3", "After_RedLocations_4",
-            "After_RedPositions_1", "After_RedPositions_2", "After_RedPositions_3", "After_RedPositions_4",
-            "After_RedMoveable_1", "After_RedMoveable_2", "After_RedMoveable_3", "After_RedMoveable_4",
-            "After_RedDouble_1", "After_RedDouble_2", "After_RedDouble_3", "After_RedDouble_4",
-            "After_RedInSafe_1", "After_RedInSafe_2", "After_RedInSafe_3", "After_RedInSafe_4",
-
-            "After_GreLocations_1", "After_GreLocations_2", "After_GreLocations_3", "After_GreLocations_4",
-            "After_GrePositions_1", "After_GrePositions_2", "After_GrePositions_3", "After_GrePositions_4",
-            "After_GreMoveable_1", "After_GreMoveable_2", "After_GreMoveable_3", "After_GreMoveable_4",
-            "After_GreDouble_1", "After_GreDouble_2", "After_GreDouble_3", "After_GreDouble_4",
-            "After_GreInSafe_1", "After_GreInSafe_2", "After_GreInSafe_3", "After_GreInSafe_4",
-
-            "After_YelLocations_1", "After_YelLocations_2", "After_YelLocations_3", "After_YelLocations_4",
-            "After_YelPositions_1", "After_YelPositions_2", "After_YelPositions_3", "After_YelPositions_4",
-            "After_YelMoveable_1", "After_YelMoveable_2", "After_YelMoveable_3", "After_YelMoveable_4",
-            "After_YelDouble_1", "After_YelDouble_2", "After_YelDouble_3", "After_YelDouble_4",
-            "After_YelInSafe_1", "After_YelInSafe_2", "After_YelInSafe_3", "After_YelInSafe_4",
-
-            "After_BluLocations_1", "After_BluLocations_2", "After_BluLocations_3", "After_BluLocations_4",
-            "After_BluPositions_1", "After_BluPositions_2", "After_BluPositions_3", "After_BluPositions_4",
-            "After_BluMoveable_1", "After_BluMoveable_2", "After_BluMoveable_3", "After_BluMoveable_4",
-            "After_BluDouble_1", "After_BluDouble_2", "After_BluDouble_3", "After_BluDouble_4",
-            "After_BluInSafe_1", "After_BluInSafe_2", "After_BluInSafe_3", "After_BluInSafe_4",
-
-            "After_Red_Score", "After_Gre_Score", "After_Yel_Score", "After_Blu_Score",
-            // Other fields
-            "Reward",
-            "SixBonusTurn",
-            "HadExtraTurn",
-            "ExtraTurn",
-            "Done"
-        };
-
-            // Write header row
-            for (int i = 0; i < headers.Count; i++)
-                worksheet.Cell(1, i + 1).Value = headers[i];
-
-            int row = 2;
+    {
+        "GameIndex", "TurnIndex", "ActionString", "Action",
+        "RedLocations_1", "RedLocations_2", "RedLocations_3", "RedLocations_4",
+        "RedPositions_1", "RedPositions_2", "RedPositions_3", "RedPositions_4",
+        "RedMoveable_1", "RedMoveable_2", "RedMoveable_3", "RedMoveable_4",
+        "RedDouble_1", "RedDouble_2", "RedDouble_3", "RedDouble_4",
+        "RedInSafe_1", "RedInSafe_2", "RedInSafe_3", "RedInSafe_4",
+        "GreLocations_1", "GreLocations_2", "GreLocations_3", "GreLocations_4",
+        "GrePositions_1", "GrePositions_2", "GrePositions_3", "GrePositions_4",
+        "GreMoveable_1", "GreMoveable_2", "GreMoveable_3", "GreMoveable_4",
+        "GreDouble_1", "GreDouble_2", "GreDouble_3", "GreDouble_4",
+        "GreInSafe_1", "GreInSafe_2", "GreInSafe_3", "GreInSafe_4",
+        "YelLocations_1", "YelLocations_2", "YelLocations_3", "YelLocations_4",
+        "YelPositions_1", "YelPositions_2", "YelPositions_3", "YelPositions_4",
+        "YelMoveable_1", "YelMoveable_2", "YelMoveable_3", "YelMoveable_4",
+        "YelDouble_1", "YelDouble_2", "YelDouble_3", "YelDouble_4",
+        "YelInSafe_1", "YelInSafe_2", "YelInSafe_3", "YelInSafe_4",
+        "BluLocations_1", "BluLocations_2", "BluLocations_3", "BluLocations_4",
+        "BluPositions_1", "BluPositions_2", "BluPositions_3", "BluPositions_4",
+        "BluMoveable_1", "BluMoveable_2", "BluMoveable_3", "BluMoveable_4",
+        "BluDouble_1", "BluDouble_2", "BluDouble_3", "BluDouble_4",
+        "BluInSafe_1", "BluInSafe_2", "BluInSafe_3", "BluInSafe_4",
+        "Red_Score", "Gre_Score", "Yel_Score", "Blu_Score",
+        "CurrentPlayer_1", "CurrentPlayer_2", "CurrentPlayer_3", "CurrentPlayer_4",
+        "DiceValue_1", "DiceValue_2", "DiceValue_3", "DiceValue_4", "DiceValue_5", "DiceValue_6",
+        "Reward", "SixBonusTurn", "HadExtraTurn", "ExtraTurn", "Done"
+    };
+            writer.WriteLine(string.Join(",", headers));
 
             foreach (var exp in experiences)
             {
-                int col = 1;
+                var row = new List<string>();
 
-                worksheet.Cell(row, col++).Value = gameIndex;
-                worksheet.Cell(row, col++).Value = exp.TurnIndex;
+                row.Add(gameIndex.ToString());
+                row.Add(exp.TurnIndex.ToString());
+                row.Add(exp.ActionString ?? "");
+                row.Add(exp.Action?.ToString() ?? "0");
 
-                // Helper local function to write float[] safely (4 elements)
-                void WriteVector4(float[]? vector)
+                void WriteVector(IEnumerable<float>? vector, int expectedLength)
                 {
                     if (vector == null)
                     {
-                        for (int i = 0; i < 4; i++) worksheet.Cell(row, col++).Value = 0f;
+                        row.AddRange(Enumerable.Repeat("0", expectedLength));
                     }
                     else
                     {
-                        for (int i = 0; i < 4; i++) worksheet.Cell(row, col++).Value = i < vector.Length ? vector[i] : 0f;
+                        row.AddRange(vector.Select(v => v.ToString("0.######")));
                     }
                 }
 
-                // Helper local function to write float[] safely (6 elements)
-                void WriteVector6(float[]? vector)
-                {
-                    if (vector == null)
-                    {
-                        for (int i = 0; i < 6; i++) worksheet.Cell(row, col++).Value = 0f;
-                    }
-                    else
-                    {
-                        for (int i = 0; i < 6; i++) worksheet.Cell(row, col++).Value = i < vector.Length ? vector[i] : 0f;
-                    }
-                }
+                // Write vectors
+                WriteVector(exp.StateBefore.RedLocations, 4);
+                WriteVector(exp.StateBefore.RedPositions, 4);
+                WriteVector(exp.StateBefore.RedMoveable, 4);
+                WriteVector(exp.StateBefore.RedDouble, 4);
+                WriteVector(exp.StateBefore.RedInSafe, 4);
 
-                // Write StateBefore fields
-                WriteVector4(exp.StateBefore.RedLocations);
-                WriteVector4(exp.StateBefore.RedPositions);
-                WriteVector4(exp.StateBefore.RedMoveable);
-                WriteVector4(exp.StateBefore.RedDouble);
-                WriteVector4(exp.StateBefore.RedInSafe);
+                WriteVector(exp.StateBefore.GreLocations, 4);
+                WriteVector(exp.StateBefore.GrePositions, 4);
+                WriteVector(exp.StateBefore.GreMoveable, 4);
+                WriteVector(exp.StateBefore.GreDouble, 4);
+                WriteVector(exp.StateBefore.GreInSafe, 4);
 
-                WriteVector4(exp.StateBefore.GreLocations);
-                WriteVector4(exp.StateBefore.GrePositions);
-                WriteVector4(exp.StateBefore.GreMoveable);
-                WriteVector4(exp.StateBefore.GreDouble);
-                WriteVector4(exp.StateBefore.GreInSafe);
+                WriteVector(exp.StateBefore.YelLocations, 4);
+                WriteVector(exp.StateBefore.YelPositions, 4);
+                WriteVector(exp.StateBefore.YelMoveable, 4);
+                WriteVector(exp.StateBefore.YelDouble, 4);
+                WriteVector(exp.StateBefore.YelInSafe, 4);
 
-                WriteVector4(exp.StateBefore.YelLocations);
-                WriteVector4(exp.StateBefore.YelPositions);
-                WriteVector4(exp.StateBefore.YelMoveable);
-                WriteVector4(exp.StateBefore.YelDouble);
-                WriteVector4(exp.StateBefore.YelInSafe);
+                WriteVector(exp.StateBefore.BluLocations, 4);
+                WriteVector(exp.StateBefore.BluPositions, 4);
+                WriteVector(exp.StateBefore.BluMoveable, 4);
+                WriteVector(exp.StateBefore.BluDouble, 4);
+                WriteVector(exp.StateBefore.BluInSafe, 4);
 
-                WriteVector4(exp.StateBefore.BluLocations);
-                WriteVector4(exp.StateBefore.BluPositions);
-                WriteVector4(exp.StateBefore.BluMoveable);
-                WriteVector4(exp.StateBefore.BluDouble);
-                WriteVector4(exp.StateBefore.BluInSafe);
+                WriteVector(exp.StateBefore.PlayerScores, 4);
+                WriteVector(exp.CurrentPlayer, 4);
+                WriteVector(exp.DiceValue, 6);
 
-                WriteVector4(exp.StateBefore.PlayerScores);
+                row.Add(exp.Reward.ToString("0.######"));
+                row.Add(exp.SixBonusTurn.ToString("0"));
+                row.Add(exp.HadExtraTurn.ToString("0"));
+                row.Add(exp.ExtraTurn.ToString("0"));
+                row.Add(exp.Done ? "1" : "0");
 
-                // CurrentPlayer and Action (4 elements each)
-                WriteVector4(exp.CurrentPlayer);
-                WriteVector4(exp.Action);
-
-                // DiceValue (6 elements)
-                WriteVector6(exp.DiceValue);
-
-                // Write StateAfter fields (same as StateBefore)
-                WriteVector4(exp.StateAfter.RedLocations);
-                WriteVector4(exp.StateAfter.RedPositions);
-                WriteVector4(exp.StateAfter.RedMoveable);
-                WriteVector4(exp.StateAfter.RedDouble);
-                WriteVector4(exp.StateAfter.RedInSafe);
-
-                WriteVector4(exp.StateAfter.GreLocations);
-                WriteVector4(exp.StateAfter.GrePositions);
-                WriteVector4(exp.StateAfter.GreMoveable);
-                WriteVector4(exp.StateAfter.GreDouble);
-                WriteVector4(exp.StateAfter.GreInSafe);
-
-                WriteVector4(exp.StateAfter.YelLocations);
-                WriteVector4(exp.StateAfter.YelPositions);
-                WriteVector4(exp.StateAfter.YelMoveable);
-                WriteVector4(exp.StateAfter.YelDouble);
-                WriteVector4(exp.StateAfter.YelInSafe);
-
-                WriteVector4(exp.StateAfter.BluLocations);
-                WriteVector4(exp.StateAfter.BluPositions);
-                WriteVector4(exp.StateAfter.BluMoveable);
-                WriteVector4(exp.StateAfter.BluDouble);
-                WriteVector4(exp.StateAfter.BluInSafe);
-
-                WriteVector4(exp.StateAfter.PlayerScores);
-
-                // Other simple float and bool fields
-                worksheet.Cell(row, col++).Value = exp.Reward;
-                worksheet.Cell(row, col++).Value = exp.SixBonusTurn;
-                worksheet.Cell(row, col++).Value = exp.HadExtraTurn;
-                worksheet.Cell(row, col++).Value = exp.ExtraTurn;
-                worksheet.Cell(row, col++).Value = exp.Done ? 1 : 0;
-
-                row++;
+                writer.WriteLine(string.Join(",", row));
             }
-
-            workbook.SaveAs(filePath+ $"game_{gameIndex++}.xlsx");
         }
+
     }
-  
 }

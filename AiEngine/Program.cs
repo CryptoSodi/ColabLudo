@@ -19,16 +19,18 @@ namespace AiEngine
         {
             Console.WriteLine("Welcome to the AI Engine for the Ludo Game!");
 
-            args = Environment.GetCommandLineArgs();
-            if (args.Length >= 4 && int.TryParse(args[1], out int gameIndexSave) && int.TryParse(args[2], out int windowX) && int.TryParse(args[3], out int windowY))
+            // Check if a game index was passed as the first argument
+            if (args.Length > 0 && int.TryParse(args[0], out int gameIndexSave))
             {
-                Console.WriteLine($"Received values: GameIndexSave={gameIndexSave}, X={windowX}, Y={windowY}");
                 GameExperienceExporter.gameIndex = gameIndexSave;
+                Console.WriteLine($"Game index set to: {gameIndexSave}");
             }
             else
             {
-                Console.WriteLine("No int value received.");
+                Console.WriteLine("No valid game index received. Defaulting to 0.");
+                GameExperienceExporter.gameIndex = 0; // Or any default you want
             }
+
             engine = new Engine("AI", gameType, gameType == "22" ? "4" : gameType, playerColor, "");
             engine.StopDice += new Engine.CallbackEventHandler(StopDice);
             engine.AnimateDice += new Engine.Callback_AnimateDice_EventHandler(AnimateDice);

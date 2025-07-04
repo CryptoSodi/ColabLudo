@@ -1,5 +1,7 @@
 ﻿using ClosedXML.Excel;
 using CsvHelper;
+using DocumentFormat.OpenXml.Packaging;
+using Microsoft.ML;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -7,6 +9,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using static AiController.LudoActionTrainer;
 namespace AiController
 {
     internal class Program
@@ -111,51 +114,87 @@ namespace AiController
             {
                 await GenerateAsync(); // Fixed: Call the method using 'await' and ensure it is static.
             }
+            Console.ReadLine();
         }
 
         private static async Task TrainAi()
         {
-            await AiController.MultiActionTrainer.TrainAi();
+            IDataView data = AiController.LudoActionTrainer.mlContext.Data.LoadFromTextFile<LudoInput>(
+                            path: AiController.LudoActionTrainer.dataPath,
+                            hasHeader: true,
+                            separatorChar: ',');
+            AiController.LudoActionTrainer.TrainAndSaveFilteredModel(1, data);
+            //AiController.LudoActionTrainer.TrainAndSaveFilteredModel(2, data);
+            //AiController.LudoActionTrainer.TrainAndSaveFilteredModel(3, data);
+            //AiController.LudoActionTrainer.TrainAndSaveFilteredModel(4, data);
         }
+        public static int gamesStarted = 0; // Track total games launched        
 
         public static async Task GenerateAsync() // Fixed: Changed method to 'static' and corrected spelling.
         {
             Console.WriteLine("Enter the next game index to start from:");
             nextGameIndex = int.Parse(Console.ReadLine());
-            // Path to the MAUI app EXE
+            // Path to the app EXE
             string secondAppPath = @"C:\Users\tassa\source\repos\LudoClient\AiEngine\bin\Release\net9.0\AiEngine.exe";
             Console.WriteLine("How many games to run at a time? (default 20)");
             int columns = int.Parse(Console.ReadLine());     // Number of games per row            
-            int rows = 1;         // Number of rows
-            int baseWindowX = -5; // Starting X
-            int baseWindowY = 0;  // Starting Y
-            int offsetX = 400;    // Horizontal gap between windows
-            int offsetY = 800;    // Vertical gap between rows
+            Console.WriteLine("How many Total games to run? (default 1000)");
+            int totalGames = int.Parse(Console.ReadLine()); // Total number of games
 
-            Console.WriteLine($"Starting {rows * columns} instances of the MAUI app...");
+
+
 
             var tasks = new List<Task>();
 
-            // Launch initial grid of games
-            for (int row = 0; row < rows; row++)
+            // Launch initial batch of games
+            for (int i = 0; i < columns; i++)
             {
-                for (int col = 0; col < columns; col++)
+                tasks.Add(Task.Run(async () =>
                 {
-                    int windowX = baseWindowX + (col * offsetX);
-                    int windowY = baseWindowY + (row * offsetY);
+                    while (true)
+                    {
+                        int currentGameIndex;
 
-                    // Start each game in its own task and respawn on exit
-                    tasks.Add(Task.Run(() =>
-                        KeepStartingGames(secondAppPath, windowX, windowY)
-                    ));
+                        lock (typeof(Program)) // Ensure thread-safe increment
+                        {
+                            if (gamesStarted >= totalGames)
+                                break; // Stop launching new games
 
-                    // Add delay between initial launches
-                    await Task.Delay(1000);
-                }
+                            currentGameIndex = nextGameIndex++;
+                            gamesStarted++;
+                        }
+
+                        Console.WriteLine($"Starting game #{currentGameIndex}");
+
+                        await StartGameAsync(secondAppPath, currentGameIndex);
+
+                        Console.WriteLine($"Game #{currentGameIndex} finished.");
+                    }
+                }));
+
+                // Optional: Small delay between launching parallel tasks
+                await Task.Delay(500);
             }
 
-            Console.WriteLine("All initial games started. Auto-respawn is running.");
-            await Task.WhenAll(tasks); // Wait forever
+            Console.WriteLine($"Started running up to {totalGames} games with {columns} in parallel.");
+            await Task.WhenAll(tasks); // Wait for all tasks to complete
+        }
+        public static async Task StartGameAsync(string exePath, int gameIndex)
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = gameIndex.ToString(), // Pass the game index if needed
+                    UseShellExecute = false
+                }
+            };
+
+            process.Start();
+
+            // Optionally wait for it to finish
+            process.WaitForExit();
         }
         static void KeepStartingGames(string appPath, int x, int y)
         {
