@@ -1,9 +1,10 @@
-﻿namespace SharedCode.CoreEngine
+﻿using DocumentFormat.OpenXml.Wordprocessing;
+
+namespace SharedCode.CoreEngine
 {
     public class Engine
     {
-        GameExperienceRecorder gameExperienceRecorder { get; set; }
-        static string PlayState = "Active";
+        public string PlayState = "Active";
         // Events
         public delegate void CallbackEventHandler(string SeatName, int diceValue);
         public event CallbackEventHandler StopDice;
@@ -28,12 +29,11 @@
         // Game logic helpers
         public Dictionary<string, List<Piece>>? board;
         public EngineHelper EngineHelper = new EngineHelper();
-        
+
         public bool processing = false;
-        public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString="")
+        public Engine(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
         {
-            gameExperienceRecorder = new GameExperienceRecorder();
-            processing = false;            
+            processing = false;
             board = new Dictionary<string, List<Piece>>
     {
         { "p0", new List<Piece>() },
@@ -137,7 +137,7 @@
 
             // Initialize original path
             EngineHelper.InitializeOriginalPath();
-            
+
             EngineHelper.currentPlayer = EngineHelper.players[0];
 
             PlayState = "Active";
@@ -167,7 +167,7 @@
                 EngineHelper.gameState = "RollingDice";
                 AnimateDice?.Invoke(seatName);
 
-                tempDice = EngineHelper.diceValue = EngineHelper.RollDice();                
+                tempDice = EngineHelper.diceValue = EngineHelper.RollDice();
 
                 if (EngineHelper.gameMode != "Server" && EngineHelper.gameMode != "AI")
                     await Task.Delay(200);
@@ -229,8 +229,8 @@
 
                 List<Piece> moveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.Moveable).ToList();
                 List<List<Piece>> DoubleMoveablePieces = EngineHelper.currentPlayer.Pieces.Where(p => p.DoubleMoveable).GroupBy(p => p.getPieceBox()).Where(g => g.Count() > 1).Select(g => g.ToList()).ToList(); // This is List<List<Piece>>
-
-                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
+                if (EngineHelper.showLog)
+                    Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} rolled a {EngineHelper.diceValue}. Can move {moveablePieces.Count} double move: {DoubleMoveablePieces.Count} pieces. ");
 
                 // Handle possible scenarios based on the number of moveable pieces
                 bool moveSeat = moveablePieces.Count > 0;
@@ -239,7 +239,7 @@
                 if (moveSeat || moveDouble)
                 {
                     EngineHelper.gameState = "MovePiece";
-                    
+
                     if (moveSeat && moveDouble)
                     {
                         EngineHelper.animationBlock = false;
@@ -282,24 +282,35 @@
                 }
                 else
                 {
-                    EngineHelper.animationBlock = false;                    
+                    EngineHelper.animationBlock = false;
                     StopProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
                     EngineHelper.ChangeTurn(); // Change turn to the next player
                     EngineHelper.gameState = "RollDice";
                     StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
                 }
-
-                Console.WriteLine($"Single Move : {moveSeat} , Double Move : {moveDouble}");
+                if (EngineHelper.showLog)
+                    Console.WriteLine($"Single Move : {moveSeat} , Double Move : {moveDouble}");
             }
             else
             {
-                Console.WriteLine("Not the turn of the player");
+                if (EngineHelper.showLog)
+                    Console.WriteLine("Not the turn of the player");
             }
             processing = false;
             return $"{tempDice},{result}";
         }
+
+        double fitnessScore { get; set;}
+        public double fitness(double value = 0, bool returnfitness = false)
+        {
+            if (returnfitness)
+                return fitnessScore;            
+            fitnessScore += value;
+            return fitnessScore;
+        }
         public async Task<string> MovePieceAsync(String piece1String, String piece2String)
         {
+            fitnessScore = 0;
             bool SaveGameFlag = false;
             if (PlayState == "Stop")
                 return ",";
@@ -325,39 +336,43 @@
             }
 
             if (piece1 == null || EngineHelper.diceValue == 0)
+            {
+                fitness(-0.01);// Penalize for invalid move
                 return ","; // Exit if not the current player's piece or no dice roll
-            gameExperienceRecorder.SetStateBefore(new BaseML(this), EngineHelper.currentPlayer.Color, EngineHelper.diceValue);
+            }
 
             if ((piece1.Moveable || piece1.DoubleMoveable) && EngineHelper.checkTurn(piece1.Name, "MovePiece"))
             {
                 processing = true;
                 EngineHelper.gameState = "MovingPiece";
-                
-                Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {piece1String} & {piece2String} with dicevalue{EngineHelper.diceValue}.");
-
-                
+                if (EngineHelper.showLog)
+                    Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {piece1String} & {piece2String} with dicevalue{EngineHelper.diceValue}.");
 
                 List<Piece> relocatedPieces = new List<Piece>();//Pieces sent to the relocation service to relocate and paint them on the game UI
 
                 if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
                 {
-                    gameExperienceRecorder.SetReward(10);
+                    fitness(1);
                     piece1.Jump(this, EngineHelper.diceValue);
                     relocatedPieces.Add(piece1);
                     await (RelocateAsync?.Invoke(relocatedPieces, piece1.Clone(), "move") ?? Task.CompletedTask);
                 }
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    gameExperienceRecorder.SetReward(EngineHelper.diceValue);
                     int oldPosition = piece1.Position;
                     string oldBox = piece1.getPieceBox();
+                    
                     if (piece2 != null)
-                    {
+                    {   
+                        fitnessScore += (EngineHelper.diceValue)/10; // Adding some fitness for double move
                         piece2.Jump(this, EngineHelper.diceValue / 2);
                         piece1.Jump(this, EngineHelper.diceValue / 2);
                     }
                     else
+                    {
+                        fitnessScore += (EngineHelper.diceValue) / 10;
                         piece1.Jump(this, EngineHelper.diceValue);
+                    }
 
                     string newBox = piece1.getPieceBox();
                     int ownAtDest = board?[newBox].Count(x => x.Color == piece1.Color) ?? 0;
@@ -381,11 +396,10 @@
                             ownTrapped.Location = 0;
                             board?[oldBox].Remove(ownTrapped);
                             board?[ownTrapped.getPieceBox()].Add(ownTrapped);
-
+                            fitness(-0.5);// Own piece killed because it got trapped by moving one of the double pieces
                             if (RelocateAsync != null)
                             {
                                 relocatedPieces.Add(ownTrapped);
-                                gameExperienceRecorder.SetReward(-6);// Lose points in case of getting own piece beat by moveing a piece
                                 RelocateAsync(relocatedPieces, piece1Clone, "kill");
                             }
                         }
@@ -412,13 +426,14 @@
                             board?[enemy.getPieceBox()].Add(enemy);
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
-
+                            
                             if (RelocateAsync != null)
                             {
                                 EngineHelper.currentPlayer.Score += 5; // INCREASE SCORE BY KILLED PIECE
                                 RelocateAsync(relocatedPieces, relocatedPieces[0], "kill");
                             }
                         }
+                        fitness(1); // Killed 2 enemy pieces
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
                     }
@@ -431,12 +446,13 @@
                         killedPiece.Location = 0;
                         board?[newBox].Remove(killedPiece);
                         board?[killedPiece.getPieceBox()].Add(killedPiece);
+                        fitness(0.5); // Killed 1 enemy pieces
                         killed = true;
 
                         relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        
+
                         await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);
 
                         relocatedPieces = new List<Piece>();
@@ -454,15 +470,13 @@
                         relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        
-                        await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);                        
+
+                        await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);
                     }
-                    if (killed)
-                        gameExperienceRecorder.SetReward(EngineHelper.diceValue);
 
                     if (piece1.Location == 57)
                     {
-                        gameExperienceRecorder.SetReward(57);
+                        fitness(2); // reched home
                         killed = true;
                         player.Pieces.Remove(piece1);
                         player.removedPieces.Add(piece1);
@@ -472,8 +486,6 @@
                             killed = false;
                         }
                     }
-                    if (killed)
-                        gameExperienceRecorder.SetExtraTurn(1);
                 }
                 else
                 {
@@ -488,8 +500,7 @@
                 if (player.Pieces.Count == 0)
                 {
                     player.playState = "Home";
-                    gameExperienceRecorder.SetReward(80); // All Pieces at home
-                    Console.WriteLine($"{player.Color} has won the game!");
+                    
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
                     if (winners.Count > 0)
@@ -497,34 +508,28 @@
                         SaveGameFlag = true;
                         //GANE OVER
                         processing = false;
+                        //Console.WriteLine($"Game Over! {winners[0].Color} has won the game.");
                     }
-                }else
+                    if (player.Color == "red")
+                    {
+                        if (EngineHelper.index < 350)
+                            fitness(20.0);
+                        else
+                            fitness(10.0);
+                    }
+                }
+                else
                     StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
             }
             else
             {
+                fitness(-0.01);// Penalize for invalid move
                 processing = false;
-                player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER                
-                gameExperienceRecorder.SetAction("", "");
-                gameExperienceRecorder.SaveExperience();
                 return ",";
             }
-
             processing = false;
-            player.Score += gameExperienceRecorder.reward;//INCREASE THE SCORE OF THE PLAYER            
-            gameExperienceRecorder.SetAction(piece1String, piece2String);
-            if (!SaveGameFlag)
-                gameExperienceRecorder.SaveExperience();
-
-            
-            if(!SaveGameFlag && EngineHelper.currentPlayer.Color == player.Color)
-                gameExperienceRecorder.SetHadExtraTurn(1);
-            
             if (SaveGameFlag)
             {
-                gameExperienceRecorder.SetDone(true);
-                gameExperienceRecorder.SaveExperience();
-                GameExperienceExporter.ExportToCsv("D:/LudoAiData/", gameExperienceRecorder.GetAllExperiences());
                 //GAMEOVER
                 GameOver(EngineHelper.checkGameOver());
             }
@@ -537,10 +542,10 @@
             //EngineHelper.players.RemoveAll(p => p.Color == playerColor);
             if (EngineHelper.currentPlayer.Color == playerColor)
                 EngineHelper.ChangeTurn();
-            
+
             PlayerLeftSeat?.Invoke(playerColor);
             List<Player> winners = EngineHelper.checkGameOver();
-            if (winners.Count>0)
+            if (winners.Count > 0)
             {
                 //GANE OVER
                 GameOver(winners);
@@ -549,7 +554,7 @@
         private void GameOver(List<Player> winners)
         {
             if (PlayState == "Active" && EngineHelper.gameMode != "Client")
-            {   
+            {
                 // Show game over dialog if the game is not in online mode
                 if (EngineHelper.gameType == "22")
                     ShowResults?.Invoke(winners[0].Color + "," + winners[1].Color, EngineHelper.gameType + "", "0");
@@ -576,6 +581,7 @@
     }
     public class EngineHelper
     {
+        public static bool showLog = false;
         public int index = 0;
         internal int indexServer = 0;
         // Game logic helpers
@@ -591,9 +597,9 @@
         public List<Player> players;
         // Public fields
         // Constants or configuration lists
-        public readonly List<int> safeZone = new List<int> {0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1};
+        public readonly List<int> safeZone = new List<int> { 0, 8, 13, 21, 26, 34, 39, 47, 52, 53, 54, 55, 56, 57, -1 };
         public Dictionary<string, int[]> originalPath = new Dictionary<string, int[]>();
-       
+
         public bool animationBlock = false;
 
         public void InitializePlayers(string playerCount, string playerColor)
@@ -805,7 +811,7 @@
                 { "hb3", new int[] { 12, 12 } }
             };
         }
-       
+
         public void PerformTurnChecks(bool killed, int diceValue = -1)
         {
             gameState = "RollDice";
@@ -845,7 +851,8 @@
                 ChangeTurn(retry + 1);
                 return;
             }
-            Console.WriteLine("Current Player: " + currentPlayer.Color);
+            if (showLog)
+                Console.WriteLine("Current Player: " + currentPlayer.Color);
         }
         public bool IsTeammate(string playerColor, string targetColor)
         {
@@ -864,10 +871,11 @@
             List<Player> playersHome = players.Where(p => p.playState == "Home").ToList();
             List<Player> playersActive = players.Where(p => p.playState == "Playing").ToList();
             List<Player> playersLeft = players.Where(p => p.playState == "Left").ToList();
-            
+
             if (gameMode != "Client")
             {
-                if (gameMode == "Computer" || gameMode == "AI") {
+                if (gameMode == "Computer" || gameMode == "AI")
+                {
                     //If the game mode is computer, the game is over when any player reaches home
                     //If any player leaves the game is over and the rest of the players win
                     // If any player reaches home, they win
@@ -925,7 +933,7 @@
             return players.FirstOrDefault(p => p.Color == color);
         }
 
-        public static readonly Random random = new Random(DateTime.UtcNow.Second+ DateTime.UtcNow.Microsecond);
+        public static readonly Random random = new Random(DateTime.UtcNow.Second + DateTime.UtcNow.Microsecond);
         public string AIRequestPiece(string seatColor = "")
         {
             Player player = this.currentPlayer;
@@ -936,27 +944,11 @@
             {
                 // If there are double moveable pieces, select one randomly
                 List<Piece> selectedGroup = DoubleMoveablePieces[random.Next(0, DoubleMoveablePieces.Count)];
-                result = selectedGroup[0].Name + "," + selectedGroup[1].Name;                
+                result = selectedGroup[0].Name + "," + selectedGroup[1].Name;
             }
             else
                 result = moveablePieces[random.Next(0, moveablePieces.Count)].Name + ",";
             return result;
-        }
-        public string AIGetSnapShot(int GameId, String Action)
-        {
-            // Collect all relevant game states
-            string currentPlayerState = $"PlayerColor:{currentPlayer.Color},Score:{currentPlayer.Score},Pieces:{string.Join(";", currentPlayer.Pieces.Select(p => $"{p.Name}:{p.Position}:{p.Location}:{(p.Moveable ? "Moveable" : "Blocked")}"))}";
-
-            string opponentStates = string.Join("|", players.Where(p => p.Color != currentPlayer.Color)
-                .Select(opponent => $"OpponentColor:{opponent.Color},Score:{opponent.Score},Pieces:{string.Join(";", opponent.Pieces.Select(p => $"{p.Name}:{p.Position}:{p.Location}:{(p.Moveable ? "Moveable" : "Blocked")}"))}"));
-
-            
-
-            string safeZoneState = string.Join(",", safeZone);
-
-            // Combine the snapshot information
-            return $"GameId:{GameId},Action:{Action},GameType:{gameType},GameMode:{gameMode},GameState:{gameState},DiceValue:{diceValue},RollsString:{rollsString},CurrentPlayer:{currentPlayerState},OpponentStates:{opponentStates},SafeZones:{safeZoneState}";
-
         }
     }
 }
