@@ -1004,15 +1004,6 @@
 	  <Folder Include="Resources\Raw\" />
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
-	  <PackageReference Include="Xamarin.GooglePlayServices.Auth">
-	    <Version>121.3.0.2</Version>
-	  </PackageReference>
-	  <PackageReference Include="Xamarin.GooglePlayServices.Games.V2">
-	    <Version>120.1.2.5</Version>
-	  </PackageReference>
-	</ItemGroup>
-
 	<ItemGroup>
 	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
 	</ItemGroup>
