@@ -296,8 +296,17 @@
             processing = false;
             return $"{tempDice},{result}";
         }
+        double fitnessScore { get; set; }
+        public double fitness(double value = 0, bool returnfitness = false)
+        {
+            if (returnfitness)
+                return fitnessScore;
+            fitnessScore += value;
+            return fitnessScore;
+        }
         public async Task<string> MovePieceAsync(String piece1String, String piece2String)
         {
+            fitnessScore = 0;
             bool SaveGameFlag = false;
             if (PlayState == "Stop")
                 return ",";
@@ -323,36 +332,48 @@
             }
 
             if (piece1 == null || EngineHelper.diceValue == 0)
+            {
+                fitness(-0.01);// Penalize for invalid move
                 return ","; // Exit if not the current player's piece or no dice roll
-            
+            }
+
             if ((piece1.Moveable || piece1.DoubleMoveable) && EngineHelper.checkTurn(piece1.Name, "MovePiece"))
             {
                 processing = true;
                 EngineHelper.gameState = "MovingPiece";
-                
                 Console.WriteLine($"{EngineHelper.index} : {EngineHelper.currentPlayer.Color} moved a {piece1String} & {piece2String} with dicevalue{EngineHelper.diceValue}.");
-
-                
 
                 List<Piece> relocatedPieces = new List<Piece>();//Pieces sent to the relocation service to relocate and paint them on the game UI
 
-                if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
+                if (piece1.Position == -1 && EngineHelper.diceValue == 6 && piece2 == null) // Moving from base to start
                 {
+                    fitness(1);
                     piece1.Jump(this, EngineHelper.diceValue);
                     relocatedPieces.Add(piece1);
                     await (RelocateAsync?.Invoke(relocatedPieces, piece1.Clone(), "move") ?? Task.CompletedTask);
                 }
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    int oldPosition = piece1.Position;
-                    string oldBox = piece1.getPieceBox();
+                    int oldPosition = piece1Clone.Position;
+                    string oldBox = piece1Clone.getPieceBox();
+
                     if (piece2 != null)
                     {
+                        if (piece2.Location != piece1.Location || (EngineHelper.diceValue != 2 && EngineHelper.diceValue != 4 && EngineHelper.diceValue != 6))
+                        {
+                            fitness(-0.01);// Penalize for invalid move
+                            return ","; // Exit if not the current player's piece or no dice roll
+                        }
+
+                        fitnessScore += (EngineHelper.diceValue) / 10; // Adding some fitness for double move
                         piece2.Jump(this, EngineHelper.diceValue / 2);
                         piece1.Jump(this, EngineHelper.diceValue / 2);
                     }
                     else
+                    {
+                        fitnessScore += (EngineHelper.diceValue) / 10;
                         piece1.Jump(this, EngineHelper.diceValue);
+                    }
 
                     string newBox = piece1.getPieceBox();
                     int ownAtDest = board?[newBox].Count(x => x.Color == piece1.Color) ?? 0;
@@ -369,17 +390,26 @@
 
                         if (ownCount == 1 && enemyCount == 1)
                         {
+                            Piece ownTrapped = null;
+                            try
+                            {
+                                ownTrapped = tokensInOldBox.First(p => p.Color == piece1.Color && p.Name != piece1.Name);
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
                             // Kill the remaining own piece in the old box
-                            var ownTrapped = tokensInOldBox.First(p => p.Color == piece1.Color && p != piece1);
+
                             var ownTrappedClone = ownTrapped.Clone();
                             ownTrapped.Position = -1;
                             ownTrapped.Location = 0;
                             board?[oldBox].Remove(ownTrapped);
                             board?[ownTrapped.getPieceBox()].Add(ownTrapped);
-
+                            fitness(-0.5);// Own piece killed because it got trapped by moving one of the double pieces
                             if (RelocateAsync != null)
                             {
-                                relocatedPieces.Add(ownTrapped);                                
+                                relocatedPieces.Add(ownTrapped);
                                 RelocateAsync(relocatedPieces, piece1Clone, "kill");
                             }
                         }
@@ -413,6 +443,7 @@
                                 RelocateAsync(relocatedPieces, relocatedPieces[0], "kill");
                             }
                         }
+                        fitness(1); // Killed 2 enemy pieces
                         killed = true;
                         EngineHelper.currentPlayer.CanEnterGoal = true;
                     }
@@ -425,12 +456,13 @@
                         killedPiece.Location = 0;
                         board?[newBox].Remove(killedPiece);
                         board?[killedPiece.getPieceBox()].Add(killedPiece);
+                        fitness(0.5); // Killed 1 enemy pieces
                         killed = true;
 
                         relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        
+
                         await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);
 
                         relocatedPieces = new List<Piece>();
@@ -448,12 +480,13 @@
                         relocatedPieces.Add(piece1);
                         if (piece2 != null)
                             relocatedPieces.Add(piece2);
-                        
-                        await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);                        
+
+                        await (RelocateAsync?.Invoke(relocatedPieces, piece1Clone.Clone(), "move") ?? Task.CompletedTask);
                     }
-                    
+
                     if (piece1.Location == 57)
                     {
+                        fitness(2); // reched home
                         killed = true;
                         player.Pieces.Remove(piece1);
                         player.removedPieces.Add(piece1);
@@ -476,8 +509,8 @@
                 // Check if piece has reached the end
                 if (player.Pieces.Count == 0)
                 {
-                    player.playState = "Home";                    
-                    Console.WriteLine($"{player.Color} has won the game!");
+                    player.playState = "Home";
+
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
                     if (winners.Count > 0)
@@ -485,12 +518,22 @@
                         SaveGameFlag = true;
                         //GANE OVER
                         processing = false;
+                        //Console.WriteLine($"Game Over! {winners[0].Color} has won the game.");
                     }
-                }else
+                    if (player.Color == "red")
+                    {
+                        if (EngineHelper.index < 350)
+                            fitness(20.0);
+                        else
+                            fitness(10.0);
+                    }
+                }
+                else
                     StartProgressAnimation?.Invoke(EngineHelper.currentPlayer.Color);
             }
             else
             {
+                fitness(-0.01);// Penalize for invalid move
                 processing = false;
                 return ",";
             }

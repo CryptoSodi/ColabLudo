@@ -350,7 +350,7 @@ namespace SharedCode.CoreEngine
 
                 List<Piece> relocatedPieces = new List<Piece>();//Pieces sent to the relocation service to relocate and paint them on the game UI
 
-                if (piece1.Position == -1 && EngineHelper.diceValue == 6) // Moving from base to start
+                if (piece1.Position == -1 && EngineHelper.diceValue == 6 && piece2 == null) // Moving from base to start
                 {
                     fitness(1);
                     piece1.Jump(this, EngineHelper.diceValue);
@@ -359,12 +359,18 @@ namespace SharedCode.CoreEngine
                 }
                 else if (piece1.Location + EngineHelper.diceValue <= 57) // Normal move within bounds
                 {
-                    int oldPosition = piece1.Position;
-                    string oldBox = piece1.getPieceBox();
-                    
+                    int oldPosition = piece1Clone.Position;
+                    string oldBox = piece1Clone.getPieceBox();
+
                     if (piece2 != null)
-                    {   
-                        fitnessScore += (EngineHelper.diceValue)/10; // Adding some fitness for double move
+                    {
+                        if (piece2.Location != piece1.Location || (EngineHelper.diceValue != 2 && EngineHelper.diceValue != 4 && EngineHelper.diceValue != 6))
+                        {
+                            fitness(-0.01);// Penalize for invalid move
+                            return ","; // Exit if not the current player's piece or no dice roll
+                        }
+
+                        fitnessScore += (EngineHelper.diceValue) / 10; // Adding some fitness for double move
                         piece2.Jump(this, EngineHelper.diceValue / 2);
                         piece1.Jump(this, EngineHelper.diceValue / 2);
                     }
@@ -389,8 +395,17 @@ namespace SharedCode.CoreEngine
 
                         if (ownCount == 1 && enemyCount == 1)
                         {
+                            Piece ownTrapped = null;
+                            try
+                            {
+                                ownTrapped = tokensInOldBox.First(p => p.Color == piece1.Color && p.Name != piece1.Name);
+                            }
+                            catch (Exception ex)
+                            {
+
+                            }
                             // Kill the remaining own piece in the old box
-                            var ownTrapped = tokensInOldBox.First(p => p.Color == piece1.Color && p != piece1);
+
                             var ownTrappedClone = ownTrapped.Clone();
                             ownTrapped.Position = -1;
                             ownTrapped.Location = 0;
@@ -426,7 +441,7 @@ namespace SharedCode.CoreEngine
                             board?[enemy.getPieceBox()].Add(enemy);
                             relocatedPieces = new List<Piece>();
                             relocatedPieces.Add(enemy);
-                            
+
                             if (RelocateAsync != null)
                             {
                                 EngineHelper.currentPlayer.Score += 5; // INCREASE SCORE BY KILLED PIECE
@@ -500,7 +515,7 @@ namespace SharedCode.CoreEngine
                 if (player.Pieces.Count == 0)
                 {
                     player.playState = "Home";
-                    
+
                     // EngineHelper.players.Remove(player);
                     List<Player> winners = EngineHelper.checkGameOver();
                     if (winners.Count > 0)
