@@ -1,9 +1,8 @@
 ﻿using Android.App;
 using Android.Runtime;
-using Android.Gms.Games;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 using LudoClient.Platforms.Android;
 using LudoClient.Services;
+using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 namespace LudoClient
 {
