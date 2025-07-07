@@ -489,7 +489,6 @@
                         fitness(2); // reched home
                         killed = true;
                         player.Pieces.Remove(piece1);
-                        player.removedPieces.Add(piece1);
                         if (player.Pieces.Count == 0)
                         {
                             EngineHelper.diceValue = 0;

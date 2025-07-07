@@ -11,7 +11,8 @@ public partial class WalletPage : ContentPage
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " SOL";
+            var balance = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance ?? 0;
+            Coins.Text = Math.Floor(balance * 100) / 100 + " SOL";
         });
         //this.ShowPopup(new AddCash());
     }
