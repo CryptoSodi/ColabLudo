@@ -138,9 +138,7 @@ namespace SignalR.Server
             return Task.FromResult(pub);
         }
 
-        /// <summary>
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
-        /// </summary>
         public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode="")
         {
             using var ctx = _dbFactory.CreateDbContext();
@@ -156,15 +154,14 @@ namespace SignalR.Server
                 Description = description,
                 RoomCode = RoomCode,
                 IsOnChain = IsOnChain,
-                txId = txId
+                txId = txId,
+                CreatedDate = DateTime.UtcNow
             });
             ctx.PlayerWallet.Update(sub);
             await ctx.SaveChangesAsync();
             return true;
         }
-        /// <summary>
         /// Queries the on-chain SOL balance (in lamports) for a given public key.
-        /// </summary>
         public async Task<ulong> GetOnChainBalanceAsync(string pubKey)
         {
             var r = await _rpc.GetBalanceAsync(pubKey);
