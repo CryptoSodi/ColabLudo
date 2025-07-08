@@ -1,6 +1,4 @@
 using LudoClient.Constants;
-using SharedCode;
-using SharedCode.Constants;
 using SharedCode.CoreEngine;
 
 namespace LudoClient.ControlView;

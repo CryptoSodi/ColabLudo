@@ -3,6 +3,7 @@ using Android.Gms.Auth.Api.SignIn;
 using Android.Gms.Tasks;  // for IOnCompleteListener and Android.Gms.Tasks.Task
 using Android.Provider;
 using LudoClient.Services;
+using SharedCode.Constants;
 namespace LudoClient.Platforms.Android
 {
     public class DeviceIdentifierService : IDeviceIdentifierService
@@ -24,7 +25,6 @@ namespace LudoClient.Platforms.Android
         private TaskCompletionSource<string?> _signInTcs;
         private TaskCompletionSource<bool> _signOutTcs;
         public static GoogleAuthService? Instance { get; private set; }
-
         System.String webclientID = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
         public GoogleAuthService()
         {

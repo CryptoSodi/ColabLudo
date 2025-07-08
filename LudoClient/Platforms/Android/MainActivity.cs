@@ -5,6 +5,7 @@ using Android.Content.PM;
 using Android.OS;
 using Java.Security;
 using LudoClient.Platforms.Android;
+using SharedCode.Constants;
 using PMSignature = Android.Content.PM.Signature;
 
 namespace LudoClient
@@ -28,8 +29,9 @@ namespace LudoClient
         }
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
+            base.OnCreate(savedInstanceState);            
             string sha1 = GetApkSignatureSha1(this);
+            GlobalConstants.sha1 = sha1;
             Console.WriteLine($"My APK SHA-1 = {sha1}");
             UserDialogs.Init(this);
         }
