@@ -1,11 +1,8 @@
-﻿using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Auth.Api.SignIn;
 using Android.Gms.Tasks;  // for IOnCompleteListener and Android.Gms.Tasks.Task
 using Android.Provider;
 using LudoClient.Services;
-using System.Net;
-using static Android.Resource;
 namespace LudoClient.Platforms.Android
 {
     public class DeviceIdentifierService : IDeviceIdentifierService

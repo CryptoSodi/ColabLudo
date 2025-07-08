@@ -130,7 +130,7 @@
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#135496" />
 		<MauiIcon Include="Resources\AppIcon\appiconfg.svg" />
 		<MauiImage Include="Resources\Images\AddCash\after_add_cash_bg_hor.png" />
 		<MauiImage Include="Resources\Images\ChatBox\btn_emoji.png" />
@@ -146,8 +146,8 @@
 		<MauiImage Include="Resources\Images\Components\Tablets\detailwhite.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\number_0.png" />
 
-		<!-- Splash Screen -->
-		<MauiImage Include="Resources\Images\dashboard\splashlogo.png" Color="#512BD4" BaseSize="128,128" />
+		<!-- Splash Screen -->		
+		<MauiSplashScreen Include="Resources\Images\dashboard\splashlogo.png" Color="#135496" BaseSize="128,128" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
@@ -734,7 +734,6 @@
 		<PackageReference Include="Acr.UserDialogs.Maui" Version="9.2.1" />
 		<PackageReference Include="AcrylicView.Maui" Version="2.1.3" />
 		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
-		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
 		<PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="9.0.5" />
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
@@ -1006,6 +1005,12 @@
 
 	<ItemGroup>
 	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
+	  <PackageReference Include="Xamarin.GooglePlayServices.Auth">
+	    <Version>121.3.0.3</Version>
+	  </PackageReference>
 	</ItemGroup>
 
 </Project>
