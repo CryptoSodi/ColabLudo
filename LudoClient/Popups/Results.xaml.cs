@@ -1,6 +1,7 @@
 using LudoClient.Constants;
 using SharedCode;
 using SimpleToolkit.Core;
+using System.Security.AccessControl;
 
 namespace LudoClient.Popups;
 
@@ -51,6 +52,35 @@ public partial class Results : ContentPage
                 break;
         }
     }
+
+    internal void init(TournamentResultDTO tournamentResultDTO)
+    {
+        switch (tournamentResultDTO.GameType)
+        {
+            case "22":
+                //BackGroundImage = "user_main_bg_gold.png" BorderImage = "gold_border.png" StarImage = "star_gold.png" PlayerName = "Tassaduq"
+                player1.init(tournamentResultDTO.Seats[0].PlayerName, tournamentResultDTO.Seats[0].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize1 * 100) / 100 + " SOL", "1*");
+                player2.init(tournamentResultDTO.Seats[1].PlayerName, tournamentResultDTO.Seats[1].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize2 * 100) / 100 + " SOL", "2*");
+                player3.init(tournamentResultDTO.Seats[2].PlayerName, tournamentResultDTO.Seats[2].PlayerPicture, "-" + Math.Floor(tournamentResultDTO.Prize3 * 100) / 100 + " SOL", "3");
+                player4.hide();
+                break;
+            case "2":
+                player1.init(tournamentResultDTO.Seats[0].PlayerName, tournamentResultDTO.Seats[0].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize1 * 100) / 100 + " SOL", "1*");
+                player2.init(tournamentResultDTO.Seats[1].PlayerName, tournamentResultDTO.Seats[1].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize2 * 100) / 100 + " SOL", "2*");
+                player3.hide();
+                player4.hide();
+                break;
+            case "3":
+                player1.init(tournamentResultDTO.Seats[0].PlayerName, tournamentResultDTO.Seats[0].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize1 * 100) / 100 + " SOL", "1*");
+                player2.init(tournamentResultDTO.Seats[1].PlayerName, tournamentResultDTO.Seats[1].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize2 * 100) / 100 + " SOL", "2*");
+                player3.init(tournamentResultDTO.Seats[2].PlayerName, tournamentResultDTO.Seats[2].PlayerPicture, "+" + Math.Floor(tournamentResultDTO.Prize3 * 100) / 100 + " SOL", "3");
+                player4.hide();
+                break;
+            case "4":
+                break;
+        }
+    }
+
     private void BtnExit(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");

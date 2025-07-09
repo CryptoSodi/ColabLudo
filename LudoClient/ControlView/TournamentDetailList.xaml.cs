@@ -1,6 +1,9 @@
 using LudoClient.Constants;
+using LudoClient.Popups;
 using SharedCode;
 using SharedCode.Constants;
+using System.Security.AccessControl;
+using System.Text.Json;
 using System.Timers;
 
 namespace LudoClient.ControlView
@@ -130,7 +133,7 @@ namespace LudoClient.ControlView
             joining = true;
 
             if (ButtonText.Text == "WAIT") return;
-            if (ButtonText.Text == "PLAY") 
+            if (ButtonText.Text == "PLAY")
             {
                 GameDto gameDto = new GameDto();
                 gameDto.IsTournamentGame = true; // Set the tournament game flag
@@ -142,6 +145,17 @@ namespace LudoClient.ControlView
                 //Navigation.PushAsync(new GameRoom(gameType, entry));
                 _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
                 return;
+            }
+            if (ButtonText.Text == "RESULTS")
+            {
+                TournamentResultDTO tournamentResultDTO = await GlobalConstants.MatchMaker.GetResultsTournament(int.Parse(TournamentId.Text));
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Task.Delay(100);
+                    ClientGlobalConstants.results = new Results();
+                    ClientGlobalConstants.results.init(tournamentResultDTO);
+                });
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
             }
             tournament = await GlobalConstants.MatchMaker.JoinTournament(int.Parse(TournamentId.Text));
             Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");

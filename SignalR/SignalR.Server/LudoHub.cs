@@ -626,6 +626,22 @@ namespace SignalR.Server
         }
         /* END DAILY BONUS */
         /* TOURNAMENT API */
+        public TournamentResultDTO GetResultsTournament(int tournamentId)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            Task<Tournament?> tournament = ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
+            TournamentResultDTO tournamentResultDTO = new TournamentResultDTO();
+            tournamentResultDTO.Seats = new List<SharedCode.PlayerDto>();
+            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 3, PlayerColor = "Red", PlayerName = "Syed Tassaduq", PlayerPicture = "https://lh3.googleusercontent.com/a/ACg8ocLMYETsXNDf8wihXQej62uXHjuF67aNzDfoFgn7Tvp53eNu8Wux=s96-c" });
+            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 2, PlayerColor = "Green", PlayerName = "Sodi", PlayerPicture = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj" });
+            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 4, PlayerColor = "Yellow", PlayerName = "Mazhar", PlayerPicture = "https://lh3.googleusercontent.com/a/ACg8ocIbkj3BjuoGtaCnkdqwfXkk21UPGUuLLUZcCWlzwuIhCvsyKQ=s360-c-no" });
+
+            tournamentResultDTO.Prize1 = tournament.Result.Prize1;
+            tournamentResultDTO.Prize2 = tournament.Result.Prize2;
+            tournamentResultDTO.Prize3 = tournament.Result.Prize3;
+            tournamentResultDTO.GameType = "3"; // Assuming 2-player game type for now
+            return tournamentResultDTO;
+        }
         public List<TournamentDTO> GetAllTournaments(string type)
         {
             using var ctx = _contextFactory.CreateDbContext();

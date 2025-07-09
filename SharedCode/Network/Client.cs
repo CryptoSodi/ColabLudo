@@ -251,7 +251,10 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
         }
-
+        internal async Task<TournamentResultDTO> GetResultsTournament(int TournamentID)
+        {
+            return await _hubConnection.InvokeAsync<TournamentResultDTO>("GetResultsTournament", TournamentID).ConfigureAwait(false);
+        }
         public string getAuthToken()
         {
             return Preferences.Get("AuthToken", "");

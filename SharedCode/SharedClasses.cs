@@ -53,6 +53,15 @@
         public bool IsJoined { get; set; } = false; // Flag to indicate if the player has joined the tournament
         public string StatusCode { get; set; }
     }
+    public class TournamentResultDTO
+    {
+        public int TournamentId { get; set; }
+        public List<SharedCode.PlayerDto> Seats { get; set; } = new List<SharedCode.PlayerDto>();
+        public string GameType { get; set; } = "";
+        public decimal Prize1 { get; set; } = 0;
+        public decimal Prize2 { get; set; } = 0;
+        public decimal Prize3 { get; set; } = 0;
+    }
     public class GameCommand
     {
         // Your command properties
