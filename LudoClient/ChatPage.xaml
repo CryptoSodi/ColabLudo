@@ -9,7 +9,7 @@
         <controlview:DetailList x:Name="Header" HorizontalOptions="Fill" VerticalOptions="Fill" />
         <Grid Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill">
             <ScrollView x:Name="ChatScrollView" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
-                <VerticalStackLayout Spacing="10" x:Name="MessagesListStack" Margin="15,0,15,0" VerticalOptions="End">
+                <VerticalStackLayout x:Name="MessagesListStack" Margin="15,0,15,0" VerticalOptions="End">
                 </VerticalStackLayout>
             </ScrollView>
         </Grid>

@@ -3,7 +3,6 @@ using LudoClient.ControlView;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
-using System.Text.Json;
 
 namespace LudoClient;
 
@@ -63,7 +62,7 @@ public partial class FriendsPage : ContentPage
     }
     private async Task<List<PlayerCard>> GetPlayerCards()
     {
-        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends").ConfigureAwait(false);
+        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends", "All").ConfigureAwait(false);
         if (Filter == "BLOCK") // Remove friends where status is "Block"
             Friends = Friends.Where(f => f.status == "BLOCK").ToList();
         else

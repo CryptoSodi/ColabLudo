@@ -59,7 +59,7 @@ public partial class LeaderboardPage : ContentPage
     }
     private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
     {
-        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends").ConfigureAwait(false);
+        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends", "All").ConfigureAwait(false);
         if (Filter == "ADD FRIEND")
         {
             Friends = Friends.Where(f => f.status == "ADD FRIEND").ToList();

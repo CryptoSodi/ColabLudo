@@ -782,10 +782,11 @@ namespace SignalR.Server
         }
         /* END TOURNAMENT API */
         /* FRIENDS API */
-        public async Task<List<PlayerCard>> GetFriends(String Type="All") {
+        public Task<List<PlayerCard>> GetFriends(string Type = "All")
+        {
             List<PlayerCard> result = new List<PlayerCard>();
             using var ctx = _contextFactory.CreateDbContext();
-            Player player = await GetCallerPlayer();
+            Player player = GetCallerPlayer().GetAwaiter().GetResult();
 
             // First, get the last game players
             var lastGame = ctx.MultiPlayers
@@ -858,8 +859,8 @@ namespace SignalR.Server
                     fr.status = "UN FRIEND";
             }
             if (!result.Any())
-                return new List<PlayerCard>();
-            return result;
+                return Task.FromResult(new List<PlayerCard>());
+            return Task.FromResult(result);
         }
         public string SendFriendRequest(int ReceiverId, string status)
         {
