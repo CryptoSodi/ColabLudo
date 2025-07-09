@@ -13,45 +13,44 @@ namespace LudoClient.ControlView
         public void SetDetails(ChatMessages Message, String direction, String color)
         {
             this.Message = Message;
-            PlayerImage.Source = Message.SenderPicture;
+            //PlayerImage.Source = Message.SenderPicture;
             MessageText.Text = Message.Message;
             TimeText.Text = Message.CreatedDate.ToShortTimeString();
             //detailgold.png
             switch (color)
             {
                 case "red":
-                    Layer.BackgroundColor = Color.FromArgb("#B11A1B"); // 20% transparent red
+                    LayerFrame.BackgroundColor = Color.FromArgb("#B11A1B"); // 20% transparent red
                     break;
                 case "green":
-                    Layer.BackgroundColor = Color.FromArgb("#017034"); // 20% transparent green
+                    LayerFrame.BackgroundColor = Color.FromArgb("#017034"); // 20% transparent green
                     break;
                 case "yellow":
-                    Layer.BackgroundColor = Color.FromArgb("#BFA611");
+                    LayerFrame.BackgroundColor = Color.FromArgb("#BFA611");
                     // 20% transparent yellow
                     break;
                 case "blue":
-                    Layer.BackgroundColor = Color.FromArgb("#3166A6"); // 20% transparent blue
+                    LayerFrame.BackgroundColor = Color.FromArgb("#3166A6"); // 20% transparent blue
                     break;
                 case "white":
-                    Layer.BackgroundColor = Color.FromArgb("#E6FFFFFF"); // 20% transparent white
+                    LayerFrame.BackgroundColor = Color.FromArgb("#E6FFFFFF"); // 20% transparent white
                     break;
             }
 
             if (direction == "Right")
             {
-                Layer.ColumnDefinitions.Clear();
-                Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-                Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+               // Layer.ColumnDefinitions.Clear();
+               // Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+               // Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
                 // Swap columns
-                Grid.SetColumn(PlayerGrid, 1);
-                Grid.SetColumn(MessageText, 0);
-
+                //Grid.SetColumn(PlayerGrid, 1);
+                //Grid.SetColumn(MessageText, 0);
+                LayerFrame.HorizontalOptions = LayoutOptions.End;
                 TimeText.HorizontalOptions = LayoutOptions.End;
             }
             else
             {
-
-                TimeText.HorizontalOptions = LayoutOptions.Start;
+                TimeText.HorizontalOptions = LayoutOptions.End;
             }
             //Message.
         }

@@ -1202,17 +1202,25 @@ public partial class Game : ContentPage
             if(messages!=null)
             foreach (ChatMessages cm in messages)
             {
-                ChatCard cc = new();
-                MessagesListStack.Children.Add(cc);
+                    // Check if the message is already in the stack
+                    bool messageExists = MessagesListStack.Children
+                        .OfType<ChatCard>()
+                        .Any(cc => cc.Message.Index == cm.Index);
 
-                if (UserInfo.Instance.player.PlayerId == cm.SenderId)
-                    cc.SetDetails(cm, "Right", cm.SenderColor);
-                else
-                    cc.SetDetails(cm, "Left", cm.SenderColor);
-                // Optional: scroll to bottom
+                    if (!messageExists)
+                    {
+                        // Create a new chat card only if message doesn't exist
+                        ChatCard cc = new();                        
 
-                // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
-                MainThread.BeginInvokeOnMainThread(async () =>
+                        MessagesListStack.Children.Add(cc);
+
+                        if (UserInfo.Instance.player.PlayerId == cm.SenderId)
+                            cc.SetDetails(cm, "Right", cm.SenderColor);
+                        else
+                            cc.SetDetails(cm, "Left", cm.SenderColor);
+                    }
+                    // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
+                    MainThread.BeginInvokeOnMainThread(async () =>
                 {
                     await Task.Delay(100);
                     await ChatScrollView.ScrollToAsync(0, 40000, true);

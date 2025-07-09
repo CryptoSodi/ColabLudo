@@ -54,6 +54,7 @@
 	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
 	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android35.0|AnyCPU'">
@@ -69,7 +70,7 @@
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android35.0|AnyCPU'">
 	  <DebugSymbols>False</DebugSymbols>
 	  <AndroidKeyStore>True</AndroidKeyStore>
-		<AndroidSigningKeyStore>D:\ludokey.keystore</AndroidSigningKeyStore>
+	  <AndroidSigningKeyStore>D:\ludokey.keystore</AndroidSigningKeyStore>
 	  <AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
 	  <AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
 	  <AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
@@ -84,6 +85,7 @@
 	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
 	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">

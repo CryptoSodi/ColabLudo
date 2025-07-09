@@ -57,10 +57,10 @@
                 </AbsoluteLayout>
             </Grid>
         </local:Capsule>
-        
+
         <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="End">
         </StackLayout>
-        
+
         <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
         </StackLayout>
 
@@ -84,8 +84,8 @@
                 </Image>
             </Grid>
         </local:Capsule>
-        <ScrollView x:Name="ChatScrollView" Grid.Row="1" Grid.RowSpan="4" HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="#400000ff">
-            <VerticalStackLayout Spacing="10" x:Name="MessagesListStack" Margin="15,0,15,15" VerticalOptions="End" Opacity="0.9">
+        <ScrollView x:Name="ChatScrollView" Grid.Row="1" Grid.RowSpan="4" HorizontalOptions="Fill" VerticalOptions="Fill" Padding="8,0,8,0">
+            <VerticalStackLayout x:Name="MessagesListStack" VerticalOptions="End" Opacity=".9" BackgroundColor="#4DFFFFFF" >
                 <VerticalStackLayout.GestureRecognizers>
                     <TapGestureRecognizer Tapped="HideChat_Tapped" />
                 </VerticalStackLayout.GestureRecognizers>

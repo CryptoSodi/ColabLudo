@@ -287,12 +287,20 @@ namespace SignalR.Server
                     var (existingGame, user) = await DM.LeaveGameLobby(Context.ConnectionId, player.PlayerId, roomCode);
                     // Optionally, perform additional cleanup or update the game engine state.
                     // For example: engine.RemoveUser(user); // if your engine supports this
-                    await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
+                    if (user != null)
+                    {
+                        await _hubContext.Clients.Group(roomCode).SendAsync("PlayerLeft", user.PlayerColor);
+                    }
+                    else
+                    {
+                        Console.WriteLine("User is null in LeaveLobby");
+                    }
                     // Notify all connected clients that a user has left.
                     await BroadcastPlayersAsync(existingGame);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"LeaveLobby error: {ex.Message}");
                 }
         }
         private async Task gameStartAsync(Game existingGame)
@@ -409,7 +417,10 @@ namespace SignalR.Server
                 }
 
                 if (CM.Message != "")
+                {
+                    CM.Index = gameRoom.chatMessages.Count;
                     gameRoom.chatMessages.Add(CM);
+                }
                 List<User> otherUsers = gameRoom.Users.Where(p => p.PlayerId != CM.SenderId).ToList();
                 User senderUser = gameRoom.Users.Where(p => p.PlayerId == CM.SenderId).ToList()[0];
                 CM.SenderColor = senderUser.PlayerColor;
