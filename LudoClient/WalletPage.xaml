@@ -13,8 +13,8 @@
            RowDefinitions=".8*,.8*,0.8*,Auto,0.3*,.6*,2.2*" ColumnDefinitions=".1*,1*,.1*" RowSpacing="10">
             <local:TitleBar Grid.Column="1" TitleImage="title_wallet.png" Title="" Margin="0,-28,0,0" VerticalOptions="Start" HorizontalOptions="Center">
             </local:TitleBar>
-            
-            <local:Capsule ImageSource="verify_acc_bg.png" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Padding="20,0,20,0" HorizontalOptions="Center" VerticalOptions="End">
+
+            <local:Capsule IsVisible="False" ImageSource="verify_acc_bg.png" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Padding="20,0,20,0" HorizontalOptions="Center" VerticalOptions="End">
                 <Grid Margin="8,2,5,2" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".8*,.45*">
                     <Label Text="Withdraw Solana to external wallet." TextColor="White" FontSize="10" HorizontalOptions="Start" VerticalOptions="Center" FontAutoScalingEnabled="True"/>
                     <local:Capsule Grid.Column="1" ImageSource="btn_verify_account.png" VerticalOptions="Center" HorizontalOptions="Center">
@@ -29,20 +29,20 @@
             </local:Capsule>
 
             <local:Capsule ImageSource="friendlong.png" Grid.Row="3" Grid.Column="1" Padding="0,0,0,20" HorizontalOptions="Fill" VerticalOptions="Fill">
-                <Grid Margin="6" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="1*,2*,1.5*">
+                <Grid Margin="6" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="1*,2*,2.4*">
                     <Image Source="ic_total_wallet.png" Margin="3" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <Label Text="Total Winnings" Grid.Column="1" HorizontalTextAlignment="Start" TextColor="White" HorizontalOptions="Fill" VerticalOptions="Center"/>
                     
                     <Grid Grid.Column="2" Margin="5,8,5,8" HorizontalOptions="Fill" VerticalOptions="Fill">
                         <Frame BackgroundColor="#60000000" CornerRadius="4" Padding="30,-5,30,-5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                         <Image Source="solicon.png" Margin="4" VerticalOptions="Center" HorizontalOptions="Start"/>
-                        <Label x:Name="Coins" Text="0.99 Sol" TextColor="White" HorizontalOptions="End" VerticalOptions="Fill" Margin="0,0,4,0"/>
+                        <Label x:Name="Coins" Text="0.99 LUDC" TextColor="White" HorizontalOptions="End" VerticalOptions="Fill" Margin="0,0,4,0"/>
                     </Grid>
                 </Grid>
             </local:Capsule>
-            
-            
-            <local:Capsule ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+
+
+            <local:Capsule IsVisible="False" ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Grid>
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnDepositButtonClicked" />
@@ -63,7 +63,7 @@
                     <Image Source="reffer_earn.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <StackLayout Spacing="5" HorizontalOptions="FillAndExpand" VerticalOptions="Center">
                         <Label Text="Reffer and Earn" FontSize="17" TextColor="Black" Margin="0,-2,0,-2" VerticalOptions="Start" HorizontalOptions="Start"/>
-                        <Label Text="Reffer Friends and Win Cash" FontSize="12" Margin="0,-4,0,0" TextColor="Black" VerticalOptions="Start" HorizontalOptions="Start"/>
+                        <Label Text="Reffer Friends and Win LudCoin" FontSize="12" Margin="0,-4,0,0" TextColor="Black" VerticalOptions="Start" HorizontalOptions="Start"/>
                         <StackLayout Spacing="5" Orientation="Horizontal" VerticalOptions="EndAndExpand" HorizontalOptions="Fill" >
                             <Image Source="btn_whatsapp.png" VerticalOptions="Fill" HorizontalOptions="Start"/>
                             <Image Source="btn_share_link.png" VerticalOptions="Fill" HorizontalOptions="StartAndExpand"/>
@@ -80,9 +80,9 @@
                             <Image Margin="4" Source="subinfo_4.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
                                 <Label Text="UNUTILIZED" TextColor="White" HorizontalTextAlignment="Start"/>
-                                <Label Text="Money" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="Coins" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="$0.00" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                     <local:Capsule ImageSource="info_2.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
@@ -92,7 +92,7 @@
                                 <Label Text="REFFER" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="$0.00" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                 </StackLayout>
@@ -104,7 +104,7 @@
                                 <Label Text="SURPRICE" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="$0.00" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                     <local:Capsule ImageSource="info_1.png" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
@@ -114,7 +114,7 @@
                                 <Label Text="SIGNUP" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="$0.00" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                 </StackLayout>

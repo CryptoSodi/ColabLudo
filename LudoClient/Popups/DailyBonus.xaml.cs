@@ -2,15 +2,37 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
+using System.Text.Json;
 namespace LudoClient.Popups;
 public partial class DailyBonus : BasePopup
 {
     public DailyBonus()
     {
         InitializeComponent();
+        DailyBonusDto dto = LoadDailyBonus();
+        if (dto != null)
+            UpdateFromDto(dto);
         FetchDailyBonusAsync();
-    } 
-    
+    }
+    public void SaveDailyBonus(DailyBonusDto dto)
+    {
+        if (dto == null) return;
+        string json = JsonSerializer.Serialize(dto);
+        Preferences.Default.Set("DailyBonusDto", json);
+    }
+    public DailyBonusDto LoadDailyBonus()
+    {
+        if (Preferences.Default.ContainsKey("DailyBonusDto"))
+        {
+            string json = Preferences.Default.Get("DailyBonusDto", string.Empty);
+            if (!string.IsNullOrWhiteSpace(json))
+            {
+                return JsonSerializer.Deserialize<DailyBonusDto>(json);
+            }
+        }
+
+        return null; // Or return a default
+    }
     // Fetch current daily bonus state
     private async Task FetchDailyBonusAsync()
     {
@@ -45,7 +67,6 @@ public partial class DailyBonus : BasePopup
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-
             // Day flags array for ease of indexing
             bool[] flags = new[] { dto.Day1, dto.Day2, dto.Day3, dto.Day4, dto.Day5, dto.Day6, dto.Day7 };
             int dc = dto.DayCounter; // 0-based index of current day
@@ -74,16 +95,8 @@ public partial class DailyBonus : BasePopup
                 }
             }
         });
-        //Day1 = dto.Day1;
-        //Day2 = dto.Day2;
-        //Day3 = dto.Day3;
-        //Day4 = dto.Day4;
-        //Day5 = dto.Day5;
-        //Day6 = dto.Day6;
-        //Day7 = dto.Day7;
-        //DayCounter = dto.DayCounter;
+        SaveDailyBonus(dto);
     }
-
     // DTO matching the server-side definition
     public class DailyBonusDto
     {

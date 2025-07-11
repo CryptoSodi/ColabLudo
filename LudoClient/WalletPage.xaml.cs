@@ -12,7 +12,7 @@ public partial class WalletPage : ContentPage
         MainThread.BeginInvokeOnMainThread(() =>
         {
             var balance = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance ?? 0;
-            Coins.Text = Math.Floor(balance * 100) / 100 + " SOL";
+            Coins.Text = Math.Floor(balance * 100) / 100 + " LUDC";
         });
         //this.ShowPopup(new AddCash());
     }

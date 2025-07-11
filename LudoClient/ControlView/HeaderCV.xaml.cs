@@ -34,7 +34,7 @@ public partial class HeaderCV : ContentView
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " SOL";
+                Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " LUDC";
             });
         }
         else
