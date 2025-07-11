@@ -42,6 +42,7 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+                SetOnline();
             });
             if (isUserLoggedIn)
             {
@@ -178,6 +179,29 @@ namespace LudoClient
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(args.GameType, args.GameCost, args.RoomCode));
                 ClientGlobalConstants.FlushOld();
             });
+        }
+
+        protected async Task SetOnline()
+        {
+            while (true)
+            {
+                if (GlobalConstants.MatchMaker != null && GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State != HubConnectionState.Disconnected)
+                {
+                    try
+                    {
+                        UserInfo.Instance.player = await GlobalConstants.MatchMaker.UserConnectedSetID();
+                        if (UserInfo.Instance.player != null)
+                        {
+                            UserInfo.SaveState();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+                await Task.Delay(TimeSpan.FromSeconds(10));
+            }
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)

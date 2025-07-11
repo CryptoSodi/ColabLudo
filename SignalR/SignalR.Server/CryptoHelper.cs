@@ -356,7 +356,8 @@ namespace SignalR.Server
                         Description = $"On-chain sweep",
                         IsOnChain = true,
                         RoomCode = "",
-                        txId = txId
+                        txId = txId,
+                        CreatedDate = DateTime.UtcNow
                     });
 
                     ctx.PlayerWallet.Update(sub);
@@ -430,7 +431,7 @@ namespace SignalR.Server
                 {
                     Console.WriteLine($"Error sweeping sub-accounts: {ex.Message}");
                 }
-                await Task.Delay(TimeSpan.FromMinutes(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }
     }

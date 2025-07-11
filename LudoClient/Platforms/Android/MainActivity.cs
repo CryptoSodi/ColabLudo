@@ -29,10 +29,10 @@ namespace LudoClient
         }
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);            
-            string sha1 = GetApkSignatureSha1(this);
-            GlobalConstants.sha1 = sha1;
-            Console.WriteLine($"My APK SHA-1 = {sha1}");
+            base.OnCreate(savedInstanceState);
+            //string sha1 = GetApkSignatureSha1(this);
+            //GlobalConstants.sha1 = sha1;
+            //Console.WriteLine($"My APK SHA-1 = {sha1}");
             UserDialogs.Init(this);
         }
         public static string GetApkSignatureSha1(Context context)

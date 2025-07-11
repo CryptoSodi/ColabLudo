@@ -4,6 +4,7 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using Org.BouncyCastle.Cms;
 using SharedCode;
 using SharedCode.Constants;
 using System.Collections.Concurrent;
@@ -607,6 +608,7 @@ namespace SignalR.Server
                 // Transfer bonus logic here
                 int bonusAmount = 10;
                 //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
+                bool credited = await _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
             }
 
             return new DailyBonusDto

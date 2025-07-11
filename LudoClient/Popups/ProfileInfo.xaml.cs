@@ -22,9 +22,9 @@ public partial class ProfileInfo : BasePopup
             C1.setValue(UserInfo.Instance.player.GamesPlayed + "");
             C2.setValue(UserInfo.Instance.player.GamesWon + "");
             C3.setValue(UserInfo.Instance.player.GamesLost + "");
-            C4.setValue(UserInfo.Instance.player.BestWin + "");
-            C5.setValue(UserInfo.Instance.player.TotalWin + "");
-            C6.setValue(UserInfo.Instance.player.TotalLost + "");
+            C4.setValue(Math.Floor(UserInfo.Instance.player.BestWin * 100) / 100 + " LUDC");
+            C5.setValue(Math.Floor(UserInfo.Instance.player.TotalWin * 100) / 100 + " LUDC");
+            C6.setValue(Math.Floor(UserInfo.Instance.player.TotalLost * 100) / 100 + " LUDC");
             player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
             loadValues();
         });
@@ -37,9 +37,9 @@ public partial class ProfileInfo : BasePopup
             C1.setValue(dto.GamesPlayed + "");
             C2.setValue(dto.GamesWon + "");
             C3.setValue(dto.GamesLost + "");
-            C4.setValue(dto.BestWin + "");
-            C5.setValue(dto.TotalWin + "");
-            C6.setValue(dto.TotalLost + "");
+            C4.setValue(Math.Floor(dto.BestWin * 100) / 100 + " LUDC");
+            C5.setValue(Math.Floor(dto.TotalWin * 100) / 100 + " LUDC");
+            C6.setValue(Math.Floor(dto.TotalLost * 100) / 100 + " LUDC");
             if (dto.PhoneNumber != null)
             {
                 Preferences.Set(nameof(UserInfo.Instance.player.PhoneNumber), dto.PhoneNumber);

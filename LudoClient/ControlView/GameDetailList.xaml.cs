@@ -23,7 +23,7 @@ namespace LudoClient.ControlView
             // Set the text of the labels
             GameId.Text = "Game : " + gameId.ToString();
 
-            JoiningFeeLabel.Text = $"{betAmount}";
+            JoiningFeeLabel.Text = $"{Math.Floor((betAmount) * 100) / 100}";
             RoomCode = roomCode;
 
             if (gameType == "22")
@@ -34,9 +34,9 @@ namespace LudoClient.ControlView
                 TotalPlayersLabel.Text = $"1 vs {gameType} Players - 1 Winner";
 
             if (gameType == "22")
-                priceamount = 2 * betAmount;
+                priceamount = Math.Floor((2 * betAmount) * 100) / 100;
             else
-                priceamount = Int32.Parse(gameType) * betAmount;
+                priceamount = Math.Floor((Int32.Parse(gameType) * betAmount) * 100) / 100;
 
             PrizeAmountLabel.Text = $"{priceamount}";
         }
@@ -48,7 +48,7 @@ namespace LudoClient.ControlView
             GameDto gameDto = new GameDto();
             gameDto.GameType = gameType; // Set the game type based on the active tab
             gameDto.IsPracticeGame = false; // Set the practice game flag
-            gameDto.BetAmount = betAmount;            
+            gameDto.BetAmount = betAmount;
             gameDto.RoomCode = RoomCode;
             gameDto.PlayerCount = int.Parse(gameType);
             if (gameDto.PlayerCount == 22)

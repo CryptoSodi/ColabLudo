@@ -21,7 +21,7 @@ public partial class HeaderCV : ContentView
         });
 
         // Initialize and start the timer
-        _qrCodeTimer = new System.Timers.Timer(30000); // 60,000 milliseconds = 60 seconds
+        _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
         _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
         _qrCodeTimer.AutoReset = true;
         _qrCodeTimer.Enabled = true;

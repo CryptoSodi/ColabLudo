@@ -58,7 +58,7 @@ public partial class DashboardPage : ContentPage
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
+                Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
             });
         
     }
@@ -81,7 +81,7 @@ public partial class DashboardPage : ContentPage
         else
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                Toast.Make("Not enough balance!", ToastDuration.Long, 24).Show();
+                Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
             });
     }
     private void Practice_Clicked(object sender, EventArgs e)
