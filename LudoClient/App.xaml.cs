@@ -42,6 +42,7 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+                GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
                 SetOnline();
             });
             if (isUserLoggedIn)
@@ -55,6 +56,16 @@ namespace LudoClient
                 MainPage = new LoginPage();
             }
         }
+
+        private void OnPlayerInfoUpdate(object? sender, PlayerInfo playerInfo)
+        {
+            UserInfo.Instance.player = playerInfo;
+            if (UserInfo.Instance.player != null)
+            {
+                UserInfo.SaveState();
+            }
+        }
+
         private CancellationTokenSource _pollingTokenSource;
         private async Task PollForCommandsAsync(CancellationToken cancellationToken)
         {
@@ -180,7 +191,6 @@ namespace LudoClient
                 ClientGlobalConstants.FlushOld();
             });
         }
-
         protected async Task SetOnline()
         {
             while (true)
@@ -200,7 +210,7 @@ namespace LudoClient
                         Console.WriteLine(ex);
                     }
                 }
-                await Task.Delay(TimeSpan.FromSeconds(10));
+                await Task.Delay(TimeSpan.FromMinutes(1));
             }
         }
 #if WINDOWS

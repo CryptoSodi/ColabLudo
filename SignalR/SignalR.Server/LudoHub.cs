@@ -4,11 +4,9 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Cms;
 using SharedCode;
 using SharedCode.Constants;
 using System.Collections.Concurrent;
-using System.Threading.Tasks;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
@@ -36,8 +34,9 @@ namespace SignalR.Server
                 DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
-        private PlayerInfo CastPlayerToInfo(Player player)
+        public static async Task<PlayerInfo> CastPlayerToInfoAsync(Player player)
         {
+            LudoServer.Models.PlayerWallet pw = await _crypto.EnsurePlayerWalletExists(player.PlayerId);
             PlayerInfo playerInfo = new PlayerInfo
             {
                 PlayerId = player.PlayerId,
@@ -56,13 +55,14 @@ namespace SignalR.Server
                 TotalWin = player.TotalWin,
                 TotalLost = player.TotalLost,
                 Score = player.Score,
-                Wallets = player.Wallets.Select(w => new SharedCode.Constants.PlayerWallet
+                Wallet = new SharedCode.Constants.PlayerWallet
                 {
-                    PlayerId = w.PlayerId,
-                    AddressType = w.AddressType,
-                    WalletAddress = w.WalletAddress,
-                    AvailableBalance = w.AvailableBalance
-                }).ToList()
+                    PlayerId = pw.PlayerId,
+                    AddressType = pw.AddressType,
+                    WalletAddress = pw.WalletAddress,
+                    AvailableBalance = pw.AvailableBalance,
+                    SignupBonus = 10
+                }
             };
             return playerInfo;
         }
@@ -78,6 +78,13 @@ namespace SignalR.Server
             {
                 email = "Sodi@gmail.com";
                 name = "Sodi";
+                pictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";// ✅ profile picture URL
+                googleId = idToken;
+            }
+            else if(idToken == "Guest2")
+            {
+                email = "Sodi2@gmail.com";
+                name = "Sodi2";
                 pictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";// ✅ profile picture URL
                 googleId = idToken;
             }
@@ -100,67 +107,35 @@ namespace SignalR.Server
                 googleId = payload.Subject; // Unique Google user ID
             }
 
-            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);            
+            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
             // If player exists by email, return with Player Id to login
+            if (existingPlayer == null)
+            {
+                Player newPlayer = new Player
+                {
+                    GoogleId = googleId,
+                    Name = name,
+                    Email = email,
+                    PictureUrl = pictureUrl,
+                    City = city,
+                    CountryCode = countryCode,
+                    IsOnline = true,
+                    AuthToken = ""
+                };
+                ctx.Players.Add(newPlayer);
+                // Save changes to the database
+                await ctx.SaveChangesAsync();
+                existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
+            }
+
             if (existingPlayer != null)
             {
                 existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
-                SetPlayerOnlineState(existingPlayer.PlayerId, true).GetAwaiter().GetResult();
-                
-                // 1) Store SignalR connection
-                PlayerToConnection[existingPlayer.PlayerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;                
-                existingPlayer.Wallets = new List<LudoServer.Models.PlayerWallet>
-                {
-                    new LudoServer.Models.PlayerWallet
-                    {
-                        PlayerId = existingPlayer.PlayerId,
-                        AddressType = "SOL",
-                        WalletAddress = await _crypto.GetOrCreateAccount(existingPlayer.PlayerId),
-                        AvailableBalance = await _crypto.GetOffChainBalanceAsync(existingPlayer.PlayerId)
-                    }
-                };
-                
-                await ctx.SaveChangesAsync();
-                return CastPlayerToInfo(existingPlayer);
-            }
-
-            Player newPlayer = new Player
-            {
-                GoogleId = googleId,
-                Name = name,
-                Email = email,
-                PictureUrl = pictureUrl,
-                City = city,
-                CountryCode = countryCode,
-                IsOnline = true,
-                AuthToken = ""
-            };
-            ctx.Players.Add(newPlayer);
-            // Save changes to the database
-            await ctx.SaveChangesAsync();
-
-            existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
-            
-            if (existingPlayer != null)
-            {
-                existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString());
                 PlayerToConnection[existingPlayer.PlayerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
-                
-                existingPlayer.Wallets = new List<LudoServer.Models.PlayerWallet>
-                {
-                    new LudoServer.Models.PlayerWallet
-                    {
-                        PlayerId = existingPlayer.PlayerId,
-                        AddressType = "SOL",
-                        WalletAddress = await _crypto.GetOrCreateAccount(existingPlayer.PlayerId),
-                        AvailableBalance = await _crypto.GetOffChainBalanceAsync(existingPlayer.PlayerId)
-                    }
-                };
-
+                SetPlayerOnlineState(existingPlayer.PlayerId, true).GetAwaiter().GetResult();
                 await ctx.SaveChangesAsync();
-                return CastPlayerToInfo(existingPlayer);
+                return await CastPlayerToInfoAsync(existingPlayer);
             }
             // If player creation failed, return null
             return null;
@@ -170,14 +145,13 @@ namespace SignalR.Server
         {
             try
             {
-                int playerId = int.Parse(_crypto.Decrypt(AuthToken));
-            
+                int playerId = int.Parse(_crypto.Decrypt(AuthToken));            
                 if (playerId == -1)
                     return null;
                 // 1) Store SignalR connection
                 PlayerToConnection[playerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
-                return CastPlayerToInfo(await GetCallerPlayer());
+                return await CastPlayerToInfoAsync(await GetCallerPlayer());
             }
             catch (Exception ex)
             {
@@ -222,7 +196,7 @@ namespace SignalR.Server
                     new LudoServer.Models.PlayerWallet
                     {
                         PlayerId = sender.PlayerId,
-                        AddressType = "SOL",
+                        AddressType = "SOL 2",
                         WalletAddress = await _crypto.GetOrCreateAccount(sender.PlayerId),
                         AvailableBalance = await _crypto.GetOffChainBalanceAsync(sender.PlayerId)
                     }
@@ -257,9 +231,12 @@ namespace SignalR.Server
                     Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
                     return "INSUFFICIENT_OFFCHAIN";
                 }
+                else
+                {
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+                }
 
                 // 2) Send on-chain using master wallet
-                
                 Console.WriteLine($"Withdrawal of {amountInSol} SOL for {player.PlayerId} sent from master. Tx: {txSignature}");
                 return txSignature;
             }
@@ -296,13 +273,22 @@ namespace SignalR.Server
                     {
                         Console.WriteLine("User is null in LeaveLobby");
                     }
+
                     // Notify all connected clients that a user has left.
                     await BroadcastPlayersAsync(existingGame);
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"LeaveLobby error: {ex.Message}");
                 }
+            try
+            {
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+            }
+            catch (Exception)
+            {
+            }
         }
         private async Task gameStartAsync(Game existingGame)
         {
@@ -609,6 +595,10 @@ namespace SignalR.Server
                 int bonusAmount = 10;
                 //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
                 bool credited = await _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
+                if (credited)
+                {
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+                }
             }
 
             return new DailyBonusDto
@@ -762,6 +752,10 @@ namespace SignalR.Server
 
                 await ctx.SaveChangesAsync();
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTPAID");
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
             }
 
             if (isNewChallenger)
@@ -933,7 +927,14 @@ namespace SignalR.Server
         {
             Player player = await GetCallerPlayer();
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
-
+            try
+            {
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+            }
+            catch (Exception ex)
+            {
+            }
+            
             if (gameRoom == null)
             {
                 return "Room is full";
@@ -1024,5 +1025,39 @@ namespace SignalR.Server
         public string PlayerName { get; init; }
         public string PlayerColor { get; set; }  // Now mutable
         public string AuthToken { get; set; }  // Now mutable
+    }
+
+    /// Background worker that calls the sweeper method on a fixed interval.
+    public class SweeperService : BackgroundService
+    {
+        private readonly CryptoHelper _cryptoHelper;
+
+        /// <summary>
+        /// ctor for the background sweeper service.
+        /// </summary>
+        public SweeperService(CryptoHelper cryptoHelper)
+        {
+            _cryptoHelper = cryptoHelper;
+        }
+
+        /// <summary>
+        /// Executes SweepAllSubAccountsAsync every 5 minutes until cancellation.
+        /// </summary>
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            Console.WriteLine("SweeperService starting...");
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                try
+                {
+                    await _cryptoHelper.SweepAllSubAccountsAsync();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error sweeping sub-accounts: {ex.Message}");
+                }
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+            }
+        }
     }
 }

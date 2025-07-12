@@ -175,13 +175,13 @@ namespace SignalR.Server
                     existingGame.State = "Terminated";
 
                 decimal betAmount = existingGame.BetAmount;
-                if (betAmount>0 && existingGame.TournamentId != null)
+                if (betAmount>0 && (existingGame.TournamentId != null || existingGame.RoomCode != ""))
                     await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", existingGame.RoomCode);
             }
 
             if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
             {
-                gameRoom.PlayerLeft(playerId, roomCode);
+                await gameRoom.PlayerLeft(playerId, roomCode);
             }
             if (_users.TryRemove(ConnectionId, out User user))
             {

@@ -112,11 +112,11 @@ namespace SignalR.Server
         /// <summary>
         /// Returns an existing sub-account public key, or generates one if missing.
         /// </summary>
-        public Task<string> GetOrCreateAccount(int playerId, bool isMaster = false, bool save = true, CancellationToken cancellationToken = default)
+        public async Task<string> GetOrCreateAccount(int playerId, bool isMaster = false, bool save = true, CancellationToken cancellationToken = default)
         {
             // If already exists, return the public key
             if (_wallets.TryGetValue(playerId, out var w) && w.PublicKey != null)
-                return Task.FromResult(w.PublicKey);
+                return await Task.FromResult(w.PublicKey);
 
             var account = new Account();
             // Encode and encrypt the private key
@@ -131,13 +131,12 @@ namespace SignalR.Server
                 PublicKey = pub,
                 IsMaster = isMaster
             };
-            EnsurePlayerWalletExists(playerId, pub);
+            await EnsurePlayerWalletExists(playerId, pub);
             if(save)
                 PersistWallets(); // Persist updated store
             Console.WriteLine($"Sub-account created: {playerId} -> {pub}");
-            return Task.FromResult(pub);
+            return await Task.FromResult(pub);
         }
-
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
         public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode="")
         {
@@ -293,7 +292,7 @@ namespace SignalR.Server
             Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
             return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
-        private async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
+        public async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
         {
             using var ctx = _dbFactory.CreateDbContext();
             var exists = ctx.PlayerWallet.Any(p => p.PlayerId == playerId);
@@ -302,11 +301,13 @@ namespace SignalR.Server
                 ctx.PlayerWallet.Add(new PlayerWallet
                 {
                     PlayerId = playerId,
-                    AddressType = "Solana",
-                    WalletAddress = WalletAddress,
+                    AddressType = "SOL",
+                    WalletAddress = await GetOrCreateAccount(playerId, false, true),
                     AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
                 });
                 await ctx.SaveChangesAsync();
+                if(WalletAddress == "none")
+                    await OffChainTransaction(playerId, 10.0m, "Signup Bonus", "", false, "");
             }
             //if ()ctx.PlayerWallet.transactions == null)
             //var sub = ctx.PlayerWallet.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == playerId);
@@ -400,39 +401,6 @@ namespace SignalR.Server
             using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
             using var sr = new StreamReader(cs);
             return sr.ReadToEnd();
-        }
-    }
-    /// Background worker that calls the sweeper method on a fixed interval.
-    public class SweeperService : BackgroundService
-    {
-        private readonly CryptoHelper _cryptoHelper;
-
-        /// <summary>
-        /// ctor for the background sweeper service.
-        /// </summary>
-        public SweeperService(CryptoHelper cryptoHelper)
-        {
-            _cryptoHelper = cryptoHelper;
-        }
-
-        /// <summary>
-        /// Executes SweepAllSubAccountsAsync every 5 minutes until cancellation.
-        /// </summary>
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            Console.WriteLine("SweeperService starting...");
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-                    await _cryptoHelper.SweepAllSubAccountsAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sweeping sub-accounts: {ex.Message}");
-                }
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-            }
         }
     }
 }

@@ -28,7 +28,7 @@ public class PlayerInfo
     [Column(TypeName = "decimal(18,8)")]
     public decimal TotalWin { get; set; }
     public int Score { get; set; }
-    public ICollection<PlayerWallet> Wallets { get; set; }
+    public PlayerWallet? Wallet { get; set; }
 }
 public class PlayerWallet
 {
@@ -37,22 +37,31 @@ public class PlayerWallet
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int WalletId { get; set; }
     public int PlayerId { get; set; }
-    public string AddressType { get; set; }
-    public string WalletAddress { get; set; }
+    public string? AddressType { get; set; }
+    public string? WalletAddress { get; set; }
 
     [Column(TypeName = "decimal(18,8)")]
     public decimal AvailableBalance { get; set; }
+
+    [Column(TypeName = "decimal(18,8)")]
+    public decimal UnUtilizedCoins { get; set; }
+    [Column(TypeName = "decimal(18,8)")]
+    public decimal ReferBonus { get; set; }
+    [Column(TypeName = "decimal(18,8)")]
+    public decimal SurpriseCoins { get; set; }
+    [Column(TypeName = "decimal(18,8)")]
+    public decimal SignupBonus { get; set; }
     public ICollection<WalletTransaction> Transactions { get; set; } = new List<WalletTransaction>();
 }
 public class WalletTransaction
 {
-    public string txId;
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int TransactionId { get; set; }
+    public string? txId { get; set; }
     [Required]
     public int PlayerId { get; set; }
-    public PlayerWallet PlayerWallet { get; set; }
+    public PlayerWallet? PlayerWallet { get; set; }
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     [Column(TypeName = "decimal(18,8)")]
     public decimal Amount { get; set; }
@@ -60,9 +69,9 @@ public class WalletTransaction
     public decimal BalanceAfter { get; set; }
     [Required]
     public TransactionType Type { get; set; }
-    public string Description { get; set; }
+    public string? Description { get; set; }
     public bool IsOnChain { get; set; }
-    public string RoomCode { get; set; }
+    public string? RoomCode { get; set; }
 }
 /// Enum to classify transaction types.
 public enum TransactionType

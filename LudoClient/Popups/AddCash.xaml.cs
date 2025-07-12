@@ -19,9 +19,9 @@ public partial class AddCash : BasePopup
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Address = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
-            Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " LUDC";
-            AddressText.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
+            Address = UserInfo.Instance.player.Wallet?.WalletAddress;
+            Coins.Text = UserInfo.Instance.player.Wallet?.AvailableBalance + " LUDC";
+            AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
             QRCodeImage.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.AddressQRBlob);
         });
     }

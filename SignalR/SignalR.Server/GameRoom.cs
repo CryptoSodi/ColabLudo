@@ -102,10 +102,10 @@ namespace SignalR.Server
                 try
                 {
                     decimal betAmount = existingGame.BetAmount; // in SOL
-                    if(existingGame.GameType == "22")
-                        betAmount = betAmount*2; // Split the bet amount for 2 vs 2 games
+                    if (existingGame.GameType == "22")
+                        betAmount = betAmount * 2; // Split the bet amount for 2 vs 2 games
                     else
-                        betAmount = betAmount* int.Parse(existingGame.GameType); // For 1 vs 1 games
+                        betAmount = betAmount * int.Parse(existingGame.GameType); // For 1 vs 1 games
 
                     bool credited = await _crypto.OffChainTransaction(winnerId, betAmount, "Game Won", "", false, existingGame.GameId.ToString());
                     if (!credited)
@@ -113,7 +113,13 @@ namespace SignalR.Server
                         Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");
                         continue;
                     }
-                    Console.WriteLine($"Off-chain transferred {gameDTO.BetAmount} SOL from {loserId} to {winnerId}.");
+                    else
+                    {
+                        LudoServer.Models.Player player = context.Players.Find(winnerId);
+                        await _hubContext.Clients.Clients(LudoHub.PlayerToConnection[winnerId]).SendAsync("PlayerInfoUpdate", await LudoHub.CastPlayerToInfoAsync(player));                        
+                    }
+
+                        Console.WriteLine($"Off-chain transferred {gameDTO.BetAmount} SOL from {loserId} to {winnerId}.");
                 }
                 catch (Exception ex)
                 {

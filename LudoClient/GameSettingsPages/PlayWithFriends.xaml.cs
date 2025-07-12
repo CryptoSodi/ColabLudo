@@ -72,7 +72,7 @@ public partial class PlayWithFriends : ContentPage
     private void BtnPlus(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance > entry + GlobalConstants.initialEntry)
+        if (UserInfo.Instance.player.Wallet?.AvailableBalance > entry + GlobalConstants.initialEntry)
         {
             entry += GlobalConstants.initialEntry;
 

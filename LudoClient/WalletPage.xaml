@@ -41,7 +41,7 @@
             </local:Capsule>
 
 
-            <local:Capsule IsVisible="false" ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <local:Capsule IsVisible="True" ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Grid>
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnDepositButtonClicked" />
@@ -88,7 +88,7 @@
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
                             <Image Margin="4" Source="subinfo_2.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="REFFER" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="REFER" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
                             <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
@@ -113,7 +113,7 @@
                                 <Label Text="SIGNUP" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label x:Name="SignupBonus" Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                 </StackLayout>

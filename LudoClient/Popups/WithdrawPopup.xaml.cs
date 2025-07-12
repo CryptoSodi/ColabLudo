@@ -28,18 +28,18 @@ public partial class WithdrawPopup : BasePopup
         var size = 200;
 
         String QrUrl = $"{BaseUrl}"
-              + $"?text={UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress}"
+              + $"?text={UserInfo.Instance.player.Wallet?.WalletAddress}"
               + $"&light={lightColor}"
               + $"&dark={darkColor}"
               + $"&size={size}";
-        Address = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
+        Address = UserInfo.Instance.player.Wallet?.WalletAddress;
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Coins.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance + " LUDC";
-            AddressText.Text = UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress;
+            Coins.Text = UserInfo.Instance.player.Wallet?.AvailableBalance + " LUDC";
+            AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
             AmmountEntry.entryField.Text = Coins.Text + " LUDC";
-            SolBalance = (decimal)UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance;
+            SolBalance = (decimal)UserInfo.Instance.player.Wallet?.AvailableBalance;
         });
     }
     private void OnSendButtonClicked(object sender, TappedEventArgs e)

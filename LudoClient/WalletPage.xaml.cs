@@ -11,10 +11,37 @@ public partial class WalletPage : ContentPage
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            var balance = UserInfo.Instance.player.Wallets.FirstOrDefault()?.AvailableBalance ?? 0;
+            var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;
             Coins.Text = Math.Floor(balance * 100) / 100 + " LUDC";
         });
         //this.ShowPopup(new AddCash());
+        // Initialize and start the timer        
+    }
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Force layout to update ContentSize
+        UpdateBalance();
+        await Task.Delay(1);
+    }
+    public void UpdateBalance()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+            {
+                try
+                {
+                    if (UserInfo.Instance.player != null)
+                    {
+                        var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;                        
+                        Coins.Text = Math.Floor(balance * 100) / 100 + " LUDC";
+                        balance = UserInfo.Instance.player.Wallet?.SignupBonus ?? 0;
+                        SignupBonus.Text = Math.Floor(balance * 100) / 100 + " LUDC";
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            });
     }
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)
     {

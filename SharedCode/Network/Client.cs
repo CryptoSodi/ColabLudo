@@ -16,6 +16,7 @@ namespace SharedCode.Network
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
+        public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
         public bool Connected
         {
@@ -48,6 +49,11 @@ namespace SharedCode.Network
                 lcm.Add(msg);
                 // This lambda runs on a non-UI thread:
                 ReceiveChatMessage?.Invoke(this, (lcm));
+            });
+            _hubConnection.On<PlayerInfo>("PlayerInfoUpdate", playerInfo =>
+            {
+                // This lambda runs on a non-UI thread:
+                PlayerInfoUpdate?.Invoke(this, (playerInfo));
             });
             // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>

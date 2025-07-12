@@ -7,9 +7,6 @@
         public PlayerInfo player;
         public string? PictureUrlBlob { get; set; }
         public string? AddressQRBlob { get; set; }
-        
-        public string? WalletAddress { get; set; }
-        public decimal AvailableBalance { get; set; }
 
         const string BaseUrl = "https://quickchart.io/qr";
         // You can tweak these hex colors and size as you like:
@@ -34,9 +31,17 @@
             }
         }
         // Method to save state
+        static bool saving = false;
         public static async void SaveState()
         {
             var instance = Instance;
+            if (saving)
+            {
+                await Task.Delay(10);
+                SaveState();
+                return;
+            }
+            saving = true;
             Preferences.Set(nameof(player.PlayerId), instance.player.PlayerId);
             Preferences.Set(nameof(player.GoogleId), instance.player.GoogleId);
             Preferences.Set(nameof(player.Email), instance.player.Email);
@@ -46,13 +51,13 @@
             Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
 
             String QrUrl = $"{BaseUrl}"
-              + $"?text={UserInfo.Instance.player.Wallets.FirstOrDefault()?.WalletAddress}"
+              + $"?text={UserInfo.Instance.player.Wallet?.WalletAddress}"
               + $"&light={lightColor}"
               + $"&dark={darkColor}"
               + $"&size=200";
             instance.AddressQRBlob = await DownloadImageAsBase64Async(QrUrl);
             Preferences.Set(nameof(instance.AddressQRBlob), instance.AddressQRBlob);
-            
+
             Preferences.Set(nameof(player.PhoneNumber), instance.player.PhoneNumber);
             Preferences.Set(nameof(player.CountryCode), instance.player.CountryCode);
             Preferences.Set(nameof(player.City), instance.player.City);
@@ -65,18 +70,22 @@
             Preferences.Set(nameof(player.IsActive), instance.player.IsActive);
             Preferences.Set(nameof(player.Score), instance.player.Score);
             Preferences.Set(nameof(player.AuthToken), instance.player.AuthToken);
-            
-            Preferences.Set(nameof(WalletAddress), instance.player.Wallets.FirstOrDefault()?.WalletAddress);
-            
-            decimal? balance = instance.player.Wallets.FirstOrDefault()?.AvailableBalance;
+
+            Preferences.Set(nameof(player.Wallet.WalletAddress), instance.player.Wallet?.WalletAddress);
+
+            decimal? balance = instance.player.Wallet?.AvailableBalance;
             if (balance.HasValue)
-                Preferences.Set(nameof(AvailableBalance), (double)balance.Value);
+                Preferences.Set(nameof(player.Wallet.AvailableBalance), (double)balance.Value);
+            balance = instance.player.Wallet?.SignupBonus;
+            if (balance.HasValue)
+                Preferences.Set(nameof(player.Wallet.SignupBonus), (double)balance.Value);
 
             Preferences.Set("IsUserLoggedIn", true);
+            saving = false;
         }
         public static void Logout()
         {
-            Preferences.Clear();            
+            Preferences.Clear();
         }
         // Method to load state
         public static void LoadState()
@@ -101,16 +110,16 @@
             instance.player.TotalWin = decimal.Parse(Preferences.Get(nameof(player.TotalWin), "0"));
             instance.player.IsActive = Preferences.Get(nameof(player.IsActive), true);
             instance.player.Score = Preferences.Get(nameof(player.Score), 0);
-            instance.player.AuthToken =  Preferences.Get(nameof(player.AuthToken), "");
-            double savedBalance = Preferences.Get(nameof(AvailableBalance), 0.0);
-
-            instance.player.Wallets = new List<PlayerWallet>{
-                    new PlayerWallet{
-                        PlayerId = instance.player.PlayerId,
-                        AddressType = "SOL",
-                        WalletAddress = Preferences.Get(nameof(WalletAddress), ""),
-                        AvailableBalance = (decimal)savedBalance
-                    }};
+            instance.player.AuthToken = Preferences.Get(nameof(player.AuthToken), "");
+            
+            instance.player.Wallet = new PlayerWallet
+            {
+                PlayerId = instance.player.PlayerId,
+                AddressType = "SOL",
+                WalletAddress = Preferences.Get(nameof(player.Wallet.WalletAddress), ""),
+                AvailableBalance = (decimal)Preferences.Get(nameof(player.Wallet.AvailableBalance), 0.0),
+                SignupBonus = (decimal)Preferences.Get(nameof(player.Wallet.SignupBonus), 0.0)
+            };
         }
         public static async Task<string> DownloadImageAsBase64Async(string imageUrl)
         {
