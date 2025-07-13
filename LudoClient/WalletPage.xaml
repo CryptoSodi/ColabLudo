@@ -100,7 +100,7 @@
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
                             <Image Margin="4" Source="subinfo_3.png" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="SURPRISE" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="DAILY" TextColor="White" HorizontalTextAlignment="Start"/>
                                 <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
                             <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>

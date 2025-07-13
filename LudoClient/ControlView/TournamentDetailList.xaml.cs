@@ -24,11 +24,10 @@ namespace LudoClient.ControlView
             ServerDateTime = tournament.ServerDateTime;
             this.tournament = tournament;
             
-            string status;
             TournamentNameLabel.Text = tournament.Name;
             StartDateLabel.Text = $"Starts: {tournament.StartDate}";
             EndDateLabel.Text = $"Ends: {tournament.EndDate}";
-            EntryPriceLabel.Text = $"Entry: {tournament.EntryFee}";
+            EntryPriceLabel.Text = $"Entry: {Math.Floor(tournament.EntryFee * 100) / 100}";
             PrizeAmountLabel1.Text = $"{Math.Floor(tournament.Prize1 * 100) / 100}";
             PrizeAmountLabel2.Text = $"{Math.Floor(tournament.Prize2 * 100) / 100}";
             PrizeAmountLabel3.Text = $"{Math.Floor(tournament.Prize3 * 100) / 100}"; 
@@ -140,6 +139,8 @@ namespace LudoClient.ControlView
                 gameDto.IsPracticeGame = true; // Set the practice game flag
                 gameDto.GameType = "4";
                 gameDto.PlayerCount = 4;
+                gameDto.IsPracticeGame = false;
+                gameDto.IsPrivateGame = true;
                 gameDto.RoomCode = tournament.TournamentId.ToString();
                 
                 //Navigation.PushAsync(new GameRoom(gameType, entry));

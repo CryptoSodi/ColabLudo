@@ -30,12 +30,16 @@ namespace SignalR.Server
             Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
             int tournamentId = -1;
+            using var ctx = _contextFactory.CreateDbContext();
 
             if (gameDTO.IsTournamentGame)
             {
                 if (!int.TryParse(gameDTO.RoomCode, out int parsedId))
                     throw new ArgumentException("Invalid tournament ID format in RoomCode.");
                 tournamentId = parsedId;
+                var tournament = await ctx.Tournaments.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId);                
+                gameDTO.BetAmount = tournament.EntryFee;
+                gameDTO.RoomCode = "";
                 existingGame = games.FirstOrDefault(g => g.TournamentId == tournamentId && g.State == "Active");
             }
             else if (gameDTO.IsPracticeGame)
@@ -91,7 +95,7 @@ namespace SignalR.Server
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
                     }
-                //DEDUCT GAME FEE                
+                //DEDUCT GAME FEE
                 existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
             }
             // Create or retrieve the room
@@ -106,29 +110,42 @@ namespace SignalR.Server
             //Task.Run(SaveData); // Run save in a background thread (non-blocking)
             return existingGame;
         }
-        private async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
+        public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
         {
             bool debited = false;
             var balance = await _crypto.GetOffChainBalanceAsync(playerId);
-
+            if((betAmount > 0 && balance < betAmount) || betAmount < 0)
+             return debited; // Not enough balance to deduct the game fee   
             if (isTournamentGame)
             {
                 using var ctx = _contextFactory.CreateDbContext();
+                 
                 var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
-                if (existingChallenger.Status == "FAILED")
+                if (existingChallenger == null)
+                {
+                    ctx.TournamentChallengers.Add(new TournamentChallenger
+                    {
+                        PlayerId = playerId,
+                        TournamentId = tournamentId
+                    });
+                    ctx.SaveChanges();
+                    debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Tournament Fee" , tournamentId.ToString(), false, roomCode);
+                }
+                else if (existingChallenger.Status == "FAILED")
                 {
                     existingChallenger.RetryCount++;
                     existingChallenger.Status = "JOINEND";
+                    ctx.SaveChanges();
+                    debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
+                }
+                else
+                {
+                    debited = true;
                 }
             }
-
-            if (betAmount > 0 && balance < betAmount)
+            else
             {
-                return debited;
-            }
-            else if (betAmount > 0)
-            {
-                debited = await _crypto.OffChainTransaction(playerId, -betAmount, isTournamentGame ? "Tournament Fee":"Game Fee", "", false, roomCode);
+                debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Game Fee", "", false, roomCode);
             }
             return debited;
         }
@@ -175,8 +192,11 @@ namespace SignalR.Server
                     existingGame.State = "Terminated";
 
                 decimal betAmount = existingGame.BetAmount;
-                if (betAmount>0 && (existingGame.TournamentId != null || existingGame.RoomCode != ""))
+
+                if (!existingGame.IsPractice && existingGame.TournamentId == null)
+                {
                     await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
+                }
             }
 
             if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
@@ -225,14 +245,14 @@ namespace SignalR.Server
                 foreach (var game in games)
                 {
                     game.MultiPlayer = multiPlayers.FirstOrDefault(mp => mp.MultiPlayerId == game.MultiPlayerId);
-                   SharedCode.GameDto gameDto = new SharedCode.GameDto
+                    SharedCode.GameDto gameDto = new SharedCode.GameDto
                     {
                         GameType = game.GameType,
                         RoomCode = game.RoomCode,
                         BetAmount = game.BetAmount,
                         PlayerCount = game.PlayerCount,
-                        IsPracticeGame = game.BetAmount==0,
-                        IsTournamentGame = game.TournamentId != null,                        
+                        IsPracticeGame = game.BetAmount == 0,
+                        IsTournamentGame = game.TournamentId != null,
                         playerColor = "DefaultColor" // Set a default color or retrieve from the database if needed
                     };
                     _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDto));

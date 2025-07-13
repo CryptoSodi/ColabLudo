@@ -691,79 +691,17 @@ namespace SignalR.Server
         {
             Player player = await GetCallerPlayer();
             using var ctx = _contextFactory.CreateDbContext();
-
-            var balance = await _crypto.GetOffChainBalanceAsync(player.PlayerId);
             var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
-
             if (tournament == null)
             {
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTFOUND");
             }
-
-            if (tournament.EntryFee > balance)
+            if (!await DM.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee))
             {
+                Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId}.");
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
             }
-
-            var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == player.PlayerId);
-
-            bool isNewChallenger = false;
-
-            if (existingChallenger != null)
-            {
-                switch (existingChallenger.Status)
-                {
-                    case "JOINEND":
-                        return await BuildTournamentDto(ctx, tournament, player.PlayerId, "JOINEND");
-
-                    case "FAILED":
-                        existingChallenger.RetryCount++;
-                        existingChallenger.Status = "JOINEND";
-                        break;
-
-                    case "NOTPAID":
-                        existingChallenger.Status = "JOINEND";
-                        break;
-
-                    default:
-                        return await BuildTournamentDto(ctx, tournament, player.PlayerId, "UNKNOWN_STATE");
-                }
-            }
-            else
-            {
-                existingChallenger = new TournamentChallenger
-                {
-                    TournamentId = tournamentId,
-                    PlayerId = player.PlayerId,
-                    RetryCount = 1,
-                    Status = "JOINEND"
-                };
-                isNewChallenger = true;
-            }
-
-            var debited = await _crypto.OffChainTransaction(player.PlayerId, -tournament.EntryFee, "Tounrnament Fee");
-            if (!debited)
-            {
-                if (!isNewChallenger)
-                {
-                    existingChallenger.Status = "NOTPAID";
-                    ctx.TournamentChallengers.Update(existingChallenger);
-                }
-
-                await ctx.SaveChangesAsync();
-                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTPAID");
-            }
-            else
-            {
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
-            }
-
-            if (isNewChallenger)
-                await ctx.TournamentChallengers.AddAsync(existingChallenger);
-            else
-                ctx.TournamentChallengers.Update(existingChallenger);
-
-            await ctx.SaveChangesAsync();
+            await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
             return await BuildTournamentDto(ctx, tournament, player.PlayerId, "JOINEND");
         }
         private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
@@ -931,15 +869,10 @@ namespace SignalR.Server
             {
                 await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
             }
-            catch (Exception ex)
-            {
-            }
-            
-            if (gameRoom == null)
-            {
+            catch (Exception ex){}
+            if (gameRoom == null){
                 return "Room is full";
             }
-
             await Groups.AddToGroupAsync(Context.ConnectionId, gameRoom.RoomCode);
             await BroadcastPlayersAsync(gameRoom);
             return gameRoom.RoomCode; // Return the room name to the client
