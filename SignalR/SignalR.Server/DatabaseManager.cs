@@ -176,7 +176,7 @@ namespace SignalR.Server
 
                 decimal betAmount = existingGame.BetAmount;
                 if (betAmount>0 && (existingGame.TournamentId != null || existingGame.RoomCode != ""))
-                    await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", existingGame.RoomCode);
+                    await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
             }
 
             if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))

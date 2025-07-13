@@ -270,8 +270,8 @@ namespace SignalR.Server
         public async Task<decimal> GetOffChainBalanceAsync(int playerId)
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var off = await ctx.PlayerWallet.FindAsync(playerId);
-            if(off == null)
+            var off = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            if (off == null)
             {
 
             }
@@ -298,16 +298,18 @@ namespace SignalR.Server
             var exists = ctx.PlayerWallet.Any(p => p.PlayerId == playerId);
             if (!exists)
             {
-                ctx.PlayerWallet.Add(new PlayerWallet
+                if (WalletAddress == "none")
                 {
-                    PlayerId = playerId,
-                    AddressType = "SOL",
-                    WalletAddress = await GetOrCreateAccount(playerId, false, true),
-                    AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
-                });
-                await ctx.SaveChangesAsync();
-                if(WalletAddress == "none")
+                    ctx.PlayerWallet.Add(new PlayerWallet
+                    {
+                        PlayerId = playerId,
+                        AddressType = "SOL",
+                        WalletAddress = await GetOrCreateAccount(playerId, false, true),
+                        AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
+                    });
+                    await ctx.SaveChangesAsync();
                     await OffChainTransaction(playerId, 10.0m, "Signup Bonus", "", false, "");
+                }   
             }
             //if ()ctx.PlayerWallet.transactions == null)
             //var sub = ctx.PlayerWallet.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == playerId);
