@@ -190,18 +190,18 @@ namespace SignalR.Server
             {
                 using var ctx = _contextFactory.CreateDbContext();
                 Player sender = ctx.Players.Find(playerId);
-                
+                var wal = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+
                 sender.Wallets = new List<LudoServer.Models.PlayerWallet>
                 {
                     new LudoServer.Models.PlayerWallet
                     {
                         PlayerId = sender.PlayerId,
-                        AddressType = "SOL 2",
-                        WalletAddress = await _crypto.GetOrCreateAccount(sender.PlayerId),
-                        AvailableBalance = await _crypto.GetOffChainBalanceAsync(sender.PlayerId)
+                        AddressType = wal.AddressType,
+                        WalletAddress = wal.WalletAddress,
+                        AvailableBalance = wal.AvailableBalance
                     }
                 };
-
                 if (sender == null)
                     throw new HubException("Player not recognized.");
                 return sender;
