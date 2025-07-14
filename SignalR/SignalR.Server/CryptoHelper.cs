@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Solnet.Programs;
 using Solnet.Rpc;
@@ -44,17 +45,14 @@ namespace SignalR.Server
 
         private readonly IRpcClient _rpc;                       // Solana RPC client
         private readonly string _storageFile;                   // File path for JSON wallet store
-        private readonly IDbContextFactory<LudoDbContext> _dbFactory; // EF factory for ledger DB
+        private readonly IDbContextFactory<LudoDbContext> _contextFactory; // EF factory for ledger DB
         private readonly IDataProtector _protector;             // Data protector for encrypt/decrypt
         private readonly Dictionary<int, Wallet> _wallets;   // In-memory wallet cache
         private readonly int _masterUserId;                  // Identifier for the master wallet
 
         /// Constructor sets up RPC client, loads or creates wallets, and ensures
         /// master wallet is present in the JSON store.
-        public CryptoHelper(
-            IDbContextFactory<LudoDbContext> dbFactory,
-            IHostEnvironment env,
-            IDataProtectionProvider dataProtectionProvider,
+        public CryptoHelper(IDbContextFactory<LudoDbContext> contextFactory, IHostEnvironment env, IDataProtectionProvider dataProtectionProvider,
             int masterUserId,
             string network = "MainNetBeta",
             string relativeStoragePath = "wallets.json",
@@ -63,7 +61,7 @@ namespace SignalR.Server
             Key = SHA256.HashData(Encoding.UTF8.GetBytes(protectorKey));
             IV = new byte[16]; // 16 bytes IV for AES
 
-            _dbFactory = dbFactory;
+            _contextFactory = contextFactory;
             // Create a protector instance scoped to this class
             _protector = dataProtectionProvider.CreateProtector(protectorKey);
             _masterUserId = masterUserId;
@@ -88,7 +86,7 @@ namespace SignalR.Server
             // Ensure the master (hot) wallet exists; if not, generate and persist it.
             if (!_wallets.ContainsKey(_masterUserId))
             {
-                using var ctx = _dbFactory.CreateDbContext();
+                using var ctx = _contextFactory.CreateDbContext();
                 
                 bool playerExists = ctx.Players.Any(p => p.PlayerId == _masterUserId);
                 if (!playerExists)
@@ -106,7 +104,7 @@ namespace SignalR.Server
                     // Save changes to the database
                     ctx.SaveChangesAsync();
                 }
-                GetOrCreateAccount(_masterUserId, true, true);
+                GetOrCreateAccount(_masterUserId, true, true).GetAwaiter().GetResult();
             }
         }
         /// <summary>
@@ -140,7 +138,7 @@ namespace SignalR.Server
         /// Moves SOL off-chain from master ledger to a sub-account ledger.
         public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode="")
         {
-            using var ctx = _dbFactory.CreateDbContext();
+            using var ctx = _contextFactory.CreateDbContext();
             var sub = await EnsurePlayerWalletExists(playerId);
             sub.AvailableBalance += solAmount;
 
@@ -261,7 +259,7 @@ namespace SignalR.Server
             else
                 onSol = (onChain) / (decimal)LamportsPerSol;
 
-            using var ctx = _dbFactory.CreateDbContext();
+            using var ctx = _contextFactory.CreateDbContext();
             var off = await ctx.PlayerWallet.FindAsync(playerId);
             var offSol = off?.AvailableBalance ?? 0m;
 
@@ -269,7 +267,7 @@ namespace SignalR.Server
         }
         public async Task<decimal> GetOffChainBalanceAsync(int playerId)
         {
-            using var ctx = _dbFactory.CreateDbContext();
+            using var ctx = _contextFactory.CreateDbContext();
             var off = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
             if (off == null)
             {
@@ -294,7 +292,7 @@ namespace SignalR.Server
         }
         public async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
         {
-            using var ctx = _dbFactory.CreateDbContext();
+            using var ctx = _contextFactory.CreateDbContext();
             var exists = ctx.PlayerWallet.Any(p => p.PlayerId == playerId);
             if (!exists)
             {
@@ -325,7 +323,7 @@ namespace SignalR.Server
         /// Sweeps any positive on-chain balances from sub-account addresses back to master.
         public async Task SweepAllSubAccountsAsync()
         {
-            using var ctx = _dbFactory.CreateDbContext();
+            using var ctx = _contextFactory.CreateDbContext();
             var masterPub = await GetOrCreateAccount(_masterUserId, true, true);
 
             foreach (var kv in _wallets.Where(w => !w.Value.IsMaster))
@@ -403,6 +401,78 @@ namespace SignalR.Server
             using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
             using var sr = new StreamReader(cs);
             return sr.ReadToEnd();
+        }
+        public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
+        {
+            bool debited = false;
+            var balance = await GetOffChainBalanceAsync(playerId);
+            if ((betAmount > 0 && balance < betAmount) || betAmount < 0)
+                return debited; // Not enough balance to deduct the game fee   
+            if (isTournamentGame)
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+
+                var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
+                if (existingChallenger == null)
+                {
+                    ctx.TournamentChallengers.Add(new TournamentChallenger
+                    {
+                        PlayerId = playerId,
+                        TournamentId = tournamentId
+                    });
+                    ctx.SaveChanges();
+                    debited = await OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
+                }
+                else if (existingChallenger.Status == "FAILED")
+                {
+                    existingChallenger.RetryCount++;
+                    existingChallenger.Status = "JOINEND";
+                    ctx.SaveChanges();
+                    debited = await OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
+                }
+                else
+                {
+                    debited = true;
+                }
+            }
+            else
+            {
+                debited = await OffChainTransaction(playerId, -betAmount, "Game Fee", "", false, roomCode);
+            }
+            return debited;
+        }
+
+        internal async Task<string> SendSolToExternalWallet(Player player, string destination, decimal amountInSol)
+        {
+            try
+            {
+                var txSignature = await SendFromMasterAsync(destination, amountInSol);
+
+                // 0) Check total balance (on-chain + off-chain)
+                var totalBalance = await GetTotalBalanceAsync(player.PlayerId);
+                if (totalBalance < amountInSol)
+                {
+                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {player.PlayerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
+                    return "INSUFFICIENT_FUNDS";
+                }
+
+                // 1) Debit from off-chain ledger (credit master balance)
+                var debited = await OffChainTransaction(player.PlayerId, -amountInSol, "Withdraw", txSignature, true);
+                if (!debited)
+                {
+                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
+                    return "INSUFFICIENT_OFFCHAIN";
+                }
+
+                // 2) Send on-chain using master wallet
+                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {player.PlayerId} sent from master. Tx: {txSignature}");
+                return txSignature;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error during withdrawal for {player.PlayerId}: {ex.Message}");
+                return "ERROR";
+            }
         }
     }
 }

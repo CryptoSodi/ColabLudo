@@ -66,7 +66,7 @@ namespace SignalR.Server
                 // Deduct game fee
                 if (!gameDTO.IsPracticeGame)
                 {
-                    if (!await deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
+                    if (!await _crypto.deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
@@ -103,7 +103,7 @@ namespace SignalR.Server
                 // Do async work *after* lock released
                 if (!existingGame.IsPractice)
                 {
-                    if (!await deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
+                    if (!await _crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
@@ -132,45 +132,6 @@ namespace SignalR.Server
 
             await SaveData(); // Save asynchronously
             return existingGame;
-        }
-        public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
-        {
-            bool debited = false;
-            var balance = await _crypto.GetOffChainBalanceAsync(playerId);
-            if((betAmount > 0 && balance < betAmount) || betAmount < 0)
-             return debited; // Not enough balance to deduct the game fee   
-            if (isTournamentGame)
-            {
-                using var ctx = _contextFactory.CreateDbContext();
-                 
-                var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
-                if (existingChallenger == null)
-                {
-                    ctx.TournamentChallengers.Add(new TournamentChallenger
-                    {
-                        PlayerId = playerId,
-                        TournamentId = tournamentId
-                    });
-                    ctx.SaveChanges();
-                    debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Tournament Fee" , tournamentId.ToString(), false, roomCode);
-                }
-                else if (existingChallenger.Status == "FAILED")
-                {
-                    existingChallenger.RetryCount++;
-                    existingChallenger.Status = "JOINEND";
-                    ctx.SaveChanges();
-                    debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
-                }
-                else
-                {
-                    debited = true;
-                }
-            }
-            else
-            {
-                debited = await _crypto.OffChainTransaction(playerId, -betAmount, "Game Fee", "", false, roomCode);
-            }
-            return debited;
         }
         private MultiPlayer GetGamePlayers(int playerId, Game existingGame)
         {

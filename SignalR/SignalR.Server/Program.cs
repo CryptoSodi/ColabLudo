@@ -2,6 +2,7 @@ using LudoServer.Data;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
+using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,12 @@ builder.Services.AddDbContextFactory<LudoDbContext>(options =>
            .EnableSensitiveDataLogging(false) );// Turn off verbose logging
 
 builder.Services.AddHostedService<SweeperService>();
+builder.Services.AddScoped<FriendsService>();
+builder.Services.AddScoped<TournamentService>();
+builder.Services.AddScoped<DailyBonusService>();
+builder.Services.AddScoped<GoogleAuthService>();
+builder.Services.AddScoped<UtilService>();
+
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection();
 // Replace your existing CryptoHelper registration with this:
@@ -61,7 +68,6 @@ app.UseCors("AllowAnyOrigin");
 
 // Map SignalR hubs
 app.MapHub<LudoHub>("/LudoHub");
-app.MapHub<AdvancedChatHub>("/advanced");
 
 // Run the app
 app.Run();

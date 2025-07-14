@@ -1,11 +1,13 @@
 ﻿using Google.Apis.Auth;
 using LudoServer.Data;
 using LudoServer.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.Constants;
+using SignalR.Server.Services;
 using System.Collections.Concurrent;
 
 namespace SignalR.Server
@@ -19,12 +21,23 @@ namespace SignalR.Server
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
+        private FriendsService _friendsService;
+        private TournamentService _tournamentService;
+        private DailyBonusService _dailyBonusService;
+        private GoogleAuthService _googleAuthService;
+        private UtilService _utilService;
         public static CryptoHelper _crypto;
+
         public static DatabaseManager DM;
         private static bool _initialized = false;
 
-        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto)
+        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto, FriendsService friendsService, TournamentService tournamentService, DailyBonusService dailyBonusService, GoogleAuthService googleAuthService, UtilService utilService)
         {
+            _friendsService = friendsService;
+            _tournamentService = tournamentService;
+            _dailyBonusService = dailyBonusService;
+            _googleAuthService = googleAuthService;
+            _utilService = utilService;
             _crypto = crypto;
             _contextFactory = contextFactory;
             _hubContext = hubContext;
@@ -34,111 +47,23 @@ namespace SignalR.Server
                 DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
             }
         }
-        public static async Task<PlayerInfo> CastPlayerToInfoAsync(Player player)
-        {
-            LudoServer.Models.PlayerWallet pw = await _crypto.EnsurePlayerWalletExists(player.PlayerId);
-            PlayerInfo playerInfo = new PlayerInfo
-            {
-                PlayerId = player.PlayerId,
-                Name = player.Name,
-                Email = player.Email,
-                PictureUrl = player.PictureUrl,
-                PhoneNumber = player.PhoneNumber,
-                City = player.City,
-                CountryCode = player.CountryCode,
-                IsOnline = player.IsOnline,
-                AuthToken = _crypto.Encrypt(player.PlayerId.ToString()), // or a JWT with playerId claim
-                GamesPlayed = player.GamesPlayed,
-                GamesWon = player.GamesWon,
-                GamesLost = player.GamesLost,
-                BestWin = player.BestWin,
-                TotalWin = player.TotalWin,
-                TotalLost = player.TotalLost,
-                Score = player.Score,
-                Wallet = new SharedCode.Constants.PlayerWallet
-                {
-                    PlayerId = pw.PlayerId,
-                    AddressType = pw.AddressType,
-                    WalletAddress = pw.WalletAddress,
-                    AvailableBalance = pw.AvailableBalance,
-                    SignupBonus = 10
-                }
-            };
-            return playerInfo;
-        }
         public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
-            using var ctx = _contextFactory.CreateDbContext();
-            // Example: extract useful info
-            String email = "";
-            String name = "";
-            String pictureUrl = "";// ✅ profile picture URL
-            String googleId = "";// Unique Google user ID
-            if (idToken == "Guest1")
-            {
-                email = "Sodi@gmail.com";
-                name = "Sodi";
-                pictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";// ✅ profile picture URL
-                googleId = idToken;
-            }
-            else if(idToken == "Guest2")
-            {
-                email = "Sodi2@gmail.com";
-                name = "Sodi2";
-                pictureUrl = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj";// ✅ profile picture URL
-                googleId = idToken;
-            }
-            else
-            {
-                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+           var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
 
-                // ✅ Validate issuer and audience (REPLACE with your real Google OAuth client ID)
-                var expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
-                //973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com
-                if (payload.Audience+"" != expectedAudience || (payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com"))
-                {
-                    return null;
-                }
-
-                // Example: extract useful info
-                email = payload.Email;
-                name = payload.Name;
-                pictureUrl = payload.Picture; // ✅ profile picture URL
-                googleId = payload.Subject; // Unique Google user ID
-            }
-
-            Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
-            // If player exists by email, return with Player Id to login
-            if (existingPlayer == null)
+            if (player != null)
             {
-                Player newPlayer = new Player
-                {
-                    GoogleId = googleId,
-                    Name = name,
-                    Email = email,
-                    PictureUrl = pictureUrl,
-                    City = city,
-                    CountryCode = countryCode,
-                    IsOnline = true,
-                    AuthToken = ""
-                };
-                ctx.Players.Add(newPlayer);
-                // Save changes to the database
+                using var ctx = _contextFactory.CreateDbContext();
+                player.AuthToken = _crypto.Encrypt(player.PlayerId.ToString()); // or a JWT with playerId claim
+                PlayerToConnection[player.PlayerId] = Context.ConnectionId;
+                ConnectionToPlayer[Context.ConnectionId] = player.PlayerId;
+                _utilService.SetPlayerOnlineState(player.PlayerId, true).GetAwaiter().GetResult();
                 await ctx.SaveChangesAsync();
-                existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
-            }
-
-            if (existingPlayer != null)
-            {
-                existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
-                PlayerToConnection[existingPlayer.PlayerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = existingPlayer.PlayerId;
-                SetPlayerOnlineState(existingPlayer.PlayerId, true).GetAwaiter().GetResult();
-                await ctx.SaveChangesAsync();
-                return await CastPlayerToInfoAsync(existingPlayer);
+                return await _utilService.CastPlayerToInfoAsync(player);
             }
             // If player creation failed, return null
             return null;
+
         }
         // Call this once after authentication or lobby-join to establish mapping.
         public async Task<PlayerInfo> UserConnectedSetID(String AuthToken)
@@ -151,7 +76,7 @@ namespace SignalR.Server
                 // 1) Store SignalR connection
                 PlayerToConnection[playerId] = Context.ConnectionId;
                 ConnectionToPlayer[Context.ConnectionId] = playerId;
-                return await CastPlayerToInfoAsync(await GetCallerPlayer());
+                return await _utilService.CastPlayerToInfoAsync(await GetCallerPlayer());
             }
             catch (Exception ex)
             {
@@ -166,7 +91,7 @@ namespace SignalR.Server
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
             {
                 PlayerToConnection[playerId] = Context.ConnectionId;
-                await SetPlayerOnlineState(playerId, true);
+                await _utilService.SetPlayerOnlineState(playerId, true);
             }
 
             await base.OnConnectedAsync();
@@ -174,7 +99,7 @@ namespace SignalR.Server
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             Player player = await GetCallerPlayer();
-            await SetPlayerOnlineState(player.PlayerId, false);
+            await _utilService.SetPlayerOnlineState(player.PlayerId, false);
             await LeaveCloseLobby();
             if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerId))
             {
@@ -211,40 +136,9 @@ namespace SignalR.Server
         public async Task<String> SendSol(string destination, decimal amountInSol)
         {
             Player player = await GetCallerPlayer();
-
-            try
-            {
-                var txSignature = await _crypto.SendFromMasterAsync(destination, amountInSol);
-
-                // 0) Check total balance (on-chain + off-chain)
-                var totalBalance = await _crypto.GetTotalBalanceAsync(player.PlayerId);
-                if (totalBalance < amountInSol)
-                {
-                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {player.PlayerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
-                    return "INSUFFICIENT_FUNDS";
-                }
-
-                // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await _crypto.OffChainTransaction(player.PlayerId, -amountInSol, "Withdraw", txSignature, true);
-                if (!debited)
-                {
-                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
-                    return "INSUFFICIENT_OFFCHAIN";
-                }
-                else
-                {
-                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
-                }
-
-                // 2) Send on-chain using master wallet
-                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {player.PlayerId} sent from master. Tx: {txSignature}");
-                return txSignature;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during withdrawal for {player.PlayerId}: {ex.Message}");
-                return "ERROR";
-            }
+            var r = await _crypto.SendSolToExternalWallet(player, destination, amountInSol);
+            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+            return r;
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {
@@ -272,10 +166,8 @@ namespace SignalR.Server
                 {
                     Console.WriteLine("User is null in LeaveLobby");
                 }
-
                 // Notify all connected clients that a user has left.
                 await BroadcastPlayersAsync(existingGame);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
             }
             catch (Exception ex)
             {
@@ -283,13 +175,12 @@ namespace SignalR.Server
             }
             try
             {
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             }
             catch (Exception)
             {
             }
         }
-
         public async Task<string> Ready()
         {
             using var context = _contextFactory.CreateDbContext();
@@ -433,7 +324,7 @@ namespace SignalR.Server
             }
             else 
             {
-                using var context = _contextFactory.CreateDbContext();
+                using var ctx = _contextFactory.CreateDbContext();
                 if(CM.Message != "")
                 {
                     // 1️⃣ Save the new message to the database                    
@@ -448,11 +339,11 @@ namespace SignalR.Server
                         Message = CM.Message,
                         CreatedDate = DateTime.UtcNow  // Set the timestamp here
                     };
-                    context.ChatMessages.Add(newMessage);
-                    context.SaveChanges();
+                    ctx.ChatMessages.Add(newMessage);
+                    ctx.SaveChanges();
                 }
 
-                List<ChatMessage> chatHistory = context.ChatMessages.Where(cm => 
+                List<ChatMessage> chatHistory = ctx.ChatMessages.Where(cm => 
                 (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
                 (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
 
@@ -485,392 +376,45 @@ namespace SignalR.Server
         public async Task<DailyBonusDto> GetDailyBonus()
         {
             Player player = await GetCallerPlayer();
-            using var ctx = _contextFactory.CreateDbContext();
-
-            // Fetch the record (or null)
-            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
-            var now = DateTime.UtcNow;
-            var today = now.Date;
-            var weekdayIndex = (int)now.DayOfWeek; // Sunday=0, Monday=1, …
-
-            if (bonus == null)
-            {
-                // First‐time setup
-                bonus = new DailyBonus
-                {
-                    PlayerId = player.PlayerId,
-                    Day1 = false,
-                    Day2 = false,
-                    Day3 = false,
-                    Day4 = false,
-                    Day5 = false,
-                    Day6 = false,
-                    Day7 = false,
-                    DayCounter = weekdayIndex,
-                    LastResetDate = today.AddDays(-1)
-                };
-                ctx.DailyBonus.Add(bonus);
-            }
-            else if (bonus.LastResetDate < today && weekdayIndex == 1)
-            {
-                bonus.Day1 = bonus.Day2 = bonus.Day3 = bonus.Day4 =
-                bonus.Day5 = bonus.Day6 = bonus.Day7 = false;
-
-                // Reset your counter back to Monday (1)
-                bonus.DayCounter = weekdayIndex;
-            }
-            // else: same day, nothing to reset
-            try
-            {
-                await ctx.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-            }
-            return new DailyBonusDto
-            {
-                DailyBonusId = bonus.DailyBonusId,
-                PlayerId = bonus.PlayerId,
-                Day1 = bonus.Day1,
-                Day2 = bonus.Day2,
-                Day3 = bonus.Day3,
-                Day4 = bonus.Day4,
-                Day5 = bonus.Day5,
-                Day6 = bonus.Day6,
-                Day7 = bonus.Day7,
-                Bonus = 10,
-                DayCounter = weekdayIndex
-            };
+            return await _dailyBonusService.GetDailyBonus(player);
         }
         // New function: Claim today's bonus and update LastResetDate
         public async Task<DailyBonusDto> ClaimTodayBonus()
         {
             Player player = await GetCallerPlayer();
-            using var ctx = _contextFactory.CreateDbContext();
-
-            var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
-            var today = DateTime.UtcNow.Date;
-            var weekdayIndex = (int)DateTime.UtcNow.DayOfWeek; // Sunday=0, Monday=1, …
-
-            if (bonus == null)
-            {
-                // Initialize record if missing
-                bonus = new DailyBonus
-                {
-                    PlayerId = player.PlayerId,
-                    Day1 = false,
-                    Day2 = false,
-                    Day3 = false,
-                    Day4 = false,
-                    Day5 = false,
-                    Day6 = false,
-                    Day7 = false,
-                    DayCounter = weekdayIndex,
-                    LastResetDate = today
-                };
-                ctx.DailyBonus.Add(bonus);
-            }
-
-            bool alreadyClaimed = weekdayIndex switch
-            {
-                0 => bonus.Day1,
-                1 => bonus.Day2,
-                2 => bonus.Day3,
-                3 => bonus.Day4,
-                4 => bonus.Day5,
-                5 => bonus.Day6,
-                6 => bonus.Day7,
-                _ => true
-            };
-
-            if (!alreadyClaimed)
-            {
-                // Mark today's day flag
-                switch (weekdayIndex)
-                {
-                    case 0: bonus.Day1 = true; break;
-                    case 1: bonus.Day2 = true; break;
-                    case 2: bonus.Day3 = true; break;
-                    case 3: bonus.Day4 = true; break;
-                    case 4: bonus.Day5 = true; break;
-                    case 5: bonus.Day6 = true; break;
-                    case 6: bonus.Day7 = true; break;
-                }
-
-                // Update LastResetDate to today
-                bonus.LastResetDate = today;
-                bonus.DayCounter = weekdayIndex;
-
-                await ctx.SaveChangesAsync();
-
-                // Transfer bonus logic here
-                int bonusAmount = 10;
-                //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
-                bool credited = await _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
-                if (credited)
-                {
-                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
-                }
-            }
-
-            return new DailyBonusDto
-            {
-                DailyBonusId = bonus.DailyBonusId,
-                PlayerId = bonus.PlayerId,
-                Day1 = bonus.Day1,
-                Day2 = bonus.Day2,
-                Day3 = bonus.Day3,
-                Day4 = bonus.Day4,
-                Day5 = bonus.Day5,
-                Day6 = bonus.Day6,
-                Day7 = bonus.Day7,
-                Bonus = 10,
-                DayCounter = weekdayIndex
-            };
+            var r = await _dailyBonusService.ClaimTodayBonus(player);
+            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+            return r;
         }
         /* END DAILY BONUS */
         /* TOURNAMENT API */
-        public TournamentResultDTO GetResultsTournament(int tournamentId)
+        public async Task<TournamentResultDTO> GetResultsTournament(int tournamentId)
         {
-            using var ctx = _contextFactory.CreateDbContext();
-            Task<Tournament?> tournament = ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
-            TournamentResultDTO tournamentResultDTO = new TournamentResultDTO();
-            tournamentResultDTO.Seats = new List<SharedCode.PlayerDto>();
-            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 3, PlayerColor = "Red", PlayerName = "Syed Tassaduq", PlayerPicture = "https://lh3.googleusercontent.com/a/ACg8ocLMYETsXNDf8wihXQej62uXHjuF67aNzDfoFgn7Tvp53eNu8Wux=s96-c" });
-            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 2, PlayerColor = "Green", PlayerName = "Sodi", PlayerPicture = "https://yt3.ggpht.com/ytc/AIdro_nuNlfceTDiBSTQUhxQ56YDJFbBu1DjRfTpJMFP6ck9D0x3tsglom8eMUA2blBLpRVU8w=s108-c-k-c0x00ffffff-no-rj" });
-            tournamentResultDTO.Seats.Add(new SharedCode.PlayerDto() { PlayerId = 4, PlayerColor = "Yellow", PlayerName = "Mazhar", PlayerPicture = "https://lh3.googleusercontent.com/a/ACg8ocIbkj3BjuoGtaCnkdqwfXkk21UPGUuLLUZcCWlzwuIhCvsyKQ=s360-c-no" });
-
-            tournamentResultDTO.Prize1 = tournament.Result.Prize1;
-            tournamentResultDTO.Prize2 = tournament.Result.Prize2;
-            tournamentResultDTO.Prize3 = tournament.Result.Prize3;
-            tournamentResultDTO.GameType = "3"; // Assuming 2-player game type for now
-            return tournamentResultDTO;
+            return await _tournamentService.GetResultsTournament(tournamentId);
         }
-        public List<TournamentDTO> GetAllTournaments(string type)
+        public async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
-            using var ctx = _contextFactory.CreateDbContext();
             Player player = GetCallerPlayer().GetAwaiter().GetResult();
-            var nowUtc = DateTime.UtcNow;
-
-            // 1) Begin queryable for efficiency
-            IQueryable<Tournament> query = ctx.Tournaments.AsNoTracking();
-
-            // 2) Apply tournament type filter
-            if (!string.IsNullOrWhiteSpace(type))
-            {
-                query = type switch
-                {
-                    "Completed" => query.Where(t => nowUtc > t.EndDate),
-                    "Running" => query.Where(t => nowUtc >= t.StartDate && nowUtc <= t.EndDate),
-                    "Upcoming" => query.Where(t => nowUtc < t.StartDate),
-                    _ => query // Return all if type is unknown
-                };
-            }
-
-            var tournaments = query.ToList();
-
-            if (tournaments.Count == 0)
-                return new List<TournamentDTO>();
-
-            // 3) Fetch all tournament IDs this player has joined
-            var joinedIds = ctx.TournamentChallengers
-                .Where(tc => tc.PlayerId == player.PlayerId)
-                .Select(tc => tc.TournamentId)
-                .ToHashSet();
-
-            // 4) Build DTOs
-            var result = tournaments.Select(t => new TournamentDTO
-            {
-                TournamentId = t.TournamentId,
-                Name = t.Name,
-                Winner1 = t.Winner1,
-                Winner2 = t.Winner2,
-                Winner3 = t.Winner3,
-                Prize1 = t.Prize1,
-                Prize2 = t.Prize2,
-                Prize3 = t.Prize3,
-                EntryFee = t.EntryFee,
-                City = t.City,
-                ServerDateTime = nowUtc,
-                StartDate = t.StartDate.Date,
-                EndDate = t.EndDate.Date,
-                IsJoined = joinedIds.Contains(t.TournamentId)
-            }).ToList();
-
-            return result;
+            return await _tournamentService.GetAllTournaments(player, type);
         }
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
-            Player player = await GetCallerPlayer();
-            using var ctx = _contextFactory.CreateDbContext();
-            var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
-            if (tournament == null)
-            {
-                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTFOUND");
-            }
-            if (!await DM.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee))
-            {
-                Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId}.");
-                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
-            }
-            await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
-            return await BuildTournamentDto(ctx, tournament, player.PlayerId, "JOINEND");
-        }
-        private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
-        {
-            var joinedIds = await ctx.TournamentChallengers
-                .Where(tc => tc.PlayerId == playerId)
-                .Select(tc => tc.TournamentId)
-                .ToHashSetAsync();
-
-            return new TournamentDTO
-            {
-                TournamentId = tournament.TournamentId,
-                Name = tournament.Name,
-                Winner1 = tournament.Winner1,
-                Winner2 = tournament.Winner2,
-                Winner3 = tournament.Winner3,
-                Prize1 = tournament.Prize1,
-                Prize2 = tournament.Prize2,
-                Prize3 = tournament.Prize3,
-                EntryFee = tournament.EntryFee,
-                City = tournament.City,
-                ServerDateTime = DateTime.UtcNow,
-                StartDate = tournament.StartDate.Date,
-                EndDate = tournament.EndDate.Date,
-                IsJoined = joinedIds.Contains(tournament.TournamentId),
-                StatusCode = StatusCode
-            };
+            Player player = GetCallerPlayer().GetAwaiter().GetResult();
+            var r = await _tournamentService.JoinTournament(player, tournamentId);
+            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+            return r;
         }
         /* END TOURNAMENT API */
         /* FRIENDS API */
-        public Task<List<PlayerCard>> GetFriends(string Type = "All")
+        public async Task<List<PlayerCard>> GetFriends(string type = "All")
         {
-            List<PlayerCard> result = new List<PlayerCard>();
-            using var ctx = _contextFactory.CreateDbContext();
-            Player player = GetCallerPlayer().GetAwaiter().GetResult();
-
-            // First, get the last game players
-            var lastGame = ctx.MultiPlayers
-                .Where(m => m.P1 == player.PlayerId || m.P2 == player.PlayerId || m.P3 == player.PlayerId || m.P4 == player.PlayerId)
-                .OrderByDescending(m => m.MultiPlayerId)
-                .FirstOrDefault();
-
-            if (lastGame != null)
-            {
-                var playerIds = new List<int?> { lastGame.P1, lastGame.P2, lastGame.P3, lastGame.P4 }
-                    .Where(id => id.HasValue && id.Value != player.PlayerId)
-                    .Select(id => id.Value)
-                    .ToList();
-
-                if (playerIds.Any())
-                {
-                    var lastGamePlayers = ctx.Players
-                        .Where(p => playerIds.Contains(p.PlayerId))
-                        .Select(p => new PlayerCard
-                        {
-                            playerID = p.PlayerId,
-                            name = p.Name,
-                            pictureUrl = p.PictureUrl,
-                            rank = 31, // No rank info available, setting 0 or you can later compute
-                            status = "",
-                            lastGame = true
-                        })
-                        .ToList();
-
-                    result.AddRange(lastGamePlayers);
-                }
-            }
-            // Now, get friends (all statuses)
-            var friends = ctx.FriendsRequests
-                .Where(fr => fr.SenderId == player.PlayerId || fr.ReceiverId == player.PlayerId)
-                .Select(fr => new
-                {
-                    OtherPlayer = fr.SenderId == player.PlayerId ? fr.Receiver : fr.Sender,
-                    Status = fr.Status
-                }).ToList();
-
-
-            foreach (var fr in friends)
-            {
-                // try to find an existing card (e.g. from lastGame)
-                var existing = result.FirstOrDefault(x => x.playerID == fr.OtherPlayer.PlayerId);
-
-                if (existing != null)
-                {
-                    // update the status (and sender/receiver flag) on the existing card
-                    existing.status = fr.Status.ToString();
-                }
-                else
-                {
-                    // still need to add brand-new friends
-                    result.Add(new PlayerCard
-                    {
-                        playerID = fr.OtherPlayer.PlayerId,
-                        name = fr.OtherPlayer.Name,
-                        pictureUrl = fr.OtherPlayer.PictureUrl,
-                        rank = 31,
-                        status = fr.Status.ToString(),
-                        lastGame = false
-                    });
-                }
-            }
-            foreach (var fr in result)
-            {       // update the status (and sender/receiver flag) on the existing card
-                if (fr.status.ToString() == "")
-                    fr.status = "UN FRIEND";
-            }
-            if (!result.Any())
-                return Task.FromResult(new List<PlayerCard>());
-            return Task.FromResult(result);
+            var player = await GetCallerPlayer(); // Assume async
+            return await _friendsService.GetFriends(player, type);
         }
-        public string SendFriendRequest(int ReceiverId, string status)
+        public async Task<string> SendFriendRequest(int receiverId, string status)
         {
-            using var ctx = _contextFactory.CreateDbContext();
-            Player player =  GetCallerPlayer().GetAwaiter().GetResult();
-
-            if (player.PlayerId == ReceiverId)
-                return "Cannot send friend request to yourself.";
-            
-            var receiver = ctx.Players.Find(ReceiverId);
-
-            if (player == null || receiver == null)
-                return "Sender or Receiver not found.";
-
-            //var existingRequest = _context.FriendsRequests
-            //    .FirstOrDefault(fr =>
-            //        (fr.SenderId == SenderId && fr.ReceiverId == ReceiverId) ||
-            //        (fr.SenderId == ReceiverId && fr.ReceiverId == SenderId));
-
-            //if (existingRequest != null)
-            //    return Conflict(new { Message = "Friend request already exists or is pending." });
-
-            FriendRequest request = new FriendRequest();
-            request.Status = status;
-            request.CreatedDate = DateTime.UtcNow;
-
-            // Make sure navigation properties are not set by client
-            request.SenderId = player.PlayerId;
-            request.ReceiverId = ReceiverId;
-
-            ctx.FriendsRequests.Add(request);
-            ctx.SaveChanges();
-            return status;
-            //switch (status)
-            //{
-            //    case "UN BLOCK":
-            //        return Ok(new { Message = "UN BLOCK" });
-            //        break;
-            //    case "BLOCK":
-            //        return Ok(new { Message = "BLOCK" });
-            //        break;
-            //    case "FIREND":
-            //        return Ok(new { Message = "PENDING" });
-            //        break;
-            //    case "UN FRIEND":
-            //        return Ok(new { Message = "UN FRIEND" });
-            //        break;
-            //}
+            var player = await GetCallerPlayer();
+            return await _friendsService.SendFriendRequest(player, receiverId, status);
         }
         /* END FRIENDS API */
         public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
@@ -879,9 +423,9 @@ namespace SignalR.Server
             Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
             try
             {
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await CastPlayerToInfoAsync(player));
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             }
-            catch (Exception ex){}
+            catch (Exception){}
             if (gameRoom == null){
                 return "Room is full";
             }
@@ -938,23 +482,7 @@ namespace SignalR.Server
                 await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
         // 2. Update the player's IsOnline state in the DB
-        private async Task SetPlayerOnlineState(int playerId, bool isOnline)
-        {
-            try
-            {
-                using var ctx = _contextFactory.CreateDbContext();
-                var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-                if (player != null)
-                {
-                    player.IsOnline = isOnline;
-                    await ctx.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
-            }
-        }
+       
     }
     public class User
     {
@@ -972,39 +500,5 @@ namespace SignalR.Server
         public string PlayerName { get; init; }
         public string PlayerColor { get; set; }  // Now mutable
         public string AuthToken { get; set; }  // Now mutable
-    }
-
-    /// Background worker that calls the sweeper method on a fixed interval.
-    public class SweeperService : BackgroundService
-    {
-        private readonly CryptoHelper _cryptoHelper;
-
-        /// <summary>
-        /// ctor for the background sweeper service.
-        /// </summary>
-        public SweeperService(CryptoHelper cryptoHelper)
-        {
-            _cryptoHelper = cryptoHelper;
-        }
-
-        /// <summary>
-        /// Executes SweepAllSubAccountsAsync every 5 minutes until cancellation.
-        /// </summary>
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            Console.WriteLine("SweeperService starting...");
-            while (!stoppingToken.IsCancellationRequested)
-            {
-                try
-                {
-                    await _cryptoHelper.SweepAllSubAccountsAsync();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error sweeping sub-accounts: {ex.Message}");
-                }
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
-            }
-        }
     }
 }
