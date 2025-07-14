@@ -191,7 +191,7 @@ namespace SharedCode.Network
         {
             try
             {
-                string result = await _hubConnection.InvokeAsync<string>("Ready", GlobalConstants.RoomCode).ConfigureAwait(false);
+                string result = await _hubConnection.InvokeAsync<string>("Ready").ConfigureAwait(false);
                 Console.WriteLine($"Ready acknowledged for room: {result}");
             }
             catch (Exception ex)
@@ -206,7 +206,7 @@ namespace SharedCode.Network
                 return;
             if (GlobalConstants.RoomCode != "")
             {
-                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", GlobalConstants.RoomCode).ConfigureAwait(false);
+                _ = _hubConnection.InvokeAsync("LeaveCloseLobby").ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
             }
         }

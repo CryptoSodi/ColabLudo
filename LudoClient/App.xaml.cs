@@ -155,10 +155,16 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
-                _pollingTokenSource.Cancel();
-                _pollingTokenSource.Dispose();
-                _pollingTokenSource = null;
-
+                if (_pollingTokenSource != null)
+                {
+                    _pollingTokenSource.Cancel();
+                    _pollingTokenSource.Dispose();
+                    _pollingTokenSource = null;
+                }
+                
+                if(ClientGlobalConstants.game == null)
+                    return;
+                
                 await ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
 
                 ClientGlobalConstants.game.engine.cleanGame();
@@ -171,13 +177,35 @@ namespace LudoClient
         {
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
+                if (existingPages.Count == 1)
+                    return;
+                // Remove all pages except the first one (which is the dashboard).
                 _pollingTokenSource = new CancellationTokenSource();
-               
-                GlobalConstants.lastSeenIndex = -1;
-                ClientGlobalConstants.game = new LudoClient.CoreEngine.Game("Client", args.GameType, "", args.seatsData, args.rollsString);
-                ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
-                ClientGlobalConstants.FlushOld();
-                Task.Run(() => PollForCommandsAsync(_pollingTokenSource.Token));
+                try
+                {
+                    GlobalConstants.lastSeenIndex = -1;
+                    ClientGlobalConstants.game = new LudoClient.CoreEngine.Game("Client", args.GameType, "", args.seatsData, args.rollsString);
+                    ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
+                    ClientGlobalConstants.FlushOld();
+                    Task.Run(() => PollForCommandsAsync(_pollingTokenSource.Token));
+                }
+                catch (Exception)
+                {
+                    Console.WriteLine("Error starting game: " + args.GameType + " " + args.seatsData + " " + args.rollsString);
+                    // Handle the error, e.g., show an alert or log it.
+                    ClientGlobalConstants.game.engine.cleanGame();
+                    ClientGlobalConstants.game = null;
+                    GlobalConstants.RoomCode = "";
+                    GlobalConstants.GameCost = 0;
+                    if(_pollingTokenSource != null)
+                    {
+                        _pollingTokenSource.Cancel();
+                        _pollingTokenSource.Dispose();
+                        _pollingTokenSource = null;
+                    }   
+                }
+                
             });
         }
         private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)

@@ -25,7 +25,7 @@ namespace SignalR.Server
             _contextFactory = contextFactory;
             Task.Run(LoadData); // Run async without blocking constructor
         }
-        public async Task<Game> JoinGameLobby(string ConnectionId, Player player, SharedCode.GameDto gameDTO)
+        public async Task<Game> JoinGameLobby(string connectionId, Player player, SharedCode.GameDto gameDTO)
         {
             Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
@@ -37,38 +37,47 @@ namespace SignalR.Server
                 if (!int.TryParse(gameDTO.RoomCode, out int parsedId))
                     throw new ArgumentException("Invalid tournament ID format in RoomCode.");
                 tournamentId = parsedId;
-                var tournament = await ctx.Tournaments.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId);                
+                var tournament = await ctx.Tournaments.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId);
+                if (tournament == null)
+                    throw new Exception($"Tournament {tournamentId} not found.");
+
                 gameDTO.BetAmount = tournament.EntryFee;
                 gameDTO.RoomCode = "";
                 existingGame = games.FirstOrDefault(g => g.TournamentId == tournamentId && g.State == "Active");
             }
             else if (gameDTO.IsPracticeGame)
+            {
                 existingGame = games.FirstOrDefault(g => g.GameType == gameDTO.GameType && g.BetAmount == 0 && g.State == "Active");
+            }
             else
+            {
                 existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode && g.State == "Active");
+            }
 
             if (existingGame == null)
             {
+                // Create a new game
                 do
                 {
-                    gameDTO.RoomCode = new Random().Next(10000000, 99999999).ToString();// Generates a unique room name
-                    existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);// Check if the RoomCode already exists in the database
-                } while (existingGame != null && _gameRooms.ContainsKey(gameDTO.RoomCode));
+                    gameDTO.RoomCode = new Random().Next(10000000, 99999999).ToString(); // Generate unique room code
+                    existingGame = games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
+                } while (existingGame != null || _gameRooms.ContainsKey(gameDTO.RoomCode));
 
-                //DEDUCT GAME FEE
-                if(!gameDTO.IsPracticeGame)
-                    if(!await deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
+                // Deduct game fee
+                if (!gameDTO.IsPracticeGame)
+                {
+                    if (!await deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
                     }
+                }
 
                 _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
 
                 MultiPlayer multiPlayer = GetGamePlayers(player.PlayerId, null);
-
                 multiPlayer.RoomCode = int.Parse(gameDTO.RoomCode);
-                // RoomCode does not exist, create a new game entry
+
                 existingGame = new Game
                 {
                     MultiPlayerId = multiPlayer.MultiPlayerId,
@@ -78,36 +87,50 @@ namespace SignalR.Server
                     RoomCode = gameDTO.RoomCode,
                     IsPrivate = gameDTO.IsPrivateGame,
                     IsPractice = gameDTO.IsPracticeGame,
-                    TournamentId = gameDTO.IsTournamentGame?tournamentId:null,
+                    TournamentId = gameDTO.IsTournamentGame ? tournamentId : null,
                     Owner = player.PlayerId,
                     State = "Active",
                     MultiPlayer = multiPlayer
                 };
-                games.Add(existingGame);
-                //Deduct the bet amount from the player's balance if it's a paid game
-                // await _context.SaveChangesAsync(); // Save the game entry to the database
+
+                lock (games) // Lock the games list while modifying
+                {
+                    games.Add(existingGame);
+                }
             }
             else
             {
+                // Do async work *after* lock released
                 if (!existingGame.IsPractice)
+                {
                     if (!await deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
                     }
-                //DEDUCT GAME FEE
-                existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
+                }
+                // Join existing game
+                lock (existingGame)
+                {
+                    // Safely assign player slots here
+                    existingGame.MultiPlayer = GetGamePlayers(player.PlayerId, existingGame);
+                }
             }
-            // Create or retrieve the room
+
+            // Add to GameRoom
             GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto, gameDTO));
-            // Add the user to the users dictionary (string ConnectionId, string Room, int PlayerId, string PlayerName, string PlayerColor)
-            var user = new User(ConnectionId, existingGame.RoomCode, player.PlayerId, player.Name, "Color");
-            _users.GetOrAdd(ConnectionId, user);
-            // Add the user to the room's user list
-            gameRoom.Users.Add(user);
-            // Add the user to the specified group (room)
-            await SaveData(); // Run save in a background thread (non-blocking)
-            //Task.Run(SaveData); // Run save in a background thread (non-blocking)
+
+            // Add user to active users
+            var user = new User(connectionId, existingGame.RoomCode, player.PlayerId, player.Name, "Color");
+
+            _users.GetOrAdd(connectionId, user);
+
+            lock (gameRoom.Users) // Lock GameRoom users list
+            {
+                gameRoom.Users.Add(user);
+            }
+
+            await SaveData(); // Save asynchronously
             return existingGame;
         }
         public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
@@ -174,41 +197,96 @@ namespace SignalR.Server
                 return existingGame.MultiPlayer;
             }
         }
-        public async Task<(Game game, User user)> LeaveGameLobby(string ConnectionId, int playerId, string roomCode)
+        public async Task<(Game game, User user)> LeaveGameLobby(string connectionId, int playerId)
         {
-            Game existingGame = games.FirstOrDefault(g => g.RoomCode == roomCode);//await _context.FirstOrDefaultAsync
+            // Find the game where this player exists
+            Game existingGame = games.FirstOrDefault(g => (g.State == "Active") &&
+                (g.MultiPlayer.P1 == playerId ||
+                 g.MultiPlayer.P2 == playerId ||
+                 g.MultiPlayer.P3 == playerId ||
+                 g.MultiPlayer.P4 == playerId));
             if (existingGame != null && existingGame.State == "Active")
             {
-                if (existingGame?.MultiPlayer.P1 == playerId)
-                    existingGame.MultiPlayer.P1 = null;
-                else if (existingGame?.MultiPlayer.P2 == playerId)
-                    existingGame.MultiPlayer.P2 = null;
-                else if (existingGame?.MultiPlayer.P3 == playerId)
-                    existingGame.MultiPlayer.P3 = null;
-                else if (existingGame?.MultiPlayer.P4 == playerId)
-                    existingGame.MultiPlayer.P4 = null;
+                lock (existingGame) // Lock to prevent race conditions
+                {
+                    // Clear the player slot
+                    if (existingGame.MultiPlayer.P1 == playerId)
+                        existingGame.MultiPlayer.P1 = null;
+                    else if (existingGame.MultiPlayer.P2 == playerId)
+                        existingGame.MultiPlayer.P2 = null;
+                    else if (existingGame.MultiPlayer.P3 == playerId)
+                        existingGame.MultiPlayer.P3 = null;
+                    else if (existingGame.MultiPlayer.P4 == playerId)
+                        existingGame.MultiPlayer.P4 = null;
 
-                if (existingGame?.MultiPlayer.P1 == null && existingGame?.MultiPlayer.P2 == null && existingGame?.MultiPlayer.P3 == null && existingGame?.MultiPlayer.P4 == null)
-                    existingGame.State = "Terminated";
+                    // Check if all player slots are empty
+                    bool allPlayersLeft = existingGame.MultiPlayer.P1 == null
+                        && existingGame.MultiPlayer.P2 == null
+                        && existingGame.MultiPlayer.P3 == null
+                        && existingGame.MultiPlayer.P4 == null;
 
-                decimal betAmount = existingGame.BetAmount;
+                    if (allPlayersLeft)
+                    {
+                        existingGame.State = "Terminated";
 
+                        // Remove GameRoom from memory
+                        if (_gameRooms.TryRemove(existingGame.RoomCode, out var removedRoom))
+                        {
+                            Console.WriteLine($"GameRoom {existingGame.RoomCode} removed from memory.");
+                        }
+                    }
+                }
+                // Refund the player if this is not a practice or tournament game
                 if (!existingGame.IsPractice && existingGame.TournamentId == null)
                 {
-                    await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
+                    try
+                    {
+                        decimal betAmount = existingGame.BetAmount;
+                        await _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
+                        Console.WriteLine($"Refunded {betAmount} to player {playerId} for game {existingGame.RoomCode}.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Refund failed for player {playerId} in game {existingGame.RoomCode}: {ex.Message}");
+                        // Optionally: Re-add the player to the game or log for manual investigation
+                    }
                 }
             }
 
-            if (_gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+            if(existingGame == null)
+                existingGame = games.FirstOrDefault(g => (g.State == "Playing") &&
+                (g.MultiPlayer.P1 == playerId ||
+                 g.MultiPlayer.P2 == playerId ||
+                 g.MultiPlayer.P3 == playerId ||
+                 g.MultiPlayer.P4 == playerId));
+            if (existingGame != null)
             {
-                await gameRoom.PlayerLeft(playerId, roomCode);
+                // Notify GameRoom about the player leaving
+                if (_gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom))
+                {
+                    await gameRoom.PlayerLeft(playerId, existingGame.RoomCode);
+                }
+
+                // Remove the user from the active users list
+                if (_users.TryRemove(connectionId, out User user))
+                {
+                    Console.WriteLine($"User {user.PlayerId} removed from active users.");
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to remove user for connection: {connectionId}");
+                }
             }
-            if (_users.TryRemove(ConnectionId, out User user))
+            // Persist the updated state
+            try
             {
-                Console.WriteLine("User not removed for connection: " + playerId);
+                await SaveData();
             }
-            await SaveData(); // Run save in a background thread (non-blocking)
-            return (existingGame, user);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error while saving game state: {ex.Message}");
+            }
+            return (existingGame, _users.ContainsKey(connectionId) ? _users[connectionId] : null);
         }
         public async Task SaveData()
         {
