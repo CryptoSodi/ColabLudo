@@ -80,22 +80,22 @@
     public class PlayerCard
     {
         public int playerID { get; set; }
-        public String name { get; set; }
-        public String pictureUrl { get; set; }
+        public String? name { get; set; }
+        public String? pictureUrl { get; set; }
         public int rank { get; set; }
-        public String status { get; set; }
+        public String? status { get; set; }
         public bool lastGame { get; set; }
     }
     public class ChatMessages
     {
         public int Index { get; set; }
         public int SenderId { get; set; }
-        public string SenderName { get; set; }
+        public string? SenderName { get; set; }
         public string? SenderColor { get; set; }
         public string? SenderPicture { get; set; }
         public int ReceiverId { get; set; }
-        public string ReceiverName { get; set; }
-        public string Message { get; set; }
+        public string? ReceiverName { get; set; }
+        public string? Message { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }

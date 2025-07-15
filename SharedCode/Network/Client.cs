@@ -58,8 +58,8 @@ namespace SharedCode.Network
             // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
-                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));                
                 Console.WriteLine($"{playerType}: {userName} has joined.");
+                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));
             });
             // Game start event
             _hubConnection.On<string, string, string>("GameStarted", (GameType, seatsData, rollsString) =>

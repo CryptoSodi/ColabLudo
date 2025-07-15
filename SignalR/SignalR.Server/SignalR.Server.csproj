@@ -45,6 +45,7 @@
     <Folder Include="Interfaces\" />
     <Folder Include="CoreEngine\" />
     <Folder Include="Constants\" />
+    <Folder Include="CoreEngine\" />
   </ItemGroup>
 
   <ItemGroup>

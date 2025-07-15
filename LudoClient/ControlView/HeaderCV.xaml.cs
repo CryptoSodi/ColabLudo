@@ -1,9 +1,7 @@
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
-using SharedCode;
 using SharedCode.Constants;
-using System.Net;
 namespace LudoClient;
 
 public partial class HeaderCV : ContentView

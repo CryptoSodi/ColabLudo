@@ -1,7 +1,5 @@
-﻿using Google.Apis.Auth;
-using LudoServer.Data;
+﻿using LudoServer.Data;
 using LudoServer.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -12,12 +10,11 @@ using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
-    
+
     public class LudoHub : Hub
     {
-        // Thread-safe connection mappings
-        public static ConcurrentDictionary<int, string> PlayerToConnection = new ConcurrentDictionary<int, string>();
-        public static ConcurrentDictionary<string, int> ConnectionToPlayer = new ConcurrentDictionary<string, int>();
+        // Thread-safe connection mappings        
+        public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
 
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly IHubContext<LudoHub> _hubContext;
@@ -28,7 +25,7 @@ namespace SignalR.Server
         private UtilService _utilService;
         public static CryptoHelper _crypto;
 
-        public static DatabaseManager DM;
+        public static DatabaseManager DM { get; set; }
         private static bool _initialized = false;
 
         public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto, FriendsService friendsService, TournamentService tournamentService, DailyBonusService dailyBonusService, GoogleAuthService googleAuthService, UtilService utilService)
@@ -41,42 +38,39 @@ namespace SignalR.Server
             _crypto = crypto;
             _contextFactory = contextFactory;
             _hubContext = hubContext;
+            // Initialize the DatabaseManager only once
             if (!_initialized)
             {
                 _initialized = true;
-                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto);
+                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto, _utilService);
+                Task.Run(DM.LoadData);
             }
         }
         public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
-           var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
-
-            if (player != null)
+            try
             {
-                using var ctx = _contextFactory.CreateDbContext();
-                player.AuthToken = _crypto.Encrypt(player.PlayerId.ToString()); // or a JWT with playerId claim
-                PlayerToConnection[player.PlayerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = player.PlayerId;
-                _utilService.SetPlayerOnlineState(player.PlayerId, true).GetAwaiter().GetResult();
-                await ctx.SaveChangesAsync();
+                var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
+                ConnectionToPlayer[Context.ConnectionId] 
+                     = await _utilService.GetPlayerByID(player.PlayerId);
+                       await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 return await _utilService.CastPlayerToInfoAsync(player);
             }
-            // If player creation failed, return null
-            return null;
-
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in Authentication : {ex.Message} ");
+                // If player creation failed, return null
+                return null;
+            }
         }
         // Call this once after authentication or lobby-join to establish mapping.
         public async Task<PlayerInfo> UserConnectedSetID(String AuthToken)
         {
+            // 1) Store SignalR connection
             try
             {
-                int playerId = int.Parse(_crypto.Decrypt(AuthToken));            
-                if (playerId == -1)
-                    return null;
-                // 1) Store SignalR connection
-                PlayerToConnection[playerId] = Context.ConnectionId;
-                ConnectionToPlayer[Context.ConnectionId] = playerId;
-                return await _utilService.CastPlayerToInfoAsync(await GetCallerPlayer());
+                ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)
             {
@@ -87,50 +81,28 @@ namespace SignalR.Server
         public override async Task OnConnectedAsync()
         {
             Console.WriteLine($"User connected: {Context.ConnectionId}");
-
-            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
-            {
-                PlayerToConnection[playerId] = Context.ConnectionId;
-                await _utilService.SetPlayerOnlineState(playerId, true);
-            }
-
+            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerAtConnection))
+                await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, true);
             await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            Player player = await GetCallerPlayer();
-            await _utilService.SetPlayerOnlineState(player.PlayerId, false);
             await LeaveCloseLobby();
-            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerId))
+            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerAtConnection))
             {
-                PlayerToConnection.TryRemove(playerId, out _);
-                
+                await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, false);
             }
             await base.OnDisconnectedAsync(exception);
         }
         /// Helper to fetch the current caller's player ID from the connection map.
         private async Task<Player> GetCallerPlayer()
         {
-            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerId))
+            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var player))
             {
-                using var ctx = _contextFactory.CreateDbContext();
-                Player sender = ctx.Players.Find(playerId);
-                var wal = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-
-                sender.Wallets = new List<LudoServer.Models.PlayerWallet>
-                {
-                    new LudoServer.Models.PlayerWallet
-                    {
-                        PlayerId = sender.PlayerId,
-                        AddressType = wal.AddressType,
-                        WalletAddress = wal.WalletAddress,
-                        AvailableBalance = wal.AvailableBalance
-                    }
-                };
-                if (sender == null)
+                if (player == null)
                     throw new HubException("Player not recognized.");
-                return sender;
-            }   
+                return player;
+            }
             throw new HubException("Player not recognized.");
         }
         public async Task<String> SendSol(string destination, decimal amountInSol)
@@ -147,7 +119,7 @@ namespace SignalR.Server
                 Console.WriteLine($"GameRoom not found for room: {RoomCode}");
                 return Task.FromResult(new List<GameCommand>());
             }
-            
+
             return gameRoom.PullCommands(lastSeenIndex);
         }
         public async Task LeaveCloseLobby()
@@ -155,17 +127,8 @@ namespace SignalR.Server
             Player player = await GetCallerPlayer();
             try
             {
-                var (existingGame, user) = await DM.LeaveGameLobby(Context.ConnectionId, player.PlayerId);
-                // Optionally, perform additional cleanup or update the game engine state.
-                // For example: engine.RemoveUser(user); // if your engine supports this
-                if (user != null && existingGame!=null)
-                {
-                    await _hubContext.Clients.Group(existingGame.RoomCode).SendAsync("PlayerLeft", user.PlayerColor);
-                }
-                else
-                {
-                    Console.WriteLine("User is null in LeaveLobby");
-                }
+                var (existingGame, user) = await DM.LeaveGameLobby(player.PlayerId);
+                // Optionally, perform additional cleanup or update the game engine state.                
                 // Notify all connected clients that a user has left.
                 await BroadcastPlayersAsync(existingGame);
             }
@@ -183,83 +146,32 @@ namespace SignalR.Server
         }
         public async Task<string> Ready()
         {
-            using var context = _contextFactory.CreateDbContext();
-            Player player = await GetCallerPlayer();
-            // Find the game where this player exists
-            Game existingGame = DM.games.FirstOrDefault(g =>
-                g.State == "Active" &&
-                (g.MultiPlayer.P1 == player.PlayerId ||
-                 g.MultiPlayer.P2 == player.PlayerId ||
-                 g.MultiPlayer.P3 == player.PlayerId ||
-                 g.MultiPlayer.P4 == player.PlayerId));
-
-            if (existingGame == null)
+            try
             {
-                Console.WriteLine("No active game found for this player.");
-                return "No active game found.";
-            }
-
-            await BroadcastPlayersAsync(existingGame);
-            // Build playerId-to-color mapping
-            var playerSlots = new (int? PlayerId, string Color)[]
-            {
-                (existingGame.MultiPlayer.P1, "Red"),
-                (existingGame.MultiPlayer.P2, existingGame.GameType == "2" ? "Yellow" : "Green"),
-                (existingGame.MultiPlayer.P3, "Yellow"),
-                (existingGame.MultiPlayer.P4, "Blue")
-            };
-            // Get all player IDs that are not null
-            var playerIds = playerSlots.Where(slot => slot.PlayerId.HasValue).Select(slot => slot.PlayerId.Value).ToList();
-            // Fetch all players in a single query
-            var players = await context.Players.Where(p => playerIds.Contains(p.PlayerId)).ToListAsync();
-
-            // Build PlayerDto and Player lists
-            List<SharedCode.PlayerDto> seats = new();
-            List<Player> playerList = new();
-            foreach (var (playerId, color) in playerSlots.Where(s => s.PlayerId.HasValue))
-            {
-                var playerSub = players.FirstOrDefault(p => p.PlayerId == playerId.Value);
-                if (playerSub != null)
+                Player player = await GetCallerPlayer();
+                // Find the game where this player exists
+                Game existingGame = DM.GetActiveGame("Active", player.PlayerId);
+                var (existingGameReady, seats, rollsString) = await DM.Ready(existingGame);
+                await BroadcastPlayersAsync(existingGameReady);
+                if (existingGameReady != null && seats != null && rollsString != "")
                 {
-                    playerList.Add(playerSub);
-                    seats.Add(new SharedCode.PlayerDto
-                    {
-                        PlayerId = playerSub.PlayerId,
-                        PlayerName = playerSub.Name,
-                        PlayerPicture = playerSub.PictureUrl,
-                        PlayerColor = color
-                    });
+                    await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.GameType, JsonConvert.SerializeObject(seats), rollsString);
+                    return "game started";
                 }
+                return "ready";
             }
-
-            // Check if game is full
-            if (existingGame.GameType == seats.Count.ToString() || (seats.Count == 4 && existingGame.GameType == "22"))
+            catch (Exception ex)
             {
-                existingGame.State = "Playing";
-                await DM.SaveData();
-
-                await Task.Delay(2000);
-
-                DM._gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
-                gameRoom.seats = seats;
-                gameRoom.InitializeEngine(seats[0].PlayerColor);
-                for (int i = 0; i < gameRoom.Users.Count; i++)
-                {
-                    gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
-                    gameRoom.Users[i].AuthToken = playerList[i].AuthToken;
-                }
-                // _engine.TryAdd(existingGame.RoomCode, gameRoom);
-                await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.GameType, JsonConvert.SerializeObject(seats), gameRoom.engine.EngineHelper.rollsString);
+                Console.WriteLine(ex.Message);
+                return $"failed at server: {ex.Message}";
             }
-            //await BroadcastPlayersAsync(existingGame, roomCode);
-            return "ready";
         }
         public async Task<GameCommand> Send(string AuthToken, GameCommand commandValue, string commandtype, string roomCode)
         {
             Player player = await GetCallerPlayer();
             if (player.AuthToken != AuthToken)
                 return null;
-            
+
             GameCommand Result = new GameCommand();
             Console.WriteLine($"{player.Name}: {commandValue}:{commandtype}");
             // Now use the user's Room property to get the GameRoom.
@@ -311,21 +223,21 @@ namespace SignalR.Server
                     CM.Index = gameRoom.chatMessages.Count;
                     gameRoom.chatMessages.Add(CM);
                 }
-                List<User> otherUsers = gameRoom.Users.Where(p => p.PlayerId != CM.SenderId).ToList();
-                User senderUser = gameRoom.Users.Where(p => p.PlayerId == CM.SenderId).ToList()[0];
+                List<User> otherUsers = gameRoom.Users.Where(p => p.player.PlayerId != CM.SenderId).ToList();
+                User senderUser = gameRoom.Users.Where(p => p.player.PlayerId == CM.SenderId).ToList()[0];
                 CM.SenderColor = senderUser.PlayerColor;
 
                 foreach (User u in otherUsers)
                 {
                     if (CM.Message != "")
-                        Clients.Client(PlayerToConnection[u.PlayerId]).SendAsync("ReceiveChatHistory", CM);
+                        Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == u.player.PlayerId).Key).SendAsync("ReceiveChatHistory", CM);
                 }
                 return gameRoom.chatMessages.Take(20).ToList();
             }
-            else 
+            else
             {
                 using var ctx = _contextFactory.CreateDbContext();
-                if(CM.Message != "")
+                if (CM.Message != "")
                 {
                     // 1️⃣ Save the new message to the database                    
                     ChatMessage newMessage = new ChatMessage
@@ -343,13 +255,13 @@ namespace SignalR.Server
                     ctx.SaveChanges();
                 }
 
-                List<ChatMessage> chatHistory = ctx.ChatMessages.Where(cm => 
+                List<ChatMessage> chatHistory = ctx.ChatMessages.Where(cm =>
                 (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
                 (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
 
                 // 3️⃣ Convert to the response model
                 List<ChatMessages> chatMessagesList = chatHistory.Select(cm => new ChatMessages
-                { 
+                {
                     Index = cm.Index,
                     SenderId = cm.SenderId,
                     SenderName = cm.SenderName,
@@ -364,14 +276,12 @@ namespace SignalR.Server
                 //chatMessagesList.Add(CM);
                 // Optionally, also send back the last 50 messages to the sender
                 // send only to the receiver
-                if (PlayerToConnection.TryGetValue(CM.ReceiverId, out var connId) && CM.Message != "")
-                {
-                    Clients.Client(connId).SendAsync("ReceiveChatHistory", CM);
-                }
+                if (CM.Message != "")
+                    Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == CM.ReceiverId).Key).SendAsync("ReceiveChatHistory", CM);
                 return chatMessagesList.Take(30).ToList();
             }
         }
-        /* END CHAT AND FRIENDS MANAGEMENT */        
+        /* END CHAT AND FRIENDS MANAGEMENT */
         /* DAILY BONUS */
         public async Task<DailyBonusDto> GetDailyBonus()
         {
@@ -394,12 +304,12 @@ namespace SignalR.Server
         }
         public async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
-            Player player = GetCallerPlayer().GetAwaiter().GetResult();
+            Player player = await GetCallerPlayer();
             return await _tournamentService.GetAllTournaments(player, type);
         }
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
-            Player player = GetCallerPlayer().GetAwaiter().GetResult();
+            Player player = await GetCallerPlayer();
             var r = await _tournamentService.JoinTournament(player, tournamentId);
             await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             return r;
@@ -420,18 +330,19 @@ namespace SignalR.Server
         public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
             Player player = await GetCallerPlayer();
-            Game gameRoom = await DM.JoinGameLobby(Context.ConnectionId, player, gameDTO);
+            Game existingGame = await DM.JoinGameLobby(player, gameDTO);
             try
             {
                 await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             }
-            catch (Exception){}
-            if (gameRoom == null){
+            catch (Exception) { }
+            if (existingGame == null)
+            {
                 return "Room is full";
             }
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameRoom.RoomCode);
-            await BroadcastPlayersAsync(gameRoom);
-            return gameRoom.RoomCode; // Return the room name to the client
+            await Groups.AddToGroupAsync(Context.ConnectionId, existingGame.RoomCode);
+            await BroadcastPlayersAsync(existingGame);
+            return existingGame.RoomCode; // Return the room name to the client
         }
         /// Gets a list of all games.
         public async Task<List<Game>> GetGame(bool IsPrivate)
@@ -444,61 +355,34 @@ namespace SignalR.Server
         {
             if (existingGame == null)
                 return;
-            using var context = _contextFactory.CreateDbContext();
-            // Notify others in the room that a new user has joined
-            if (existingGame.MultiPlayer.P1 != null)
+
+            using var ctx = _contextFactory.CreateDbContext();
+
+            var seatInfos = new (string Seat, int? PlayerId)[]
             {
-                try
-                {
-                    Player P1 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P1);
-                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", P1.PlayerId, P1.Name, P1.PictureUrl);
-                }
-                catch (Exception ex)
-                {
-                }
-            }
-            else
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P1", 0, "Waiting", "user.png");
-            if (existingGame.MultiPlayer.P2 != null)
+                ("P1", existingGame.MultiPlayer.P1),
+                ("P2", existingGame.MultiPlayer.P2),
+                ("P3", existingGame.MultiPlayer.P3),
+                ("P4", existingGame.MultiPlayer.P4),
+            };
+
+            // Gather all non-null player IDs
+            var playerIds = seatInfos.Where(x => x.PlayerId.HasValue).Select(x => x.PlayerId.Value).ToList();
+
+            // Fetch all players in a single query
+            var players = await ctx.Players.AsNoTracking().Where(p => playerIds.Contains(p.PlayerId)).ToListAsync();
+
+            // Build a map for quick lookup
+            var playerMap = players.ToDictionary(p => p.PlayerId);
+
+            // Broadcast to all seats
+            foreach (var (seat, playerId) in seatInfos)
             {
-                var P2 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P2);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", P2.PlayerId, P2.Name, P2.PictureUrl);
+                if (playerId.HasValue && playerMap.TryGetValue(playerId.Value, out var player))
+                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, player.PlayerId, player.Name, player.PictureUrl ?? "user.png");
+                else
+                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, 0, "Waiting", "user.png");
             }
-            else
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P2", 0, "Waiting", "user.png");
-            if (existingGame.MultiPlayer.P3 != null)
-            {
-                var P3 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P3);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", P3.PlayerId, P3.Name, P3.PictureUrl);
-            }
-            else
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P3", 0, "Waiting", "user.png");
-            if (existingGame.MultiPlayer.P4 != null)
-            {
-                var P4 = await context.Players.FirstOrDefaultAsync(p => p.PlayerId == existingGame.MultiPlayer.P4);
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", P4.PlayerId, P4.Name, P4.PictureUrl);
-            }
-            else
-                await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", "P4", 0, "Waiting", "user.png");
         }
-        // 2. Update the player's IsOnline state in the DB
-       
-    }
-    public class User
-    {
-        public User(string connectionId, string roomCode, int playerId, string userName, string playerColor)
-        {
-            this.ConnectionId = connectionId;
-            this.roomCode = roomCode;
-            this.PlayerId = playerId;
-            this.PlayerName = userName;
-            this.PlayerColor = playerColor;
-        }
-        public string ConnectionId { get; init; }
-        public string roomCode { get; init; }
-        public int PlayerId { get; init; }
-        public string PlayerName { get; init; }
-        public string PlayerColor { get; set; }  // Now mutable
-        public string AuthToken { get; set; }  // Now mutable
     }
 }

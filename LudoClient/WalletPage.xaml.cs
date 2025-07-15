@@ -17,12 +17,11 @@ public partial class WalletPage : ContentPage
         //this.ShowPopup(new AddCash());
         // Initialize and start the timer        
     }
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
         // Force layout to update ContentSize
-        UpdateBalance();
-        await Task.Delay(1);
+        Task.Run(UpdateBalance); // Run async without blocking constructor
     }
     public void UpdateBalance()
     {

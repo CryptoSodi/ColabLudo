@@ -1,20 +1,13 @@
 ﻿using LudoServer.Data;
 using LudoServer.Models;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using SharedCode.Constants;
 
 namespace SignalR.Server.Services
 {
-    public class UtilService
+    public class UtilService(IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto)
     {
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
-        private readonly CryptoHelper _crypto;
-        public UtilService(IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto)
-        {
-            _contextFactory = contextFactory;
-            _crypto = crypto;
-        }
         public async Task<PlayerInfo> CastPlayerToInfoAsync(Player player)
         {
             var pw = await _crypto.EnsurePlayerWalletExists(player.PlayerId);
@@ -52,17 +45,39 @@ namespace SignalR.Server.Services
             try
             {
                 using var ctx = _contextFactory.CreateDbContext();
-                var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-                if (player != null)
-                {
-                    player.IsOnline = isOnline;
-                    await ctx.SaveChangesAsync();
-                }
+                var player = new Player { PlayerId = playerId, IsOnline = isOnline };
+                ctx.Players.Attach(player);
+                ctx.Entry(player).Property(p => p.IsOnline).IsModified = true;
+                await ctx.SaveChangesAsync();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
             }
+        }
+        public async Task<Player> GetPlayerByID(int PlayerId)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            Player sender = ctx.Players.Find(PlayerId);
+            if (sender == null)
+                throw new HubException("Player not recognized.");
+
+            var wal = await _crypto.EnsurePlayerWalletExists(PlayerId);
+            if (wal == null)
+                throw new HubException("Player Wallet not Found.");
+
+            sender.Wallets = new List<LudoServer.Models.PlayerWallet>
+                {
+                    new LudoServer.Models.PlayerWallet
+                    {
+                        PlayerId = sender.PlayerId,
+                        AddressType = wal.AddressType,
+                        WalletAddress = wal.WalletAddress,
+                        AvailableBalance = wal.AvailableBalance
+                    }
+                };
+            
+            return sender;
         }
     }
 }

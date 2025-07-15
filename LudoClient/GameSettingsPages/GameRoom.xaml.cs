@@ -5,15 +5,12 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
-    string GameType = "0";
-
     public GameRoom(string GameType, double GameCost, string roomCode)
     {
         InitializeComponent();
-        this.GameType = GameType;
         shareBox.SetShareCode(roomCode);
         NavigationPage.SetHasBackButton(this, false);
-        _ = GlobalConstants.MatchMaker.ReadyAsync();
+        
         switch (GameType)
         {
             case "2":
@@ -60,6 +57,7 @@ public partial class GameRoom : ContentPage
         }
         GlobalConstants.MatchMaker.PlayerSeated += (sender, args) =>
         {
+            Console.WriteLine("PlayerSeated event received with args: " + string.Join(", ", args));
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("playerjoin");
             var (playerType, playerId, userName, pictureUrl) = args;
             MainThread.BeginInvokeOnMainThread(() =>
@@ -88,6 +86,15 @@ public partial class GameRoom : ContentPage
             });
         };
     }
+
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        // Force layout to update ContentSize
+        await GlobalConstants.MatchMaker.ReadyAsync();
+    }
+
     protected override bool OnBackButtonPressed()
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");

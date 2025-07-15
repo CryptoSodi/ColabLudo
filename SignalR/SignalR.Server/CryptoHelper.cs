@@ -2,8 +2,6 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
