@@ -20,7 +20,7 @@ public partial class AddCash : BasePopup
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Address = UserInfo.Instance.player.Wallet?.WalletAddress;
-            Coins.Text = UserInfo.Instance.player.Wallet?.AvailableBalance + " LUDC";
+            Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
             AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
             QRCodeImage.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.AddressQRBlob);
         });

@@ -41,7 +41,7 @@
             </local:Capsule>
 
 
-            <local:Capsule IsVisible="True" ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <local:Capsule IsVisible="False" ImageSource="line_bg_orange.png" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Grid>
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnDepositButtonClicked" />

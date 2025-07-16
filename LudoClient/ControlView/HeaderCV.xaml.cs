@@ -35,7 +35,7 @@ public partial class HeaderCV : ContentView
                 try
                 {
                     if(UserInfo.Instance.player!=null)
-                        Coins.Text = UserInfo.Instance.player.Wallet.AvailableBalance + " LUDC";
+                        Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
                 }
                 catch (Exception)
                 {

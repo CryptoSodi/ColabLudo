@@ -23,7 +23,7 @@ namespace LudoClient.ControlView
             // Set the text of the labels
             GameId.Text = "Game : " + gameId.ToString();
 
-            JoiningFeeLabel.Text = $"{Math.Floor((betAmount) * 100) / 100}";
+            JoiningFeeLabel.Text = ClientGlobalConstants.NormalizeCoinsDecimal(betAmount).ToString();
             RoomCode = roomCode;
 
             if (gameType == "22")
@@ -32,11 +32,11 @@ namespace LudoClient.ControlView
                 TotalPlayersLabel.Text = $"1 vs 1 : 2 Players - 1 Winner";
             else
                 TotalPlayersLabel.Text = $"1 vs {gameType} Players - 1 Winner";
-
+            
             if (gameType == "22")
-                priceamount = Math.Floor((2 * betAmount) * 100) / 100;
+                priceamount = ClientGlobalConstants.NormalizeCoinsDecimal(2 * betAmount);
             else
-                priceamount = Math.Floor((Int32.Parse(gameType) * betAmount) * 100) / 100;
+                priceamount = ClientGlobalConstants.NormalizeCoinsDecimal(Int32.Parse(gameType) * betAmount);
 
             PrizeAmountLabel.Text = $"{priceamount}";
         }

@@ -36,9 +36,9 @@ public partial class WithdrawPopup : BasePopup
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            Coins.Text = UserInfo.Instance.player.Wallet?.AvailableBalance + " LUDC";
+            Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
             AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
-            AmmountEntry.entryField.Text = Coins.Text + " LUDC";
+            AmmountEntry.entryField.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
             SolBalance = (decimal)UserInfo.Instance.player.Wallet?.AvailableBalance;
         });
     }

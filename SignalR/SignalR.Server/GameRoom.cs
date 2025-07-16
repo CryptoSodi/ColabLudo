@@ -4,42 +4,28 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
+using SignalR.Server.Services;
 
 namespace SignalR.Server
 {
-    public class GameRoom
+    public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
         public List<ChatMessages> chatMessages = new List<ChatMessages>();
         // A simple persistent store for commands.
         // In production, this might be a database or distributed log.
         private readonly List<GameCommand> _commandStore = new List<GameCommand>();
-        private readonly object _commandStoreLock = new object();
-        SharedCode.GameDto gameDTO;
-        public List<User> Users { get; set; }
-        public List<SharedCode.PlayerDto> seats = new List<SharedCode.PlayerDto>();
-        public Engine engine { get; set; }  // The Engine instance for this room
-
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
-        private readonly IHubContext<LudoHub> _hubContext;
-        private readonly CryptoHelper _crypto;
-
-        public GameRoom(IHubContext<LudoHub> hubContext, IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, SharedCode.GameDto gameDTO)
-        //string roomCode, string gameType, decimal gameCost)
-        {
-            this.gameDTO = gameDTO;
-            _hubContext = hubContext;
-            _contextFactory = contextFactory;
-            _crypto = crypto;
-            Users = new List<User>();
-        }
-        public delegate Task<string> TimerTimeoutHandler(string SeatName);
         
-        private CancellationTokenSource _animationCancellationTokenSource;
+        public List<User> Users = new List<User>();
+        public List<SharedCode.PlayerDto> _seats { get; set; }
+        public Engine? engine { get; set; }  // The Engine instance for this room
+        
+        private CancellationTokenSource? _animationCancellationTokenSource;
         // You might include a method to initialize the Engine when the game is ready.
-        public void InitializeEngine(string initialPlayerColor)
+        public void InitializeEngine(List<SharedCode.PlayerDto> seats)
         {
+            _seats = seats;
             // For example, using GameType and number of users (or connection count)
-            engine = new Engine("Server", gameDTO.GameType, Users.Count.ToString(), initialPlayerColor);
+            engine = new Engine("Server", gameDTO.GameType, Users.Count.ToString(), seats[0].PlayerColor);
             engine.ShowResults += new Engine.CallbackEventHandlerShowResults(ShowResults);
 
             engine.StartProgressAnimation += StartProgressAnimation;
@@ -50,30 +36,31 @@ namespace SignalR.Server
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndexServer)
         {
-            List<GameCommand> newCommands;
-            lock (_commandStoreLock)// Return only commands that have not been seen based on IndexServer
-                newCommands = _commandStore.Where(cmd => cmd.IndexServer > lastSeenIndexServer).OrderBy(cmd => cmd.IndexServer).ToList();
-            return Task.FromResult(newCommands);
+            lock (_commandStore)// Return only commands that have not been seen based on IndexServer
+                return Task.FromResult(_commandStore.Where(cmd => cmd.IndexServer > lastSeenIndexServer).OrderBy(cmd => cmd.IndexServer).ToList());
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
-            //check this code for correctness
-            using var context = _contextFactory.CreateDbContext();
+            
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> orderedSeats;
+            // 2) Update game state in DM and database
+            var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
 
             List<string> winnerIds = gameDTO.GameType == "22"
                     ? PlayerColor.Split(",").Select(c => c.Trim()).ToList()
                     : new List<string> { PlayerColor.Split(",")[0].Trim() };
 
-            orderedSeats = seats.OrderByDescending(seat => winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase)).ToList();
+            orderedSeats = _seats.OrderByDescending(seat => winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase)).ToList();
+            // After EF commit, perform SOL transfers in saga-like flow
+            //List<int> loserids = orderedSeats
+            //    .Where(seat => !winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase))
+            //    .Select(s => s.PlayerId).ToList();
 
             // 1) Update player statistics in the DB
-            UpdatePlayerStats(context, orderedSeats, winnerIds);
+            UpdatePlayerStats(orderedSeats, winnerIds , existingGame.BetAmount);
 
-            // 2) Update game state in DM and database
-            var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
             if (existingGame != null)
             {
                 existingGame.Winner1 = orderedSeats.FirstOrDefault(seat =>string.Equals(seat.PlayerColor, winnerIds[0], StringComparison.OrdinalIgnoreCase)).PlayerId;
@@ -81,93 +68,92 @@ namespace SignalR.Server
                     existingGame.Winner2 = orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[1], StringComparison.OrdinalIgnoreCase)).PlayerId;
 
                 existingGame.State = "Completed";
-                context.Games.Update(existingGame);
+                existingGame.IsDirty = true; // Mark the game as dirty for further processing
             }
-            // Commit all EF changes
-            await context.SaveChangesAsync();
             await LudoHub.DM.SaveData();
 
-            // After EF commit, perform SOL transfers in saga-like flow
-            List<int> loserids = orderedSeats
-                .Where(seat => !winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase))
-                .Select(s => s.PlayerId).ToList();
 
-            // Sort the seats based on the winner and losers
-            for (int i = 0; i < loserids.Count && existingGame.BetAmount > 0; i++)
+            using var ctx = _contextFactory.CreateDbContext();
+    
+            decimal betAmount = existingGame.BetAmount; // per player            
+            decimal totalPot = betAmount * orderedSeats.Count;
+            Console.WriteLine($"Total Pot: {totalPot} SOL");
+            // Distribute the pot among winners
+            decimal winningsPerWinner = winnerIds.Count > 0 ? totalPot / winnerIds.Count : 0;
+
+            // Credit each winner **once**
+            foreach (var winnerColor in winnerIds)
             {
-                var loserId = loserids[i];
-                var winnerId = winnerIds.Count == 1 ? orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[0], StringComparison.OrdinalIgnoreCase)).PlayerId
-                    : orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[i], StringComparison.OrdinalIgnoreCase)).PlayerId;
-
+                var winnerSeat = orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerColor, StringComparison.OrdinalIgnoreCase));
+                
+                if (winnerSeat == null) continue; // Defensive: in case of missing mapping
+                var winnerId = winnerSeat.PlayerId;
                 try
                 {
-                    decimal betAmount = existingGame.BetAmount; // in SOL
-                    if (existingGame.GameType == "22")
-                        betAmount = betAmount * 2; // Split the bet amount for 2 vs 2 games
-                    else
-                        betAmount = betAmount * int.Parse(existingGame.GameType); // For 1 vs 1 games
-
-                    bool credited = await _crypto.OffChainTransaction(winnerId, betAmount, "Game Won", "", false, existingGame.GameId.ToString());
+                    bool credited = await _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
                     if (!credited)
                     {
-                        Console.WriteLine($"Failed to credit {winnerId}. Rolled back {loserId}.");
+                        Console.WriteLine($"Failed to credit {winnerId}.");
+                        // Optionally add to compensation queue
                         continue;
                     }
                     else
                     {
-                        LudoServer.Models.Player player = context.Players.Find(winnerId);
-                        await _hubContext.Clients.Clients(LudoHub.PlayerToConnection[winnerId]).SendAsync("PlayerInfoUpdate", await LudoHub.CastPlayerToInfoAsync(player));                        
+                        await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
                     }
-
-                        Console.WriteLine($"Off-chain transferred {gameDTO.BetAmount} SOL from {loserId} to {winnerId}.");
+                    Console.WriteLine($"Off-chain transferred {winningsPerWinner} SOL to {winnerId}.");
                 }
                 catch (Exception ex)
                 {
-                    // Log and optionally compensate later
-                    Console.WriteLine($"Error paying out from {loserId} to {winnerId}: {ex.Message}");
+                    Console.WriteLine($"Error crediting {winnerId}: {ex.Message}");
+                    // Optionally add to compensation queue
                 }
             }
+            StopProgressAnimation("");
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
             // Send the rearranged list to your clients (make sure your client is set up to handle this list)
             await _hubContext.Clients.Group(gameDTO.RoomCode).SendAsync("ShowResults", JsonConvert.SerializeObject(orderedSeats), gameDTO.GameType, gameDTO.BetAmount.ToString());
         }
-        private void UpdatePlayerStats(LudoDbContext context, List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds)
+        private void UpdatePlayerStats(List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds, decimal BetAmount)
         {
+            //check this code for correctness
+            using var ctx = _contextFactory.CreateDbContext();
             foreach (var seat in orderedSeats)
             {
-                var player = context.Players.First(p => p.PlayerId == seat.PlayerId);
+                var player = ctx.Players.FirstOrDefault(p => p.PlayerId == seat.PlayerId);
                 var isWinner = winnerIds.Contains(seat.PlayerColor, StringComparer.OrdinalIgnoreCase);
 
                 if (isWinner)
                 {
                     // Winner: increment win counters and update scores
                     player.GamesWon++;
-                    player.TotalWin += gameDTO.BetAmount;
-                    player.BestWin = Math.Max(player.BestWin, gameDTO.BetAmount);
+                    player.TotalWin += BetAmount;
+                    player.BestWin = Math.Max(player.BestWin, BetAmount);
                 }
                 else
                 {
                     // Loser: increment loss counters and track total losses
+                    player.TotalLost += BetAmount;
                     player.GamesLost++;
-                    player.TotalLost += gameDTO.BetAmount;
                 }
 
                 // Common updates for both winners and losers
                 player.Score += engine.EngineHelper.getPlayer(seat.PlayerColor.ToLower()).Score;
                 player.GamesPlayed++;
-                context.Players.Update(player);
+                ctx.Players.Update(player);
             }
+            // Save changes to the database
+            ctx.SaveChanges();
         }
-        public async Task<User> PlayerLeft(int playerId, string roomCode)
+        public async Task<User> PlayerLeft(int playerId)
         {
             // Try to find the user in the game room's user list using the connection ID.
-            var user = Users.FirstOrDefault(u => u.PlayerId == playerId);
+            var user = Users.FirstOrDefault(u => u.player.PlayerId == playerId);
             if (user != null && engine != null)
             {
                 // Remove the user from the room.
                 Users.Remove(user);
-
                 engine.PlayerLeft(user.PlayerColor);
 
                 GameCommand command = new GameCommand
@@ -176,7 +162,7 @@ namespace SignalR.Server
                     seatName = user.PlayerColor,
                     Index = engine.EngineHelper.index++
                 };
-                lock (_commandStoreLock)
+                lock (_commandStore)
                     _commandStore.Add(command);
 
                 Console.WriteLine("User removed: " + user.PlayerColor);
@@ -241,7 +227,7 @@ namespace SignalR.Server
                     Index = _commandStore.Count,
                     IndexServer = ++engine.EngineHelper.index
                 };
-                lock (_commandStoreLock)
+                lock (_commandStore)
                     _commandStore.Add(command);
             }
             else if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "MovePiece"))
@@ -262,7 +248,7 @@ namespace SignalR.Server
                     Index = _commandStore.Count,
                     IndexServer = ++engine.EngineHelper.index
                 };
-                lock (_commandStoreLock)
+                lock (_commandStore)
                     _commandStore.Add(command);
             }
             Console.WriteLine($"TIMEOUT : {result}");
@@ -270,7 +256,7 @@ namespace SignalR.Server
         internal async Task<GameCommand> MovePieceAsync(string authToken, GameCommand commandValue)
         {
             // Authenticate user
-            var user = Users.FirstOrDefault(u => u.AuthToken == authToken);
+            var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
             if (user == null)
             {
                 Console.WriteLine("Authentication failed: Invalid token.");
@@ -298,7 +284,7 @@ namespace SignalR.Server
                     IndexServer = ++engine.EngineHelper.index
                 };
 
-                lock (_commandStoreLock)
+                lock (_commandStore)
                     _commandStore.Add(command);
 
                 return command;
@@ -307,7 +293,7 @@ namespace SignalR.Server
         }
         internal async Task<GameCommand> SeatTurn(string authToken, GameCommand commandValue)
         {
-            var user = Users.FirstOrDefault(u => u.AuthToken == authToken);
+            var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
             if (user == null)
             {
                 Console.WriteLine("Authentication failed: Invalid token.");
@@ -334,11 +320,16 @@ namespace SignalR.Server
                     Index = commandValue.Index,
                     IndexServer = ++engine.EngineHelper.index
                 };
-                lock (_commandStoreLock)
+                lock (_commandStore)
                     _commandStore.Add(command);
                 return command;
             }
             return null;
         }
     }
+}
+public class User(LudoServer.Models.Player player, string playerColor)
+{
+    public LudoServer.Models.Player player { get; set; } = player;
+    public string PlayerColor { get; set; } = playerColor;
 }

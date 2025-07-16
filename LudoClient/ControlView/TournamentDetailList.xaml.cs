@@ -27,10 +27,10 @@ namespace LudoClient.ControlView
             TournamentNameLabel.Text = tournament.Name;
             StartDateLabel.Text = $"Starts: {tournament.StartDate}";
             EndDateLabel.Text = $"Ends: {tournament.EndDate}";
-            EntryPriceLabel.Text = $"Entry: {Math.Floor(tournament.EntryFee * 100) / 100}";
-            PrizeAmountLabel1.Text = $"{Math.Floor(tournament.Prize1 * 100) / 100}";
-            PrizeAmountLabel2.Text = $"{Math.Floor(tournament.Prize2 * 100) / 100}";
-            PrizeAmountLabel3.Text = $"{Math.Floor(tournament.Prize3 * 100) / 100}"; 
+            EntryPriceLabel.Text = $"Entry: {ClientGlobalConstants.NormalizeCoinsDecimal(tournament.EntryFee)}";
+            PrizeAmountLabel1.Text = $"{ClientGlobalConstants.NormalizeCoinsDecimal(tournament.Prize1)}";
+            PrizeAmountLabel2.Text = $"{ClientGlobalConstants.NormalizeCoinsDecimal(tournament.Prize2)}";
+            PrizeAmountLabel3.Text = $"{ClientGlobalConstants.NormalizeCoinsDecimal(tournament.Prize3)}"; 
             TournamentId.Text = tournament.TournamentId.ToString();
             OnCountdownTimerElapsed(null,null);
             StartCountdownTimer();

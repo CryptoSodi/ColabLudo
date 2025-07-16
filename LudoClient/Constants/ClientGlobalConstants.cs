@@ -95,5 +95,15 @@ namespace LudoClient.Constants
                     ClientGlobalConstants.dashBoard.Navigation.RemovePage(existingPages[existingPages.Count - 2]);
             }
         }
+
+        internal static string NormalizeCoins(decimal val)
+        {
+            return Math.Floor(val * 100) / 100 + " LUDC";
+        }
+
+        internal static decimal NormalizeCoinsDecimal(decimal v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

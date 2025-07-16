@@ -12,7 +12,7 @@ public partial class WalletPage : ContentPage
         MainThread.BeginInvokeOnMainThread(() =>
         {
             var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;
-            Coins.Text = Math.Floor(balance * 100) / 100 + " LUDC";
+            Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
         });
         //this.ShowPopup(new AddCash());
         // Initialize and start the timer        
@@ -32,9 +32,9 @@ public partial class WalletPage : ContentPage
                     if (UserInfo.Instance.player != null)
                     {
                         var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;                        
-                        Coins.Text = Math.Floor(balance * 100) / 100 + " LUDC";
+                        Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
                         balance = UserInfo.Instance.player.Wallet?.SignupBonus ?? 0;
-                        SignupBonus.Text = Math.Floor(balance * 100) / 100 + " LUDC";
+                        SignupBonus.Text = ClientGlobalConstants.NormalizeCoins(balance);
                     }
                 }
                 catch (Exception)
