@@ -50,7 +50,7 @@ namespace SharedCode.Constants
 
                 // Store in preferences
                 Preferences.Set("UserProfile", playerJson);
-                Preferences.Set(nameof(player.AuthToken), instance.player.AuthToken);
+                Preferences.Set("AuthToken", instance.player.AuthToken);
 
                 instance.PictureUrlBlob = await DownloadImageAsBase64Async(instance.player.PictureUrl);
                 Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
@@ -63,6 +63,7 @@ namespace SharedCode.Constants
                 instance.AddressQRBlob = await DownloadImageAsBase64Async(QrUrl);
                 Preferences.Set(nameof(instance.AddressQRBlob), instance.AddressQRBlob);
 
+                
                 Preferences.Set("IsUserLoggedIn", true);
             }
             catch (Exception ex)
@@ -77,7 +78,10 @@ namespace SharedCode.Constants
         }
         public static void Logout()
         {
-            Preferences.Clear();
+            var instance = Instance;
+            Preferences.Clear(); 
+            instance.PictureUrlBlob = string.Empty;
+            instance.AddressQRBlob = string.Empty;
         }
         // Method to load state
         public static void LoadState()
@@ -100,7 +104,6 @@ namespace SharedCode.Constants
                     instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);
                     instance.AddressQRBlob = Preferences.Get(nameof(instance.AddressQRBlob), string.Empty);
 
-                    instance.player.AuthToken = Preferences.Get(nameof(player.AuthToken), "");                    
                 }
                 else
                 {

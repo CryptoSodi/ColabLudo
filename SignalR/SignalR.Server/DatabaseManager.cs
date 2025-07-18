@@ -2,7 +2,6 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using SignalR.Server.Services;
 using System.Collections.Concurrent;
 
@@ -61,7 +60,7 @@ namespace SignalR.Server
                     }
                 }
 
-                _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, _utilService, gameDTO));
+                _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDTO));
 
                 MultiPlayer multiPlayer = GetGamePlayers(player.PlayerId, null);
                 multiPlayer.RoomCode = int.Parse(gameDTO.RoomCode);
@@ -101,7 +100,7 @@ namespace SignalR.Server
             }
 
             // Add to GameRoom
-            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, _crypto, _utilService, gameDTO));
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDTO));
             // Add user to active users
             
             lock (gameRoom.Users) // Lock GameRoom users list
@@ -342,7 +341,8 @@ namespace SignalR.Server
                         IsTournamentGame = game.TournamentId != null,
                         playerColor = "DefaultColor" // Set a default color or retrieve from the database if needed
                     };
-                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, _crypto, _utilService, gameDto));
+
+                    _gameRooms.TryAdd(game.RoomCode, new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDto));
                 }
 
                 Console.WriteLine("Data loaded successfully!");

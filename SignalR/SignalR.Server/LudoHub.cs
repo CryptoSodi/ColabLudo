@@ -11,41 +11,10 @@ using System.Collections.Concurrent;
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
 
-    public class LudoHub : Hub
+    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService) : Hub
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
-
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
-        private readonly IHubContext<LudoHub> _hubContext;
-        private FriendsService _friendsService;
-        private TournamentService _tournamentService;
-        private DailyBonusService _dailyBonusService;
-        private GoogleAuthService _googleAuthService;
-        private UtilService _utilService;
-        public static CryptoHelper _crypto;
-
-        public static DatabaseManager DM { get; set; }
-        private static bool _initialized = false;
-
-        public LudoHub(IDbContextFactory<LudoDbContext> contextFactory, IHubContext<LudoHub> hubContext, CryptoHelper crypto, FriendsService friendsService, TournamentService tournamentService, DailyBonusService dailyBonusService, GoogleAuthService googleAuthService, UtilService utilService)
-        {
-            _friendsService = friendsService;
-            _tournamentService = tournamentService;
-            _dailyBonusService = dailyBonusService;
-            _googleAuthService = googleAuthService;
-            _utilService = utilService;
-            _crypto = crypto;
-            _contextFactory = contextFactory;
-            _hubContext = hubContext;
-            // Initialize the DatabaseManager only once
-            if (!_initialized)
-            {
-                _initialized = true;
-                DM = new DatabaseManager(_hubContext, _contextFactory, _crypto, _utilService);
-                Task.Run(DM.LoadData);
-            }
-        }
         public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             try

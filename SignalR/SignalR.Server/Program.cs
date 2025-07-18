@@ -1,5 +1,6 @@
 using LudoServer.Data;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
 using SignalR.Server.Services;
@@ -31,6 +32,19 @@ builder.Services.AddScoped<UtilService>();
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection();
+
+builder.Services.AddSingleton<DatabaseManager>(sp => {
+    var hubContext = sp.GetRequiredService<IHubContext<LudoHub>>();
+    var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
+    var crypto = sp.GetRequiredService<CryptoHelper>();
+    var utilService = sp.GetRequiredService<UtilService>();
+
+    var dm = new DatabaseManager(hubContext, contextFactory, crypto, utilService);
+    // Call LoadData in background
+    Task.Run(dm.LoadData);
+    return dm;
+});
+
 // Replace your existing CryptoHelper registration with this:
 builder.Services.AddSingleton<CryptoHelper>(sp =>
 {

@@ -8,7 +8,7 @@ using SignalR.Server.Services;
 
 namespace SignalR.Server
 {
-    public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
+    public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
         public List<ChatMessages> chatMessages = new List<ChatMessages>();
         // A simple persistent store for commands.
@@ -46,7 +46,7 @@ namespace SignalR.Server
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> orderedSeats;
             // 2) Update game state in DM and database
-            var existingGame = LudoHub.DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
+            var existingGame = DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
 
             List<string> winnerIds = gameDTO.GameType == "22"
                     ? PlayerColor.Split(",").Select(c => c.Trim()).ToList()
@@ -70,12 +70,12 @@ namespace SignalR.Server
                 existingGame.State = "Completed";
                 existingGame.IsDirty = true; // Mark the game as dirty for further processing
             }
-            await LudoHub.DM.SaveData();
+            await DM.SaveData();
 
 
             using var ctx = _contextFactory.CreateDbContext();
     
-            decimal betAmount = existingGame.BetAmount; // per player            
+            decimal betAmount = existingGame.BetAmount; // per player
             decimal totalPot = betAmount * orderedSeats.Count;
             Console.WriteLine($"Total Pot: {totalPot} SOL");
             // Distribute the pot among winners
