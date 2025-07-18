@@ -49,68 +49,91 @@ namespace SignalR.Server
         }
         public override async Task OnConnectedAsync()
         {
-            Console.WriteLine($"User connected: {Context.ConnectionId}");
-            if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerAtConnection))
-                await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, true);
+            try
+            {
+                Console.WriteLine($"User connected: {Context.ConnectionId}");
+                if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var playerAtConnection))
+                    await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnConnectedAsync: {ex.Message}");
+            }
             await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
-            await LeaveCloseLobby();
-            if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerAtConnection))
+            try
             {
-                await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, false);
+                await LeaveCloseLobby();
+                if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerAtConnection))
+                {
+                    await _utilService.SetPlayerOnlineState(playerAtConnection.PlayerId, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in OnDisconnectedAsync: {ex.Message}");
             }
             await base.OnDisconnectedAsync(exception);
         }
         /// Helper to fetch the current caller's player ID from the connection map.
-        private async Task<Player> GetCallerPlayer()
+        private Task<Player> GetCallerPlayer()
         {
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var player))
             {
                 if (player == null)
                     throw new HubException("Player not recognized.");
-                return player;
+                return Task.FromResult(player);
             }
             throw new HubException("Player not recognized.");
         }
         public async Task<String> SendSol(string destination, decimal amountInSol)
         {
-            Player player = await GetCallerPlayer();
-            var r = await _crypto.SendSolToExternalWallet(player, destination, amountInSol);
-            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
-            return r;
+            try
+            {
+                Player player = await GetCallerPlayer();
+                var r = await _crypto.SendSolToExternalWallet(player, destination, amountInSol);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                return r;
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {
-            if (!DM._gameRooms.TryGetValue(RoomCode, out GameRoom gameRoom))
+            try
             {
-                Console.WriteLine($"GameRoom not found for room: {RoomCode}");
+                if (!DM._gameRooms.TryGetValue(RoomCode, out GameRoom gameRoom))
+                {
+                    Console.WriteLine($"GameRoom not found for room: {RoomCode}");
+                    return Task.FromResult(new List<GameCommand>());
+                }
+                return gameRoom.PullCommands(lastSeenIndex);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in PullCommands: {ex.Message}");
                 return Task.FromResult(new List<GameCommand>());
             }
-
-            return gameRoom.PullCommands(lastSeenIndex);
         }
         public async Task LeaveCloseLobby()
         {
-            Player player = await GetCallerPlayer();
             try
             {
+                Player player = await GetCallerPlayer();
                 var (existingGame, user) = await DM.LeaveGameLobby(player.PlayerId);
                 // Optionally, perform additional cleanup or update the game engine state.                
                 // Notify all connected clients that a user has left.
                 await BroadcastPlayersAsync(existingGame);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"LeaveLobby error: {ex.Message}");
-            }
-            try
-            {
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
-            }
-            catch (Exception)
-            {
+                Console.WriteLine($"Error in LeaveCloseLobby: {ex.Message}");
+                return; // Exit if player retrieval fails
             }
         }
         public async Task<string> Ready()
@@ -137,43 +160,52 @@ namespace SignalR.Server
         }
         public async Task<GameCommand> Send(string AuthToken, GameCommand commandValue, string commandtype, string roomCode)
         {
-            Player player = await GetCallerPlayer();
-            if (player.AuthToken != AuthToken)
-                return null;
-
             GameCommand Result = new GameCommand();
-            Console.WriteLine($"{player.Name}: {commandValue}:{commandtype}");
-            // Now use the user's Room property to get the GameRoom.
-            if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+            try
             {
-                Console.WriteLine($"GameRoom not found for room: {roomCode}");
-                //
-                Result.Result = "Error: Room not found.";
-                return Result;
+                Player player = await GetCallerPlayer();
+                // For logging purposes, show which room this command is coming from.
+                Console.WriteLine($"{player.Name} (room {roomCode}): {commandValue}:{commandtype}"); 
+                if (player.AuthToken != AuthToken)
+                {
+                    Result.Result = "Error: Invalid AuthToken.";
+                    return Result;
+                }
+                // Now use the user's Room property to get the GameRoom.
+                if (!DM._gameRooms.TryGetValue(roomCode, out GameRoom gameRoom))
+                {
+                    Console.WriteLine($"GameRoom not found for room: {roomCode}");
+                    //
+                    Result.Result = "Error: Room not found.";
+                    return Result;
+                }
+                // Ensure the game room's engine is initialized.
+                if (gameRoom.engine == null)
+                {
+                    Console.WriteLine($"Engine not initialized for room: {roomCode}");
+                    Result.Result = "Error: Engine not initialized.";
+                    return Result;
+                }
+                // Process command based on the type.
+                if (commandtype == "MovePiece")
+                {
+                    Result = gameRoom.MovePieceAsync(AuthToken, commandValue).GetAwaiter().GetResult();
+                    return Result;
+                }
+                else if (commandtype == "DiceRoll")
+                {
+                    // For other command types, for example, SeatTurn:
+                    // If SeatTurn returns a string, you can wait for it.
+                    Result = gameRoom.SeatTurn(AuthToken, commandValue).GetAwaiter().GetResult();
+                    return Result;
+                }
             }
-            // For logging purposes, show which room this command is coming from.
-            Console.WriteLine($"{player.Name} (room {roomCode}): {commandValue}:{commandtype}");
-            // Ensure the game room's engine is initialized.
-            if (gameRoom.engine == null)
+            catch (Exception ex)
             {
-                Console.WriteLine($"Engine not initialized for room: {roomCode}");
-                Result.Result = "Error: Engine not initialized.";
-                return Result;
+                Console.WriteLine($"Error in Send: {ex.Message}");
+                Result.Result = $"Error: {ex.Message}";
             }
-            // Process command based on the type.
-            if (commandtype == "MovePiece")
-            {
-                Result = gameRoom.MovePieceAsync(AuthToken, commandValue).GetAwaiter().GetResult();
-                return Result;
-            }
-            else if (commandtype == "DiceRoll")
-            {
-                // For other command types, for example, SeatTurn:
-                // If SeatTurn returns a string, you can wait for it.
-                Result = gameRoom.SeatTurn(AuthToken, commandValue).GetAwaiter().GetResult();
-                return Result;
-            }
-            return null;
+            return Result;
         }
         /* CHAT AND FRIENDS MANAGEMENT */
         public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
@@ -254,16 +286,32 @@ namespace SignalR.Server
         /* DAILY BONUS */
         public async Task<DailyBonusDto> GetDailyBonus()
         {
-            Player player = await GetCallerPlayer();
-            return await _dailyBonusService.GetDailyBonus(player);
+            try
+            {
+                Player player = await GetCallerPlayer();
+                return await _dailyBonusService.GetDailyBonus(player);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in GetDailyBonus: " + ex.Message);
+                return null;
+            }
         }
         // New function: Claim today's bonus and update LastResetDate
         public async Task<DailyBonusDto> ClaimTodayBonus()
         {
-            Player player = await GetCallerPlayer();
-            var r = await _dailyBonusService.ClaimTodayBonus(player);
-            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
-            return r;
+            try
+            {
+                Player player = await GetCallerPlayer();
+                var r = await _dailyBonusService.ClaimTodayBonus(player);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                return r;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in ClaimTodayBonus: " + ex.Message);
+                return null;
+            }
         }
         /* END DAILY BONUS */
         /* TOURNAMENT API */
@@ -273,52 +321,100 @@ namespace SignalR.Server
         }
         public async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
-            Player player = await GetCallerPlayer();
-            return await _tournamentService.GetAllTournaments(player, type);
+            try
+            {
+                Player player = await GetCallerPlayer();
+                return await _tournamentService.GetAllTournaments(player, type);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetAllTournaments: {ex.Message}");
+                return new List<TournamentDTO>();
+            }
         }
         public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
-            Player player = await GetCallerPlayer();
-            var r = await _tournamentService.JoinTournament(player, tournamentId);
-            await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
-            return r;
+            try
+            {
+                Player player = await GetCallerPlayer();
+                var r = await _tournamentService.JoinTournament(player, tournamentId);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                return r;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in JoinTournament: {ex.Message}");
+                return null;
+            }
         }
         /* END TOURNAMENT API */
         /* FRIENDS API */
         public async Task<List<PlayerCard>> GetFriends(string type = "All")
         {
-            var player = await GetCallerPlayer(); // Assume async
-            return await _friendsService.GetFriends(player, type);
+            try
+            {
+                var player = await GetCallerPlayer(); // Assume async
+                return await _friendsService.GetFriends(player, type);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetFriends: {ex.Message}");
+                return null;
+            }
         }
         public async Task<string> SendFriendRequest(int receiverId, string status)
         {
-            var player = await GetCallerPlayer();
-            return await _friendsService.SendFriendRequest(player, receiverId, status);
+            try
+            {
+                var player = await GetCallerPlayer();
+                return await _friendsService.SendFriendRequest(player, receiverId, status);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SendFriendRequest: {ex.Message}");
+                return "Error: " + ex.Message;
+            }
         }
         /* END FRIENDS API */
         public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
-            Player player = await GetCallerPlayer();
-            Game existingGame = await DM.JoinGameLobby(player, gameDTO);
             try
             {
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                Player player = await GetCallerPlayer();
+                Game existingGame = await DM.JoinGameLobby(player, gameDTO);
+                try
+                {
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                }
+                catch (Exception) { }
+                if (existingGame == null)
+                {
+                    return "Room is full";
+                }
+                await Groups.AddToGroupAsync(Context.ConnectionId, existingGame.RoomCode);
+                await BroadcastPlayersAsync(existingGame);
+                return existingGame.RoomCode; // Return the room name to the client
             }
-            catch (Exception) { }
-            if (existingGame == null)
+            catch (Exception ex)
             {
-                return "Room is full";
+                Console.WriteLine($"Error in CreateJoinLobby: {ex.Message}");
+                return "Error: " + ex.Message;
             }
-            await Groups.AddToGroupAsync(Context.ConnectionId, existingGame.RoomCode);
-            await BroadcastPlayersAsync(existingGame);
-            return existingGame.RoomCode; // Return the room name to the client
         }
         /// Gets a list of all games.
         public async Task<List<Game>> GetGame(bool IsPrivate)
         {
-            using var ctx = _contextFactory.CreateDbContext();
-            //g.State == "Active"
-            return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && !g.IsPractice).ToListAsync();
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                //g.State == "Active"
+                return await ctx.Games.Where(g => g.State == "Active" && g.IsPrivate == IsPrivate && !g.IsPractice).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetGame: {ex.Message}");
+                return new List<Game>();
+            }
         }
         private async Task BroadcastPlayersAsync(Game existingGame)
         {
