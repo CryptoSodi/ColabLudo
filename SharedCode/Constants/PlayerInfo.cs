@@ -37,20 +37,20 @@ public class PlayerWallet
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int WalletId { get; set; }
     public int PlayerId { get; set; }
-    public string? AddressType { get; set; }
-    public string? WalletAddress { get; set; }
+    public string? AddressType { get; set; } = "";
+    public string? WalletAddress { get; set; } = "";
 
     [Column(TypeName = "decimal(18,8)")]
-    public decimal AvailableBalance { get; set; }
+    public decimal AvailableBalance { get; set; } = 0;
 
     [Column(TypeName = "decimal(18,8)")]
-    public decimal UnUtilizedCoins { get; set; }
+    public decimal UnUtilizedCoins { get; set; } = 0;
     [Column(TypeName = "decimal(18,8)")]
-    public decimal ReferBonus { get; set; }
+    public decimal ReferBonus { get; set; } = 0;
     [Column(TypeName = "decimal(18,8)")]
-    public decimal SurpriseCoins { get; set; }
+    public decimal SurpriseCoins { get; set; } = 0;
     [Column(TypeName = "decimal(18,8)")]
-    public decimal SignupBonus { get; set; }
+    public decimal SignupBonus { get; set; } = 0;
     public ICollection<WalletTransaction> Transactions { get; set; } = new List<WalletTransaction>();
 }
 public class WalletTransaction

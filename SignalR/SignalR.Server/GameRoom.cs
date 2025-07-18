@@ -99,7 +99,13 @@ namespace SignalR.Server
                     }
                     else
                     {
-                        await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
+                        try
+                        {
+                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
+                        }
+                        catch (Exception)
+                        {
+                        }
                     }
                     Console.WriteLine($"Off-chain transferred {winningsPerWinner} SOL to {winnerId}.");
                 }

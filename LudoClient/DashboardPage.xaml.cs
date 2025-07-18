@@ -1,9 +1,7 @@
 namespace LudoClient;
 
-using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -15,8 +13,8 @@ public partial class DashboardPage : ContentPage
     public DashboardPage()
     {
         InitializeComponent();
-        ClientGlobalConstants.dashBoard = this;
 
+        ClientGlobalConstants.dashBoard = this;
         Task.Run(async () =>
         {
             while (GlobalConstants.MatchMaker == null)
@@ -37,19 +35,13 @@ public partial class DashboardPage : ContentPage
         PlayWithFriendsImage.Source = isConnected ? Skins.Play : Skins.Play_Gray;
         PracticeImage.Source = isConnected ? Skins.Practice : Skins.Practice_Gray;
         TournamentImage.Source = isConnected ? Skins.Tournament : Skins.Tournament_Gray;
-    }
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        // Delay the heavy initialization to allow the page to render first.
-        //await Task.Delay(100); // Adjust delay as needed
-        //ClientGlobalConstants.Init();
+        DailyBonusImage.Source = isConnected ? Skins.DailyBonus : Skins.DailyBonus_Gray;
     }
     private void CashGame_Clicked(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if(UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.cashGame = new CashGame();
@@ -70,9 +62,9 @@ public partial class DashboardPage : ContentPage
     }
     private void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
         {
             ClientGlobalConstants.playWithFriends = new PlayWithFriends();
@@ -86,17 +78,17 @@ public partial class DashboardPage : ContentPage
     }
     private void Practice_Clicked(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.practicePage = new PracticePage();
         Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
     }
     private void Tournament_Clicked(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (!GlobalConstants.MatchMaker.Connected)
             return;
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (Skins.CurrentSkin == Skins.SkinTypes.Adatiya)
         {
             ClientGlobalConstants.cashGame = new CashGame();
@@ -110,6 +102,8 @@ public partial class DashboardPage : ContentPage
     }
     private void Bonus_Clicked(object sender, EventArgs e)
     {
+        if (!GlobalConstants.MatchMaker.Connected)
+            return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.dailyBonus = new DailyBonus();
         this.ShowPopup(ClientGlobalConstants.dailyBonus);

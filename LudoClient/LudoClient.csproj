@@ -53,7 +53,7 @@
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
@@ -84,7 +84,7 @@
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
@@ -99,14 +99,14 @@
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
@@ -120,14 +120,14 @@
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
 	  <ApplicationVersion>1</ApplicationVersion>
 	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<ItemGroup>

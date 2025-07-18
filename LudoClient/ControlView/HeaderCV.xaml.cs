@@ -34,19 +34,13 @@ public partial class HeaderCV : ContentView
             {
                 try
                 {
-                    if(UserInfo.Instance.player!=null)
+                    if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
                         Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
                 }
                 catch (Exception)
                 {
                 }
-                
             });
-        }
-        else
-        {
-            await Task.Delay(500);
-            UpdateBalance();
         }
     }
     private void Navigate_Settings(object sender, EventArgs e)

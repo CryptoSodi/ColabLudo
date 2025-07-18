@@ -98,12 +98,12 @@ namespace LudoClient.Constants
 
         internal static string NormalizeCoins(decimal val)
         {
-            return Math.Floor(val * 100) / 100 + " LUDC";
+            return NormalizeCoinsDecimal(val) + " LUDC";
         }
 
-        internal static decimal NormalizeCoinsDecimal(decimal v)
+        internal static decimal NormalizeCoinsDecimal(decimal val)
         {
-            throw new NotImplementedException();
+            return Math.Floor(val * 100) / 100;
         }
     }
 }

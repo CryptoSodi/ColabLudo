@@ -113,28 +113,36 @@ public partial class ChatPage : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            // Get the existing ChatMessages directly from ChatCard
-            var existingMessages = MessagesListStack.Children.OfType<ChatCard>()
-                .Select(cc => cc.Message)
-                .Where(cm => cm != null)
-                .ToHashSet();
+            try
+            {
+                // Get the existing ChatMessages directly from ChatCard
+                var existingMessages = MessagesListStack.Children.OfType<ChatCard>()
+                    .Select(cc => cc.Message)
+                    .Where(cm => cm != null)
+                    .ToHashSet();
 
-            foreach (ChatMessages cm in messages)
-            { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
-                bool isAlreadyPresent = existingMessages.Any(existing => existing.Index == cm.Index);
+                foreach (ChatMessages cm in messages)
+                { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
+                    bool isAlreadyPresent = existingMessages.Any(existing => existing.Index == cm.Index);
 
-                if (!isAlreadyPresent)
-                {
-                    ChatCard cc = new();
-                    MessagesListStack.Children.Add(cc);
+                    if (!isAlreadyPresent)
+                    {
+                        ChatCard cc = new();
+                        MessagesListStack.Children.Add(cc);
 
-                    if (UserInfo.Instance.player.PlayerId == cm.SenderId)
-                        cc.SetDetails(cm, "Right", "yellow");
-                    else
-                        cc.SetDetails(cm, "Left", "white");
-                    // Optional: scroll to bottom
+                        if (UserInfo.Instance.player.PlayerId == cm.SenderId)
+                            cc.SetDetails(cm, "Right", "yellow");
+                        else
+                            cc.SetDetails(cm, "Left", "white");
+                        // Optional: scroll to bottom
 
+                    }
                 }
+
+            }
+            catch (Exception)
+            {
+
             }
             // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
             MainThread.BeginInvokeOnMainThread(async () =>

@@ -48,7 +48,7 @@
                 </Image.GestureRecognizers>
             </Image>
         </Grid>
-        <Image Source="{x:Static constants:Skins.DailyBonus}" Grid.Row="5" Margin="75,0,75,0" VerticalOptions="Center" HorizontalOptions="Center">
+        <Image x:Name="DailyBonusImage"  Source="{x:Static constants:Skins.DailyBonus}" Grid.Row="5" Margin="75,0,75,0" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="Bonus_Clicked" />
             </Image.GestureRecognizers>

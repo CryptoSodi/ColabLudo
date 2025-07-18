@@ -15,7 +15,7 @@ namespace LudoClient
         public LoginPage()
         {
             InitializeComponent();
-         
+
             Task.Run(() =>
             {
                 GetCountryByIpAsync();
@@ -23,10 +23,19 @@ namespace LudoClient
 
             string build = VersionTracking.CurrentBuild;
             VersionText.Text = "Version : " + build;
+
+            GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))
+                    MainThread.BeginInvokeOnMainThread(() =>
+                        UpdateButtons(GlobalConstants.MatchMaker.Connected));
+            };
         }
-       
+
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
+            if (!GlobalConstants.online)
+                return;
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
@@ -38,7 +47,7 @@ namespace LudoClient
 #endif
 #if ANDROID
             // Show loading indicator on the main thread
-            MainThread.BeginInvokeOnMainThread(() =>{
+            MainThread.BeginInvokeOnMainThread(() => {
                 UserDialogs.Instance.ShowLoading("Logging in with Google.", MaskType.Black);
             });
 #endif
@@ -56,7 +65,7 @@ namespace LudoClient
             {
                 string idToken = await authService.SignInAsync();
                 // Successfully signed in
-                
+
                 await performLoginAsync(idToken);
             }
             else
@@ -113,11 +122,11 @@ namespace LudoClient
                     var root = doc.RootElement;
 
                     if (root.TryGetProperty("status", out JsonElement statusElement) &&
-                        statusElement.GetString() == "success" && 
+                        statusElement.GetString() == "success" &&
                         root.TryGetProperty("city", out JsonElement cityElement) && root.TryGetProperty("countryCode", out JsonElement countryCodeElement))
                     {
                         city = cityElement.GetString();
-                        countryCode = countryCodeElement.GetString() == "PK"?"+92":"+91";
+                        countryCode = countryCodeElement.GetString() == "PK" ? "+92" : "+91";
                     }
                     else
                     {
@@ -145,6 +154,15 @@ namespace LudoClient
                 city = ex.Message;
                 Console.WriteLine($"Error: Country {ex.Message}");
             }
+        }
+        private void UpdateButtons(bool isConnected)
+        {
+            GoogleLoginPanel.Source = isConnected ? "google_login.png" : "google_login_gray.png";
+        }
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            UpdateButtons(GlobalConstants.MatchMaker.Connected);
         }
     }
 }

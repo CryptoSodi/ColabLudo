@@ -230,8 +230,14 @@ namespace SignalR.Server
 
                 foreach (User u in otherUsers)
                 {
-                    if (CM.Message != "")
-                        Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == u.player.PlayerId).Key).SendAsync("ReceiveChatHistory", CM);
+                    try
+                    {
+                        if (CM.Message != "")
+                            Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == u.player.PlayerId).Key).SendAsync("ReceiveChatHistory", CM);
+                    }
+                    catch (Exception)
+                    {
+                    }
                 }
                 return gameRoom.chatMessages.Take(20).ToList();
             }
@@ -277,8 +283,14 @@ namespace SignalR.Server
                 //chatMessagesList.Add(CM);
                 // Optionally, also send back the last 50 messages to the sender
                 // send only to the receiver
-                if (CM.Message != "")
-                    Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == CM.ReceiverId).Key).SendAsync("ReceiveChatHistory", CM);
+                try
+                {
+                    if (CM.Message != "")
+                        Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == CM.ReceiverId).Key).SendAsync("ReceiveChatHistory", CM);
+                }
+                catch (Exception)
+                {
+                }
                 return chatMessagesList.Take(30).ToList();
             }
         }

@@ -34,7 +34,7 @@ namespace SharedCode.Constants
         }
         // Method to save state
         static bool saving = false;
-        public static async void SaveState()
+        public static void SaveState()
         {
             var instance = Instance;
             if (saving) return;
@@ -52,7 +52,7 @@ namespace SharedCode.Constants
                 Preferences.Set("UserProfile", playerJson);
                 Preferences.Set("AuthToken", instance.player.AuthToken);
 
-                instance.PictureUrlBlob = await DownloadImageAsBase64Async(instance.player.PictureUrl);
+                instance.PictureUrlBlob = DownloadImageAsBase64Async(instance.player.PictureUrl).GetAwaiter().GetResult();
                 Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
 
                 String QrUrl = $"{BaseUrl}"
@@ -60,7 +60,7 @@ namespace SharedCode.Constants
                   + $"&light={lightColor}"
                   + $"&dark={darkColor}"
                   + $"&size=200";
-                instance.AddressQRBlob = await DownloadImageAsBase64Async(QrUrl);
+                instance.AddressQRBlob = DownloadImageAsBase64Async(QrUrl).GetAwaiter().GetResult();
                 Preferences.Set(nameof(instance.AddressQRBlob), instance.AddressQRBlob);
 
                 
@@ -79,7 +79,9 @@ namespace SharedCode.Constants
         public static void Logout()
         {
             var instance = Instance;
-            Preferences.Clear(); 
+            Preferences.Clear();
+            instance.player = new PlayerInfo();
+            instance.player.Wallet = new PlayerWallet();
             instance.PictureUrlBlob = string.Empty;
             instance.AddressQRBlob = string.Empty;
         }

@@ -47,6 +47,7 @@ namespace LudoClient.Constants
         public static string Tournament_Gray => $"tournament{CurrentSkinType}_gray.png";
 
         public static string DailyBonus => $"daily_bonus{CurrentSkinType}.png";
+        public static string DailyBonus_Gray => $"daily_bonus{CurrentSkinType}_gray.png";
         //OFFLINE
         public static string Title_Offline => $"round_offline{CurrentSkinType}.png";
         //PRACTICE
