@@ -50,10 +50,10 @@
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
@@ -81,10 +81,10 @@
 	  <AndroidUseAapt2>True</AndroidUseAapt2>
 	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 	  <AndroidPackageFormat>aab</AndroidPackageFormat>
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	  <AndroidKeyStore>False</AndroidKeyStore>
 	</PropertyGroup>
 
@@ -96,17 +96,17 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
@@ -117,17 +117,17 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>1</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.1</ApplicationDisplayVersion>
+	  <ApplicationVersion>2</ApplicationVersion>
+	  <ApplicationDisplayVersion>1.0.2</ApplicationDisplayVersion>
 	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -147,6 +147,7 @@
 		<MauiImage Include="Resources\Images\Components\Tablets\detailgold.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\detailwhite.png" />
 		<MauiImage Include="Resources\Images\Components\Tablets\number_0.png" />
+		<MauiImage Include="Resources\Images\DailyBonus\daily_bonus_gray.png" />
 
 		<!-- Splash Screen -->		
 		<MauiSplashScreen Include="Resources\Images\dashboard\splashlogo.png" Color="#135496" BaseSize="128,128" />
@@ -259,6 +260,7 @@
 	  <None Remove="Resources\Images\Components\Toggle\switch_btn_off.png" />
 	  <None Remove="Resources\Images\Components\Toggle\switch_btn_on.png" />
 	  <None Remove="Resources\Images\DailyBonus\daily_bonus.png" />
+	  <None Remove="Resources\Images\DailyBonus\daily_bonus_gray.png" />
 	  <None Remove="Resources\Images\DailyBonus\days_main_bg.png" />
 	  <None Remove="Resources\Images\DashBoard\cashgame.png" />
 	  <None Remove="Resources\Images\DashBoard\cashgame_gray.png" />
