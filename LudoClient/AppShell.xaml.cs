@@ -9,26 +9,37 @@ namespace LudoClient
         {
             InitializeComponent();
 
-            Routing.RegisterRoute(nameof(DashboardPage), typeof(DashboardPage));
-            GoToAsync($"//{nameof(DashboardPage)}");
+            Routing.RegisterRoute(nameof(DashboardPage), typeof(DashboardPage));            
 
             AddTab(typeof(DashboardPage), PageType.HomePage);
             AddTab(typeof(FriendsPage), PageType.FriendsPage);
             AddTab(typeof(WalletPage), PageType.WalletPage);
             AddTab(typeof(LeaderboardPage), PageType.LeaderboardPage);
 
-            Loaded += AppShellLoaded;
+            Loaded += (s, e) =>
+            {
+                AppShellLoaded(s, e);
+                try
+                {
+                    _ = Shell.Current.GoToAsync($"//{nameof(DashboardPage)}");
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Navigation error]: {ex.Message}");
+                }
+            };
         }
         private static void AppShellLoaded(object sender, EventArgs e)
         {
             var shell = sender as AppShell;
-            shell.Window.SubscribeToSafeAreaChanges(safeArea =>
-            {
-                shell.pageContainer.Margin = safeArea;
-                shell.tabBarView.Margin = safeArea;
-                shell.bottomBackgroundRectangle.IsVisible = safeArea.Bottom > 0;
-                shell.bottomBackgroundRectangle.HeightRequest = safeArea.Bottom;
-            });
+            if (shell != null)
+                shell.Window.SubscribeToSafeAreaChanges(safeArea =>
+                {
+                    shell.pageContainer.Margin = safeArea;
+                    shell.tabBarView.Margin = safeArea;
+                    shell.bottomBackgroundRectangle.IsVisible = safeArea.Bottom > 0;
+                    shell.bottomBackgroundRectangle.HeightRequest = safeArea.Bottom;
+                });
         }
         private void AddTab(Type page, PageType pageEnum)
         {
@@ -39,7 +50,14 @@ namespace LudoClient
         }
         private void TabBarViewCurrentPageChanged(object sender, TabBarEventArgs e)
         {
-            Shell.Current.GoToAsync("///" + e.CurrentPage.ToString());
+            try
+            {
+                Shell.Current.GoToAsync("///" + e.CurrentPage.ToString());
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Navigation error]: {ex.Message}");
+            }
         }
     }
     public enum PageType

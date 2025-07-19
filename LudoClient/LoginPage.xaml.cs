@@ -34,8 +34,11 @@ namespace LudoClient
 
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.online)
+            if (!GlobalConstants.MatchMaker.Connected)
+            {
+                await DisplayAlert("Google Sign-In Failed", "Not connected to server. Reload the app if the issue presists.", "OK");
                 return;
+            }
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
@@ -63,10 +66,16 @@ namespace LudoClient
             }
             if (authService != null)
             {
-                string idToken = await authService.SignInAsync();
+                try
+                {
+                    string idToken = await authService.SignInAsync();
+                    await performLoginAsync(idToken);
+                }
+                catch (Exception ex)
+                {
+                    await DisplayAlert("Google Sign-In Failed.", ex.Message, "OK");
+                }
                 // Successfully signed in
-
-                await performLoginAsync(idToken);
             }
             else
             {
@@ -81,7 +90,7 @@ namespace LudoClient
         {
             try
             {
-                if (GlobalConstants.online)
+                if (GlobalConstants.MatchMaker.Connected)
                 {
                     UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
 

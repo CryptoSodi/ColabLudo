@@ -81,9 +81,9 @@ namespace LudoClient.Platforms.Android
         public void OnActivityResult(Intent data)
         {
             var task = GoogleSignIn.GetSignedInAccountFromIntent(data);
-            GoogleSignInAccount account = (GoogleSignInAccount)task.Result;
             if (task.IsSuccessful)
             {
+                GoogleSignInAccount account = (GoogleSignInAccount)task.Result;
 
                 GoogleId = account.Id;
                 UserName = account.DisplayName;

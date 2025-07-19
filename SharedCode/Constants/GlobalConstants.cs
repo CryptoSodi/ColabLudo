@@ -14,7 +14,6 @@ namespace SharedCode.Constants
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
         public static Client MatchMaker;
-        public static bool online = true;
         public static Random rnd = new Random();
 
         static GlobalConstants()

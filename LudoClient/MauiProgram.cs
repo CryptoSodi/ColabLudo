@@ -8,6 +8,9 @@ using Xe.AcrylicView;
 using LudoClient.Services;
 using LudoClient.Platforms.Android;
 #endif
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 
 namespace LudoClient
 {
@@ -36,6 +39,34 @@ namespace LudoClient
             builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
 #endif
+
+            // Start App Center for Android only
+            AppCenter.Start("android=YOUR-ANDROID-APPCENTER-SECRET;",
+                            typeof(Crashes), typeof(Analytics));
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+            {
+                
+                var exception = e.ExceptionObject as Exception;
+                if (exception != null)
+                {
+                    Crashes.TrackError(exception);
+#if DEBUG
+                    System.Diagnostics.Debug.WriteLine($"[UnhandledException] {exception}");
+#endif
+                }
+                //  throw (Exception)e.ExceptionObject; // force crash reporting
+            };
+
+            TaskScheduler.UnobservedTaskException += (sender, e) =>
+            {
+                Crashes.TrackError(e.Exception);
+#if DEBUG
+                System.Diagnostics.Debug.WriteLine($"[UnobservedTaskException] {e.Exception}");
+#endif
+                e.SetObserved(); // Prevent app from crashing
+            };
+
 #if DEBUG
             builder.Logging.AddDebug();
 #endif

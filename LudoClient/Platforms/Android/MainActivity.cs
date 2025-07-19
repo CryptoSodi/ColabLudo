@@ -7,6 +7,9 @@ using Java.Security;
 using LudoClient.Platforms.Android;
 using SharedCode.Constants;
 using PMSignature = Android.Content.PM.Signature;
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 
 namespace LudoClient
 {
@@ -29,11 +32,19 @@ namespace LudoClient
         }
         protected override void OnCreate(Bundle savedInstanceState)
         {
-            base.OnCreate(savedInstanceState);
-            //string sha1 = GetApkSignatureSha1(this);
-            //GlobalConstants.sha1 = sha1;
-            //Console.WriteLine($"My APK SHA-1 = {sha1}");
-            UserDialogs.Init(this);
+            try
+            {
+                base.OnCreate(savedInstanceState);
+                //string sha1 = GetApkSignatureSha1(this);
+                //GlobalConstants.sha1 = sha1;
+                //Console.WriteLine($"My APK SHA-1 = {sha1}");
+                UserDialogs.Init(this);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Global Exception] {ex}");
+                // Show a user-friendly error page or restart app gracefully
+            }
         }
         public static string GetApkSignatureSha1(Context context)
         {
