@@ -6,7 +6,6 @@ namespace SharedCode.Constants
 {
     public static class GlobalConstants
     {
-        public static string sha1 = "";
         public static int GameHistorySaveIndex = 0;
         public static readonly decimal initialEntry = (decimal)1;
         public static readonly bool Debug = false;

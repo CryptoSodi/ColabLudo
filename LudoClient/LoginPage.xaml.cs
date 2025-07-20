@@ -31,7 +31,22 @@ namespace LudoClient
                         UpdateButtons(GlobalConstants.MatchMaker.Connected));
             };
         }
+        private async void GuestSignup_Clicked(object sender, EventArgs e)
+        {
+            if (!GlobalConstants.MatchMaker.Connected)
+            {
+                await DisplayAlert("Google Sign-In Failed", "Not connected to server. Reload the app if the issue presists.", "OK");
+                return;
+            }
+            if (_isLoggingIn)
+                return;
+            _isLoggingIn = true;
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            await performLoginAsync("Guest1");
+            _isLoggingIn = false;
+            return;
 
+        }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
             if (!GlobalConstants.MatchMaker.Connected)

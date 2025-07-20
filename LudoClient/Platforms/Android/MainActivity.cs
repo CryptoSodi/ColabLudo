@@ -7,9 +7,6 @@ using Java.Security;
 using LudoClient.Platforms.Android;
 using SharedCode.Constants;
 using PMSignature = Android.Content.PM.Signature;
-using Microsoft.AppCenter;
-using Microsoft.AppCenter.Analytics;
-using Microsoft.AppCenter.Crashes;
 
 namespace LudoClient
 {
@@ -35,9 +32,8 @@ namespace LudoClient
             try
             {
                 base.OnCreate(savedInstanceState);
-                //string sha1 = GetApkSignatureSha1(this);
-                //GlobalConstants.sha1 = sha1;
-                //Console.WriteLine($"My APK SHA-1 = {sha1}");
+              //  string sha1 = GetApkSignatureSha1(this);                
+             //   Console.WriteLine($"My APK SHA-1 = {sha1}");//
                 UserDialogs.Init(this);
             }
             catch (Exception ex)

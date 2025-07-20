@@ -16,6 +16,11 @@
                 <TapGestureRecognizer Tapped="GooleSignup_Clicked" />
             </Image.GestureRecognizers>
         </Image>
+        <Image IsVisible="False" Margin="90,0,90,20" HeightRequest="60" Source="guest_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="GuestSignup_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
         <Label x:Name="VersionText" HorizontalOptions="Center" Margin="0,0,0,100" Text="Version 1.0" VerticalOptions="Fill" />
     </StackLayout>
 </ContentPage>
