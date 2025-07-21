@@ -71,7 +71,7 @@ namespace LudoClient.CoreEngine
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine($"Vibration error: {ex.Message}");
+                    Console.WriteLine($"Vibration error: {ex.Message}");
                 }
             }
         }

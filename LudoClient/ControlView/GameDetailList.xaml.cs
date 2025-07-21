@@ -40,7 +40,7 @@ namespace LudoClient.ControlView
 
             PrizeAmountLabel.Text = $"{priceamount}";
         }
-        private async void Join_Tapped(object sender, EventArgs e)
+        private void Join_Tapped(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Console.WriteLine("Join Tapped");
