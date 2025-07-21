@@ -8,6 +8,9 @@ using Xe.AcrylicView;
 using LudoClient.Services;
 using LudoClient.Platforms.Android;
 #endif
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 
 namespace LudoClient
 {

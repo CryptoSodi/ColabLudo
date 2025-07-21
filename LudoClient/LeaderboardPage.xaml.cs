@@ -22,39 +22,46 @@ public partial class LeaderboardPage : ContentPage
     }
     public async Task InitializeLeaderboardAsync()
     {
-        List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.player.PlayerId);
-        var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
-
-        // Identify which items are currently displayed
-        var existingItems = LeaderboardListStack.Children.OfType<DetailList>().ToList();
-
-        var existingFriendsIds = existingItems.Select(i => i.playerCard.playerID).ToHashSet();
-
-        // Remove items that are no longer present in the new data
-        var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
-
-        foreach (var item in itemsToRemove)
+        try
         {
-            LeaderboardListStack.Children.Remove(item);
-        }
+            List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.player.PlayerId);
+            var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
 
-        // Add new items that weren't previously displayed
-        foreach (var friend in Friends)
-        {
-            if (!existingFriendsIds.Contains(friend.playerID))
+            // Identify which items are currently displayed
+            var existingItems = LeaderboardListStack.Children.OfType<DetailList>().ToList();
+
+            var existingFriendsIds = existingItems.Select(i => i.playerCard.playerID).ToHashSet();
+
+            // Remove items that are no longer present in the new data
+            var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
+
+            foreach (var item in itemsToRemove)
             {
-                var friendDetail = new DetailList(friend, "Leaderboard");
-                LeaderboardListStack.Children.Add(friendDetail);
+                LeaderboardListStack.Children.Remove(item);
             }
-            else
+
+            // Add new items that weren't previously displayed
+            foreach (var friend in Friends)
             {
-                // Optionally, update existing items if details have changed
-                var existingItem = existingItems.FirstOrDefault(i => i.playerCard.playerID == friend.playerID);
-                if (existingItem != null)
+                if (!existingFriendsIds.Contains(friend.playerID))
                 {
-                    existingItem.SetDetails(friend, "Leaderboard");
+                    var friendDetail = new DetailList(friend, "Leaderboard");
+                    LeaderboardListStack.Children.Add(friendDetail);
+                }
+                else
+                {
+                    // Optionally, update existing items if details have changed
+                    var existingItem = existingItems.FirstOrDefault(i => i.playerCard.playerID == friend.playerID);
+                    if (existingItem != null)
+                    {
+                        existingItem.SetDetails(friend, "Leaderboard");
+                    }
                 }
             }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing leaderboard: {ex.Message}");
         }
     }
     private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
