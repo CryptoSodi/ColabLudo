@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-        <local:Capsule ImageSource="profile_user.png" Margin="2" VerticalOptions="Fill" HorizontalOptions="Fill">
+        <local:Capsule ImageSource="profile_user.webp" Margin="2" VerticalOptions="Fill" HorizontalOptions="Fill">
             <Image x:Name="PlayerImageItem" Margin="4.15" VerticalOptions="Fill" HorizontalOptions="Fill"/>
         </local:Capsule>
     </Grid>

@@ -4,33 +4,33 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
              x:Class="LudoClient.Popups.ProfileInfo"
-             ImageSource="dailybonus_popup_bg.png">
+             ImageSource="dailybonus_popup_bg.webp">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Row="1" Grid.Column="1" Title="PROFILE" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
 
             <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="15" >
-                <local:Capsule  ImageSource="profile_info_bg.png" HorizontalOptions="Center">
+                <local:Capsule  ImageSource="profile_info_bg.webp" HorizontalOptions="Center">
                     <Grid Padding="3" Margin="0,2,0,3" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions ="2.3*,1*,1*,1*,0.05*">
-                        <local:PlayerBoxLong x:Name="player" PlayerName="" PlayerImage="profile_image.png" HorizontalOptions="Fill" />
+                        <local:PlayerBoxLong x:Name="player" PlayerName="" PlayerImage="profile_image.webp" HorizontalOptions="Fill" />
                         <Grid Grid.Row="1" Margin="5,0,5,0">
                             <Frame BackgroundColor="#30000000" CornerRadius="8" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                             <StackLayout Orientation="Horizontal" Spacing="9" >
-                                <Image Source="ic_email.png" Margin="6,3,0,3" HorizontalOptions="Start"/>
+                                <Image Source="ic_email.webp" Margin="6,3,0,3" HorizontalOptions="Start"/>
                                 <Label x:Name="Email" Text="" FontSize="10" HorizontalTextAlignment="Start" HorizontalOptions="Fill" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="2" Margin="5,0,5,0">
                             <Frame BackgroundColor="#30000000" CornerRadius="8" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                             <StackLayout Orientation="Horizontal" Spacing="9">
-                                <Image Source="ic_call.png" Margin="6,3,0,3" HorizontalOptions="Start"/>
+                                <Image Source="ic_call.webp" Margin="6,3,0,3" HorizontalOptions="Start"/>
                                 <Label x:Name="Number" Text="" FontSize="10" HorizontalTextAlignment="Start" HorizontalOptions="Fill" />
                             </StackLayout>
                         </Grid>
                         <Grid Grid.Row="3" Margin="5,0,5,0">
                             <Frame BackgroundColor="#30000000" CornerRadius="8" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                             <StackLayout Orientation="Horizontal" Spacing="13">
-                                <Image Source="ic_address.png" Margin="6,3,0,3" HorizontalOptions="Start"/>
+                                <Image Source="ic_address.webp" Margin="6,3,0,3" HorizontalOptions="Start"/>
                                 <Label x:Name="Location" FontSize="10" HorizontalTextAlignment="Start" HorizontalOptions="Fill" />
                             </StackLayout>
                         </Grid>
@@ -39,7 +39,7 @@
 
                 <Grid VerticalOptions="FillAndExpand" Margin="0,0,0,20">
                     <StackLayout VerticalOptions="End" Orientation="Vertical" HorizontalOptions="FillAndExpand" Spacing="8" >
-                        <Image Source="statistics_info.png" Margin="30,0,30,10" VerticalOptions="Center" HorizontalOptions="Center"/>
+                        <Image Source="statistics_info.webp" Margin="30,0,30,10" VerticalOptions="Center" HorizontalOptions="Center"/>
                         <Grid HorizontalOptions="FillAndExpand">
                             <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand">
                                 <local:StatisticCard x:Name="C1" Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" />

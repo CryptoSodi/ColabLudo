@@ -7,8 +7,8 @@
     <local:Capsule x:Name="playerBG">
         <Grid RowDefinitions=".14*,1*,.3*,.3*" ColumnDefinitions=".13*,1*,.06*,0.96*,.01*">
             <Image x:Name="PlayerImage" Margin="4.15" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
-            <Image Source="profile_user.png" Margin="1" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
-            <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.png" VerticalOptions="Center" HorizontalOptions="Start">
+            <Image Source="profile_user.webp" Margin="1" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
+            <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.webp" VerticalOptions="Center" HorizontalOptions="Start">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Dice_Clicked" />
                 </Image.GestureRecognizers>
@@ -19,7 +19,7 @@
             </Grid>
 
             <Grid x:Name="ProgressBoxParentContainer" Margin="0,0,0,-5" BackgroundColor="#992B4195" Grid.Row="3" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >
-                <Image x:Name="CheckBox" Source="checkbox_red.png" Margin="-2">
+                <Image x:Name="CheckBox" Source="checkbox_red.webp" Margin="-2">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Tapped="AutoClicked" />
                     </Image.GestureRecognizers>

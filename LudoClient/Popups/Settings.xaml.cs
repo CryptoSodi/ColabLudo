@@ -11,9 +11,9 @@ public partial class Settings : BasePopup
     public Settings()
     {
         InitializeComponent();
-        SoundSwitch.init("line_bg.png");
-        VibrationSwitch.init("line_bg.png");
-        NotificationSwitch.init("line_bg.png");
+        SoundSwitch.init("line_bg.webp");
+        VibrationSwitch.init("line_bg.webp");
+        NotificationSwitch.init("line_bg.webp");
 
         string version = VersionTracking.CurrentVersion;// e.g., "1.1.0"
         string build = VersionTracking.CurrentBuild;

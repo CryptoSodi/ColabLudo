@@ -14,9 +14,9 @@
             </ScrollView>
         </Grid>
         <Grid Grid.Row="2" HorizontalOptions="Fill" VerticalOptions="Fill">
-            <controlview:Capsule ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <controlview:Capsule ImageSource="chatbar_image.webp" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Grid ColumnDefinitions="Auto,1*,Auto">
-                    <Image Source="btn_back.png" Margin="5,0,0,0" VerticalOptions="Center" HorizontalOptions="Start">
+                    <Image Source="btn_back.webp" Margin="5,0,0,0" VerticalOptions="Center" HorizontalOptions="Start">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnBackButton_Tapped" />
                         </Image.GestureRecognizers>
@@ -27,7 +27,7 @@
                         <Entry x:Name="MessageEntry" ReturnType="Send" Completed="MessageEntry_Completed" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="14" VerticalOptions="Fill" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                     </Grid>
 
-                    <Image Source="btn_send.png" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                    <Image Source="btn_send.webp" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnSendButton_Tapped" />
                         </Image.GestureRecognizers>

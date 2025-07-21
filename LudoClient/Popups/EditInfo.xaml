@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
              x:Class="LudoClient.Popups.EditInfo"
-             ImageSource="popup_bg_long.png">
+             ImageSource="popup_bg_long.webp">
     <popup:BasePopup.PopupContent>
         <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Column="1" Title="EDIT INFO" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
@@ -22,7 +22,7 @@
                 <local:EditField Title="STATE" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
             </StackLayout>
             <!--Convert these into components-->
-            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,-10" Source="btn_green.png" VerticalOptions="End" HorizontalOptions="Center"/>
+            <Image Grid.Row="1" Grid.Column="1" Margin="100,0,100,-10" Source="btn_green.webp" VerticalOptions="End" HorizontalOptions="Center"/>
         </Grid>
     </popup:BasePopup.PopupContent>
 </popup:BasePopup>

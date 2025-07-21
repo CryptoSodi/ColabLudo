@@ -28,24 +28,24 @@ namespace LudoClient.ControlView
             switch (playerCard.rank)
             {
                 case 1:
-                    PlayerMadel.Source = "number_1.png";
+                    PlayerMadel.Source = "number_1.webp";
                     PlayerName.TextColor = Color.Parse("Black");
-                    BackgroundLayerImage.ImageSource = "detailgold.png";
+                    BackgroundLayerImage.ImageSource = "detailgold.webp";
                     break;
                 case 2:
-                    PlayerMadel.Source = "number_2.png";
+                    PlayerMadel.Source = "number_2.webp";
                     PlayerName.TextColor = Color.Parse("Black");
-                    BackgroundLayerImage.ImageSource = "detailwhite.png";
+                    BackgroundLayerImage.ImageSource = "detailwhite.webp";
                     break;
                 case 3:
-                    PlayerMadel.Source = "number_3.png";
+                    PlayerMadel.Source = "number_3.webp";
                     PlayerName.TextColor = Color.Parse("Black");
-                    BackgroundLayerImage.ImageSource = "detailwhite.png";
+                    BackgroundLayerImage.ImageSource = "detailwhite.webp";
                     break;
                 default:
-                    PlayerMadel.Source = "number_0.png";
+                    PlayerMadel.Source = "number_0.webp";
                     PlayerName.TextColor = Color.Parse("White");
-                    BackgroundLayerImage.ImageSource = "friendlong.png";
+                    BackgroundLayerImage.ImageSource = "friendlong.webp";
                     break;
             }
             switch (type)

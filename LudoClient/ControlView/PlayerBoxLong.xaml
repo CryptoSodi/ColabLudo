@@ -5,20 +5,20 @@
              xmlns:local="clr-namespace:LudoClient.ControlView">
 
     <Grid RowDefinitions="1*" ColumnDefinitions=".3*,1*">
-        <local:Capsule ImageSource="profile_user.png" VerticalOptions="Fill" HorizontalOptions="Fill">
-            <Image x:Name="PlayerImageItem" Source="http://ludonft.online/player.png" Margin="4" VerticalOptions="Fill" HorizontalOptions="Fill"/>
+        <local:Capsule ImageSource="profile_user.webp" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Image x:Name="PlayerImageItem" Source="http://ludonft.online/player.webp" Margin="4" VerticalOptions="Fill" HorizontalOptions="Fill"/>
         </local:Capsule>
         <Grid RowDefinitions="1*,1*" ColumnDefinitions="1*" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
 
             <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="Fill">
                 <Label Margin="1,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
-                <Image x:Name="VerificationImage" Source="lbl_unverified.png" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
+                <Image x:Name="VerificationImage" Source="lbl_unverified.webp" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
             </StackLayout>
 
             <StackLayout Margin="0,0,5,0" Grid.Row="1" Orientation="Horizontal" Spacing="4" HorizontalOptions="FillAndExpand">
                 <Grid Margin="0,1,0,1" WidthRequest="60">
                     <Frame BackgroundColor="#60000000" CornerRadius="4" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <Image Source="level_star.png" Margin="4,4,0,4" VerticalOptions="Center" HorizontalOptions="Start"/>
+                    <Image Source="level_star.webp" Margin="4,4,0,4" VerticalOptions="Center" HorizontalOptions="Start"/>
                     <Label x:Name="ScoreText" Text="1" Margin="0,0,5,2" VerticalOptions="Center" HorizontalOptions="End" TextColor="White"/>
                 </Grid>
                 <Grid Margin="0,5,0,5" HorizontalOptions="FillAndExpand">
@@ -26,7 +26,7 @@
                     <Frame x:Name="OrangeBar" BackgroundColor="DarkOrange" CornerRadius="4" HorizontalOptions="Start" VerticalOptions="Fill"/>
                     <Label x:Name="ReminderScoreText" TextColor="Wheat" FontSize="10" HorizontalOptions="Center" VerticalOptions="Fill"/>
                 </Grid>
-                <Image Source="btn_info.png" Margin="0,2,0,2" VerticalOptions="Center" HorizontalOptions="End"/>
+                <Image Source="btn_info.webp" Margin="0,2,0,2" VerticalOptions="Center" HorizontalOptions="End"/>
             </StackLayout>
         </Grid>
     </Grid>

@@ -35,28 +35,28 @@ namespace SharedCode
             this.gameMode = gameMode;
             RedPlayerSeat = new PlayerSeat("red")
             {
-                PlayerBG = "red_container.png",
+                PlayerBG = "red_container.webp",
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 VerticalOptions = LayoutOptions.End
             };
             // Create GreenPlayerSeat
             GreenPlayerSeat = new PlayerSeat("green")
             {
-                PlayerBG = "green_container.png",
+                PlayerBG = "green_container.webp",
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 VerticalOptions = LayoutOptions.End
             };
             // Create YellowPlayerSeat
             YellowPlayerSeat = new PlayerSeat("yellow")
             {
-                PlayerBG = "yellow_container.png",
+                PlayerBG = "yellow_container.webp",
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 VerticalOptions = LayoutOptions.End
             };
             // Create BluePlayerSeat
             BluePlayerSeat = new PlayerSeat("blue")
             {
-                PlayerBG = "blue_container.png",
+                PlayerBG = "blue_container.webp",
                 HorizontalOptions = LayoutOptions.FillAndExpand,
                 VerticalOptions = LayoutOptions.End
             };
@@ -205,7 +205,7 @@ namespace SharedCode
             var colors = new[] { ("Red", gui.red), ("Green", gui.green), ("Yellow", gui.yellow), ("Blue", gui.blue) };
 
             foreach (var (color, seat) in colors)
-                seat.initAuto(this, $"AI {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", "ShowAuto", true);
+                seat.initAuto(this, $"AI {Array.IndexOf(colors, (color, seat)) + 1}", "player.webp", "ShowAuto", true);
 
             engine = new Engine("AI", gameType, gameType == "22" ? "4" : gameType, playerColor, "");
 
@@ -540,11 +540,11 @@ namespace SharedCode
         {
             switch (colorLetter)
             {
-                case "r": return Constants.Skins.RedToken.Replace(".png", suffics + ".png");
-                case "g": return Constants.Skins.GreenToken.Replace(".png", suffics + ".png");
-                case "y": return Constants.Skins.YellowToken.Replace(".png", suffics + ".png");
-                case "b": return Constants.Skins.BlueToken.Replace(".png", suffics + ".png");
-                default: return "default.png"; // Fallback in case no matching color is found.
+                case "r": return Constants.Skins.RedToken.Replace(".webp", suffics + ".webp");
+                case "g": return Constants.Skins.GreenToken.Replace(".webp", suffics + ".webp");
+                case "y": return Constants.Skins.YellowToken.Replace(".webp", suffics + ".webp");
+                case "b": return Constants.Skins.BlueToken.Replace(".webp", suffics + ".webp");
+                default: return "default.webp"; // Fallback in case no matching color is found.
             }
         }
         public List<Piece> GetAllPieces()

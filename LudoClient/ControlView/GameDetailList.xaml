@@ -4,7 +4,7 @@
              x:Class="LudoClient.ControlView.GameDetailList"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid>
-        <local:Capsule ImageSource="tournament_bg.png" HorizontalOptions="Fill" VerticalOptions="Start">
+        <local:Capsule ImageSource="tournament_bg.webp" HorizontalOptions="Fill" VerticalOptions="Start">
             <Grid ColumnSpacing="10" RowSpacing="4" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".05*,.1*,.01*">
                 <Frame BackgroundColor="DarkBlue" CornerRadius="2" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="1,0,1,0"/>
                 <Grid Margin="8,2,5,0" HorizontalOptions="Fill" VerticalOptions="Center">
@@ -28,7 +28,7 @@
                             <Label x:Name="PrizeAmountLabel" Text="" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill" HorizontalOptions="Fill"/>
                         </StackLayout>
                     </Grid>
-                <Image Grid.Column="2" Source="btn_join.png" HeightRequest="30">
+                    <Image Grid.Column="2" Source="btn_join.webp" HeightRequest="30">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Tapped="Join_Tapped" />
                     </Image.GestureRecognizers>

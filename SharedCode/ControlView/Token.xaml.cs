@@ -9,7 +9,7 @@ public partial class Token : ContentView
     {
         var control = (Token)bindable;
         String image = (string)newValue;
-        if (image == "ludoLockHome.png")//ludoLockHome.png
+        if (image == "ludoLockHome.webp")//ludoLockHome.webp
         {
             control.Piece1.Source = image;
             control.Piece1.IsVisible = true;
@@ -80,14 +80,14 @@ public partial class Token : ContentView
 
     private static void AssignImages(Token control, string Suffics)
     {
-        if (control.Piece1.Source + "" != Suffics + "_token_large.png")
-            control.Piece1.Source = Suffics + "_token_large.png";
-        if (control.Piece2.Source + "" != Suffics + "_token_large_2.png")
-            control.Piece2.Source = Suffics + "_token_large_2.png";
-        if (control.Piece3.Source + "" != Suffics + "_token_large_3.png")
-            control.Piece3.Source = Suffics + "_token_large_3.png";
-        if (control.Piece4.Source + "" != Suffics + "_token_large_4.png")
-            control.Piece4.Source = Suffics + "_token_large_4.png";
+        if (control.Piece1.Source + "" != Suffics + "_token_large.webp")
+            control.Piece1.Source = Suffics + "_token_large.webp";
+        if (control.Piece2.Source + "" != Suffics + "_token_large_2.webp")
+            control.Piece2.Source = Suffics + "_token_large_2.webp";
+        if (control.Piece3.Source + "" != Suffics + "_token_large_3.webp")
+            control.Piece3.Source = Suffics + "_token_large_3.webp";
+        if (control.Piece4.Source + "" != Suffics + "_token_large_4.webp")
+            control.Piece4.Source = Suffics + "_token_large_4.webp";
     }
 
     public string piece
@@ -111,7 +111,7 @@ public partial class Token : ContentView
         // Use a while loop to continue the rotation
         while (true)
         {
-            if (piece == "ludoLockHome.png" && TokenBase.IsVisible)
+            if (piece == "ludoLockHome.webp" && TokenBase.IsVisible)
             {
                 TokenBase.IsVisible = false;
             }

@@ -64,7 +64,7 @@
         <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
         </StackLayout>
 
-        <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.png" HorizontalOptions="Fill" VerticalOptions="End">
+        <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.webp" HorizontalOptions="Fill" VerticalOptions="End">
             <Grid ColumnDefinitions="0.026*,1*,Auto,0.01*">
 
                 <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Center" HeightRequest="40">
@@ -77,7 +77,7 @@
                     </Grid>
                 </Grid>
 
-                <Image Source="btn_send.png" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                <Image Source="btn_send.webp" Margin="5" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnSendButton_Tapped" />
                     </Image.GestureRecognizers>
@@ -91,9 +91,9 @@
                 </VerticalStackLayout.GestureRecognizers>
             </VerticalStackLayout>
         </ScrollView>
-        <local:Capsule ImageSource="footer.png" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
+        <local:Capsule ImageSource="footer.webp" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
             <Grid ColumnSpacing="5" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="Auto,Auto,1*">
-                <local:Capsule ImageSource="popover.png" HorizontalOptions="Center" VerticalOptions="Center">
+                <local:Capsule ImageSource="popover.webp" HorizontalOptions="Center" VerticalOptions="Center">
                     <ImageButton x:Name="PopoverButton" Clicked="PopOverClicked">
                         <simpleCore:Popover.AttachedPopover>
                             <simpleCore:Popover>
@@ -104,7 +104,7 @@
                                             <Grid WidthRequest="160" HeightRequest="35">
                                                 <Label Text="Exit to lobby" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                 <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                    <Image Source="btn_exit_to_lobby.png" Margin="0,4,8,4">
+                                                    <Image Source="btn_exit_to_lobby.webp" Margin="0,4,8,4">
                                                         <Image.GestureRecognizers>
                                                             <TapGestureRecognizer Tapped="ExitToLobby"/>
                                                         </Image.GestureRecognizers>
@@ -115,7 +115,7 @@
                                             <Grid WidthRequest="160" HeightRequest="35">
                                                 <Label Text="Sound"  TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                 <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                    <Image x:Name="SoundSwitch" Source="switch_btn_on.png" Margin="0,4,8,4">
+                                                    <Image x:Name="SoundSwitch" Source="switch_btn_on.webp" Margin="0,4,8,4">
                                                         <Image.GestureRecognizers>
                                                             <TapGestureRecognizer Tapped="SoundSwitch_Tapped"/>
                                                         </Image.GestureRecognizers>
@@ -126,7 +126,7 @@
                                             <Grid WidthRequest="160" HeightRequest="35">
                                                 <Label Text="Vibration" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                 <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                    <Image x:Name="VibrationSwitch" Source="switch_btn_on.png" Margin="0,4,8,4">
+                                                    <Image x:Name="VibrationSwitch" Source="switch_btn_on.webp" Margin="0,4,8,4">
                                                         <Image.GestureRecognizers>
                                                             <TapGestureRecognizer Tapped="VibrationSwitch_Tapped"/>
                                                         </Image.GestureRecognizers>
@@ -140,7 +140,7 @@
                         </simpleCore:Popover.AttachedPopover>
                     </ImageButton>
                 </local:Capsule>
-                <local:Capsule Grid.Column="1" ImageSource="btn_help.png" HorizontalOptions="Center" VerticalOptions="Center">
+                <local:Capsule Grid.Column="1" ImageSource="btn_help.webp" HorizontalOptions="Center" VerticalOptions="Center">
                     <ImageButton x:Name="QuestionButton" Clicked="QuestionClicked">
                         <simpleCore:Popover.AttachedPopover>
                             <simpleCore:Popover>
@@ -150,7 +150,7 @@
                                             <Grid WidthRequest="180" HeightRequest="35">
                                                 <Label Text="Exit to lobby"  Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>
                                                 <Grid HorizontalOptions="End" VerticalOptions="Center">
-                                                    <Image Source="btn_exit_to_lobby.png" Margin="0,8,5,8">
+                                                    <Image Source="btn_exit_to_lobby.webp" Margin="0,8,5,8">
                                                         <Image.GestureRecognizers>
                                                             <TapGestureRecognizer Tapped="ExitToLobby" />
                                                         </Image.GestureRecognizers>

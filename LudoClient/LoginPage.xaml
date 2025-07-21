@@ -5,18 +5,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    BackgroundImageSource="background.png"
+    BackgroundImageSource="background.webp"
     mc:Ignorable="d">
     <!--  StackLayout for the content  -->
     <StackLayout Spacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" >
         <!--  Your content here  -->
-        <Image HeightRequest="185" Margin="0,0,0,80" Source="logo.png" HorizontalOptions="Center"/>
-        <Image x:Name="GoogleLoginPanel" Margin="90,0,90,20" HeightRequest="60" Source="google_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+        <Image HeightRequest="185" Margin="0,0,0,80" Source="logo.webp" HorizontalOptions="Center"/>
+        <Image x:Name="GoogleLoginPanel" Margin="90,0,90,20" HeightRequest="60" Source="google_login.webp" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="GooleSignup_Clicked" />
             </Image.GestureRecognizers>
         </Image>
-        <Image IsVisible="False" Margin="90,0,90,20" HeightRequest="60" Source="guest_login.png" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
+        <Image IsVisible="False" Margin="90,0,90,20" HeightRequest="60" Source="guest_login.webp" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="GuestSignup_Clicked" />
             </Image.GestureRecognizers>

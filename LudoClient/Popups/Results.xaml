@@ -3,15 +3,15 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:LudoClient.ControlView"
-             BackgroundImageSource="spinner_bk_red_glow.png">
+             BackgroundImageSource="spinner_bk_red_glow.webp">
     <Grid VerticalOptions="Fill" HorizontalOptions="Fill" >
-        <Image Source="spinner_bk_red_glow.png" Margin="-100" />
-        <Image Source="strips_big.png" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
+        <Image Source="spinner_bk_red_glow.webp" Margin="-100" />
+        <Image Source="strips_big.webp" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
         <Image Source="result_celibration.gif" IsAnimationPlaying="True" Aspect="AspectFill"  VerticalOptions="Fill" HorizontalOptions="Fill"/>
         
         <Grid VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <StackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Fill">
-                <Image Margin="0,100,0,0"  Source="ttl_results.png" VerticalOptions="End" HorizontalOptions="Fill"/>
+                <Image Margin="0,100,0,0"  Source="ttl_results.webp" VerticalOptions="End" HorizontalOptions="Fill"/>
                 <StackLayout Margin="0,-80,0,0" Spacing="6" VerticalOptions="Start" HorizontalOptions="Fill">
                     <local:ResultCardLong x:Name="player1" Margin="0,2,0,0" />
                     <local:ResultCardLong x:Name="player2" />
@@ -19,7 +19,7 @@
                     <local:ResultCardLong x:Name="player4" />
                 </StackLayout>
                 <StackLayout Margin="0,50,0,0" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="Start" >
-                    <local:Capsule ImageSource="btn_verify_account.png" HeightRequest="40"  VerticalOptions="Fill" HorizontalOptions="Fill">
+                    <local:Capsule ImageSource="btn_verify_account.webp" HeightRequest="40"  VerticalOptions="Fill" HorizontalOptions="Fill">
                         <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="BtnExit"/>

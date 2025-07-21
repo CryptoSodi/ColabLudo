@@ -41,11 +41,11 @@ public partial class PlayerBoxLong : ContentView
         ScoreText.Text = dividedScore.ToString();
         if (verified)
         {
-            VerificationImage.Source = "lbl_verified.png";
+            VerificationImage.Source = "lbl_verified.webp";
         }
         else
         {
-            VerificationImage.Source = "lbl_unverified.png";
+            VerificationImage.Source = "lbl_unverified.webp";
         }
         UpdateOrangeBarWidth();
     }

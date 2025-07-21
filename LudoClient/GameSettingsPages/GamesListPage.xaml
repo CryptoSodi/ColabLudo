@@ -3,18 +3,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.GamesListPage"
              xmlns:local="clr-namespace:LudoClient"
-             BackgroundImageSource="background_waitingroom.png"
+             BackgroundImageSource="background_waitingroom.webp"
              xmlns:controlview="clr-namespace:LudoClient.ControlView">
 
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
-        <controlview:Capsule ImageSource="wallet_bg.png" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+        <controlview:Capsule ImageSource="wallet_bg.webp" Grid.Row="1" Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <Grid Margin="0,20,0,0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">
                     <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="EndAndExpand" ColumnDefinitions=".1*,.1*">
-                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Global" Grid.Column="1" SwitchOn="tab_active.png" SwitchOff="tab_normal.png" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="Friends" SwitchOn="tab_active.webp" SwitchOff="tab_normal.webp" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="Global" Grid.Column="1" SwitchOn="tab_active.webp" SwitchOff="tab_normal.webp" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
-                    <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.png" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+                    <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.webp" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
                         <Grid HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" ColumnDefinitions=".3*,.4*,.3*">
                             <Label Text="RANK" TextColor="White" HorizontalOptions="CenterAndExpand"/>
                             <Label Grid.Column="1" Text="PLAYERS" TextColor="White" HorizontalOptions="StartAndExpand"/>
@@ -28,7 +28,7 @@
                 </ScrollView>
             </Grid>
         </controlview:Capsule>
-        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.png" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <controlview:TitleBar Grid.Row="1" Grid.Column="1" TitleImage="title_leaderboard.webp" Title="" Margin="30,-28,30,0" VerticalOptions="Start" HorizontalOptions="Center"/>
         <controlview:BottomNavigation Grid.Row="2" Grid.ColumnSpan="5"></controlview:BottomNavigation>
     </Grid>
 </ContentPage>

@@ -17,22 +17,22 @@
 
                     <StackLayout Margin="0,80,0,0" Spacing="{x:Static constants:Skins.StackLayoutSpacing}">
 
-                        <Image Source="dash_select_players.png"  VerticalOptions="Start" />
+                        <Image Source="dash_select_players.webp"  VerticalOptions="Start" />
 
                         <Grid ColumnSpacing="14" HorizontalOptions="Fill" VerticalOptions="Start" ColumnDefinitions=".01*,.1*,.1*,.1*,.1*,.01*">
-                            <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                            <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                            <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                            <local:ImageSwitch x:Name="Tab4" SwitchText="2v2" Grid.Column="4" SwitchOn="btn_players_green.png" SwitchOff="btn_players_orange.png" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                            <local:ImageSwitch x:Name="Tab1" SwitchText="2" Grid.Column="1" SwitchOn="btn_players_green.webp" SwitchOff="btn_players_orange.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                            <local:ImageSwitch x:Name="Tab2" SwitchText="3" Grid.Column="2" SwitchOn="btn_players_green.webp" SwitchOff="btn_players_orange.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                            <local:ImageSwitch x:Name="Tab3" SwitchText="4" Grid.Column="3" SwitchOn="btn_players_green.webp" SwitchOff="btn_players_orange.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                            <local:ImageSwitch x:Name="Tab4" SwitchText="2v2" Grid.Column="4" SwitchOn="btn_players_green.webp" SwitchOff="btn_players_orange.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                         </Grid>
 
-                        <Image Source="dash_choose_bet.png" VerticalOptions="Start" />
+                        <Image Source="dash_choose_bet.webp" VerticalOptions="Start" />
 
                         <Grid Margin="0,0,0,-50" HorizontalOptions="Center" VerticalOptions="StartAndExpand" RowDefinitions=".1*,.2*" ColumnDefinitions=".01*,.2*,.01*">
 
                             <Grid Grid.Column="1" HorizontalOptions="Center" VerticalOptions="End" ColumnDefinitions=".05*,.1*,.1*,.05*">
-                                <local:ImageSwitch x:Name="TabP1" Grid.Column="1" SwitchText="CREATE" SwitchOn="tab_active_curve.png" SwitchOff="tab_normal_curve.png" VerticalOptions="Start" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
-                                <local:ImageSwitch x:Name="TabP2" Grid.Column="2" SwitchText="JOIN" SwitchOn="tab_active_curve.png" SwitchOff="tab_normal_curve.png" VerticalOptions="Start" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
+                                <local:ImageSwitch x:Name="TabP1" Grid.Column="1" SwitchText="CREATE" SwitchOn="tab_active_curve.webp" SwitchOff="tab_normal_curve.webp" VerticalOptions="Start" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
+                                <local:ImageSwitch x:Name="TabP2" Grid.Column="2" SwitchText="JOIN" SwitchOn="tab_active_curve.webp" SwitchOff="tab_normal_curve.webp" VerticalOptions="Start" HorizontalOptions="Center" RequestActivate="TabRequestedActivateP" IsIndependent="False"/>
                             </Grid>
 
                             <local:Capsule Margin="0,-2,0,0" Grid.Row="1" Grid.Column="1" ImageSource="{x:Static constants:Skins.Background_Controlbox}" HorizontalOptions="Center" VerticalOptions="Fill">
@@ -49,7 +49,7 @@
                                             <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="Fill">
                                                 <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
                                                 <StackLayout Margin="5,2,5,5" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Center">
-                                                    <Image Source="solicon.png" Margin="-4,2,2,2" HorizontalOptions="Start" />
+                                                    <Image Source="solicon.webp" Margin="-4,2,2,2" HorizontalOptions="Start" />
                                                     <Label x:Name="EntryLabel" Text="5" HorizontalOptions="Start" VerticalOptions="Fill"/>
                                                 </StackLayout>
                                             </Grid>
@@ -87,7 +87,7 @@
         </local:Capsule>
         <StackLayout x:Name="ShowWinAmount" Grid.Row="2" Grid.Column="1" Padding="0,1,0,0" HeightRequest="20" Orientation="Horizontal" HorizontalOptions="Center" VerticalOptions="CenterAndExpand">
             <Label Text="Win Fee" Margin="5,0,6,0" HorizontalOptions="Start"/>
-            <Image Source="solicon.png" Margin="-4,2,3,0" HorizontalOptions="Start" />
+            <Image Source="solicon.webp" Margin="-4,2,3,0" HorizontalOptions="Start" />
             <Label x:Name="WinLabel"  HorizontalOptions="Start" VerticalOptions="Fill"/>
         </StackLayout>
         <local:BottomNavigation Grid.Row="7" Grid.ColumnSpan="5"></local:BottomNavigation>

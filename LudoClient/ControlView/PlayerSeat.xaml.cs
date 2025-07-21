@@ -64,7 +64,7 @@ public partial class PlayerSeat : ContentView
         this.seatColor = seatColor;
         InitializeComponent();
         this.Loaded += OnLoaded;
-        CheckBox.Source = "checkbox_"+seatColor+".png";
+        CheckBox.Source = "checkbox_"+seatColor+ ".webp";
     }
     private void OnLoaded(object sender, EventArgs e)
     {
@@ -77,9 +77,9 @@ public partial class PlayerSeat : ContentView
             return;
         autoPlayFlag = !autoPlayFlag;
         if(autoPlayFlag)
-            CheckBox.Source = "checkbox_"+seatColor+"_select.png";
+            CheckBox.Source = "checkbox_"+seatColor+ "_select.webp";
         else
-            CheckBox.Source = "checkbox_"+seatColor+".png";
+            CheckBox.Source = "checkbox_"+seatColor+ ".webp";
     }
     private CancellationTokenSource _animationCancellationTokenSource;
     public async void StartProgressAnimation()
@@ -180,7 +180,7 @@ public partial class PlayerSeat : ContentView
         MainThread.BeginInvokeOnMainThread(() =>
         {
             DiceLayer.IsAnimationPlaying = false;
-            DiceLayer.Source = $"dice_{DiceValue}.png";
+            DiceLayer.Source = $"dice_{DiceValue}.webp";
         });
     }
     internal void reset()
@@ -188,11 +188,11 @@ public partial class PlayerSeat : ContentView
         MainThread.BeginInvokeOnMainThread(() =>
         {
             if (DiceLayer.Source is FileImageSource fileSource &&
-                fileSource.File != "dice_0.png")
+                fileSource.File != "dice_0.webp")
             {
                 // Stop any animation & reconnect fresh
                 DiceLayer.IsAnimationPlaying = false;
-                DiceLayer.Source = "dice_0.png";
+                DiceLayer.Source = "dice_0.webp";
             }
         });
     }
@@ -200,8 +200,8 @@ public partial class PlayerSeat : ContentView
     {
         reset();
         PlayerNameText.Text = "Left";
-        PlayerImage.Source = "user.png";
+        PlayerImage.Source = "user.webp";
         ProgressBoxParentContainer.IsVisible = false;
-        playerBG.ImageSource = "gray_container.png";
+        playerBG.ImageSource = "gray_container.webp";
     }
 }

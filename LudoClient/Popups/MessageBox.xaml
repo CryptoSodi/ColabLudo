@@ -4,7 +4,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView"
              xmlns:popup="clr-namespace:LudoClient.Popups"
              x:Class="LudoClient.Popups.MessageBox"
-             ImageSource="signin_inner_bg.png">
+             ImageSource="signin_inner_bg.webp">
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar x:Name="Title" Grid.Row="1" Grid.Column="1" Title="SPIN BONUS" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
@@ -20,14 +20,14 @@
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="BTNClose" />
                     </Grid.GestureRecognizers>
-                    <Image Source="btn_verify_account.png" VerticalOptions="End" HorizontalOptions="Center"/>
+                    <Image Source="btn_verify_account.webp" VerticalOptions="End" HorizontalOptions="Center"/>
                     <Label Text="CLOSE" FontSize="14" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                 </Grid>
                 <Grid VerticalOptions="End" HorizontalOptions="Center">
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="BTNApprove" />
                     </Grid.GestureRecognizers>
-                    <Image Source="btn_red.png" VerticalOptions="End" HorizontalOptions="Center"/>
+                    <Image Source="btn_red.webp" VerticalOptions="End" HorizontalOptions="Center"/>
                     <Label Text="EXIT" FontSize="14" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                 </Grid>
             </StackLayout>

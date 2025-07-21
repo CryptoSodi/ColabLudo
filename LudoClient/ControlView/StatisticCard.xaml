@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.StatisticCard">
     <Grid>
-        <Image Source="played_bg.png"/>
+        <Image Source="played_bg.webp"/>
         <Grid RowDefinitions="1.4*,2*">
             <Label x:Name="TitleBarText" TextColor="Black" FontSize="9" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>
             <Label x:Name="ValueText" Grid.Row="1" Text="0" TextColor="Black" FontSize="14" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"/>

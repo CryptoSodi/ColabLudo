@@ -14,19 +14,19 @@ public partial class DailyBonusCard : ContentView
         switch (state)
         {
             case "Claimed":
-                BGCard.Source = "days_current_bg.png";
+                BGCard.Source = "days_current_bg.webp";
                 BGColor.BackgroundColor = Colors.Green; 
                 break;
             case "InActive":
-                BGCard.Source = "days_current_bg.png";
+                BGCard.Source = "days_current_bg.webp";
                 BGColor.BackgroundColor = Colors.White;
                 break;
             case "Active":
-                BGCard.Source = "days_gold_bg.png";
+                BGCard.Source = "days_gold_bg.webp";
                 BGColor.BackgroundColor = Colors.Goldenrod;
                 break;
             case "Missed":
-                BGCard.Source = "days_gray_bg.png";
+                BGCard.Source = "days_gray_bg.webp";
                 BGColor.BackgroundColor = Colors.Gray;
                 break;
         }

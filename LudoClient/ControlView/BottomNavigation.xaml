@@ -4,10 +4,10 @@
              xmlns:local ="clr-namespace:LudoClient.ControlView"
              x:Class="LudoClient.ControlView.BottomNavigation">
     <Grid BackgroundColor="#33344F33" HorizontalOptions="Fill" VerticalOptions="Fill">
-        <local:Capsule ImageSource="footer.png" VerticalOptions="End" HorizontalOptions="Fill">
+        <local:Capsule ImageSource="footer.webp" VerticalOptions="End" HorizontalOptions="Fill">
             <Grid VerticalOptions="End" HorizontalOptions="Fill" ColumnDefinitions=".3*,1.2*,.6*">
                 <Grid>
-                    <Image Source="btn_back.png" HorizontalOptions="Start" VerticalOptions="Center">
+                    <Image Source="btn_back.webp" HorizontalOptions="Start" VerticalOptions="Center">
                         <Image.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnBackButtonClicked" />
                         </Image.GestureRecognizers>

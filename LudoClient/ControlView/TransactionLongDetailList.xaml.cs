@@ -13,12 +13,12 @@ public partial class TransactionLongDetailList : ContentView
         {
             ExpandSheet.Padding = new Thickness(0, 0, 0, 0);
             ExpandSheet.Margin = new Thickness(0, 0, 0, 0);
-            SheetDirection.Source = "arr_down.png";
+            SheetDirection.Source = "arr_down.webp";
             return;
         }
         else
         {
-            SheetDirection.Source = "arr_up.png";
+            SheetDirection.Source = "arr_up.webp";
             ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
         }
     }

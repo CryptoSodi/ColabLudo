@@ -181,7 +181,7 @@ namespace LudoClient
         }
         private void UpdateButtons(bool isConnected)
         {
-            GoogleLoginPanel.Source = isConnected ? "google_login.png" : "google_login_gray.png";
+            GoogleLoginPanel.Source = isConnected ? "google_login.webp" : "google_login_gray.webp";
         }
         protected override void OnAppearing()
         {

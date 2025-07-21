@@ -56,16 +56,16 @@ public partial class PlayWithFriends : ContentPage
         {
             TabJoin.IsVisible = false;
             TabCreate.IsVisible = true;
-            actionBtn.Source = Skins.CreateBTN; //"btn_create.png";
-            //public static string CreateBTN => $"btn_create{CurrentSkinType}.png";
+            actionBtn.Source = Skins.CreateBTN; //"btn_create.webp";
+            //public static string CreateBTN => $"btn_create{CurrentSkinType}.webp";
             ShowWinAmount.IsVisible = true;
         }
         else
         {
             TabJoin.IsVisible = true;
             TabCreate.IsVisible = false;
-            actionBtn.Source = Skins.JoinBTN; //"btn_join_large.png";
-            //public static string JoinBTN => $"btn_join_large{CurrentSkinType}.png";
+            actionBtn.Source = Skins.JoinBTN; //"btn_join_large.webp";
+            //public static string JoinBTN => $"btn_join_large{CurrentSkinType}.webp";
             ShowWinAmount.IsVisible = false;
         }
     }

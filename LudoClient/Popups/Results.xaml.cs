@@ -11,12 +11,12 @@ public partial class Results : ContentPage
     {
         InitializeComponent();
         /*
-		 * <Image Source="user_main_bg_gold.png" />
-                <Image Source="user_main_bg.png" />
-                <Image Source="gold_border.png" />
-                <Image Source="star_silver.png" />
-                <Image Source="star_gold.png" />
-                <Image Source="ic_chips_spades.png" />
+		 * <Image Source="user_main_bg_gold.webp" />
+                <Image Source="user_main_bg.webp" />
+                <Image Source="gold_border.webp" />
+                <Image Source="star_silver.webp" />
+                <Image Source="star_gold.webp" />
+                <Image Source="ic_chips_spades.webp" />
                 */
 
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("tak");
@@ -26,7 +26,7 @@ public partial class Results : ContentPage
         switch (GameType)
         {
             case "22":
-                //BackGroundImage = "user_main_bg_gold.png" BorderImage = "gold_border.png" StarImage = "star_gold.png" PlayerName = "Tassaduq"
+                //BackGroundImage = "user_main_bg_gold.webp" BorderImage = "gold_border.webp" StarImage = "star_gold.webp" PlayerName = "Tassaduq"
                 player1.init(seats[0].PlayerName, seats[0].PlayerPicture, "+" + (Double.Parse(GameCost) * 2), "1*");
                 player2.init(seats[1].PlayerName, seats[1].PlayerPicture, "+" + (Double.Parse(GameCost) * 2), "2*");
                 player3.init(seats[3].PlayerName, seats[3].PlayerPicture, "-" + GameCost, "3");
@@ -58,7 +58,7 @@ public partial class Results : ContentPage
         switch (tournamentResultDTO.GameType)
         {
             case "22":                
-                //BackGroundImage = "user_main_bg_gold.png" BorderImage = "gold_border.png" StarImage = "star_gold.png" PlayerName = "Tassaduq"
+                //BackGroundImage = "user_main_bg_gold.webp" BorderImage = "gold_border.webp" StarImage = "star_gold.webp" PlayerName = "Tassaduq"
                 player1.init(tournamentResultDTO.Seats[0].PlayerName, tournamentResultDTO.Seats[0].PlayerPicture, "+" + ClientGlobalConstants.NormalizeCoins(tournamentResultDTO.Prize1), "1*");
                 player2.init(tournamentResultDTO.Seats[1].PlayerName, tournamentResultDTO.Seats[1].PlayerPicture, "+" + ClientGlobalConstants.NormalizeCoins(tournamentResultDTO.Prize2), "2*");
                 player3.init(tournamentResultDTO.Seats[2].PlayerName, tournamentResultDTO.Seats[2].PlayerPicture, "-" + ClientGlobalConstants.NormalizeCoins(tournamentResultDTO.Prize3), "3");

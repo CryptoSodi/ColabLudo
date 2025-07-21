@@ -100,28 +100,28 @@ public partial class Game : ContentPage
             // Create RedPlayerSeat
         RedPlayerSeat = new PlayerSeat("red")
         {
-            PlayerBG = "red_container.png",
+            PlayerBG = "red_container.webp",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create GreenPlayerSeat
         GreenPlayerSeat = new PlayerSeat("green")
         {
-            PlayerBG = "green_container.png",
+            PlayerBG = "green_container.webp",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create YellowPlayerSeat
         YellowPlayerSeat = new PlayerSeat("yellow")
         {
-            PlayerBG = "yellow_container.png",
+            PlayerBG = "yellow_container.webp",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
         // Create BluePlayerSeat
         BluePlayerSeat = new PlayerSeat("blue")
         {
-            PlayerBG = "blue_container.png",
+            PlayerBG = "blue_container.webp",
             HorizontalOptions = LayoutOptions.FillAndExpand,
             VerticalOptions = LayoutOptions.End
         };
@@ -361,7 +361,7 @@ public partial class Game : ContentPage
                 }
                 catch (Exception) { }
             //    if (playerColor != color)
-            //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", false, false);
+            //        seat.hideAuto($" {Array.IndexOf(colors, (color, seat)) + 1}", "player.webp", false, false);
             //playerSeat.showAuto(UserInfo.Instance.Name, UserInfo.Instance.PictureUrl, false, false);            
             playerColor = "Red";//This makes sure that the first player on the engine is red to match the same state as on the server
         }
@@ -370,9 +370,9 @@ public partial class Game : ContentPage
             foreach (var (color, seat) in colors)
                 if (playerColor != color)
                     if (gameMode == "Computer")
-                        seat.initAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", "HideAll", true);
+                        seat.initAuto($"Computer {Array.IndexOf(colors, (color, seat)) + 1}", "player.webp", "HideAll", true);
                     else
-                        seat.initAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.png", "ShowAuto", false);
+                        seat.initAuto($"Player {Array.IndexOf(colors, (color, seat)) + 1}", "player.webp", "ShowAuto", false);
 
             GetPlayerSeat(playerColor)?.initAuto(UserInfo.Instance.player.Name, UserInfo.Instance.player.PictureUrl, "ShowAuto", false);
         }
@@ -414,8 +414,8 @@ public partial class Game : ContentPage
 
         // Refresh preferences in case they have changed
 
-        SoundSwitch.Source = Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
-        VibrationSwitch.Source = Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        SoundSwitch.Source = Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.webp" : "switch_btn_off.webp";
+        VibrationSwitch.Source = Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.webp" : "switch_btn_off.webp";
 
         //The Display to show selection of single or double token move
         TokenSelector.IsVisible = true;
@@ -785,11 +785,11 @@ public partial class Game : ContentPage
     {
         switch (colorLetter)
         {
-            case "r": return Constants.Skins.RedToken.Replace(".png", suffics + ".png");
-            case "g": return Constants.Skins.GreenToken.Replace(".png", suffics + ".png");
-            case "y": return Constants.Skins.YellowToken.Replace(".png", suffics + ".png");
-            case "b": return Constants.Skins.BlueToken.Replace(".png", suffics + ".png");
-            default: return "default.png"; // Fallback in case no matching color is found.
+            case "r": return Constants.Skins.RedToken.Replace(".webp", suffics + ".webp");
+            case "g": return Constants.Skins.GreenToken.Replace(".webp", suffics + ".webp");
+            case "y": return Constants.Skins.YellowToken.Replace(".webp", suffics + ".webp");
+            case "b": return Constants.Skins.BlueToken.Replace(".webp", suffics + ".webp");
+            default: return "default.webp"; // Fallback in case no matching color is found.
         }
     }
     public List<Piece> GetAllPieces()
@@ -1137,13 +1137,13 @@ public partial class Game : ContentPage
     private void SoundSwitch_Tapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        SoundSwitch.Source = !Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        SoundSwitch.Source = !Preferences.Default.Get("IsSoundEnabled", true) ? "switch_btn_on.webp" : "switch_btn_off.webp";
         Preferences.Default.Set("IsSoundEnabled", !Preferences.Default.Get("IsSoundEnabled", true));
     }
     private void VibrationSwitch_Tapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        VibrationSwitch.Source = !Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.png" : "switch_btn_off.png";
+        VibrationSwitch.Source = !Preferences.Default.Get("IsVibrationEnabled", true) ? "switch_btn_on.webp" : "switch_btn_off.webp";
         Preferences.Default.Set("IsVibrationEnabled", !Preferences.Default.Get("IsVibrationEnabled", true));
     }
     //CHAT ENGINE

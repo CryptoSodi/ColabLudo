@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"
         RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".01*,1*,.01*">
-        <local:Capsule Grid.Column="1" x:Name="grid_bg" ImageSource="popup_bg0.png" Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center">
+        <local:Capsule Grid.Column="1" x:Name="grid_bg" ImageSource="popup_bg0.webp" Grid.Row="1" VerticalOptions="Start" HorizontalOptions="Center">
             <Grid Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Center" RowDefinitions=".8*,.2*,4.5*,1.5*,.7*" ColumnDefinitions=".1*,1*,.1*">
                 <local:TitleBar Grid.Column="1" x:Name="SettingTitleView" Margin="0,-18,0,0" VerticalOptions="Start" HorizontalOptions="Center"/>
                 <BoxView Grid.Row="2" Grid.Column="1" CornerRadius="10,10,10,10" BackgroundColor="#2C40AA" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
@@ -14,7 +14,7 @@
                 </StackLayout>
                 <Grid Grid.Row="3" Grid.Column="1" Margin="0,16,0,16">
                     <!-- Image -->
-                    <Image Source="btn_green.png" VerticalOptions="Center" HorizontalOptions="Center"/>
+                    <Image Source="btn_green.webp" VerticalOptions="Center" HorizontalOptions="Center"/>
                     <!-- Text -->
                     <Label Text="Yes" VerticalOptions="Center" HorizontalOptions="Center" VerticalTextAlignment="Center" HorizontalTextAlignment="Center"  FontSize="Small" TextColor="White"/>
                 </Grid>

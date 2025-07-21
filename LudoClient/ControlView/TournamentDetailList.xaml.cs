@@ -115,12 +115,12 @@ namespace LudoClient.ControlView
             {
                 ExpandSheet.Padding = new Thickness(0, 0, 0, 0);
                 ExpandSheet.Margin = new Thickness(0, 0, 0, 0);
-                SheetDirection.Source = "arr_down.png";
+                SheetDirection.Source = "arr_down.webp";
             }
             else
             {
                 ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
-                SheetDirection.Source = "arr_up.png";
+                SheetDirection.Source = "arr_up.webp";
             }
         }
         bool joining = false;
