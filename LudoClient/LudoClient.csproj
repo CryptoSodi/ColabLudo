@@ -41,94 +41,99 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
-	  <AndroidPackageFormat>aab</AndroidPackageFormat>
-	  <AndroidUseAapt2>True</AndroidUseAapt2>
-	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android|AnyCPU'">
-	  <AndroidPackageFormat>aab</AndroidPackageFormat>
-	  <AndroidUseAapt2>True</AndroidUseAapt2>
-	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
-	  <AndroidKeyStore>False</AndroidKeyStore>
-	  <AndroidLinkTool>r8</AndroidLinkTool>
+		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<AndroidKeyStore>False</AndroidKeyStore>
+		<DebugSymbols>False</DebugSymbols>
+		<RunAOTCompilation>True</RunAOTCompilation>
+		<PublishTrimmed>True</PublishTrimmed>
+		<AndroidLinkTool>r8</AndroidLinkTool>
+		<EnableLLVM>False</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android35.0|AnyCPU'">
-	  <AndroidUseAapt2>True</AndroidUseAapt2>
-	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-	  <AndroidPackageFormat>apk</AndroidPackageFormat>
-	  <AndroidKeyStore>True</AndroidKeyStore>
-	  <AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
-	  <AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
-	  <AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
+		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<AndroidKeyStore>True</AndroidKeyStore>
+		<AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
+		<AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
+		<AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-android35.0|AnyCPU'">
-	  <DebugSymbols>False</DebugSymbols>
-	  <AndroidKeyStore>True</AndroidKeyStore>
-	  <AndroidSigningKeyStore>D:\ludokey.keystore</AndroidSigningKeyStore>
-	  <AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
-	  <AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
-	  <AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
-	  <AndroidPackageFormat>apk</AndroidPackageFormat>
+		<DebugSymbols>False</DebugSymbols>
+		<AndroidKeyStore>True</AndroidKeyStore>
+		<AndroidSigningKeyStore>D:\ludokey.keystore</AndroidSigningKeyStore>
+		<AndroidSigningStorePass>LudoNFTCryptoSodi009</AndroidSigningStorePass>
+		<AndroidSigningKeyAlias>CryptoSodi</AndroidSigningKeyAlias>
+		<AndroidSigningKeyPass>LudoNFTCryptoSodi009</AndroidSigningKeyPass>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-android|AnyCPU'">
-	  <AndroidUseAapt2>True</AndroidUseAapt2>
-	  <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-	  <AndroidPackageFormat>aab</AndroidPackageFormat>
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
-	  <AndroidKeyStore>False</AndroidKeyStore>
+		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
+		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<AndroidKeyStore>False</AndroidKeyStore>
+		<EnableLLVM>False</EnableLLVM>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-ios|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+		<ApplicationVersion>3</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo City</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-ios|AnyCPU'">
-	  <ApplicationVersion>3</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo City</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocity</ApplicationId>
+		<ApplicationVersion>3</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0.3</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo City</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocity</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-maccatalyst|AnyCPU'">
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net9.0-windows10.0.19041.0|AnyCPU'">
-	  <ApplicationVersion>13</ApplicationVersion>
-	  <ApplicationDisplayVersion>1.1.3</ApplicationDisplayVersion>
-	  <ApplicationTitle>Ludo Cities</ApplicationTitle>
-	  <ApplicationId>com.ludoengine.ludocities</ApplicationId>
+		<ApplicationVersion>14</ApplicationVersion>
+		<ApplicationDisplayVersion>1.1.4</ApplicationDisplayVersion>
+		<ApplicationTitle>Ludo Cities</ApplicationTitle>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -228,514 +233,514 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AndroidResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <AndroidResource Remove="Resources\Images\WaitingRoom\**" />
-	  <Compile Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <Compile Remove="Resources\Images\WaitingRoom\**" />
-	  <EmbeddedResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <EmbeddedResource Remove="Resources\Images\WaitingRoom\**" />
-	  <MauiCss Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <MauiCss Remove="Resources\Images\WaitingRoom\**" />
-	  <MauiImage Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <MauiImage Remove="Resources\Images\WaitingRoom\**" />
-	  <MauiXaml Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <MauiXaml Remove="Resources\Images\WaitingRoom\**" />
-	  <None Remove="Resources\Images\Components\PlayerBoxLong\**" />
-	  <None Remove="Resources\Images\WaitingRoom\**" />
+		<AndroidResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<AndroidResource Remove="Resources\Images\WaitingRoom\**" />
+		<Compile Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<Compile Remove="Resources\Images\WaitingRoom\**" />
+		<EmbeddedResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<EmbeddedResource Remove="Resources\Images\WaitingRoom\**" />
+		<MauiCss Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<MauiCss Remove="Resources\Images\WaitingRoom\**" />
+		<MauiImage Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<MauiImage Remove="Resources\Images\WaitingRoom\**" />
+		<MauiXaml Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<MauiXaml Remove="Resources\Images\WaitingRoom\**" />
+		<None Remove="Resources\Images\Components\PlayerBoxLong\**" />
+		<None Remove="Resources\Images\WaitingRoom\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Resources\AppIcon\appiconfg.svg" />
-	  <None Remove="Resources\Images\AddCash\addcash_popup_bg.webp" />
-	  <None Remove="Resources\Images\AddCash\addmoney_bg.png" />
-	  <None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.webp" />
-	  <None Remove="Resources\Images\AddCash\after_add_cash_bg.webp" />
-	  <None Remove="Resources\Images\AddCash\after_add_cash_bg_h.png" />
-	  <None Remove="Resources\Images\AddCash\after_add_cash_bg_hor.webp" />
-	  <None Remove="Resources\Images\AddCash\btn_blue.webp" />
-	  <None Remove="Resources\Images\AddCash\btn_orange.webp" />
-	  <None Remove="Resources\Images\AddCash\btn_pink.webp" />
-	  <None Remove="Resources\Images\AddCash\ic_coupon.webp" />
-	  <None Remove="Resources\Images\AddCash\ic_redeem.webp" />
-	  <None Remove="Resources\Images\AddCash\ic_rs_input.webp" />
-	  <None Remove="Resources\Images\background.png" />
-	  <None Remove="Resources\Images\bg_sharesharedassets2.assets.png" />
-	  <None Remove="Resources\Images\btn_sharesharedassets2.assets.png" />
-	  <None Remove="Resources\Images\btn_whatsappsharedassets2.assets.png" />
-	  <None Remove="Resources\Images\cashgame.png" />
-	  <None Remove="Resources\Images\ChatBox\btn_emoji.webp" />
-	  <None Remove="Resources\Images\ChatBox\btn_send.webp" />
-	  <None Remove="Resources\Images\ChatBox\chatbar_image.webp" />
-	  <None Remove="Resources\Images\ChatBox\chatcardb.webp" />
-	  <None Remove="Resources\Images\ChatBox\chatcardg.webp" />
-	  <None Remove="Resources\Images\ChatBox\chatcardr.webp" />
-	  <None Remove="Resources\Images\ChatBox\chatcardy.webp" />
-	  <None Remove="Resources\Images\ChatBox\friendlong.webp" />
-	  <None Remove="Resources\Images\coin.png" />
-	  <None Remove="Resources\Images\Common\btn_green.webp" />
-	  <None Remove="Resources\Images\Common\coin.webp" />
-	  <None Remove="Resources\Images\Common\ic_chips.webp" />
-	  <None Remove="Resources\Images\Common\ic_chips_spades.webp" />
-	  <None Remove="Resources\Images\Common\ic_coin.webp" />
-	  <None Remove="Resources\Images\Common\player.webp" />
-	  <None Remove="Resources\Images\Common\popup_bg.webp" />
-	  <None Remove="Resources\Images\Common\popup_bg0.webp" />
-	  <None Remove="Resources\Images\Common\popup_bg_long.webp" />
-	  <None Remove="Resources\Images\Common\support_popup_bg.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\back.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\btn_back.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\btn_music.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\btn_music_off.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\btn_sound.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\btn_sound_off.webp" />
-	  <None Remove="Resources\Images\Components\Bottom\footer.webp" />
-	  <None Remove="Resources\Images\Components\contain_gray_bg.png" />
-	  <None Remove="Resources\Images\Components\DailyBonusCard\days_current_bg.webp" />
-	  <None Remove="Resources\Images\Components\DailyBonusCard\days_gold_bg.webp" />
-	  <None Remove="Resources\Images\Components\DailyBonusCard\days_gray_bg.webp" />
-	  <None Remove="Resources\Images\Components\DailyBonusCard\days_transparent_bg.webp" />
-	  <None Remove="Resources\Images\Components\Header\btn_help.webp" />
-	  <None Remove="Resources\Images\Components\Header\hdrbgsharedassets.webp" />
-	  <None Remove="Resources\Images\Components\Header\ic_settings.webp" />
-	  <None Remove="Resources\Images\Components\ImageSwitch\line_bg.webp" />
-	  <None Remove="Resources\Images\Components\PlayerBox\ic_camera.webp" />
-	  <None Remove="Resources\Images\Components\PlayerBox\invite_user.webp" />
-	  <None Remove="Resources\Images\Components\PlayerBox\profile_user.webp" />
-	  <None Remove="Resources\Images\Components\PlayerBox\user.webp" />
-	  <None Remove="Resources\Images\Components\ShareBox\bg_share.webp" />
-	  <None Remove="Resources\Images\Components\ShareBox\btn_share_link.webp" />
-	  <None Remove="Resources\Images\Components\ShareBox\btn_whatsapp.webp" />
-	  <None Remove="Resources\Images\Components\StatisticCard\played_bg.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\arr_down.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\arr_up.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\contain_gray_bg.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\detailgold.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\detailwhite.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\expand_card.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\friendlong.png" />
-	  <None Remove="Resources\Images\Components\Tablets\line_bg_orange.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\number_0.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\number_1.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\number_2.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\number_3.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\total_available_bal_bg.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\tra_green.webp" />
-	  <None Remove="Resources\Images\Components\Tablets\tra_red.webp" />
-	  <None Remove="Resources\Images\Components\Title\popup_title.webp" />
-	  <None Remove="Resources\Images\Components\Toggle\switch_btn_off.webp" />
-	  <None Remove="Resources\Images\Components\Toggle\switch_btn_on.webp" />
-	  <None Remove="Resources\Images\DailyBonus\daily_bonus.webp" />
-	  <None Remove="Resources\Images\DailyBonus\daily_bonus_gray.webp" />
-	  <None Remove="Resources\Images\DailyBonus\days_main_bg.webp" />
-	  <None Remove="Resources\Images\DashBoard\cashgame.webp" />
-	  <None Remove="Resources\Images\DashBoard\cashgame_gray.webp" />
-	  <None Remove="Resources\Images\DashBoard\logo.webp" />
-	  <None Remove="Resources\Images\DashBoard\offline.webp" />
-	  <None Remove="Resources\Images\DashBoard\playwithfriends.webp" />
-	  <None Remove="Resources\Images\DashBoard\playwithfriends_gray.webp" />
-	  <None Remove="Resources\Images\DashBoard\practice.webp" />
-	  <None Remove="Resources\Images\DashBoard\practice_gray.webp" />
-	  <None Remove="Resources\Images\DashBoard\splashlogo.webp" />
-	  <None Remove="Resources\Images\DashBoard\tournament.webp" />
-	  <None Remove="Resources\Images\DashBoard\tournament_gray.webp" />
-	  <None Remove="Resources\Images\Flags\india.webp" />
-	  <None Remove="Resources\Images\Flags\pakistan.webp" />
-	  <None Remove="Resources\Images\GameRoom\chips_entry_bg.webp" />
-	  <None Remove="Resources\Images\GameRoom\player2_00.png" />
-	  <None Remove="Resources\Images\GameRoom\player3_00.png" />
-	  <None Remove="Resources\Images\GameRoom\player4_00.png" />
-	  <None Remove="Resources\Images\GameRoom\thunder_2.gif" />
-	  <None Remove="Resources\Images\GameRoom\thunder_2.png" />
-	  <None Remove="Resources\Images\GameRoom\thunder_3.gif" />
-	  <None Remove="Resources\Images\GameRoom\thunder_3.png" />
-	  <None Remove="Resources\Images\GameRoom\thunder_4.gif" />
-	  <None Remove="Resources\Images\GameRoom\thunder_4.png" />
-	  <None Remove="Resources\Images\GameRoom\vs.webp" />
-	  <None Remove="Resources\Images\GameRoom\vs_bg.webp" />
-	  <None Remove="Resources\Images\GameSettings\bet_prize_bg.webp" />
-	  <None Remove="Resources\Images\GameSettings\blue_token.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_create.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_join.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_join_large.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_minus-large.png" />
-	  <None Remove="Resources\Images\GameSettings\btn_minus_large.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_orange.png" />
-	  <None Remove="Resources\Images\GameSettings\btn_play.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_players_green.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_players_orange.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_play_large.webp" />
-	  <None Remove="Resources\Images\GameSettings\btn_plus_large.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_blue.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_blue_select.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_green.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_green_select.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_red.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_red_select.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_yellow.webp" />
-	  <None Remove="Resources\Images\GameSettings\checkbox_yellow_select.webp" />
-	  <None Remove="Resources\Images\GameSettings\controlbox.webp" />
-	  <None Remove="Resources\Images\GameSettings\controlbox_small.webp" />
-	  <None Remove="Resources\Images\GameSettings\dash_choose_bet.webp" />
-	  <None Remove="Resources\Images\GameSettings\dash_players.webp" />
-	  <None Remove="Resources\Images\GameSettings\dash_select_color.webp" />
-	  <None Remove="Resources\Images\GameSettings\dash_select_players.webp" />
-	  <None Remove="Resources\Images\GameSettings\dash_select_room.webp" />
-	  <None Remove="Resources\Images\GameSettings\game_setting_bg.webp" />
-	  <None Remove="Resources\Images\GameSettings\green_token.webp" />
-	  <None Remove="Resources\Images\GameSettings\red_token.webp" />
-	  <None Remove="Resources\Images\GameSettings\round_cashgames.webp" />
-	  <None Remove="Resources\Images\GameSettings\round_friends.webp" />
-	  <None Remove="Resources\Images\GameSettings\round_offline.webp" />
-	  <None Remove="Resources\Images\GameSettings\round_practice.webp" />
-	  <None Remove="Resources\Images\GameSettings\round_tournaments.webp" />
-	  <None Remove="Resources\Images\GameSettings\tournament_btn.webp" />
-	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg1.webp" />
-	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg2.png" />
-	  <None Remove="Resources\Images\GameSettings\tournament_btn_bg3.webp" />
-	  <None Remove="Resources\Images\GameSettings\yellow_token.webp" />
-	  <None Remove="Resources\Images\Game\blue_container.webp" />
-	  <None Remove="Resources\Images\Game\blue_token.png" />
-	  <None Remove="Resources\Images\Game\blue_token_large.webp" />
-	  <None Remove="Resources\Images\Game\blue_token_large_2.webp" />
-	  <None Remove="Resources\Images\Game\blue_token_large_3.webp" />
-	  <None Remove="Resources\Images\Game\blue_token_large_4.webp" />
-	  <None Remove="Resources\Images\Game\blue_token_round.png" />
-	  <None Remove="Resources\Images\Game\blue_user.webp" />
-	  <None Remove="Resources\Images\Game\board_game.png" />
-	  <None Remove="Resources\Images\Game\board_game_1.jpg" />
-	  <None Remove="Resources\Images\Game\board_game_2.png" />
-	  <None Remove="Resources\Images\Game\bonus_token_round.webp" />
-	  <None Remove="Resources\Images\Game\dice_0.webp" />
-	  <None Remove="Resources\Images\Game\dice_00.webp" />
-	  <None Remove="Resources\Images\Game\dice_01.webp" />
-	  <None Remove="Resources\Images\Game\dice_03.webp" />
-	  <None Remove="Resources\Images\Game\dice_04.webp" />
-	  <None Remove="Resources\Images\Game\dice_06.webp" />
-	  <None Remove="Resources\Images\Game\dice_08.webp" />
-	  <None Remove="Resources\Images\Game\dice_1.webp" />
-	  <None Remove="Resources\Images\Game\dice_10.webp" />
-	  <None Remove="Resources\Images\Game\dice_11.webp" />
-	  <None Remove="Resources\Images\Game\dice_2.webp" />
-	  <None Remove="Resources\Images\Game\dice_3.webp" />
-	  <None Remove="Resources\Images\Game\dice_4.webp" />
-	  <None Remove="Resources\Images\Game\dice_5.webp" />
-	  <None Remove="Resources\Images\Game\dice_6.webp" />
-	  <None Remove="Resources\Images\Game\dice_a.gif" />
-	  <None Remove="Resources\Images\Game\gray_container.webp" />
-	  <None Remove="Resources\Images\Game\green_container.webp" />
-	  <None Remove="Resources\Images\Game\green_token.png" />
-	  <None Remove="Resources\Images\Game\green_token_large.webp" />
-	  <None Remove="Resources\Images\Game\green_token_large_2.webp" />
-	  <None Remove="Resources\Images\Game\green_token_large_3.webp" />
-	  <None Remove="Resources\Images\Game\green_token_large_4.webp" />
-	  <None Remove="Resources\Images\Game\green_token_round.png" />
-	  <None Remove="Resources\Images\Game\green_user.webp" />
-	  <None Remove="Resources\Images\Game\ludoboard.webp" />
-	  <None Remove="Resources\Images\Game\ludolockhome.webp" />
-	  <None Remove="Resources\Images\Game\pawnindicator.webp" />
-	  <None Remove="Resources\Images\Game\pawnindicatortarget.webp" />
-	  <None Remove="Resources\Images\Game\red_container.webp" />
-	  <None Remove="Resources\Images\Game\red_token.png" />
-	  <None Remove="Resources\Images\Game\red_token_large.webp" />
-	  <None Remove="Resources\Images\Game\red_token_large_2.webp" />
-	  <None Remove="Resources\Images\Game\red_token_large_3.webp" />
-	  <None Remove="Resources\Images\Game\red_token_large_4.webp" />
-	  <None Remove="Resources\Images\Game\red_token_round.png" />
-	  <None Remove="Resources\Images\Game\red_user.webp" />
-	  <None Remove="Resources\Images\Game\star_token_round.webp" />
-	  <None Remove="Resources\Images\Game\token_round.webp" />
-	  <None Remove="Resources\Images\Game\yellow_container.webp" />
-	  <None Remove="Resources\Images\Game\yellow_token.png" />
-	  <None Remove="Resources\Images\Game\yellow_token_large.webp" />
-	  <None Remove="Resources\Images\Game\yellow_token_large_2.webp" />
-	  <None Remove="Resources\Images\Game\yellow_token_large_3.webp" />
-	  <None Remove="Resources\Images\Game\yellow_token_large_4.webp" />
-	  <None Remove="Resources\Images\Game\yellow_token_round.png" />
-	  <None Remove="Resources\Images\Game\yellow_user.webp" />
-	  <None Remove="Resources\Images\Game\yelow_container.png" />
-	  <None Remove="Resources\Images\hdrbgsharedassets.png" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_callnow_disable.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_faq.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_faq_disabled.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_livechat.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_livechat_disabled.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_supportmail.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\ic_supportmail_disabled.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\input_inner_pancard.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\signin_inner_bg.webp" />
-	  <None Remove="Resources\Images\HelpDeskPage\verification_status_main_bg.webp" />
-	  <None Remove="Resources\Images\invite_user_sharedassets2.assets.png" />
-	  <None Remove="Resources\Images\Leaderboard\title_leaderboard.webp" />
-	  <None Remove="Resources\Images\offline.png" />
-	  <None Remove="Resources\Images\Player.png" />
-	  <None Remove="Resources\Images\playwithfriends.png" />
-	  <None Remove="Resources\Images\practice.png" />
-	  <None Remove="Resources\Images\ProfilePage\btn_addcash.webp" />
-	  <None Remove="Resources\Images\ProfilePage\btn_edit.webp" />
-	  <None Remove="Resources\Images\ProfilePage\btn_info.webp" />
-	  <None Remove="Resources\Images\ProfilePage\btn_plus.webp" />
-	  <None Remove="Resources\Images\ProfilePage\ic_address.webp" />
-	  <None Remove="Resources\Images\ProfilePage\ic_call.webp" />
-	  <None Remove="Resources\Images\ProfilePage\ic_camera.png" />
-	  <None Remove="Resources\Images\ProfilePage\ic_email.webp" />
-	  <None Remove="Resources\Images\ProfilePage\lbl_unverified.webp" />
-	  <None Remove="Resources\Images\ProfilePage\lbl_verified.webp" />
-	  <None Remove="Resources\Images\ProfilePage\profile_info_bg.webp" />
-	  <None Remove="Resources\Images\ProfilePage\statistics_info.webp" />
-	  <None Remove="Resources\Images\results\btn_exit.webp" />
-	  <None Remove="Resources\Images\results\btn_playagain.webp" />
-	  <None Remove="Resources\Images\results\gold_border.webp" />
-	  <None Remove="Resources\Images\results\ic_chips.png" />
-	  <None Remove="Resources\Images\results\ic_chips_spades.png" />
-	  <None Remove="Resources\Images\results\result_celibration.gif" />
-	  <None Remove="Resources\Images\results\silver_border.webp" />
-	  <None Remove="Resources\Images\results\spinner_bk_red_glow.webp" />
-	  <None Remove="Resources\Images\results\star_gold.webp" />
-	  <None Remove="Resources\Images\results\star_silver.webp" />
-	  <None Remove="Resources\Images\results\strips_big.webp" />
-	  <None Remove="Resources\Images\results\ttl_results.webp" />
-	  <None Remove="Resources\Images\results\user_main_bg.webp" />
-	  <None Remove="Resources\Images\results\user_main_bg_gold.webp" />
-	  <None Remove="Resources\Images\Support\help.webp" />
-	  <None Remove="Resources\Images\Support\privacy.webp" />
-	  <None Remove="Resources\Images\Support\support.webp" />
-	  <None Remove="Resources\Images\Support\terms.webp" />
-	  <None Remove="Resources\Images\Tabs\ic_computer.webp" />
-	  <None Remove="Resources\Images\Tabs\ic_local.webp" />
-	  <None Remove="Resources\Images\Tabs\radio_off.webp" />
-	  <None Remove="Resources\Images\Tabs\radio_on.webp" />
-	  <None Remove="Resources\Images\Tabs\tab_active.webp" />
-	  <None Remove="Resources\Images\Tabs\tab_active_curve.webp" />
-	  <None Remove="Resources\Images\Tabs\tab_border.webp" />
-	  <None Remove="Resources\Images\Tabs\tab_normal.webp" />
-	  <None Remove="Resources\Images\Tabs\tab_normal_curve.webp" />
-	  <None Remove="Resources\Images\Titles\title_friends.webp" />
-	  <None Remove="Resources\Images\tournament.png" />
-	  <None Remove="Resources\Images\Tournament\team_teamwork.webp" />
-	  <None Remove="Resources\Images\Tournament\time_gyro.webp" />
-	  <None Remove="Resources\Images\Tournament\tournament_bg.webp" />
-	  <None Remove="Resources\Images\user_sharedassets2.assets.png" />
-	  <None Remove="Resources\Images\Verification\ic_right_arr.webp" />
-	  <None Remove="Resources\Images\Verification\ic_verify_account.webp" />
-	  <None Remove="Resources\Images\Verification\ic_verify_bank.webp" />
-	  <None Remove="Resources\Images\Verification\ic_verify_done.webp" />
-	  <None Remove="Resources\Images\Verification\ic_verify_mob.webp" />
-	  <None Remove="Resources\Images\Verification\ic_verify_pancard.webp" />
-	  <None Remove="Resources\Images\Verification\verify_info_bg.webp" />
-	  <None Remove="Resources\Images\vs_bgsharedassets2.assets.png" />
-	  <None Remove="Resources\Images\vs_sharedassets2.assets.png" />
-	  <None Remove="Resources\Images\Wallet\btn_outer.webp" />
-	  <None Remove="Resources\Images\Wallet\btn_verify_account.webp" />
-	  <None Remove="Resources\Images\Wallet\ic_total_wallet.webp" />
-	  <None Remove="Resources\Images\Wallet\ic_yourwinnings.webp" />
-	  <None Remove="Resources\Images\Wallet\info_1.webp" />
-	  <None Remove="Resources\Images\Wallet\info_2.webp" />
-	  <None Remove="Resources\Images\Wallet\info_3.webp" />
-	  <None Remove="Resources\Images\Wallet\info_4.webp" />
-	  <None Remove="Resources\Images\Wallet\line_bg_orange.png" />
-	  <None Remove="Resources\Images\Wallet\reffer_earn.webp" />
-	  <None Remove="Resources\Images\Wallet\subinfo_1.webp" />
-	  <None Remove="Resources\Images\Wallet\subinfo_2.webp" />
-	  <None Remove="Resources\Images\Wallet\subinfo_3.webp" />
-	  <None Remove="Resources\Images\Wallet\subinfo_4.webp" />
-	  <None Remove="Resources\Images\Wallet\title_wallet.webp" />
-	  <None Remove="Resources\Images\Wallet\total_ava_bal_bg.webp" />
-	  <None Remove="Resources\Images\Wallet\verify_acc_bg.webp" />
-	  <None Remove="Resources\Images\Wallet\wallet_bg.webp" />
-	  <None Remove="Resources\Splash\splash.svg" />
+		<None Remove="Resources\AppIcon\appiconfg.svg" />
+		<None Remove="Resources\Images\AddCash\addcash_popup_bg.webp" />
+		<None Remove="Resources\Images\AddCash\addmoney_bg.png" />
+		<None Remove="Resources\Images\AddCash\add_cash_popup_inner_bg.webp" />
+		<None Remove="Resources\Images\AddCash\after_add_cash_bg.webp" />
+		<None Remove="Resources\Images\AddCash\after_add_cash_bg_h.png" />
+		<None Remove="Resources\Images\AddCash\after_add_cash_bg_hor.webp" />
+		<None Remove="Resources\Images\AddCash\btn_blue.webp" />
+		<None Remove="Resources\Images\AddCash\btn_orange.webp" />
+		<None Remove="Resources\Images\AddCash\btn_pink.webp" />
+		<None Remove="Resources\Images\AddCash\ic_coupon.webp" />
+		<None Remove="Resources\Images\AddCash\ic_redeem.webp" />
+		<None Remove="Resources\Images\AddCash\ic_rs_input.webp" />
+		<None Remove="Resources\Images\background.png" />
+		<None Remove="Resources\Images\bg_sharesharedassets2.assets.png" />
+		<None Remove="Resources\Images\btn_sharesharedassets2.assets.png" />
+		<None Remove="Resources\Images\btn_whatsappsharedassets2.assets.png" />
+		<None Remove="Resources\Images\cashgame.png" />
+		<None Remove="Resources\Images\ChatBox\btn_emoji.webp" />
+		<None Remove="Resources\Images\ChatBox\btn_send.webp" />
+		<None Remove="Resources\Images\ChatBox\chatbar_image.webp" />
+		<None Remove="Resources\Images\ChatBox\chatcardb.webp" />
+		<None Remove="Resources\Images\ChatBox\chatcardg.webp" />
+		<None Remove="Resources\Images\ChatBox\chatcardr.webp" />
+		<None Remove="Resources\Images\ChatBox\chatcardy.webp" />
+		<None Remove="Resources\Images\ChatBox\friendlong.webp" />
+		<None Remove="Resources\Images\coin.png" />
+		<None Remove="Resources\Images\Common\btn_green.webp" />
+		<None Remove="Resources\Images\Common\coin.webp" />
+		<None Remove="Resources\Images\Common\ic_chips.webp" />
+		<None Remove="Resources\Images\Common\ic_chips_spades.webp" />
+		<None Remove="Resources\Images\Common\ic_coin.webp" />
+		<None Remove="Resources\Images\Common\player.webp" />
+		<None Remove="Resources\Images\Common\popup_bg.webp" />
+		<None Remove="Resources\Images\Common\popup_bg0.webp" />
+		<None Remove="Resources\Images\Common\popup_bg_long.webp" />
+		<None Remove="Resources\Images\Common\support_popup_bg.webp" />
+		<None Remove="Resources\Images\Components\Bottom\back.webp" />
+		<None Remove="Resources\Images\Components\Bottom\btn_back.webp" />
+		<None Remove="Resources\Images\Components\Bottom\btn_music.webp" />
+		<None Remove="Resources\Images\Components\Bottom\btn_music_off.webp" />
+		<None Remove="Resources\Images\Components\Bottom\btn_sound.webp" />
+		<None Remove="Resources\Images\Components\Bottom\btn_sound_off.webp" />
+		<None Remove="Resources\Images\Components\Bottom\footer.webp" />
+		<None Remove="Resources\Images\Components\contain_gray_bg.png" />
+		<None Remove="Resources\Images\Components\DailyBonusCard\days_current_bg.webp" />
+		<None Remove="Resources\Images\Components\DailyBonusCard\days_gold_bg.webp" />
+		<None Remove="Resources\Images\Components\DailyBonusCard\days_gray_bg.webp" />
+		<None Remove="Resources\Images\Components\DailyBonusCard\days_transparent_bg.webp" />
+		<None Remove="Resources\Images\Components\Header\btn_help.webp" />
+		<None Remove="Resources\Images\Components\Header\hdrbgsharedassets.webp" />
+		<None Remove="Resources\Images\Components\Header\ic_settings.webp" />
+		<None Remove="Resources\Images\Components\ImageSwitch\line_bg.webp" />
+		<None Remove="Resources\Images\Components\PlayerBox\ic_camera.webp" />
+		<None Remove="Resources\Images\Components\PlayerBox\invite_user.webp" />
+		<None Remove="Resources\Images\Components\PlayerBox\profile_user.webp" />
+		<None Remove="Resources\Images\Components\PlayerBox\user.webp" />
+		<None Remove="Resources\Images\Components\ShareBox\bg_share.webp" />
+		<None Remove="Resources\Images\Components\ShareBox\btn_share_link.webp" />
+		<None Remove="Resources\Images\Components\ShareBox\btn_whatsapp.webp" />
+		<None Remove="Resources\Images\Components\StatisticCard\played_bg.webp" />
+		<None Remove="Resources\Images\Components\Tablets\arr_down.webp" />
+		<None Remove="Resources\Images\Components\Tablets\arr_up.webp" />
+		<None Remove="Resources\Images\Components\Tablets\contain_gray_bg.webp" />
+		<None Remove="Resources\Images\Components\Tablets\detailgold.webp" />
+		<None Remove="Resources\Images\Components\Tablets\detailwhite.webp" />
+		<None Remove="Resources\Images\Components\Tablets\expand_card.webp" />
+		<None Remove="Resources\Images\Components\Tablets\friendlong.png" />
+		<None Remove="Resources\Images\Components\Tablets\line_bg_orange.webp" />
+		<None Remove="Resources\Images\Components\Tablets\number_0.webp" />
+		<None Remove="Resources\Images\Components\Tablets\number_1.webp" />
+		<None Remove="Resources\Images\Components\Tablets\number_2.webp" />
+		<None Remove="Resources\Images\Components\Tablets\number_3.webp" />
+		<None Remove="Resources\Images\Components\Tablets\total_available_bal_bg.webp" />
+		<None Remove="Resources\Images\Components\Tablets\tra_green.webp" />
+		<None Remove="Resources\Images\Components\Tablets\tra_red.webp" />
+		<None Remove="Resources\Images\Components\Title\popup_title.webp" />
+		<None Remove="Resources\Images\Components\Toggle\switch_btn_off.webp" />
+		<None Remove="Resources\Images\Components\Toggle\switch_btn_on.webp" />
+		<None Remove="Resources\Images\DailyBonus\daily_bonus.webp" />
+		<None Remove="Resources\Images\DailyBonus\daily_bonus_gray.webp" />
+		<None Remove="Resources\Images\DailyBonus\days_main_bg.webp" />
+		<None Remove="Resources\Images\DashBoard\cashgame.webp" />
+		<None Remove="Resources\Images\DashBoard\cashgame_gray.webp" />
+		<None Remove="Resources\Images\DashBoard\logo.webp" />
+		<None Remove="Resources\Images\DashBoard\offline.webp" />
+		<None Remove="Resources\Images\DashBoard\playwithfriends.webp" />
+		<None Remove="Resources\Images\DashBoard\playwithfriends_gray.webp" />
+		<None Remove="Resources\Images\DashBoard\practice.webp" />
+		<None Remove="Resources\Images\DashBoard\practice_gray.webp" />
+		<None Remove="Resources\Images\DashBoard\splashlogo.webp" />
+		<None Remove="Resources\Images\DashBoard\tournament.webp" />
+		<None Remove="Resources\Images\DashBoard\tournament_gray.webp" />
+		<None Remove="Resources\Images\Flags\india.webp" />
+		<None Remove="Resources\Images\Flags\pakistan.webp" />
+		<None Remove="Resources\Images\GameRoom\chips_entry_bg.webp" />
+		<None Remove="Resources\Images\GameRoom\player2_00.png" />
+		<None Remove="Resources\Images\GameRoom\player3_00.png" />
+		<None Remove="Resources\Images\GameRoom\player4_00.png" />
+		<None Remove="Resources\Images\GameRoom\thunder_2.gif" />
+		<None Remove="Resources\Images\GameRoom\thunder_2.png" />
+		<None Remove="Resources\Images\GameRoom\thunder_3.gif" />
+		<None Remove="Resources\Images\GameRoom\thunder_3.png" />
+		<None Remove="Resources\Images\GameRoom\thunder_4.gif" />
+		<None Remove="Resources\Images\GameRoom\thunder_4.png" />
+		<None Remove="Resources\Images\GameRoom\vs.webp" />
+		<None Remove="Resources\Images\GameRoom\vs_bg.webp" />
+		<None Remove="Resources\Images\GameSettings\bet_prize_bg.webp" />
+		<None Remove="Resources\Images\GameSettings\blue_token.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_create.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_join.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_join_large.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_minus-large.png" />
+		<None Remove="Resources\Images\GameSettings\btn_minus_large.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_orange.png" />
+		<None Remove="Resources\Images\GameSettings\btn_play.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_players_green.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_players_orange.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_play_large.webp" />
+		<None Remove="Resources\Images\GameSettings\btn_plus_large.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_blue.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_blue_select.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_green.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_green_select.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_red.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_red_select.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_yellow.webp" />
+		<None Remove="Resources\Images\GameSettings\checkbox_yellow_select.webp" />
+		<None Remove="Resources\Images\GameSettings\controlbox.webp" />
+		<None Remove="Resources\Images\GameSettings\controlbox_small.webp" />
+		<None Remove="Resources\Images\GameSettings\dash_choose_bet.webp" />
+		<None Remove="Resources\Images\GameSettings\dash_players.webp" />
+		<None Remove="Resources\Images\GameSettings\dash_select_color.webp" />
+		<None Remove="Resources\Images\GameSettings\dash_select_players.webp" />
+		<None Remove="Resources\Images\GameSettings\dash_select_room.webp" />
+		<None Remove="Resources\Images\GameSettings\game_setting_bg.webp" />
+		<None Remove="Resources\Images\GameSettings\green_token.webp" />
+		<None Remove="Resources\Images\GameSettings\red_token.webp" />
+		<None Remove="Resources\Images\GameSettings\round_cashgames.webp" />
+		<None Remove="Resources\Images\GameSettings\round_friends.webp" />
+		<None Remove="Resources\Images\GameSettings\round_offline.webp" />
+		<None Remove="Resources\Images\GameSettings\round_practice.webp" />
+		<None Remove="Resources\Images\GameSettings\round_tournaments.webp" />
+		<None Remove="Resources\Images\GameSettings\tournament_btn.webp" />
+		<None Remove="Resources\Images\GameSettings\tournament_btn_bg1.webp" />
+		<None Remove="Resources\Images\GameSettings\tournament_btn_bg2.png" />
+		<None Remove="Resources\Images\GameSettings\tournament_btn_bg3.webp" />
+		<None Remove="Resources\Images\GameSettings\yellow_token.webp" />
+		<None Remove="Resources\Images\Game\blue_container.webp" />
+		<None Remove="Resources\Images\Game\blue_token.png" />
+		<None Remove="Resources\Images\Game\blue_token_large.webp" />
+		<None Remove="Resources\Images\Game\blue_token_large_2.webp" />
+		<None Remove="Resources\Images\Game\blue_token_large_3.webp" />
+		<None Remove="Resources\Images\Game\blue_token_large_4.webp" />
+		<None Remove="Resources\Images\Game\blue_token_round.png" />
+		<None Remove="Resources\Images\Game\blue_user.webp" />
+		<None Remove="Resources\Images\Game\board_game.png" />
+		<None Remove="Resources\Images\Game\board_game_1.jpg" />
+		<None Remove="Resources\Images\Game\board_game_2.png" />
+		<None Remove="Resources\Images\Game\bonus_token_round.webp" />
+		<None Remove="Resources\Images\Game\dice_0.webp" />
+		<None Remove="Resources\Images\Game\dice_00.webp" />
+		<None Remove="Resources\Images\Game\dice_01.webp" />
+		<None Remove="Resources\Images\Game\dice_03.webp" />
+		<None Remove="Resources\Images\Game\dice_04.webp" />
+		<None Remove="Resources\Images\Game\dice_06.webp" />
+		<None Remove="Resources\Images\Game\dice_08.webp" />
+		<None Remove="Resources\Images\Game\dice_1.webp" />
+		<None Remove="Resources\Images\Game\dice_10.webp" />
+		<None Remove="Resources\Images\Game\dice_11.webp" />
+		<None Remove="Resources\Images\Game\dice_2.webp" />
+		<None Remove="Resources\Images\Game\dice_3.webp" />
+		<None Remove="Resources\Images\Game\dice_4.webp" />
+		<None Remove="Resources\Images\Game\dice_5.webp" />
+		<None Remove="Resources\Images\Game\dice_6.webp" />
+		<None Remove="Resources\Images\Game\dice_a.gif" />
+		<None Remove="Resources\Images\Game\gray_container.webp" />
+		<None Remove="Resources\Images\Game\green_container.webp" />
+		<None Remove="Resources\Images\Game\green_token.png" />
+		<None Remove="Resources\Images\Game\green_token_large.webp" />
+		<None Remove="Resources\Images\Game\green_token_large_2.webp" />
+		<None Remove="Resources\Images\Game\green_token_large_3.webp" />
+		<None Remove="Resources\Images\Game\green_token_large_4.webp" />
+		<None Remove="Resources\Images\Game\green_token_round.png" />
+		<None Remove="Resources\Images\Game\green_user.webp" />
+		<None Remove="Resources\Images\Game\ludoboard.webp" />
+		<None Remove="Resources\Images\Game\ludolockhome.webp" />
+		<None Remove="Resources\Images\Game\pawnindicator.webp" />
+		<None Remove="Resources\Images\Game\pawnindicatortarget.webp" />
+		<None Remove="Resources\Images\Game\red_container.webp" />
+		<None Remove="Resources\Images\Game\red_token.png" />
+		<None Remove="Resources\Images\Game\red_token_large.webp" />
+		<None Remove="Resources\Images\Game\red_token_large_2.webp" />
+		<None Remove="Resources\Images\Game\red_token_large_3.webp" />
+		<None Remove="Resources\Images\Game\red_token_large_4.webp" />
+		<None Remove="Resources\Images\Game\red_token_round.png" />
+		<None Remove="Resources\Images\Game\red_user.webp" />
+		<None Remove="Resources\Images\Game\star_token_round.webp" />
+		<None Remove="Resources\Images\Game\token_round.webp" />
+		<None Remove="Resources\Images\Game\yellow_container.webp" />
+		<None Remove="Resources\Images\Game\yellow_token.png" />
+		<None Remove="Resources\Images\Game\yellow_token_large.webp" />
+		<None Remove="Resources\Images\Game\yellow_token_large_2.webp" />
+		<None Remove="Resources\Images\Game\yellow_token_large_3.webp" />
+		<None Remove="Resources\Images\Game\yellow_token_large_4.webp" />
+		<None Remove="Resources\Images\Game\yellow_token_round.png" />
+		<None Remove="Resources\Images\Game\yellow_user.webp" />
+		<None Remove="Resources\Images\Game\yelow_container.png" />
+		<None Remove="Resources\Images\hdrbgsharedassets.png" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_callnow.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_callnow_disable.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_faq.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_faq_disabled.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_livechat.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_livechat_disabled.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_supportmail.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\ic_supportmail_disabled.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\input_inner_pancard.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\signin_inner_bg.webp" />
+		<None Remove="Resources\Images\HelpDeskPage\verification_status_main_bg.webp" />
+		<None Remove="Resources\Images\invite_user_sharedassets2.assets.png" />
+		<None Remove="Resources\Images\Leaderboard\title_leaderboard.webp" />
+		<None Remove="Resources\Images\offline.png" />
+		<None Remove="Resources\Images\Player.png" />
+		<None Remove="Resources\Images\playwithfriends.png" />
+		<None Remove="Resources\Images\practice.png" />
+		<None Remove="Resources\Images\ProfilePage\btn_addcash.webp" />
+		<None Remove="Resources\Images\ProfilePage\btn_edit.webp" />
+		<None Remove="Resources\Images\ProfilePage\btn_info.webp" />
+		<None Remove="Resources\Images\ProfilePage\btn_plus.webp" />
+		<None Remove="Resources\Images\ProfilePage\ic_address.webp" />
+		<None Remove="Resources\Images\ProfilePage\ic_call.webp" />
+		<None Remove="Resources\Images\ProfilePage\ic_camera.png" />
+		<None Remove="Resources\Images\ProfilePage\ic_email.webp" />
+		<None Remove="Resources\Images\ProfilePage\lbl_unverified.webp" />
+		<None Remove="Resources\Images\ProfilePage\lbl_verified.webp" />
+		<None Remove="Resources\Images\ProfilePage\profile_info_bg.webp" />
+		<None Remove="Resources\Images\ProfilePage\statistics_info.webp" />
+		<None Remove="Resources\Images\results\btn_exit.webp" />
+		<None Remove="Resources\Images\results\btn_playagain.webp" />
+		<None Remove="Resources\Images\results\gold_border.webp" />
+		<None Remove="Resources\Images\results\ic_chips.png" />
+		<None Remove="Resources\Images\results\ic_chips_spades.png" />
+		<None Remove="Resources\Images\results\result_celibration.gif" />
+		<None Remove="Resources\Images\results\silver_border.webp" />
+		<None Remove="Resources\Images\results\spinner_bk_red_glow.webp" />
+		<None Remove="Resources\Images\results\star_gold.webp" />
+		<None Remove="Resources\Images\results\star_silver.webp" />
+		<None Remove="Resources\Images\results\strips_big.webp" />
+		<None Remove="Resources\Images\results\ttl_results.webp" />
+		<None Remove="Resources\Images\results\user_main_bg.webp" />
+		<None Remove="Resources\Images\results\user_main_bg_gold.webp" />
+		<None Remove="Resources\Images\Support\help.webp" />
+		<None Remove="Resources\Images\Support\privacy.webp" />
+		<None Remove="Resources\Images\Support\support.webp" />
+		<None Remove="Resources\Images\Support\terms.webp" />
+		<None Remove="Resources\Images\Tabs\ic_computer.webp" />
+		<None Remove="Resources\Images\Tabs\ic_local.webp" />
+		<None Remove="Resources\Images\Tabs\radio_off.webp" />
+		<None Remove="Resources\Images\Tabs\radio_on.webp" />
+		<None Remove="Resources\Images\Tabs\tab_active.webp" />
+		<None Remove="Resources\Images\Tabs\tab_active_curve.webp" />
+		<None Remove="Resources\Images\Tabs\tab_border.webp" />
+		<None Remove="Resources\Images\Tabs\tab_normal.webp" />
+		<None Remove="Resources\Images\Tabs\tab_normal_curve.webp" />
+		<None Remove="Resources\Images\Titles\title_friends.webp" />
+		<None Remove="Resources\Images\tournament.png" />
+		<None Remove="Resources\Images\Tournament\team_teamwork.webp" />
+		<None Remove="Resources\Images\Tournament\time_gyro.webp" />
+		<None Remove="Resources\Images\Tournament\tournament_bg.webp" />
+		<None Remove="Resources\Images\user_sharedassets2.assets.png" />
+		<None Remove="Resources\Images\Verification\ic_right_arr.webp" />
+		<None Remove="Resources\Images\Verification\ic_verify_account.webp" />
+		<None Remove="Resources\Images\Verification\ic_verify_bank.webp" />
+		<None Remove="Resources\Images\Verification\ic_verify_done.webp" />
+		<None Remove="Resources\Images\Verification\ic_verify_mob.webp" />
+		<None Remove="Resources\Images\Verification\ic_verify_pancard.webp" />
+		<None Remove="Resources\Images\Verification\verify_info_bg.webp" />
+		<None Remove="Resources\Images\vs_bgsharedassets2.assets.png" />
+		<None Remove="Resources\Images\vs_sharedassets2.assets.png" />
+		<None Remove="Resources\Images\Wallet\btn_outer.webp" />
+		<None Remove="Resources\Images\Wallet\btn_verify_account.webp" />
+		<None Remove="Resources\Images\Wallet\ic_total_wallet.webp" />
+		<None Remove="Resources\Images\Wallet\ic_yourwinnings.webp" />
+		<None Remove="Resources\Images\Wallet\info_1.webp" />
+		<None Remove="Resources\Images\Wallet\info_2.webp" />
+		<None Remove="Resources\Images\Wallet\info_3.webp" />
+		<None Remove="Resources\Images\Wallet\info_4.webp" />
+		<None Remove="Resources\Images\Wallet\line_bg_orange.png" />
+		<None Remove="Resources\Images\Wallet\reffer_earn.webp" />
+		<None Remove="Resources\Images\Wallet\subinfo_1.webp" />
+		<None Remove="Resources\Images\Wallet\subinfo_2.webp" />
+		<None Remove="Resources\Images\Wallet\subinfo_3.webp" />
+		<None Remove="Resources\Images\Wallet\subinfo_4.webp" />
+		<None Remove="Resources\Images\Wallet\title_wallet.webp" />
+		<None Remove="Resources\Images\Wallet\total_ava_bal_bg.webp" />
+		<None Remove="Resources\Images\Wallet\verify_acc_bg.webp" />
+		<None Remove="Resources\Images\Wallet\wallet_bg.webp" />
+		<None Remove="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Include="..\SharedCode\Constants\CountryCode.cs" Link="Constants\CountryCode.cs" />
-	  <Compile Include="..\SharedCode\Constants\GlobalConstants.cs" Link="Constants\GlobalConstants.cs" />
-	  <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="Constants\PlayerInfo.cs" />
-	  <Compile Include="..\SharedCode\Constants\UserInfo.cs" Link="Constants\UserInfo.cs" />
-	  <Compile Include="..\SharedCode\CoreEngine\Engine.cs" Link="CoreEngine\Engine.cs" />
-	  <Compile Include="..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
-	  <Compile Include="..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
-	  <Compile Include="..\SharedCode\Network\Client.cs" Link="Network\Client.cs" />
-	  <Compile Include="..\SharedCode\SharedClasses.cs" Link="SharedClasses.cs" />
+		<Compile Include="..\SharedCode\Constants\CountryCode.cs" Link="Constants\CountryCode.cs" />
+		<Compile Include="..\SharedCode\Constants\GlobalConstants.cs" Link="Constants\GlobalConstants.cs" />
+		<Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="Constants\PlayerInfo.cs" />
+		<Compile Include="..\SharedCode\Constants\UserInfo.cs" Link="Constants\UserInfo.cs" />
+		<Compile Include="..\SharedCode\CoreEngine\Engine.cs" Link="CoreEngine\Engine.cs" />
+		<Compile Include="..\SharedCode\CoreEngine\Piece.cs" Link="CoreEngine\Piece.cs" />
+		<Compile Include="..\SharedCode\CoreEngine\Player.cs" Link="CoreEngine\Player.cs" />
+		<Compile Include="..\SharedCode\Network\Client.cs" Link="Network\Client.cs" />
+		<Compile Include="..\SharedCode\SharedClasses.cs" Link="SharedClasses.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\DashBoard\tournament.webp" />
-	  <MauiImage Include="Resources\Images\DashBoard\tournament_gray.webp" />
+		<MauiImage Include="Resources\Images\DashBoard\tournament.webp" />
+		<MauiImage Include="Resources\Images\DashBoard\tournament_gray.webp" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\Flags\india.webp" />
-	  <MauiImage Include="Resources\Images\Flags\pakistan.webp" />
-	  <MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
-	  <MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
-	  <MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
-	  <MauiImage Include="Resources\Images\GameRoom\vs.webp" />
-	  <MauiImage Include="Resources\Images\GameRoom\vs_bg.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\blue_token.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_create.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_join.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_join_large.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_minus_large.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_play.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_players_green.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_players_orange.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_play_large.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\btn_plus_large.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_blue.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_blue_select.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_green.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_green_select.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_red.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_red_select.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_yellow.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\checkbox_yellow_select.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\controlbox.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\controlbox_small.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\dash_choose_bet.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\dash_players.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\dash_select_color.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\dash_select_players.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\dash_select_room.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\game_setting_bg.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\green_token.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\red_token.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\round_cashgames.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\round_friends.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\round_offline.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\round_practice.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\round_tournaments.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg1.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg3.webp" />
-	  <MauiImage Include="Resources\Images\GameSettings\yellow_token.webp" />
+		<MauiImage Include="Resources\Images\Flags\india.webp" />
+		<MauiImage Include="Resources\Images\Flags\pakistan.webp" />
+		<MauiImage Include="Resources\Images\GameRoom\thunder_2.gif" />
+		<MauiImage Include="Resources\Images\GameRoom\thunder_3.gif" />
+		<MauiImage Include="Resources\Images\GameRoom\thunder_4.gif" />
+		<MauiImage Include="Resources\Images\GameRoom\vs.webp" />
+		<MauiImage Include="Resources\Images\GameRoom\vs_bg.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\bet_prize_bg.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\blue_token.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_create.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_join.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_join_large.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_minus_large.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_play.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_players_green.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_players_orange.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_play_large.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\btn_plus_large.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_blue.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_blue_select.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_green.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_green_select.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_red.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_red_select.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_yellow.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\checkbox_yellow_select.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\controlbox.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\controlbox_small.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\dash_choose_bet.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\dash_players.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\dash_select_color.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\dash_select_players.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\dash_select_room.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\game_setting_bg.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\green_token.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\red_token.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\round_cashgames.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\round_friends.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\round_offline.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\round_practice.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\round_tournaments.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\tournament_btn.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg1.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\tournament_btn_bg3.webp" />
+		<MauiImage Include="Resources\Images\GameSettings\yellow_token.webp" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\Game\blue_container.webp" />
-	  <MauiImage Include="Resources\Images\Game\blue_token_large.webp" />
-	  <MauiImage Include="Resources\Images\Game\blue_token_large_2.webp" />
-	  <MauiImage Include="Resources\Images\Game\blue_token_large_3.webp" />
-	  <MauiImage Include="Resources\Images\Game\blue_token_large_4.webp" />
-	  <MauiImage Include="Resources\Images\Game\blue_user.webp" />
-	  <MauiImage Include="Resources\Images\Game\bonus_token_round.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_0.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_00.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_01.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_03.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_04.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_06.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_08.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_1.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_10.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_11.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_2.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_3.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_4.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_5.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_6.webp" />
-	  <MauiImage Include="Resources\Images\Game\dice_a.gif" />
-	  <MauiImage Include="Resources\Images\Game\gray_container.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_container.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_token_large.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_token_large_2.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_token_large_3.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_token_large_4.webp" />
-	  <MauiImage Include="Resources\Images\Game\green_user.webp" />
-	  <MauiImage Include="Resources\Images\Game\ludoboard.webp" />
-	  <MauiImage Include="Resources\Images\Game\ludolockhome.webp" />
-	  <MauiImage Include="Resources\Images\Game\pawnindicator.webp" />
-	  <MauiImage Include="Resources\Images\Game\pawnindicatortarget.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_container.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_token_large.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_token_large_2.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_token_large_3.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_token_large_4.webp" />
-	  <MauiImage Include="Resources\Images\Game\red_user.webp" />
-	  <MauiImage Include="Resources\Images\Game\star_token_round.webp" />
-	  <MauiImage Include="Resources\Images\Game\token_round.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_container.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_token_large.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_token_large_2.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_token_large_3.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_token_large_4.webp" />
-	  <MauiImage Include="Resources\Images\Game\yellow_user.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_callnow.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_callnow_disable.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_faq.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_faq_disabled.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_livechat.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_livechat_disabled.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_supportmail.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\ic_supportmail_disabled.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\input_inner_pancard.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\signin_inner_bg.webp" />
-	  <MauiImage Include="Resources\Images\HelpDeskPage\verification_status_main_bg.webp" />
-	  <MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\btn_addcash.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\btn_edit.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\btn_info.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\btn_plus.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\ic_address.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\ic_call.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\ic_email.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\lbl_unverified.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\lbl_verified.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\profile_info_bg.webp" />
-	  <MauiImage Include="Resources\Images\ProfilePage\statistics_info.webp" />
-	  <MauiImage Include="Resources\Images\results\btn_exit.webp" />
-	  <MauiImage Include="Resources\Images\results\btn_playagain.webp" />
-	  <MauiImage Include="Resources\Images\results\gold_border.webp" />
-	  <MauiImage Include="Resources\Images\results\result_celibration.gif" />
-	  <MauiImage Include="Resources\Images\results\silver_border.webp" />
-	  <MauiImage Include="Resources\Images\results\spinner_bk_red_glow.webp" />
-	  <MauiImage Include="Resources\Images\results\star_gold.webp" />
-	  <MauiImage Include="Resources\Images\results\star_silver.webp" />
-	  <MauiImage Include="Resources\Images\results\strips_big.webp" />
-	  <MauiImage Include="Resources\Images\results\ttl_results.webp" />
-	  <MauiImage Include="Resources\Images\results\user_main_bg.webp" />
-	  <MauiImage Include="Resources\Images\results\user_main_bg_gold.webp" />
-	  <MauiImage Include="Resources\Images\Support\help.webp" />
-	  <MauiImage Include="Resources\Images\Support\privacy.webp" />
-	  <MauiImage Include="Resources\Images\Support\support.webp" />
-	  <MauiImage Include="Resources\Images\Support\terms.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\ic_computer.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\ic_local.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\radio_off.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\radio_on.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\tab_active.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\tab_active_curve.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\tab_border.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\tab_normal.webp" />
-	  <MauiImage Include="Resources\Images\Tabs\tab_normal_curve.webp" />
-	  <MauiImage Include="Resources\Images\Titles\title_friends.webp" />
-	  <MauiImage Include="Resources\Images\Tournament\team_teamwork.webp" />
-	  <MauiImage Include="Resources\Images\Tournament\time_gyro.webp" />
-	  <MauiImage Include="Resources\Images\Tournament\tournament_bg.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_right_arr.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_verify_account.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_verify_bank.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_verify_done.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_verify_mob.webp" />
-	  <MauiImage Include="Resources\Images\Verification\ic_verify_pancard.webp" />
-	  <MauiImage Include="Resources\Images\Verification\verify_info_bg.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\btn_outer.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\btn_verify_account.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\ic_total_wallet.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\ic_yourwinnings.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\info_1.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\info_2.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\info_3.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\info_4.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\reffer_earn.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\subinfo_1.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\subinfo_2.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\subinfo_3.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\subinfo_4.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\title_wallet.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\total_ava_bal_bg.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\verify_acc_bg.webp" />
-	  <MauiImage Include="Resources\Images\Wallet\wallet_bg.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_container.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_token_large.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_token_large_2.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_token_large_3.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_token_large_4.webp" />
+		<MauiImage Include="Resources\Images\Game\blue_user.webp" />
+		<MauiImage Include="Resources\Images\Game\bonus_token_round.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_0.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_00.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_01.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_03.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_04.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_06.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_08.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_1.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_10.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_11.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_2.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_3.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_4.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_5.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_6.webp" />
+		<MauiImage Include="Resources\Images\Game\dice_a.gif" />
+		<MauiImage Include="Resources\Images\Game\gray_container.webp" />
+		<MauiImage Include="Resources\Images\Game\green_container.webp" />
+		<MauiImage Include="Resources\Images\Game\green_token_large.webp" />
+		<MauiImage Include="Resources\Images\Game\green_token_large_2.webp" />
+		<MauiImage Include="Resources\Images\Game\green_token_large_3.webp" />
+		<MauiImage Include="Resources\Images\Game\green_token_large_4.webp" />
+		<MauiImage Include="Resources\Images\Game\green_user.webp" />
+		<MauiImage Include="Resources\Images\Game\ludoboard.webp" />
+		<MauiImage Include="Resources\Images\Game\ludolockhome.webp" />
+		<MauiImage Include="Resources\Images\Game\pawnindicator.webp" />
+		<MauiImage Include="Resources\Images\Game\pawnindicatortarget.webp" />
+		<MauiImage Include="Resources\Images\Game\red_container.webp" />
+		<MauiImage Include="Resources\Images\Game\red_token_large.webp" />
+		<MauiImage Include="Resources\Images\Game\red_token_large_2.webp" />
+		<MauiImage Include="Resources\Images\Game\red_token_large_3.webp" />
+		<MauiImage Include="Resources\Images\Game\red_token_large_4.webp" />
+		<MauiImage Include="Resources\Images\Game\red_user.webp" />
+		<MauiImage Include="Resources\Images\Game\star_token_round.webp" />
+		<MauiImage Include="Resources\Images\Game\token_round.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_container.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_token_large.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_token_large_2.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_token_large_3.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_token_large_4.webp" />
+		<MauiImage Include="Resources\Images\Game\yellow_user.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_callnow.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_callnow_disable.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_faq.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_faq_disabled.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_livechat.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_livechat_disabled.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_supportmail.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\ic_supportmail_disabled.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\input_inner_pancard.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\signin_inner_bg.webp" />
+		<MauiImage Include="Resources\Images\HelpDeskPage\verification_status_main_bg.webp" />
+		<MauiImage Include="Resources\Images\Leaderboard\title_leaderboard.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\btn_addcash.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\btn_edit.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\btn_info.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\btn_plus.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\ic_address.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\ic_call.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\ic_email.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\lbl_unverified.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\lbl_verified.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\profile_info_bg.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\statistics_info.webp" />
+		<MauiImage Include="Resources\Images\results\btn_exit.webp" />
+		<MauiImage Include="Resources\Images\results\btn_playagain.webp" />
+		<MauiImage Include="Resources\Images\results\gold_border.webp" />
+		<MauiImage Include="Resources\Images\results\result_celibration.gif" />
+		<MauiImage Include="Resources\Images\results\silver_border.webp" />
+		<MauiImage Include="Resources\Images\results\spinner_bk_red_glow.webp" />
+		<MauiImage Include="Resources\Images\results\star_gold.webp" />
+		<MauiImage Include="Resources\Images\results\star_silver.webp" />
+		<MauiImage Include="Resources\Images\results\strips_big.webp" />
+		<MauiImage Include="Resources\Images\results\ttl_results.webp" />
+		<MauiImage Include="Resources\Images\results\user_main_bg.webp" />
+		<MauiImage Include="Resources\Images\results\user_main_bg_gold.webp" />
+		<MauiImage Include="Resources\Images\Support\help.webp" />
+		<MauiImage Include="Resources\Images\Support\privacy.webp" />
+		<MauiImage Include="Resources\Images\Support\support.webp" />
+		<MauiImage Include="Resources\Images\Support\terms.webp" />
+		<MauiImage Include="Resources\Images\Tabs\ic_computer.webp" />
+		<MauiImage Include="Resources\Images\Tabs\ic_local.webp" />
+		<MauiImage Include="Resources\Images\Tabs\radio_off.webp" />
+		<MauiImage Include="Resources\Images\Tabs\radio_on.webp" />
+		<MauiImage Include="Resources\Images\Tabs\tab_active.webp" />
+		<MauiImage Include="Resources\Images\Tabs\tab_active_curve.webp" />
+		<MauiImage Include="Resources\Images\Tabs\tab_border.webp" />
+		<MauiImage Include="Resources\Images\Tabs\tab_normal.webp" />
+		<MauiImage Include="Resources\Images\Tabs\tab_normal_curve.webp" />
+		<MauiImage Include="Resources\Images\Titles\title_friends.webp" />
+		<MauiImage Include="Resources\Images\Tournament\team_teamwork.webp" />
+		<MauiImage Include="Resources\Images\Tournament\time_gyro.webp" />
+		<MauiImage Include="Resources\Images\Tournament\tournament_bg.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_right_arr.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_verify_account.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_verify_bank.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_verify_done.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_verify_mob.webp" />
+		<MauiImage Include="Resources\Images\Verification\ic_verify_pancard.webp" />
+		<MauiImage Include="Resources\Images\Verification\verify_info_bg.webp" />
+		<MauiImage Include="Resources\Images\Wallet\btn_outer.webp" />
+		<MauiImage Include="Resources\Images\Wallet\btn_verify_account.webp" />
+		<MauiImage Include="Resources\Images\Wallet\ic_total_wallet.webp" />
+		<MauiImage Include="Resources\Images\Wallet\ic_yourwinnings.webp" />
+		<MauiImage Include="Resources\Images\Wallet\info_1.webp" />
+		<MauiImage Include="Resources\Images\Wallet\info_2.webp" />
+		<MauiImage Include="Resources\Images\Wallet\info_3.webp" />
+		<MauiImage Include="Resources\Images\Wallet\info_4.webp" />
+		<MauiImage Include="Resources\Images\Wallet\reffer_earn.webp" />
+		<MauiImage Include="Resources\Images\Wallet\subinfo_1.webp" />
+		<MauiImage Include="Resources\Images\Wallet\subinfo_2.webp" />
+		<MauiImage Include="Resources\Images\Wallet\subinfo_3.webp" />
+		<MauiImage Include="Resources\Images\Wallet\subinfo_4.webp" />
+		<MauiImage Include="Resources\Images\Wallet\title_wallet.webp" />
+		<MauiImage Include="Resources\Images\Wallet\total_ava_bal_bg.webp" />
+		<MauiImage Include="Resources\Images\Wallet\verify_acc_bg.webp" />
+		<MauiImage Include="Resources\Images\Wallet\wallet_bg.webp" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -757,271 +762,271 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="ControlView\ChatCard.xaml.cs">
-	    <DependentUpon>ChatCard.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="ControlView\DetailList.xaml.cs">
-	    <DependentUpon>DetailList.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="ControlView\HelpCube.xaml.cs">
-	    <DependentUpon>HelpCube.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="ControlView\GameDetailList.xaml.cs">
-	    <DependentUpon>GameDetailList.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="ControlView\TournamentDetailList.xaml.cs">
-	    <DependentUpon>TournamentDetailList.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\CashGame.xaml.cs">
-	    <DependentUpon>CashGame.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\GamesListPage.xaml.cs">
-	    <DependentUpon>GamesListPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\TournamentPage.xaml.cs">
-	    <DependentUpon>TournamentPage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\PlayWithFriends.xaml.cs">
-	    <DependentUpon>PlayWithFriends.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\PracticePage.xaml.cs">
-	    <DependentUpon>PracticePage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
-	    <DependentUpon>OfflinePage.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\WithdrawPopup.xaml.cs">
-	    <DependentUpon>WithdrawPopup.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\AddCash.xaml.cs">
-	    <DependentUpon>AddCash.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\EditInfo.xaml.cs">
-	    <DependentUpon>EditInfo.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\HelpDesk.xaml.cs">
-	    <DependentUpon>HelpDesk.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\DailyBonus.xaml.cs">
-	    <DependentUpon>DailyBonus.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\PanCardVerfication.xaml.cs">
-	    <DependentUpon>PanCardVerfication.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\ProfileInfo.xaml.cs">
-	    <DependentUpon>ProfileInfo.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\RedeenCoupon.xaml.cs">
-	    <DependentUpon>RedeenCoupon.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\Results.xaml.cs">
-	    <DependentUpon>Results.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Popups\Settings.xaml.cs">
-	    <DependentUpon>Settings.xaml</DependentUpon>
-	  </Compile>
+		<Compile Update="ControlView\ChatCard.xaml.cs">
+			<DependentUpon>ChatCard.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="ControlView\DetailList.xaml.cs">
+			<DependentUpon>DetailList.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="ControlView\HelpCube.xaml.cs">
+			<DependentUpon>HelpCube.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="ControlView\GameDetailList.xaml.cs">
+			<DependentUpon>GameDetailList.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="ControlView\TournamentDetailList.xaml.cs">
+			<DependentUpon>TournamentDetailList.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\CashGame.xaml.cs">
+			<DependentUpon>CashGame.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\GamesListPage.xaml.cs">
+			<DependentUpon>GamesListPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\TournamentPage.xaml.cs">
+			<DependentUpon>TournamentPage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\PlayWithFriends.xaml.cs">
+			<DependentUpon>PlayWithFriends.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\PracticePage.xaml.cs">
+			<DependentUpon>PracticePage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="GameSettingsPages\OfflinePage.xaml.cs">
+			<DependentUpon>OfflinePage.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\WithdrawPopup.xaml.cs">
+			<DependentUpon>WithdrawPopup.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\AddCash.xaml.cs">
+			<DependentUpon>AddCash.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\EditInfo.xaml.cs">
+			<DependentUpon>EditInfo.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\HelpDesk.xaml.cs">
+			<DependentUpon>HelpDesk.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\DailyBonus.xaml.cs">
+			<DependentUpon>DailyBonus.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\PanCardVerfication.xaml.cs">
+			<DependentUpon>PanCardVerfication.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\ProfileInfo.xaml.cs">
+			<DependentUpon>ProfileInfo.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\RedeenCoupon.xaml.cs">
+			<DependentUpon>RedeenCoupon.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\Results.xaml.cs">
+			<DependentUpon>Results.xaml</DependentUpon>
+		</Compile>
+		<Compile Update="Popups\Settings.xaml.cs">
+			<DependentUpon>Settings.xaml</DependentUpon>
+		</Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="ChatPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\ChatCard.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\DetailList.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\GameDetailList.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\WithdrawPopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\AddCash.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\BottomNavigation.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\Capsule.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\DailyBonusCard.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\DatePickerControl.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\DropDown.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\EditField.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\HelpCube.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\ImageSwitch.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\MessageBoxConfirm.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\Player.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\PlayerBox.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\PlayerBoxLong.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\PlayerSeat.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\ResultCardLong.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\SettingsSwitch.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\ShareBox.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\StatisticCard.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\TabBarIconView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\TabBarView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\TitleBar.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\Token.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\TournamentDetailList.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\BasePopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\DailyBonus.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="DashboardPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\EditInfo.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="FriendsPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="CoreEngine\Game.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\GameRoom.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="ControlView\HeaderCV.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\CashGame.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\GamesListPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\TournamentPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\PracticePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\OfflinePage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="GameSettingsPages\PlayWithFriends.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\HelpDesk.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="LeaderboardPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="LoginPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\RedeenCoupon.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\MessageBox.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\PanCardVerfication.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="PopUpPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\MyCustomPopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\ProfileInfo.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="RankingPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\Results.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Popups\Settings.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="TransactionPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="VerificationPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="WalletPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
+		<MauiXaml Update="ChatPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\ChatCard.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\DetailList.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\GameDetailList.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\WithdrawPopup.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\AddCash.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\BottomNavigation.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\Capsule.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\DailyBonusCard.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\DatePickerControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\DropDown.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\EditField.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\HelpCube.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\ImageSwitch.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\MessageBoxConfirm.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\Player.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\PlayerBox.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\PlayerBoxLong.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\PlayerSeat.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\ResultCardLong.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\SettingsSwitch.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\ShareBox.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\StatisticCard.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\TabBarIconView.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\TabBarView.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\TitleBar.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\Token.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\TournamentDetailList.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\TransactionLongDetailList.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\BasePopup.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\DailyBonus.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="DashboardPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\EditInfo.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="FriendsPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="CoreEngine\Game.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\GameRoom.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="ControlView\HeaderCV.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\CashGame.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\GamesListPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\TournamentPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\PracticePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\OfflinePage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="GameSettingsPages\PlayWithFriends.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\HelpDesk.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="LeaderboardPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="LoginPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\RedeenCoupon.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\MessageBox.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\PanCardVerfication.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="PopUpPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\MyCustomPopup.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\ProfileInfo.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="RankingPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\Results.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\Settings.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="TransactionPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="VerificationPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="WalletPage.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="ControlView\Popover.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
+		<None Update="ControlView\Popover.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Network\" />
-	  <Folder Include="Resources\Raw\" />
+		<Folder Include="Network\" />
+		<Folder Include="Resources\Raw\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiImage Include="Resources\Images\GameRoom\chips_entry_bg.webp" />
+		<MauiImage Include="Resources\Images\GameRoom\chips_entry_bg.webp" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
-	  <PackageReference Include="Xamarin.GooglePlayServices.Auth">
-	    <Version>121.3.0.3</Version>
-	  </PackageReference>
+		<PackageReference Include="Xamarin.GooglePlayServices.Auth">
+			<Version>121.3.0.3</Version>
+		</PackageReference>
 	</ItemGroup>
 
 </Project>

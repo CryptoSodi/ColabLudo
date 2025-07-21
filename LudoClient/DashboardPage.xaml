@@ -13,7 +13,7 @@
             <extensions:GridRowDefinitionExtension RowDefinitionString="{x:Static constants:Skins.DashboardMainGridDefinition}" />
         </Grid.RowDefinitions>
 
-        <Image Grid.Row="1" Source="{x:Static constants:Skins.Logo}" VerticalOptions="Center" HorizontalOptions="Center"/>
+        <Image Grid.Row="1" Source="splash.svg" VerticalOptions="Center" HorizontalOptions="Center"/>
 
         <Image x:Name="CashImage" Grid.Row="2" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>
