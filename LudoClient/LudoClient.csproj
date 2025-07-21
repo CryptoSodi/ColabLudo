@@ -1015,7 +1015,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiSplashScreen Include="Resources\Images\DashBoard\splashlogo.webp" />
 	  <MauiSplashScreen Include="Resources\Splash\splash.svg" />
 	</ItemGroup>
 
