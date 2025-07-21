@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -45,11 +47,11 @@ public partial class WalletPage : ContentPage
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        this.ShowPopup(new AddCash());
+        this.ShowPopup(new AddCash(), new PopupOptions { Shape = null });
     }
     private void OnWithdrawButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        this.ShowPopup(new WithdrawPopup());
+        this.ShowPopup(new WithdrawPopup(), new PopupOptions { Shape = null });
     }
 }

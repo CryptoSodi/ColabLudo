@@ -2,6 +2,9 @@ using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using SharedCode.Constants;
 namespace LudoClient.Popups;
+
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
 using LudoClient.Services;
 public partial class Settings : BasePopup
 {
@@ -20,9 +23,9 @@ public partial class Settings : BasePopup
     private void OnHelpTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        Close();
+        CloseAsync();
         ClientGlobalConstants.helpDesk = new HelpDesk();
-        Application.Current?.MainPage.ShowPopup(ClientGlobalConstants.helpDesk);
+        Application.Current?.MainPage.ShowPopup(ClientGlobalConstants.helpDesk, new PopupOptions { Shape = null });
         //Close the popup when the background is tapped
     }
     private void SignOutTapped(object sender, EventArgs e)
@@ -50,11 +53,11 @@ public partial class Settings : BasePopup
         catch (Exception)
         {   
         }
-        Close(); // If this is your cleanup method
+        CloseAsync(); // If this is your cleanup method
         UserInfo.Logout();
         Application.Current.MainPage = new LoginPage();
 #else
-        Close();
+        CloseAsync();
         UserInfo.Logout();
         Application.Current.MainPage = new LoginPage();
 #endif

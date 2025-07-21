@@ -1,7 +1,9 @@
 namespace LudoClient;
 
+using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -106,6 +108,6 @@ public partial class DashboardPage : ContentPage
             return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.dailyBonus = new DailyBonus();
-        this.ShowPopup(ClientGlobalConstants.dailyBonus);
+        this.ShowPopup(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
     }
 }

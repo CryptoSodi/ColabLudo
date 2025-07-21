@@ -164,7 +164,7 @@ namespace LudoClient
                 
                 if(ClientGlobalConstants.game == null)
                     return;
-                
+                ClientGlobalConstants.GoBack();
                 await ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
 
                 ClientGlobalConstants.game.engine.cleanGame();

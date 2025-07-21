@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -47,12 +49,13 @@ public partial class HeaderCV : ContentView
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.settings = new Settings();
-        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings);
+        
+        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions{Shape = null});
     }
     private void OnPlayerTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.profileInfo = new ProfileInfo();
-        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo);
+        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo, new PopupOptions { Shape = null });
     }
 }

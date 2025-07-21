@@ -14,7 +14,7 @@ public partial class BasePopup : Popup
         //double height = mainDisplayInfo.Height / mainDisplayInfo.Density;
         //// Set the popup size
         //this.Size = new Size(width, height);
-        CanBeDismissedByTappingOutsideOfPopup = false;
+        CanBeDismissedByTappingOutsideOfPopup = true; // When handler is created, strip the border
     }
     public static readonly BindableProperty PopupContentProperty = BindableProperty.Create(nameof(PopupContent), typeof(View), typeof(BasePopup), propertyChanged: OnPopupContentChanged);
     public View PopupContent
@@ -44,6 +44,6 @@ public partial class BasePopup : Popup
     }
     private void OnBackgroundTapped(object sender, EventArgs e)
     {
-        Close();
+        CloseAsync();
     }
 }

@@ -1,3 +1,5 @@
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
@@ -1088,7 +1090,7 @@ public partial class Game : ContentPage
         else
             mb = new MessageBox("Exit", "Are you sure you want to exit?", "");
 
-        String result = await this.ShowPopupAsync(mb) + "";
+        String result = await mb.ShowAsync();
         mb = null;
         if (result == "Approve")
         {
@@ -1107,7 +1109,7 @@ public partial class Game : ContentPage
                 // messageBoxCcnfirm.IsVisible = !messageBoxCcnfirm.IsVisible;
                 // GameRecorder.SaveGameHistory();
                 engine.cleanGame();
-                await ClientGlobalConstants.dashBoard.Navigation.PopAsync();
+                ClientGlobalConstants.GoBack();
             }
         }
     }
