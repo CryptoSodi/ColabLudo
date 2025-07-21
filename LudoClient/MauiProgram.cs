@@ -39,14 +39,15 @@ namespace LudoClient
             builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
 #endif
-
+            
+            AppCenter.Start("android=0c1428a3-a086-4b8d-be30-8253a18b054e;", typeof(Analytics), typeof(Crashes));
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
                 
                 var exception = e.ExceptionObject as Exception;
                 if (exception != null)
-                {
+                {Crashes.TrackError(exception); // ✅ Report to App Center
 #if DEBUG
                     System.Diagnostics.Debug.WriteLine($"[UnhandledException] {exception}");
 #endif
@@ -56,6 +57,7 @@ namespace LudoClient
 
             TaskScheduler.UnobservedTaskException += (sender, e) =>
             {
+                Crashes.TrackError(e.Exception); // ✅ Report to App Center
 #if DEBUG
                 System.Diagnostics.Debug.WriteLine($"[UnobservedTaskException] {e.Exception}");
 #endif
