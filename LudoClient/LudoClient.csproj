@@ -420,7 +420,7 @@
 	  <None Remove="Resources\Images\Game\dice_4.webp" />
 	  <None Remove="Resources\Images\Game\dice_5.webp" />
 	  <None Remove="Resources\Images\Game\dice_6.webp" />
-	  <None Remove="Resources\Images\Game\Dice_A.gif" />
+	  <None Remove="Resources\Images\Game\dice_a.gif" />
 	  <None Remove="Resources\Images\Game\gray_container.webp" />
 	  <None Remove="Resources\Images\Game\green_container.webp" />
 	  <None Remove="Resources\Images\Game\green_token.png" />
@@ -634,6 +634,7 @@
 	  <MauiImage Include="Resources\Images\Game\dice_4.webp" />
 	  <MauiImage Include="Resources\Images\Game\dice_5.webp" />
 	  <MauiImage Include="Resources\Images\Game\dice_6.webp" />
+	  <MauiImage Include="Resources\Images\Game\dice_a.gif" />
 	  <MauiImage Include="Resources\Images\Game\gray_container.webp" />
 	  <MauiImage Include="Resources\Images\Game\green_container.webp" />
 	  <MauiImage Include="Resources\Images\Game\green_token_large.webp" />
