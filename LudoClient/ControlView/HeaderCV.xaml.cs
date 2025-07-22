@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
 using SharedCode.Constants;
@@ -49,7 +48,6 @@ public partial class HeaderCV : ContentView
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ClientGlobalConstants.settings = new Settings();
-        
         Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions{Shape = null});
     }
     private void OnPlayerTapped(object sender, EventArgs e)

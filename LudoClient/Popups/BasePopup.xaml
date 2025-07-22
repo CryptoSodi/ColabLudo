@@ -10,22 +10,22 @@
            Margin="0"
            HorizontalOptions="Fill"
            VerticalOptions="Fill" >
-        <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+        <Grid RowSpacing="20" ColumnSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".1*,Auto">
             <Grid Grid.RowSpan="3" Grid.ColumnSpan="3" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                 <Grid.GestureRecognizers VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                     <TapGestureRecognizer Tapped="OnBackgroundTapped"/>
                 </Grid.GestureRecognizers>
             </Grid>
             <local:Capsule ImageSource="{Binding ImageSource, Source={x:Reference ThisPopup}}" Grid.Column="1" Grid.Row="1" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand">
-                <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-                    <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+            <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
+                <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
                         <Grid.GestureRecognizers VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
                             <TapGestureRecognizer />
                         </Grid.GestureRecognizers>
                     </Grid>
-                    <Grid VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
+                <Grid VerticalOptions="Fill" HorizontalOptions="Fill">
                         <!-- Existing Grid Code -->
-                        <ContentView  x:Name="ContentContainer" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" />
+                    <ContentView  x:Name="ContentContainer" VerticalOptions="Fill" HorizontalOptions="Fill" />
                     </Grid>
                 </Grid>
             </local:Capsule>

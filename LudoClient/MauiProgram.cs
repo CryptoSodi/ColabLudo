@@ -35,6 +35,8 @@ namespace LudoClient
                 .UseMauiApp<App>()
                 .UseSimpleToolkit()
                 .UseSimpleShell();
+
+
 #if ANDROID
             builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();

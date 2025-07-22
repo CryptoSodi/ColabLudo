@@ -15,7 +15,66 @@ public partial class BasePopup : Popup
         //// Set the popup size
         //this.Size = new Size(width, height);
         CanBeDismissedByTappingOutsideOfPopup = true; // When handler is created, strip the border
+        // Hook SizeChanged
+        //ContentContainer.SizeChanged += OnCapsuleSized;
+        OnCapsuleSized(null, null);
     }
+
+    private async void OnCapsuleSized(object? sender, EventArgs e)
+    {
+        var parent = ContentContainer.Parent as Layout;
+
+        if (parent != null)
+        {
+            parent.Opacity = 0;
+            parent.FadeTo(1, 250, Easing.CubicIn);
+            parent.Children.Remove(ContentContainer);
+            await Task.Delay(50); // Let MAUI clear it out
+            parent.Children.Add(ContentContainer); // Re-add
+
+#if ANDROID
+            try
+            {
+                // Access native Android view
+                var platformView = ContentContainer.Handler?.PlatformView as Android.Views.View;
+                if (platformView != null)
+                {
+                    // Temporarily stop drawing
+                    platformView.SetWillNotDraw(true);
+
+                    // Allow drawing again
+                    platformView.SetWillNotDraw(false);
+
+                    // Force invalidate & layout
+                    platformView.Invalidate();
+                    platformView.RequestLayout();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SkiaFlush] Error: {ex.Message}");
+            }
+#endif
+        }
+
+
+
+        //if (ContentContainer.Width > 0 && ContentContainer.Height > 0)
+        //{
+        //    // Proper delay
+        //    
+
+        //    // Capsule has been sized; make content visible
+        //    ContentContainer.IsVisible = true;
+
+        //    // Optional: Animate content fade-in
+
+
+        //    // Remove handler to prevent repeated calls
+        //    // CapsuleContainer.SizeChanged -= OnCapsuleSized;
+        //}
+    }
+
     public static readonly BindableProperty PopupContentProperty = BindableProperty.Create(nameof(PopupContent), typeof(View), typeof(BasePopup), propertyChanged: OnPopupContentChanged);
     public View PopupContent
     {
