@@ -21,13 +21,14 @@ public class PlayerInfo
     public int GamesPlayed { get; set; }
     public int GamesWon { get; set; }
     public int GamesLost { get; set; }
+    public int Score { get; set; } = 0;
+    public string? Role { get; set; } = "Player"; // Default role
     [Column(TypeName = "decimal(18,8)")]
     public decimal BestWin { get; set; }
     [Column(TypeName = "decimal(18,8)")]
     public decimal TotalLost { get; set; }
     [Column(TypeName = "decimal(18,8)")]
     public decimal TotalWin { get; set; }
-    public int Score { get; set; } = 0;
     public PlayerWallet? Wallet { get; set; }
 }
 public class PlayerWallet

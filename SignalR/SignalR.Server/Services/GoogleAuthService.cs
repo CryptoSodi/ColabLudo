@@ -2,29 +2,18 @@
 using LudoServer.Data;
 using LudoServer.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using SharedCode.Constants;
 
 namespace SignalR.Server.Services
 {
-    public class GoogleAuthService
+    public class GoogleAuthService(IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, UtilService utilService)
     {
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory;
-        private readonly UtilService _utilService;
-        private readonly CryptoHelper _crypto;
         private readonly string _expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
 
-        public GoogleAuthService(IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, UtilService utilService)
-        {
-            _contextFactory = contextFactory;
-            _utilService = utilService;
-            _crypto = crypto;
-        }
-        public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
+        public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode, string role = "Player")
         {
             try
             {
-                using var ctx = _contextFactory.CreateDbContext();
+                using var ctx = contextFactory.CreateDbContext();
                 // Example: extract useful info
                 String email = "";
                 String name = "";
@@ -75,16 +64,17 @@ namespace SignalR.Server.Services
                         City = city,
                         CountryCode = countryCode,
                         IsOnline = true,
-                        AuthToken = ""
+                        AuthToken = "",
+                        Role = role
                     };
                     ctx.Players.Add(newPlayer);
                     // Save changes to the database
                     await ctx.SaveChangesAsync();
                     existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
-                    existingPlayer.AuthToken = _crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
+                    existingPlayer.AuthToken = crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                     await ctx.SaveChangesAsync();
                 }
-                
+
                 return existingPlayer;
             }
             catch (Exception ex)

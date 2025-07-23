@@ -30,6 +30,7 @@ namespace SignalR.Server.Services
                 TotalWin = player.TotalWin,
                 TotalLost = player.TotalLost,
                 Score = player.Score,
+                Role = player.Role,
                 Wallet = new SharedCode.Constants.PlayerWallet
                 {
                     PlayerId = pw.PlayerId,

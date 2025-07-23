@@ -11,9 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors(o =>
 {
     o.AddPolicy("AllowAnyOrigin", p => p
-        .WithOrigins("null") // Origin of an HTML file opened in a browser
-        .AllowAnyHeader()
-        .AllowCredentials());
+          .AllowAnyOrigin()    // Allow ANY origin (localhost, IP, external)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
 });
 
 // Add SignalR services
@@ -82,6 +82,8 @@ app.UseCors("AllowAnyOrigin");
 
 // Map SignalR hubs
 app.MapHub<LudoHub>("/LudoHub");
+// Map SignalR hubs
+app.MapHub<AdminHub>("/AdminHub");
 
 // Run the app
 app.Run();
