@@ -285,7 +285,7 @@ namespace SignalR.Server
             if (feeEstimate.Value > feeBuffer)
                 feeBuffer = feeEstimate.Value;
             */
-            Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
+          //  Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
             return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result*2;
         }
         public async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
@@ -364,7 +364,7 @@ namespace SignalR.Server
                 }
                 else
                 {
-                    Console.WriteLine($"Skipped sweep, balance {lamports} ≤ fee buffer");
+                   // Console.WriteLine($"Skipped sweep, balance {lamports} ≤ fee buffer");
                 }
             }
         }
