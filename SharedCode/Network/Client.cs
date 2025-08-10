@@ -32,11 +32,17 @@ namespace SharedCode.Network
         {
             Connected = false;
             // Build connection with automatic reconnect
-            _hubConnection = new HubConnectionBuilder()
-                .WithUrl(GlobalConstants.HubUrl + "LudoHub")
-                .WithAutomaticReconnect()
-                .Build();
-            
+            _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl + "LudoHub", options =>
+            {
+                options.HttpMessageHandlerFactory = handler =>
+                {
+                    if (handler is HttpClientHandler clientHandler)
+                    {
+                        clientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                    }
+                    return handler;
+                };
+            }).Build();
             _ = ConnectAsync();
             RegisterHubEvents();
         }

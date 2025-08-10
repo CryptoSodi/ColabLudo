@@ -21,7 +21,7 @@ builder.Services.AddSignalR();
 
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .EnableSensitiveDataLogging(false) );// Turn off verbose logging
+           .EnableSensitiveDataLogging(false));// Turn off verbose logging
 
 builder.Services.AddHostedService<SweeperService>();
 builder.Services.AddScoped<FriendsService>();
@@ -49,7 +49,7 @@ builder.Services.AddSingleton<DatabaseManager>(sp => {
 builder.Services.AddSingleton<CryptoHelper>(sp =>
 {
     var env = sp.GetRequiredService<IHostEnvironment>();
-    
+
     var factory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var protector = sp.GetRequiredService<IDataProtectionProvider>();
     // Use the factory to create a new DbContext instance
@@ -64,7 +64,7 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
             masterUserId,
             network: "DevNet",
             relativeStoragePath: "Data/wallets.json",
-            protectorKey : "CryptoHelper.WalletProtector"
+            protectorKey: "CryptoHelper.WalletProtector"
         );
     }
     catch (Exception ex)

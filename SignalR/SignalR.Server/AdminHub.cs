@@ -40,7 +40,7 @@ namespace SignalR.Server
         {
             try
             {
-                var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode, "Admin");
+                var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
                 ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(player.PlayerId);
                 await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 return await _utilService.CastPlayerToInfoAsync(player);
@@ -50,6 +50,36 @@ namespace SignalR.Server
                 Console.WriteLine($"Error in Authentication : {ex.Message} ");
                 // If player creation failed, return null
                 return null;
+            }
+        }
+        public async Task<PlayerInfo> UserConnectedSetID(String AuthToken)
+        {
+            // 1) Store SignalR connection
+            try
+            {
+                Console.WriteLine($"Ping {Context.ConnectionId}");
+                ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in {AuthToken} : UserConnectedSetID: {ex.Message}");
+            }
+            return null;
+        }
+        public async Task<List<Game>> GetGame(String AuthToken, bool IsPrivate)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var player = await _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                //g.State == "Active"
+                return await ctx.Games.Where(g => g.MultiPlayer.P1 == player.PlayerId || g.MultiPlayer.P2 == player.PlayerId || g.MultiPlayer.P3 == player.PlayerId || g.MultiPlayer.P4 == player.PlayerId && g.State == "Completed").ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetGame: {ex.Message}");
+                return new List<Game>();
             }
         }
     }

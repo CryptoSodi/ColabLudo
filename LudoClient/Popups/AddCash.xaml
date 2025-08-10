@@ -10,8 +10,8 @@
             <local:TitleBar Grid.Row="1" Grid.Column="1" Title="DEPOSIT" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
             <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="10,0,10,-28" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <local:Capsule ImageSource="bg_disable_field.webp" Margin="0,5,0,0" VerticalOptions="Start" HorizontalOptions="Fill">
-                    <Grid Margin="0,5,8,8.5" ColumnDefinitions="4*,1*">
-                        <Label Text="TOTAL BALANCE AVAILABLE" FontSize="12" Margin="10,0,0,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" VerticalOptions="Center"/>
+                    <Grid Margin="0,5,8,8.5" ColumnDefinitions="Auto,1*">
+                        <Label Text="TOTAL BALANCE AVAILABLE" FontSize="12" Margin="10,0,5,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" VerticalOptions="Center"/>
                         <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                             <Frame BackgroundColor="#60000000" CornerRadius="4" Padding="30,-5,30,-5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                             <Image Source="solicon.webp" Margin="4" VerticalOptions="Center" HorizontalOptions="Start"/>

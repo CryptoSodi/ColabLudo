@@ -18,5 +18,6 @@ namespace LudoClient.Models
         public int? Owner { get; set; }
         public string? State { get; set; }
         public string? Recording { get; set; }
+        public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 }

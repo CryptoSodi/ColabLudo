@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace SharedCode.Constants;
 public class PlayerInfo
@@ -63,7 +64,7 @@ public class WalletTransaction
     [Required]
     public int PlayerId { get; set; }
     public PlayerWallet? PlayerWallet { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     [Column(TypeName = "decimal(18,8)")]
     public decimal Amount { get; set; }
     [Column(TypeName = "decimal(18,8)")]
@@ -75,11 +76,14 @@ public class WalletTransaction
     public string? RoomCode { get; set; }
 }
 /// Enum to classify transaction types.
+
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum TransactionType
 {
     Deposit = 1,
     Withdrawal = 2,
     GameWin = 3,
     GameLoss = 4,
-    Sweep = 5
+    Sweep = 5,
+    DailyBonus = 6
 }

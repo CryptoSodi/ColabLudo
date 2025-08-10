@@ -8,7 +8,7 @@ namespace SignalR.Server.Services
     public class GoogleAuthService(IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto, UtilService utilService)
     {
         private readonly string _expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
-
+        private readonly string _expectedAudienceWeb = "973406093603-dlm3o6jrkuf6b1m1lc7m8hir9qc4cul5.apps.googleusercontent.com";
         public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode, string role = "Player")
         {
             try
@@ -40,7 +40,7 @@ namespace SignalR.Server.Services
                     // ✅ Validate issuer and audience (REPLACE with your real Google OAuth client ID)
 
                     //973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com
-                    if (payload.Audience + "" != _expectedAudience || (payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com"))
+                    if ((payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com"))
                     {
                         throw new Exception($"Google Authentication failed : : 001");
                     }

@@ -37,10 +37,40 @@ namespace SignalR.Server.Services
                     AddressType = pw.AddressType,
                     WalletAddress = pw.WalletAddress,
                     AvailableBalance = pw.AvailableBalance,
-                    SignupBonus = 10
+                    SignupBonus = 10,
+                    Transactions = getTransactions(player.PlayerId)
                 }
             };
         }
+
+        private ICollection<SharedCode.Constants.WalletTransaction> getTransactions(int playerId)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                List<SharedCode.Constants.WalletTransaction> transactions = ctx.WalletTransaction.Where(p => p.PlayerId == playerId).Select(t => new SharedCode.Constants.WalletTransaction
+                {
+                    TransactionId = t.TransactionId,
+                    txId = t.txId,
+                    PlayerId = t.PlayerId,
+                    CreatedDate = t.CreatedDate,
+                    Amount = t.Amount,
+                    BalanceAfter = t.BalanceAfter,
+                    Type = (SharedCode.Constants.TransactionType)t.Type,
+                    Description = t.Description,
+                    IsOnChain = t.IsOnChain,
+                    RoomCode = t.RoomCode
+                })
+            .ToList();
+                return transactions;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
+            }
+            return new List<SharedCode.Constants.WalletTransaction>();
+        }
+
         public async Task SetPlayerOnlineState(int playerId, bool isOnline)
         {
             try
@@ -77,7 +107,6 @@ namespace SignalR.Server.Services
                         AvailableBalance = wal.AvailableBalance
                     }
                 };
-            
             return sender;
         }
     }
