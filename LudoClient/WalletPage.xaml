@@ -14,7 +14,7 @@
             <local:TitleBar Grid.Column="1" TitleImage="title_wallet.webp" Title="" Margin="0,-28,0,0" VerticalOptions="Start" HorizontalOptions="Center">
             </local:TitleBar>
 
-            <local:Capsule IsVisible="False" ImageSource="verify_acc_bg.webp" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Padding="20,0,20,0" HorizontalOptions="Center" VerticalOptions="End">
+            <local:Capsule IsVisible="true" ImageSource="verify_acc_bg.webp" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Padding="20,0,20,0" HorizontalOptions="Center" VerticalOptions="End">
                 <Grid Margin="8,2,5,2" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".8*,.45*">
                     <Label Text="Withdraw Solana to external wallet." TextColor="White" FontSize="10" HorizontalOptions="Start" VerticalOptions="Center" FontAutoScalingEnabled="True"/>
                     <local:Capsule Grid.Column="1" ImageSource="btn_verify_account.webp" VerticalOptions="Center" HorizontalOptions="Center">
@@ -41,7 +41,7 @@
             </local:Capsule>
 
 
-            <local:Capsule IsVisible="False" ImageSource="line_bg_orange.webp" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <local:Capsule IsVisible="true" ImageSource="line_bg_orange.webp" Grid.Row="5" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                 <Grid>
                     <Grid.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnDepositButtonClicked" />

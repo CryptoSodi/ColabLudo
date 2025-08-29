@@ -51,7 +51,7 @@ namespace SignalR.Server.Services
                     googleId = payload.Subject; // Unique Google user ID
                 }
 
-                Player existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
+                Player existingPlayer = ctx.Players.FirstOrDefault(p => p.Email == email);
                 // If player exists by email, return with Player Id to login
                 if (existingPlayer == null)
                 {
@@ -70,7 +70,7 @@ namespace SignalR.Server.Services
                     ctx.Players.Add(newPlayer);
                     // Save changes to the database
                     await ctx.SaveChangesAsync();
-                    existingPlayer = ctx.Players.FirstOrDefault(p => p.GoogleId == googleId);
+                    existingPlayer = ctx.Players.FirstOrDefault(p => p.Email == email);
                     existingPlayer.AuthToken = crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                     await ctx.SaveChangesAsync();
                 }

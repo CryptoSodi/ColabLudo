@@ -1,15 +1,13 @@
-using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Popups;
+using LudoClient.Services;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
 using System.Text.Json;
-
+using Microsoft.Extensions.DependencyInjection;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
@@ -23,6 +21,7 @@ public partial class Game : ContentPage
     public PlayerSeat YellowPlayerSeat;
     public PlayerSeat BluePlayerSeat;
     string gameMode;
+    private readonly IGamepadInputService _input;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
         if (seatColor.ToLower() == "red")
@@ -37,6 +36,10 @@ public partial class Game : ContentPage
     List<PlayerDto>? seats = new List<PlayerDto>();
     public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "", string rollsString = "")
     {
+        var sp = Application.Current?.Handler?.MauiContext?.Services
+         ?? throw new InvalidOperationException("No MAUI context yet");
+        var input = sp.GetRequiredService<IGamepadInputService>();
+
         this.gameMode = gameMode;
         //new List<PlayerDto>();
         //PlayerDto red = new PlayerDto();
@@ -63,6 +66,43 @@ public partial class Game : ContentPage
             this.playerColor = playerColor;
             Build(gameMode, gameType, gameType == "22" ? "4" : gameType, playerColor, rollsString);
         }
+    }
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        _input.ButtonChanged += OnButtonChanged;
+        _input.AxisChanged += OnAxisChanged;
+    }
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        _input.ButtonChanged -= OnButtonChanged;
+        _input.AxisChanged -= OnAxisChanged;
+    }
+    void OnButtonChanged(string device, string button, bool isDown)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Console.WriteLine(button);
+            //// EXAMPLES — replace with your game logic:
+            //if (button == "A" && isDown) StartGame();
+            //if (button == "B" && isDown) Cancel();
+            //if (button == "DpadLeft" && isDown) MoveCursor(-1, 0);
+            //if (button == "DpadRight" && isDown) MoveCursor(+1, 0);
+        });
+    }
+
+    void OnAxisChanged(string device, string axis, float value)
+    {
+        // value typically in [-1 .. +1]
+        if (Math.Abs(value) < 0.01f) return;
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Console.WriteLine(axis);
+            //if (axis == "LeftStickX") MovePlayer(value, 0);
+            //if (axis == "LeftStickY") MovePlayer(0, -value); // invert if you prefer
+        });
     }
     private async Task Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
     {
@@ -482,7 +522,7 @@ public partial class Game : ContentPage
                 ClientGlobalConstants.results.init(JsonSerializer.Deserialize<List<PlayerDto>>(seats), GameType, GameCost);
             });
             ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
-            ClientGlobalConstants.FlushOld();
+         //   ClientGlobalConstants.FlushOld();
         }
         else
         {

@@ -3,10 +3,15 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Android.Runtime;
+using Android.Views;
 using Java.Security;
 using LudoClient.Platforms.Android;
+using LudoClient.Services;
 using SharedCode.Constants;
+using static Android.Renderscripts.ScriptGroup;
 using PMSignature = Android.Content.PM.Signature;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace LudoClient
 {
@@ -18,6 +23,8 @@ namespace LudoClient
         public class WebAuthenticationCallbackActivity : Microsoft.Maui.Authentication.WebAuthenticatorCallbackActivity
         {}
 
+        private IGamepadInputService? _input;
+        private Psg1InputOptions _options = new() { DeadZone = 0.15f };
         protected override void OnActivityResult(int requestCode, Result resultCode, Intent? data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
@@ -27,6 +34,8 @@ namespace LudoClient
                 GoogleAuthService.Instance.OnActivityResult(data);
             }
         }
+
+        [Obsolete]
         protected override void OnCreate(Bundle savedInstanceState)
         {
             try
@@ -35,6 +44,9 @@ namespace LudoClient
               //  string sha1 = GetApkSignatureSha1(this);                
              //   Console.WriteLine($"My APK SHA-1 = {sha1}");//
                 UserDialogs.Init(this);
+                // Resolve via MAUI's global ServiceProvider (avoid your own Services namespace)
+                var sp = MauiApplication.Current.Services;
+                _input = sp.GetRequiredService<IGamepadInputService>();
             }
             catch (Exception ex)
             {
@@ -42,6 +54,96 @@ namespace LudoClient
                 // Show a user-friendly error page or restart app gracefully
             }
         }
+        public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)
+        {
+            if (!IsGamepad(e.Device)) return base.OnKeyDown(keyCode, e);
+            var btn = MapKeycode(keyCode);
+            if (btn != null)
+            {
+                _input?.OnButtonChanged(e.Device?.Name ?? "Unknown", btn, true);
+                return true;
+            }
+            return base.OnKeyDown(keyCode, e);
+        }
+
+        public override bool OnKeyUp([GeneratedEnum] Keycode keyCode, KeyEvent e)
+        {
+            if (!IsGamepad(e.Device)) return base.OnKeyUp(keyCode, e);
+            var btn = MapKeycode(keyCode);
+            if (btn != null)
+            {
+                _input?.OnButtonChanged(e.Device?.Name ?? "Unknown", btn, false);
+                return true;
+            }
+            return base.OnKeyUp(keyCode, e);
+        }
+
+        public override bool OnGenericMotionEvent(MotionEvent e)
+        {
+            if (!IsGamepad(e.Device)) return base.OnGenericMotionEvent(e);
+
+            // ✅ Use Android.Views.Axis (not MotionEvent.Axis*)
+            ReadAxis(e, Axis.X, "LeftStickX");
+            ReadAxis(e, Axis.Y, "LeftStickY");
+
+            // Right stick: try both sets to be safe across devices
+            ReadAxis(e, Axis.Z, "RightStickX");
+            ReadAxis(e, Axis.Rz, "RightStickY");
+            ReadAxis(e, Axis.Rx, "RightStickX");
+            ReadAxis(e, Axis.Ry, "RightStickY");
+
+            // D-pad as hat axes (some devices)
+            ReadAxis(e, Axis.HatX, "DpadX");
+            ReadAxis(e, Axis.HatY, "DpadY");
+
+            return true; // consumed
+        }
+
+        void ReadAxis(MotionEvent e, Axis axis, string name)
+        {
+            float v = e.GetAxisValue(axis);
+            if (Math.Abs(v) < _options.DeadZone) v = 0f;
+            _input?.OnAxisChanged(e.Device?.Name ?? "Unknown", name, v);
+        }
+
+        static bool IsGamepad(InputDevice? d)
+        {
+            if (d == null) return false;
+            var s = d.Sources;
+            return s.HasFlag(InputSourceType.Gamepad)
+                || s.HasFlag(InputSourceType.Joystick)
+                || s.HasFlag(InputSourceType.Dpad);
+        }
+
+        static string? MapKeycode(Keycode code) => code switch
+        {
+            // D-Pad
+            Keycode.DpadUp => "DpadUp",
+            Keycode.DpadDown => "DpadDown",
+            Keycode.DpadLeft => "DpadLeft",
+            Keycode.DpadRight => "DpadRight",
+            Keycode.DpadCenter => "DpadCenter",
+
+            // Face buttons
+            Keycode.ButtonA => "A",
+            Keycode.ButtonB => "B",
+            Keycode.ButtonX => "X",
+            Keycode.ButtonY => "Y",
+
+            // Shoulders
+            Keycode.ButtonL1 => "L1",
+            Keycode.ButtonR1 => "R1",
+
+            // Start/Select/Back
+            Keycode.ButtonStart => "Start",
+            Keycode.ButtonSelect => "Select",
+            Keycode.Back => "Back",
+
+            // Some pads emit these; PSG1 may not have physical L2/R2
+            Keycode.ButtonL2 => "L2",
+            Keycode.ButtonR2 => "R2",
+            _ => null
+        };
         public static string GetApkSignatureSha1(Context context)
         {
             try
@@ -81,6 +183,11 @@ namespace LudoClient
                 Android.Util.Log.Error("SignatureHelper", ex.ToString());
             }
             return null;
+        }
+
+        private class Psg1InputOptions
+        {
+            public float DeadZone { get; set; }
         }
     }
 }

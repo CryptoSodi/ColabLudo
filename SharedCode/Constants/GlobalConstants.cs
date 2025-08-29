@@ -17,7 +17,7 @@ namespace SharedCode.Constants
 
         static GlobalConstants()
         {
-                Url = Debug ? "http://192.168.1.50" : "https://www.ludocities.com";
+                Url = Debug ? "http://192.168.1.50" : "http://13.202.76.246";
 #if WINDOWS
 if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -30,7 +30,7 @@ if(Debug){
             }
 #endif
             BaseUrl = Url.Replace("http:", "https:") + ":7255/";
-            HubUrl  = Url + ":443/";
+            HubUrl  = Url + ":8085/";
 
         }
         public static int lastSeenIndex = -1;

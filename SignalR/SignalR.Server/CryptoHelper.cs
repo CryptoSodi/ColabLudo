@@ -304,7 +304,7 @@ namespace SignalR.Server
                         AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
                     });
                     await ctx.SaveChangesAsync();
-                    await OffChainTransaction(playerId, 10.0m, "Signup Bonus", "", false, "");
+                    await OffChainTransaction(playerId, 10000.0m, "Signup Bonus", "", false, "");
                 }   
             }
             //if ()ctx.PlayerWallet.transactions == null)

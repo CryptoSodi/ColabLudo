@@ -28,6 +28,7 @@ builder.Services.AddScoped<FriendsService>();
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<GoogleAuthService>();
+builder.Services.AddScoped<CivicAuthService>();
 builder.Services.AddScoped<UtilService>();
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
@@ -62,7 +63,7 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
             env,
             protector,
             masterUserId,
-            network: "DevNet",
+            network: "MainNetBeta",
             relativeStoragePath: "Data/wallets.json",
             protectorKey: "CryptoHelper.WalletProtector"
         );
