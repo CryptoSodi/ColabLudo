@@ -1,4 +1,3 @@
-
 namespace LudoClient.ControlView;
 
 public partial class Capsule : ContentView
