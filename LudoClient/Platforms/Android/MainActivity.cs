@@ -41,8 +41,8 @@ namespace LudoClient
             try
             {
                 base.OnCreate(savedInstanceState);
-              //  string sha1 = GetApkSignatureSha1(this);                
-             //   Console.WriteLine($"My APK SHA-1 = {sha1}");//
+                string sha1 = GetApkSignatureSha1(this);                
+                Console.WriteLine($"My APK SHA-1 = {sha1}");//
                 UserDialogs.Init(this);
                 // Resolve via MAUI's global ServiceProvider (avoid your own Services namespace)
                 var sp = MauiApplication.Current.Services;
@@ -70,6 +70,7 @@ namespace LudoClient
         {
             if (!IsGamepad(e.Device)) return base.OnKeyUp(keyCode, e);
             var btn = MapKeycode(keyCode);
+            Console.WriteLine($"$BUTTON {btn}");
             if (btn != null)
             {
                 _input?.OnButtonChanged(e.Device?.Name ?? "Unknown", btn, false);
@@ -102,6 +103,8 @@ namespace LudoClient
         void ReadAxis(MotionEvent e, Axis axis, string name)
         {
             float v = e.GetAxisValue(axis);
+
+           // Console.WriteLine($"axis {axis}");
             if (Math.Abs(v) < _options.DeadZone) v = 0f;
             _input?.OnAxisChanged(e.Device?.Name ?? "Unknown", name, v);
         }

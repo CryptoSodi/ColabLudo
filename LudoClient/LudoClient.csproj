@@ -21,10 +21,10 @@
 		<Nullable>enable</Nullable>
 
 		<!-- Display name -->
-		<ApplicationTitle>LudoNFT</ApplicationTitle>
+		<ApplicationTitle>LudoCities</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.ludoengine.ludonft</ApplicationId>
+		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>

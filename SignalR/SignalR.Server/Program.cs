@@ -30,6 +30,7 @@ builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<CivicAuthService>();
 builder.Services.AddScoped<UtilService>();
+builder.Services.AddHttpClient<GameShiftService>();
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection();

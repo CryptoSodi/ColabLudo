@@ -11,7 +11,7 @@ using System.Collections.Concurrent;
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
 
-    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService) : Hub
+    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, GameShiftService gameShiftService) : Hub
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
@@ -23,7 +23,9 @@ namespace SignalR.Server
                 ConnectionToPlayer[Context.ConnectionId] 
                      = await _utilService.GetPlayerByID(player.PlayerId);
                        await _utilService.SetPlayerOnlineState(player.PlayerId, true);
-                return await _utilService.CastPlayerToInfoAsync(player);
+                PlayerInfo playerInfo = await _utilService.CastPlayerToInfoAsync(player);
+                gameShiftService.CreateUserAsync(playerInfo);
+                return playerInfo;
             }
             catch (Exception ex)
             {

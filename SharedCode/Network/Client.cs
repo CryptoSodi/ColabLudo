@@ -129,7 +129,7 @@ namespace SharedCode.Network
             }
             try
             {
-                await _hubConnection.StartAsync().ConfigureAwait(false);
+                await _hubConnection.StartAsync();//.ConfigureAwait(false);
                 Connected = true;
                 await UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");

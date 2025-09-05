@@ -73,6 +73,8 @@ namespace SignalR.Server.Services
                     existingPlayer = ctx.Players.FirstOrDefault(p => p.Email == email);
                     existingPlayer.AuthToken = crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                     await ctx.SaveChangesAsync();
+
+                    
                 }
 
                 return existingPlayer;
