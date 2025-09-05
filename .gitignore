@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /SharedCode/ControlView/Capsule.xaml.cs
 /SignalR/SignalR.Server/Data/wallets.json
 /LudoClient/key.keystore
+/SignalR/SignalR.Server/appsettings.json
