@@ -8,10 +8,7 @@ using Android.Views;
 using Java.Security;
 using LudoClient.Platforms.Android;
 using LudoClient.Services;
-using SharedCode.Constants;
-using static Android.Renderscripts.ScriptGroup;
 using PMSignature = Android.Content.PM.Signature;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace LudoClient
 {

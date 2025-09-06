@@ -7,7 +7,6 @@ using SharedCode.Constants;
 using SharedCode.CoreEngine;
 using SimpleToolkit.Core;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
