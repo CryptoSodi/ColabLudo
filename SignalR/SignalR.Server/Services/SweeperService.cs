@@ -1,5 +1,5 @@
 ﻿namespace SignalR.Server.Services
-{ 
+{
     /// Background worker that calls the sweeper method on a fixed interval.
     public class SweeperService : BackgroundService
     {
@@ -23,7 +23,7 @@
             {
                 try
                 {
-                    await _cryptoHelper.SweepAllSubAccountsAsync();
+                    _cryptoHelper.SweepAllSubAccounts();
                 }
                 catch (Exception ex)
                 {

@@ -1,5 +1,4 @@
-﻿
-using SharedCode.Network;
+﻿using SharedCode.Network;
 using System.Net;
 using System.Net.Sockets;
 namespace SharedCode.Constants
@@ -8,13 +7,13 @@ namespace SharedCode.Constants
     {
         public static int GameHistorySaveIndex = 0;
         public static readonly decimal initialEntry = (decimal)1;
-        public static readonly bool Debug = true;
+        public static readonly bool Debug = false;
         public static readonly string Url;
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
         public static Client MatchMaker;
         public static Random rnd = new Random();
-
+        public static string chainType = "CORE";
         static GlobalConstants()
         {
                 Url = Debug ? "http://192.168.1.50" : "http://13.202.76.246";

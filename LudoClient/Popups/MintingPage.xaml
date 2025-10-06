@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<popup:BasePopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:LudoClient.ControlView"
+             xmlns:popup="clr-namespace:LudoClient.Popups"
+             x:Class="LudoClient.Popups.MintingPage"
+             xmlns:extensions="clr-namespace:LudoClient.Extensions"
+             xmlns:constants="clr-namespace:LudoClient.Constants"
+             ImageSource="dailybonus_popup_bg.webp">
+    <popup:BasePopup.PopupContent>
+        <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,Auto" ColumnDefinitions=".4*,8*,.4*">
+            <local:TitleBar Grid.Row="1" Grid.Column="1" Title="MINTING" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+            <Grid Padding="3" Grid.Column="1" Grid.Row="1" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions ="1.4*,1*">
+                <Grid Margin="0,2,0,3" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Fill" HorizontalOptions="Fill" >
+                    <Frame BackgroundColor="#60000000" CornerRadius="4" Padding="30,-5,30,-5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    <ScrollView HorizontalOptions="Fill" VerticalOptions="Fill" >
+                        <VerticalStackLayout x:Name="MainContainer" Spacing="10" Margin="10">
+                            <!-- Dynamic rows will be added here -->
+                        </VerticalStackLayout>
+                    </ScrollView>
+                </Grid>
+                <Grid Grid.Row="1" VerticalOptions="End" HorizontalOptions="Fill" RowDefinitions="2*,1*,0.4*" >
+                    <local:Capsule ImageSource="{x:Static constants:Skins.Background_Controlbox_Small}" HorizontalOptions="Fill" VerticalOptions="Start">
+                        <Grid Margin="10" ColumnDefinitions=".1*,.3*,.1*" ColumnSpacing="10">
+                            <Image Source="{x:Static constants:Skins.MinusBTN}" Margin="5,0,0,0" VerticalOptions="Center" HorizontalOptions="Start">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="BtnMinus"/>
+                                </Image.GestureRecognizers>
+                            </Image>
+                            <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".1*,.2*">
+                                <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
+                                <Grid Margin="2" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
+                                    <Label Text="Amount" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
+                                </Grid>
+                                <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="Fill">
+                                    <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
+                                    <StackLayout Orientation="Horizontal" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
+                                        <Image Source="solicon.webp" Margin="-4,2,2,2"  HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
+                                        <Label x:Name="EntryLabel" Text="1" HorizontalOptions="Start" VerticalOptions="Fill"/>
+                                    </StackLayout>
+                                </Grid>
+                            </Grid>
+                            <Image Source="{x:Static constants:Skins.PlusBTN}" Margin="0,0,5,0" Grid.Column="2" VerticalOptions="Center" HorizontalOptions="End">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="BtnPlus"/>
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </Grid>
+                    </local:Capsule>
+                    <!-- Convert btn_green.webp button into a button 003-->
+                    <local:Capsule Grid.Row="1" Margin="5" ImageSource="btn_green.webp" HorizontalOptions="Center" VerticalOptions="Fill" >
+                        <Grid>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="Mint_Clicked"/>
+                            </Grid.GestureRecognizers>
+                            <Label Text="MINT" TextColor="White" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        </Grid>
+                    </local:Capsule>
+                    
+                    <Grid Grid.Row="2" Margin="2" HorizontalOptions="Fill" VerticalOptions="End">
+                        <Label x:Name="Cost" Text="Cost : 1 X 100 = 100 LUDC" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    </popup:BasePopup.PopupContent>
+</popup:BasePopup>

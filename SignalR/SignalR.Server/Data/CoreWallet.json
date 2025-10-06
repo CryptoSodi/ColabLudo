@@ -1,0 +1,14 @@
+{
+  "1": {
+    "PlayerId": 1,
+    "EncryptedPrivateKey": "CfDJ8JLZFd7QnwJBsUIaOWixWpmQLFbC7rgo9PXiiVrMnKgPlABFwSocnGSkuXqvwP3Ap9ggSBLxS55P_Xning2EWPrcMyO44VTDOn9tYBr5WL0-tHce3wfDp8fhy9Vjyd71skbW1ii7slCmtkBiITH8WthVpNB7JTCk0EMRgCXLa5TzjvT1pR1ocHfEOfvAdWGBj0CA5J_FvadRPJd5FZYDdtU",
+    "PublicKey": "0x7aF575c0678535F27418e702dca4cb639720584b",
+    "IsMaster": true
+  },
+  "4": {
+    "PlayerId": 4,
+    "EncryptedPrivateKey": "CfDJ8JLZFd7QnwJBsUIaOWixWpm_WJZuGKs5Tr4QLjLECgavqtD1YcP3exhaUZchM84HX2MEJNiLwMfaOKJOb35seiy7eKXAdwdkTKrQMFJKozNaMmgSQeujyJkWqxNRmSgonGZYE4uzTWiPccpMopk902FEqLUEmi1tBj9_9Jij8uuEfh9-R_xFwjzbWb8KXqCsGMjO_ozC_RzdgJz2xKUvr9o",
+    "PublicKey": "0xe8572D88a01a43585a29Dc54E3F84fbFFc1bE452",
+    "IsMaster": false
+  }
+}

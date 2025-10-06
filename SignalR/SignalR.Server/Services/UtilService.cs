@@ -8,39 +8,73 @@ namespace SignalR.Server.Services
 {
     public class UtilService(IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto)
     {
-        public async Task<PlayerInfo> CastPlayerToInfoAsync(Player player)
+        public async Task<PlayerInfo> CastPlayerToInfoAsync(Player player, String NetworkFlag)
         {
-            var pw = await _crypto.EnsurePlayerWalletExists(player.PlayerId);
-
-            return new PlayerInfo
+            var pw = _crypto.EnsurePlayerWalletExists(player.PlayerId, NetworkFlag);
+            if(NetworkFlag == "Sol")
             {
-                PlayerId = player.PlayerId,
-                Name = player.Name,
-                Email = player.Email,
-                PictureUrl = player.PictureUrl,
-                PhoneNumber = player.PhoneNumber,
-                City = player.City,
-                CountryCode = player.CountryCode,
-                IsOnline = player.IsOnline,
-                AuthToken = player.AuthToken,
-                GamesPlayed = player.GamesPlayed,
-                GamesWon = player.GamesWon,
-                GamesLost = player.GamesLost,
-                BestWin = player.BestWin,
-                TotalWin = player.TotalWin,
-                TotalLost = player.TotalLost,
-                Score = player.Score,
-                Role = player.Role,
-                Wallet = new SharedCode.Constants.PlayerWallet
+                return new PlayerInfo
                 {
-                    PlayerId = pw.PlayerId,
-                    AddressType = pw.AddressType,
-                    WalletAddress = pw.WalletAddress,
-                    AvailableBalance = pw.AvailableBalance,
-                    SignupBonus = 10,
-                    Transactions = getTransactions(player.PlayerId)
-                }
-            };
+                    PlayerId = player.PlayerId,
+                    Name = player.Name,
+                    Email = player.Email,
+                    PictureUrl = player.PictureUrl,
+                    PhoneNumber = player.PhoneNumber,
+                    City = player.City,
+                    CountryCode = player.CountryCode,
+                    IsOnline = player.IsOnline,
+                    AuthToken = player.AuthToken,
+                    GamesPlayed = player.GamesPlayed,
+                    GamesWon = player.GamesWon,
+                    GamesLost = player.GamesLost,
+                    BestWin = player.BestWin,
+                    TotalWin = player.TotalWin,
+                    TotalLost = player.TotalLost,
+                    Score = player.Score,
+                    Role = player.Role,
+                    Wallet = new SharedCode.Constants.PlayerWallet
+                    {
+                        PlayerId = pw.PlayerId,
+                        AddressType = pw.AddressType,
+                        WalletAddress = pw.WalletAddress,
+                        AvailableBalance = pw.AvailableBalance,
+                        SignupBonus = 10,
+                        Transactions = getTransactions(player.PlayerId)
+                    }
+                };
+            }
+            else
+            {
+                return new PlayerInfo
+                {
+                    PlayerId = player.PlayerId,
+                    Name = player.Name,
+                    Email = player.Email,
+                    PictureUrl = player.PictureUrl,
+                    PhoneNumber = player.PhoneNumber,
+                    City = player.City,
+                    CountryCode = player.CountryCode,
+                    IsOnline = player.IsOnline,
+                    AuthToken = player.AuthToken,
+                    GamesPlayed = player.GamesPlayed,
+                    GamesWon = player.GamesWon,
+                    GamesLost = player.GamesLost,
+                    BestWin = player.BestWin,
+                    TotalWin = player.TotalWin,
+                    TotalLost = player.TotalLost,
+                    Score = player.Score,
+                    Role = player.Role,
+                    Wallet = new SharedCode.Constants.PlayerWallet
+                    {
+                        PlayerId = pw.PlayerId,
+                        AddressType = pw.AddressType,
+                        WalletAddress = pw.WalletAddress,
+                        AvailableBalance = pw.AvailableBalance = await _crypto.GetTokenBalanceAsync(player.PlayerId),
+                        SignupBonus = 10,
+                        Transactions = getTransactions(player.PlayerId)
+                    }
+                };
+            }
         }
 
         private ICollection<SharedCode.Constants.WalletTransaction> getTransactions(int playerId)
@@ -86,14 +120,14 @@ namespace SignalR.Server.Services
                 Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
             }
         }
-        public async Task<Player> GetPlayerByID(int PlayerId)
+        public Player GetPlayerByID(int PlayerId, string NetworkFlag)
         {
             using var ctx = _contextFactory.CreateDbContext();
             Player sender = ctx.Players.Find(PlayerId);
             if (sender == null)
                 throw new HubException("Player not recognized.");
 
-            var wal = await _crypto.EnsurePlayerWalletExists(PlayerId);
+            var wal = _crypto.EnsurePlayerWalletExists(PlayerId, NetworkFlag);
             if (wal == null)
                 throw new HubException("Player Wallet not Found.");
 

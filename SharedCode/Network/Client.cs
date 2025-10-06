@@ -10,7 +10,6 @@ namespace SharedCode.Network
         public HubConnection _hubConnection;
 
         // Event Definitions using standard .NET event patterns
-
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
         public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
@@ -115,9 +114,7 @@ namespace SharedCode.Network
                 // await ConnectAsync();
             };
         }
-        /// <summary>
         /// Establish the connection to the server asynchronously.
-        /// </summary>
         public async Task ConnectAsync()
         {
             if (_hubConnection.State == HubConnectionState.Connected)
@@ -141,9 +138,7 @@ namespace SharedCode.Network
                 // Consider retry logic here if desired
             }
         }
-        /// <summary>
         /// Disconnect from the server.
-        /// </summary>
         public async Task DisconnectAsync()
         {
             if (_hubConnection == null) return;
@@ -159,12 +154,11 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error while disconnecting: {ex.Message}");
             }
         }
-        /// Creates or joins a lobby on the server, then triggers the RoomJoined event.
         public async Task CreateJoinLobbyAsync(GameDto gameDto)//string gameType, double gameCost, string roomCode
         {
             try
             {
-                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto).ConfigureAwait(false);
+                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto, GlobalConstants.chainType).ConfigureAwait(false);
                 Console.WriteLine($"Joined room: {roomCode}");
                 RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, roomCode));
             }
@@ -173,7 +167,6 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error in CreateJoinLobbyAsync: {ex.Message}");
             }
         }
-        /// Send a message to the server.        
         public async Task<GameCommand> SendMessageAsync(GameCommand commandValue, string command)
         {
             String AuthToken = getAuthToken();
@@ -190,9 +183,6 @@ namespace SharedCode.Network
                 return null;
             }
         }
-        /// <summary>
-        /// Sends a Ready state for the given room code.
-        /// </summary>
         public async Task ReadyAsync()
         {
             try
@@ -212,7 +202,7 @@ namespace SharedCode.Network
                 return;
             if (GlobalConstants.RoomCode != "")
             {
-                _ = _hubConnection.InvokeAsync("LeaveCloseLobby").ConfigureAwait(false);
+                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", GlobalConstants.chainType).ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
             }
         }
@@ -220,9 +210,6 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode).ConfigureAwait(false);
         }
-        /// <summary>
-        /// Send a message to the server.
-        /// </summary>
         public async Task<List<ChatMessages>> SendChatMessageAsync(ChatMessages CM, string roomCode)
         {
             try
@@ -236,32 +223,26 @@ namespace SharedCode.Network
                 return null;
             }
         }
-
         public async Task<PlayerInfo> UserConnectedSetID()
         {
             String AuthToken = getAuthToken();
             if (AuthToken == "")
                 return null;
-            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken, GlobalConstants.chainType).ConfigureAwait(false);
         }
-
-        /// <summary>
-        /// Converts SOL to lamports and calls your lamport‐based SendSolAsync.
-        /// </summary>
         public async Task<string> SendSolAsync(string destination, decimal solAmount)
         {
             // Use the generic InvokeAsync<DepositInfo>
-            String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount).ConfigureAwait(false);
+            String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount, GlobalConstants.chainType).ConfigureAwait(false);
             return info;
         }
-
         internal async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
             return await _hubConnection.InvokeAsync<List<TournamentDTO>>("GetAllTournaments", type).ConfigureAwait(false);
         }
         internal async Task<TournamentDTO> JoinTournament(int TournamentID)
         {
-            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID, GlobalConstants.chainType).ConfigureAwait(false);
         }
         internal async Task<TournamentResultDTO> GetResultsTournament(int TournamentID)
         {
@@ -270,6 +251,11 @@ namespace SharedCode.Network
         public string getAuthToken()
         {
             return Preferences.Get("AuthToken", "");
+        }
+
+        public async Task<string> MintNFT(int amount)
+        {
+            return await _hubConnection.InvokeAsync<string>("MintNFT", amount, GlobalConstants.chainType).ConfigureAwait(false);
         }
     }
 }

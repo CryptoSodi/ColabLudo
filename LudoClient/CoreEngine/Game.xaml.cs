@@ -37,7 +37,15 @@ public partial class Game : ContentPage
     {
         var sp = Application.Current?.Handler?.MauiContext?.Services
          ?? throw new InvalidOperationException("No MAUI context yet");
+        try
+        {
         var input = sp.GetRequiredService<IGamepadInputService>();
+
+        }
+        catch (Exception)
+        {
+
+        }
 
         this.gameMode = gameMode;
         //new List<PlayerDto>();
@@ -69,14 +77,27 @@ public partial class Game : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        try
+        {
+            if (_input != null)
+            {
         _input.ButtonChanged += OnButtonChanged;
         _input.AxisChanged += OnAxisChanged;
+
+            }
+        }
+        catch (Exception)
+        {
+        }
     }
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        _input.ButtonChanged -= OnButtonChanged;
-        _input.AxisChanged -= OnAxisChanged;
+        if (_input != null)
+        {
+            _input.ButtonChanged -= OnButtonChanged;
+            _input.AxisChanged -= OnAxisChanged;
+        }
     }
     void OnButtonChanged(string device, string button, bool isDown)
     {

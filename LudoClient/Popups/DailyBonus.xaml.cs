@@ -55,7 +55,7 @@ public partial class DailyBonus : BasePopup
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try
         {
-            var dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("ClaimTodayBonus").ConfigureAwait(false);
+            var dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("ClaimTodayBonus", GlobalConstants.chainType).ConfigureAwait(false);
             UpdateFromDto(dto);
         }
         catch (Exception ex)

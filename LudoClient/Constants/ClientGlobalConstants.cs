@@ -24,6 +24,7 @@ namespace LudoClient.Constants
         public static Results results;
 
         internal static Game game;
+        internal static MintingPage mintingPage;
 
         public static void Init()
         {

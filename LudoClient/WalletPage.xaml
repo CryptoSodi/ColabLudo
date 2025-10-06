@@ -16,7 +16,7 @@
 
             <local:Capsule IsVisible="true" ImageSource="verify_acc_bg.webp" Grid.Row="3" Grid.Column="1" Grid.RowSpan="2" Padding="20,0,20,0" HorizontalOptions="Center" VerticalOptions="End">
                 <Grid Margin="8,2,5,2" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".8*,.45*">
-                    <Label Text="Withdraw Solana to external wallet." TextColor="White" FontSize="10" HorizontalOptions="Start" VerticalOptions="Center" FontAutoScalingEnabled="True"/>
+                    <Label Text="Withdraw LUDC to external wallet." TextColor="White" FontSize="10" HorizontalOptions="Start" VerticalOptions="Center" FontAutoScalingEnabled="True"/>
                     <local:Capsule Grid.Column="1" ImageSource="btn_verify_account.webp" VerticalOptions="Center" HorizontalOptions="Center">
                         <Grid>
                             <Grid.GestureRecognizers>
@@ -49,8 +49,8 @@
                     <StackLayout Margin="8" Spacing="5" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Center">
                         <Image Source="ic_addmoney.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
                         <StackLayout Spacing="5" HorizontalOptions="Fill" VerticalOptions="Center">
-                            <Label Text="DEPOSIT SOLANA" TextColor="White" Margin="0,-4,0,-4" VerticalOptions="Start" HorizontalOptions="Start"/>
-                            <Label Text="DEPOSIT SOLANA NOTE:ONLY SEND DEVNET" FontSize="10" TextColor="DarkRed" VerticalOptions="Start" HorizontalOptions="Start"/>
+                            <Label Text="DEPOSIT" TextColor="White" Margin="0,-4,0,-4" VerticalOptions="Start" HorizontalOptions="Start"/>
+                            <Label Text="DEPOSIT LUDC TO GAME ACCOUNT" FontSize="10" TextColor="DarkRed" VerticalOptions="Start" HorizontalOptions="Start"/>
                         </StackLayout>
                     </StackLayout>
                 </Grid>

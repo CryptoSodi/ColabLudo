@@ -90,7 +90,7 @@ namespace SignalR.Server
                 var winnerId = winnerSeat.PlayerId;
                 try
                 {
-                    bool credited = await _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
+                    bool credited = _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
                     if (!credited)
                     {
                         Console.WriteLine($"Failed to credit {winnerId}.");
@@ -101,7 +101,7 @@ namespace SignalR.Server
                     {
                         try
                         {
-                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
+                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId), "Sol"));
                         }
                         catch (Exception)
                         {

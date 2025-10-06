@@ -1,3 +1,7 @@
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
@@ -28,6 +32,21 @@ public partial class ProfileInfo : BasePopup
             C6.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalLost));
             player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
             loadValues();
+
+            string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
+
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                return;
+            }
+
+
+            if (result.Contains("Success"))
+            {
+                result = result.Replace(",Success", "");
+                string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                Coins.Text = ids.Length+" NFTS";
+            }
         });
     }
     public async void loadValues()
@@ -59,5 +78,13 @@ public partial class ProfileInfo : BasePopup
         {
             Console.WriteLine(ex);
         }
+    }
+    private void OnManageNftsTapped(object sender, EventArgs e)
+    {
+        if (!GlobalConstants.MatchMaker.Connected)
+            return;
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        ClientGlobalConstants.mintingPage = new MintingPage();
+        ClientGlobalConstants.dashBoard.ShowPopup(ClientGlobalConstants.mintingPage, new PopupOptions { Shape = null });
     }
 }

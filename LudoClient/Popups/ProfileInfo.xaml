@@ -9,7 +9,7 @@
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Row="1" Grid.Column="1" Title="PROFILE" Margin="20,-58,20,0" VerticalOptions="Start" HorizontalOptions="Center"/>
 
-            <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="15" >
+            <StackLayout Margin="5,0,5,-30" Grid.Row="1" Grid.Column="1" Spacing="5">
                 <local:Capsule  ImageSource="profile_info_bg.webp" HorizontalOptions="Center">
                     <Grid Padding="3" Margin="0,2,0,3" RowSpacing="4" ColumnSpacing="8" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions ="2.3*,1*,1*,1*,0.05*">
                         <local:PlayerBoxLong x:Name="player" PlayerName="" PlayerImage="profile_image.webp" HorizontalOptions="Fill" />
@@ -36,10 +36,23 @@
                         </Grid>
                     </Grid>
                 </local:Capsule>
+                <Grid VerticalOptions="FillAndExpand" Padding="0,0,0,4">
+                    <StackLayout VerticalOptions="Start" Orientation="Vertical" HorizontalOptions="FillAndExpand" Spacing="8" >
+                        <local:Capsule ImageSource="friendlong.webp" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Grid Margin="6" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="1*,2*,1.5*">
+                                <Grid.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="OnManageNftsTapped" />
+                                </Grid.GestureRecognizers>
+                                <Image Source="nft_icon.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
+                                <Label Text="MANAGE NFTS" Grid.Column="1" HorizontalTextAlignment="Start" TextColor="White" HorizontalOptions="Fill" VerticalOptions="Center"/>
 
-                <Grid VerticalOptions="FillAndExpand" Margin="0,0,0,20">
-                    <StackLayout VerticalOptions="End" Orientation="Vertical" HorizontalOptions="FillAndExpand" Spacing="8" >
-                        <Image Source="statistics_info.webp" Margin="30,0,30,10" VerticalOptions="Center" HorizontalOptions="Center"/>
+                                <Grid Grid.Column="2" Margin="5,8,5,8" HorizontalOptions="Fill" VerticalOptions="Fill">
+                                    <Frame BackgroundColor="#60000000" CornerRadius="4" Padding="30,-5,30,-5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                                    <Label x:Name="Coins" Text="0 NFTs" TextColor="White" HorizontalOptions="End" VerticalOptions="Fill" Margin="0,0,4,0"/>
+                                </Grid>
+                            </Grid>
+                        </local:Capsule>
+                        <Image Source="statistics_info.webp" Margin="30,0,30,5" VerticalOptions="Center" HorizontalOptions="Center"/>
                         <Grid HorizontalOptions="FillAndExpand">
                             <StackLayout Orientation="Horizontal" Spacing="8" HorizontalOptions="FillAndExpand">
                                 <local:StatisticCard x:Name="C1" Title="GAMES PLAYED" HorizontalOptions="FillAndExpand" />

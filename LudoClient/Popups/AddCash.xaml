@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <popup:BasePopup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+           xmlns:constants="clr-namespace:SharedCode.Constants"
            xmlns:local="clr-namespace:LudoClient.ControlView"
            xmlns:popup="clr-namespace:LudoClient.Popups"
            x:Class="LudoClient.Popups.AddCash"
@@ -28,7 +29,20 @@
 
                         <local:Capsule ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
                             <Grid Margin="5" HorizontalOptions="Fill" VerticalOptions="Fill">
-                                <Label Text="SOL ADDRESS ONLY SEND ON DEVNET" TextColor="Red" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
+                                <Label Text="UNKNOWN" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label"
+      Binding="{Binding Source={x:Static constants:GlobalConstants.chainType}}"
+      Value="CORE">
+                                            <Setter Property="Text" Value="SEND FROM CORE ADDRESS ON TESTNET2"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label"
+      Binding="{Binding Source={x:Static constants:GlobalConstants.chainType}}"
+      Value="SOLANA">
+                                            <Setter Property="Text" Value="SEND FROM SOLANA ADDRESS ON DEVNET"/>
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
                                 <Label x:Name="AddressText" Text="ADDRESS" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
                             </Grid>
                         </local:Capsule>

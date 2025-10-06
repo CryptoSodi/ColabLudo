@@ -108,7 +108,7 @@ namespace SignalR.Server.Services
             return result;
         }
 
-        internal async Task<TournamentDTO> JoinTournament(Player player, int tournamentId)
+        internal async Task<TournamentDTO> JoinTournament(Player player, int tournamentId, string NetworkFlag)
         {
             using var ctx = _contextFactory.CreateDbContext();
             var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
@@ -116,7 +116,7 @@ namespace SignalR.Server.Services
             {
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTFOUND");
             }
-            if (!await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee))
+            if (!_crypto.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee, NetworkFlag))
             {
                 Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId}.");
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");

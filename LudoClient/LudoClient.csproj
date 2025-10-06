@@ -486,6 +486,7 @@
 		<None Remove="Resources\Images\ProfilePage\ic_email.webp" />
 		<None Remove="Resources\Images\ProfilePage\lbl_unverified.webp" />
 		<None Remove="Resources\Images\ProfilePage\lbl_verified.webp" />
+		<None Remove="Resources\Images\ProfilePage\nft_icon.webp" />
 		<None Remove="Resources\Images\ProfilePage\profile_info_bg.webp" />
 		<None Remove="Resources\Images\ProfilePage\statistics_info.webp" />
 		<None Remove="Resources\Images\results\btn_exit.webp" />
@@ -686,6 +687,7 @@
 		<MauiImage Include="Resources\Images\ProfilePage\ic_email.webp" />
 		<MauiImage Include="Resources\Images\ProfilePage\lbl_unverified.webp" />
 		<MauiImage Include="Resources\Images\ProfilePage\lbl_verified.webp" />
+		<MauiImage Include="Resources\Images\ProfilePage\nft_icon.webp" />
 		<MauiImage Include="Resources\Images\ProfilePage\profile_info_bg.webp" />
 		<MauiImage Include="Resources\Images\ProfilePage\statistics_info.webp" />
 		<MauiImage Include="Resources\Images\results\btn_exit.webp" />
@@ -839,6 +841,9 @@
 		</MauiXaml>
 		<MauiXaml Update="ControlView\GameDetailList.xaml">
 			<Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
+		<MauiXaml Update="Popups\MintingPage.xaml">
+		  <Generator>MSBuild:Compile</Generator>
 		</MauiXaml>
 		<MauiXaml Update="Popups\WithdrawPopup.xaml">
 			<Generator>MSBuild:Compile</Generator>

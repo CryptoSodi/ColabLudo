@@ -59,7 +59,7 @@ namespace LudoClient
             _isLoggingIn = true;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 #if WINDOWS
-            await performLoginAsync("Guest2");
+            await performLoginAsync("Guest3");
             _isLoggingIn = false;
             return;
 #endif

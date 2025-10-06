@@ -1,11 +1,7 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
-using SharedCode;
 using SharedCode.Constants;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace LudoClient.Popups;
 
@@ -37,7 +33,6 @@ public partial class WithdrawPopup : BasePopup
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-            AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
             AmmountEntry.entryField.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
             SolBalance = (decimal)UserInfo.Instance.player.Wallet?.AvailableBalance;
         });
@@ -45,8 +40,8 @@ public partial class WithdrawPopup : BasePopup
     private void OnSendButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        string amountInSoltext = AmmountEntry.entryField.Text;
-
+        string amountInSoltext = AmmountEntry.entryField.Text.Replace("LUDC", "");
+        recAddress = AddressEntry.entryField.Text;
         if (decimal.TryParse(amountInSoltext, out decimal amountInSol))
         {
             if (SolBalance < amountInSol)
