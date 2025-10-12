@@ -35,9 +35,7 @@ namespace SignalR.Server
             _masterUserId = masterUserId;
 
             // Initialize Solana RPC for MainNet or DevNet
-            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase)
-                ? Cluster.DevNet
-                : Cluster.MainNet;
+            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase) ? Cluster.DevNet : Cluster.MainNet;
             _rpc = ClientFactory.GetClient(cluster);
 
             // Ensure the folder for storing JSON exists
@@ -260,10 +258,19 @@ namespace SignalR.Server
         /// Queries the on-chain SOL balance (in lamports) for a given public key.
         public async Task<ulong> GetOnChainBalanceAsync(string pubKey)
         {
-            var r = await _rpc.GetBalanceAsync(pubKey);
-            if (r.WasSuccessful)
-                return r.Result.Value;
-            throw new Exception(r.Reason);
+            try
+            {
+                var r = await _rpc.GetBalanceAsync(pubKey);
+                if (r.WasSuccessful)
+                    return r.Result.Value;
+                else
+                    return 0;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("Error getting GetOnChainBalanceAsync");
+                return await GetOnChainBalanceAsync(pubKey);
+            }
         }
         public async Task<bool> DeductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
         {

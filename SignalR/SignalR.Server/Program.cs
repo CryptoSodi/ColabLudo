@@ -6,7 +6,6 @@ using SignalR.Server;
 using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add CORS policy
 builder.Services.AddCors(o =>
 {
@@ -15,10 +14,13 @@ builder.Services.AddCors(o =>
             .AllowAnyHeader()
             .AllowAnyMethod());
 });
-
+// Load secrets (local dev) and environment variables (for production)
+builder.Configuration
+.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+.AddUserSecrets<Program>()
+.AddEnvironmentVariables();
 // Add SignalR services
 builder.Services.AddSignalR();
-
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false));// Turn off verbose logging
@@ -40,7 +42,6 @@ builder.Services.AddSingleton<DatabaseManager>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var crypto = sp.GetRequiredService<CryptoHelper>();
     var utilService = sp.GetRequiredService<UtilService>();
-
     var dm = new DatabaseManager(hubContext, contextFactory, crypto, utilService);
     // Call LoadData in background
     Task.Run(dm.LoadData);
@@ -51,7 +52,6 @@ builder.Services.AddSingleton<DatabaseManager>(sp => {
 builder.Services.AddSingleton<CryptoHelper>(sp =>
 {
     var env = sp.GetRequiredService<IHostEnvironment>();
-
     var factory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var protector = sp.GetRequiredService<IDataProtectionProvider>();
     // Use the factory to create a new DbContext instance
@@ -77,15 +77,15 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
 });
 // Build the app
 var app = builder.Build();
-
-
 // Use CORS policy
 app.UseCors("AllowAnyOrigin");
-
 // Map SignalR hubs
 app.MapHub<LudoHub>("/LudoHub");
 // Map SignalR hubs
 app.MapHub<AdminHub>("/AdminHub");
-
 // Run the app
 app.Run();
+namespace SignalR.Server
+{
+    public partial class Program { }
+}

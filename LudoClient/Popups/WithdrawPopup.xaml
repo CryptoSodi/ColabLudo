@@ -33,22 +33,7 @@
                     <BoxView Grid.ColumnSpan="3" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                     <local:Capsule Grid.ColumnSpan="3" ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
                         <Grid Margin="5" HorizontalOptions="Fill" VerticalOptions="Fill">
-
-                            <Label Text="UNKNOWN" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label"
-                                 Binding="{Binding Source={x:Static constants:GlobalConstants.chainType}}"
-                                 Value="CORE">
-                                        <Setter Property="Text" Value="CORE ADDRESS ONLY SEND TO TESTNET2"/>
-                                    </DataTrigger>
-                                    <DataTrigger TargetType="Label"
-                                 Binding="{Binding Source={x:Static constants:GlobalConstants.chainType}}"
-                                 Value="SOLANA">
-                                        <Setter Property="Text" Value="SOLANA ADDRESS ONLY SEND TO DEVNET"/>
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-
+                            <Label Text="SOLANA ADDRESS ONLY SEND TO DEVNET" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
                         </Grid>
                     </local:Capsule>
                     <Grid Grid.Column="1" Margin="0,0,0,5" HeightRequest="40" HorizontalOptions="Fill" VerticalOptions="End">

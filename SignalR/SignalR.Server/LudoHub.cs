@@ -15,15 +15,15 @@ namespace SignalR.Server
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
-        public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode, String NetworkFlag)
+        public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             try
             {
                 var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
-                ConnectionToPlayer[Context.ConnectionId]  = _utilService.GetPlayerByID(player.PlayerId, NetworkFlag);
+                ConnectionToPlayer[Context.ConnectionId]  = _utilService.GetPlayerByID(player.PlayerId);
                                                             await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 
-                PlayerInfo playerInfo = await _utilService.CastPlayerToInfoAsync(player, NetworkFlag);
+                PlayerInfo playerInfo = await _utilService.CastPlayerToInfoAsync(player);
                 gameShiftService.CreateUserAsync(playerInfo);
                 return playerInfo;
             }
@@ -35,13 +35,13 @@ namespace SignalR.Server
             }
         }
         // Call this once after authentication or lobby-join to establish mapping.
-        public async Task<PlayerInfo> UserConnectedSetID(String AuthToken, string NetworkFlag = "Sol")
+        public async Task<PlayerInfo> UserConnectedSetID(String AuthToken)
         {
             // 1) Store SignalR connection
             try
             {
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)), NetworkFlag);
-                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId], NetworkFlag);
+                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)
             {
@@ -90,13 +90,13 @@ namespace SignalR.Server
             }
             throw new HubException("Player not recognized.");
         }
-        public async Task<String> SendSol(string destination, decimal amountInSol, string NetworkFlag = "Sol")
+        public async Task<String> SendSol(string destination, decimal amountInSol)
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                var r = _crypto.SendSolToExternalWallet(player, destination, amountInSol, NetworkFlag);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                var r = _crypto.SendSolToExternalWallet(player, destination, amountInSol);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return r;
             }
             catch (Exception ex)
@@ -121,16 +121,16 @@ namespace SignalR.Server
                 return Task.FromResult(new List<GameCommand>());
             }
         }
-        public async Task LeaveCloseLobby(string NetworkFlag = "Sol")
+        public async Task LeaveCloseLobby()
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                var (existingGame, user) = await DM.LeaveGameLobby(player.PlayerId, NetworkFlag);
+                var (existingGame, user) = await DM.LeaveGameLobby(player.PlayerId);
                 // Optionally, perform additional cleanup or update the game engine state.                
                 // Notify all connected clients that a user has left.
                 await BroadcastPlayersAsync(existingGame);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, "Sol"));
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
             }
             catch (Exception ex)
             {
@@ -312,13 +312,13 @@ namespace SignalR.Server
             }
         }
         // New function: Claim today's bonus and update LastResetDate
-        public async Task<DailyBonusDto> ClaimTodayBonus(String NetworkFlag)
+        public async Task<DailyBonusDto> ClaimTodayBonus()
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                var r = await _dailyBonusService.ClaimTodayBonus(player, NetworkFlag);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                var r = await _dailyBonusService.ClaimTodayBonus(player);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return r;
             }
             catch (Exception ex)
@@ -346,13 +346,13 @@ namespace SignalR.Server
                 return new List<TournamentDTO>();
             }
         }
-        public async Task<TournamentDTO> JoinTournament(int tournamentId, string NetworkFlag = "Sol")
+        public async Task<TournamentDTO> JoinTournament(int tournamentId)
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                var r = await _tournamentService.JoinTournament(player, tournamentId, NetworkFlag);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                var r = await _tournamentService.JoinTournament(player, tournamentId);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return r;
             }
             catch (Exception ex)
@@ -361,13 +361,13 @@ namespace SignalR.Server
                 return null;
             }
         }
-        public async Task<string> MintNFT(int amount, string NetworkFlag = "Sol")
+        public async Task<string> MintNFT(int amount)
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                String r = await _crypto.MintNFT(player.PlayerId ,amount, NetworkFlag);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                String r = await _crypto.MintNFT(player.PlayerId ,amount);
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return r;
             }
             catch (Exception ex)
@@ -405,15 +405,15 @@ namespace SignalR.Server
             }
         }
         /* END FRIENDS API */
-        public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO, String NetworkFlag = "Sol")
+        public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
             try
             {
                 Player player = await GetCallerPlayer();
-                Game existingGame = await DM.JoinGameLobby(player, gameDTO, NetworkFlag);
+                Game existingGame = await DM.JoinGameLobby(player, gameDTO);
                 try
                 {
-                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 }
                 catch (Exception) { }
                 if (existingGame == null)
@@ -423,7 +423,7 @@ namespace SignalR.Server
                 await Groups.AddToGroupAsync(Context.ConnectionId, existingGame.RoomCode);
                 await BroadcastPlayersAsync(existingGame);
 
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player, NetworkFlag));
+                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return existingGame.RoomCode; // Return the room name to the client
             }
             catch (Exception ex)

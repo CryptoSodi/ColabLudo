@@ -41,9 +41,9 @@ namespace SignalR.Server
             try
             {
                 var player = await _civicAuthService.CivicAuthentication(idToken, city, countryCode);
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(player.PlayerId, "Sol");
+                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(player.PlayerId);
                 await _utilService.SetPlayerOnlineState(player.PlayerId, true);
-                return await _utilService.CastPlayerToInfoAsync(player, "Sol");
+                return await _utilService.CastPlayerToInfoAsync(player);
             }
             catch (Exception ex)
             {
@@ -57,8 +57,8 @@ namespace SignalR.Server
             try
             {
                 Console.WriteLine($"Ping {Context.ConnectionId}");
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)), "Sol");
-                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId], "Sol");
+                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)
             {
@@ -71,7 +71,7 @@ namespace SignalR.Server
             try
             {
                 using var ctx = _contextFactory.CreateDbContext();
-                var player = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)), "Sol");
+                var player = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
                 //g.State == "Active"
                 return await ctx.Games.Where(g => g.MultiPlayer.P1 == player.PlayerId || g.MultiPlayer.P2 == player.PlayerId || g.MultiPlayer.P3 == player.PlayerId || g.MultiPlayer.P4 == player.PlayerId && g.State == "Completed").ToListAsync();
             }

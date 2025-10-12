@@ -13,7 +13,7 @@ namespace SignalR.Server
         private List<MultiPlayer> multiPlayers { get; set; } = new();
         public ConcurrentDictionary<string, GameRoom> _gameRooms { get; set; } = new();
         
-        public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO, String NetworkFlag)
+        public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO)
         {
             Console.WriteLine(DateTime.UtcNow);
             Game existingGame = null;
@@ -53,7 +53,7 @@ namespace SignalR.Server
                 // Deduct game fee
                 if (!gameDTO.IsPracticeGame)
                 {
-                    if (!_crypto.deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount, NetworkFlag))
+                    if (!_crypto.deductGameFee(player.PlayerId, tournamentId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
@@ -87,7 +87,7 @@ namespace SignalR.Server
             else
             {
                 if (!existingGame.IsPractice)
-                    if (!_crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount, NetworkFlag))
+                    if (!_crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
@@ -111,7 +111,7 @@ namespace SignalR.Server
             await SaveData(); // Save asynchronously
             return existingGame;
         }
-        public async Task<(Game game, User user)> LeaveGameLobby(int playerId, String NetworkFlag)
+        public async Task<(Game game, User user)> LeaveGameLobby(int playerId)
         {
             User user = null;
             Game existingGame = null;
@@ -153,7 +153,7 @@ namespace SignalR.Server
                         try
                         {
                             decimal betAmount = existingGame.BetAmount;
-                            _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode, NetworkFlag);
+                            _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
                             Console.WriteLine($"Refunded {betAmount} to player {playerId} for game {existingGame.RoomCode}.");
                         }
                         catch (Exception ex)

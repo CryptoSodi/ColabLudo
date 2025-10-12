@@ -11,51 +11,32 @@ namespace SignalR.Server
     public class CryptoHelper
     {
         public SolCryptoHelper solCryptoHelper;
-        public CoreCryptoHelper coreCryptoHelper;
         string protectorKey;
         public CryptoHelper(IDbContextFactory<LudoDbContext> contextFactory, IHostEnvironment env, IDataProtectionProvider dataProtectionProvider,
-            int masterUserId, string network = "MainNetBeta", string relativeStoragePath = "wallets.json",string protectorKey = "CryptoHelper.WalletProtector")
+            int masterUserId, string network = "MainNetBeta", string relativeStoragePath = "wallets.json", string protectorKey = "CryptoHelper.WalletProtector")
         {
             this.protectorKey = protectorKey;
             solCryptoHelper = new SolCryptoHelper(contextFactory, env, dataProtectionProvider, masterUserId, network, relativeStoragePath, protectorKey);
-            coreCryptoHelper = new CoreCryptoHelper(contextFactory, env, dataProtectionProvider, masterUserId, "https://rpc.test2.btcs.network", "data\\CoreWallet.json", protectorKey);
         }
-        public bool OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode = "", string NetworkFlag = "Sol")
+        public bool OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode = "")
         {
-            if (NetworkFlag == "Sol")
-                return solCryptoHelper.OffChainTransaction(playerId, solAmount, description, txId, IsOnChain, RoomCode).GetAwaiter().GetResult();
-            else
-                coreCryptoHelper.SendOnChainAsync(playerId, description, solAmount).GetAwaiter().GetResult();
-            return false;
+            return solCryptoHelper.OffChainTransaction(playerId, solAmount, description, txId, IsOnChain, RoomCode).GetAwaiter().GetResult();
         }
-        public PlayerWallet? EnsurePlayerWalletExists(int playerId, string NetworkFlag)
+        public PlayerWallet? EnsurePlayerWalletExists(int playerId)
         {
-            if (NetworkFlag == "Sol")
-                return solCryptoHelper.EnsurePlayerWalletExists(playerId, "none").GetAwaiter().GetResult();
-            else
-                return coreCryptoHelper.EnsurePlayerWalletExists(playerId, "none").GetAwaiter().GetResult();
+            return solCryptoHelper.EnsurePlayerWalletExists(playerId, "none").GetAwaiter().GetResult();
         }
-        public bool deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount, string NetworkFlag = "Sol")
+        public bool deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
         {
-            if (NetworkFlag == "Sol")
-                return solCryptoHelper.DeductGameFee(playerId, tournamentId, roomCode, isTournamentGame, betAmount).GetAwaiter().GetResult();
-            else
-                return coreCryptoHelper.DeductGameFee(playerId, tournamentId, roomCode, isTournamentGame, betAmount).GetAwaiter().GetResult();
+            return solCryptoHelper.DeductGameFee(playerId, tournamentId, roomCode, isTournamentGame, betAmount).GetAwaiter().GetResult();
         }
-        internal string SendSolToExternalWallet(Player player, string destination, decimal amountInSol, string NetworkFlag)
+        internal string SendSolToExternalWallet(Player player, string destination, decimal amountInSol)
         {
-            if (NetworkFlag == "Sol")
-                return solCryptoHelper.SendSolToExternalWallet(player, destination, amountInSol).GetAwaiter().GetResult();
-            else
-                return coreCryptoHelper.SendCoreToExternalWallet(player.PlayerId, destination, amountInSol).GetAwaiter().GetResult();
+            return solCryptoHelper.SendSolToExternalWallet(player, destination, amountInSol).GetAwaiter().GetResult();
         }
         internal void SweepAllSubAccounts()
         {
             solCryptoHelper.SweepAllSubAccountsAsync().GetAwaiter().GetResult();
-        }
-        internal async Task<decimal> GetTokenBalanceAsync(int playerid)
-        {
-            return await coreCryptoHelper.GetTokenBalanceAsync(await coreCryptoHelper.GetOrCreateAccount(playerid));
         }
         public string Encrypt(string plainText)
         {
@@ -85,36 +66,9 @@ namespace SignalR.Server
             return sr.ReadToEnd();
         }
 
-        public async Task<String> MintNFT(int playerid, int amount, string networkFlag)
+        public async Task<String> MintNFT(int playerid, int amount)
         {
-            if (networkFlag == "Sol")
-              return await solCryptoHelper.MintNFT(playerid, amount);
-            else
-            {
-                List<BigInteger> ids;
-                try
-                {
-                    if (amount != 0)
-                    {
-                        String s = await coreCryptoHelper.MintNFT(playerid, (uint)amount);
-                        Console.WriteLine("MINTED : "+s);
-                    }
-                    ids = await coreCryptoHelper.GetWalletOfOwnerAsync(playerid);
-                    return string.Join(",", ids) + ",Success";
-                }
-                catch (Exception ex)
-                {
-                    try
-                    {
-                        ids = await coreCryptoHelper.GetWalletOfOwnerAsync(playerid);
-                        return string.Join(",", ids) + ",Failed";
-                    }
-                    catch (Exception)
-                    {
-                        return "0,Failed";
-                    }
-                }
-            } 
+            return await solCryptoHelper.MintNFT(playerid, amount);
         }
     }
 }

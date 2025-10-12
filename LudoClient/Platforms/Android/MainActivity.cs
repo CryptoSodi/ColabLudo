@@ -9,12 +9,15 @@ using Java.Security;
 using LudoClient.Platforms.Android;
 using LudoClient.Services;
 using PMSignature = Android.Content.PM.Signature;
+using PMPermission = Android.Content.PM.Permission;
+
 
 namespace LudoClient
 {
     [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true, LaunchMode = LaunchMode.SingleTop, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
     public class MainActivity : MauiAppCompatActivity
     {
+        const int RequestCameraId = 2000;
         [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop, Exported = true)]
         [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "xamarinessentials")]
         public class WebAuthenticationCallbackActivity : Microsoft.Maui.Authentication.WebAuthenticatorCallbackActivity
@@ -49,6 +52,61 @@ namespace LudoClient
             {
                 System.Diagnostics.Debug.WriteLine($"[Global Exception] {ex}");
                 // Show a user-friendly error page or restart app gracefully
+            }
+            System.Diagnostics.Debug.WriteLine("MainActivity OnCreate - checking permissions");
+            try
+            {
+                // Check and request permissions using native Android system
+                if (CheckSelfPermission(global::Android.Manifest.Permission.Camera) != PMPermission.Granted ||
+                    CheckSelfPermission(global::Android.Manifest.Permission.RecordAudio) != PMPermission.Granted)
+                {
+                    System.Diagnostics.Debug.WriteLine("Requesting camera and microphone permissions");
+                    RequestPermissions(new string[]
+                    {
+                    global::Android.Manifest.Permission.Camera,
+                    global::Android.Manifest.Permission.RecordAudio
+                    }, RequestCameraId);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("✅ Camera and microphone permissions already granted");
+                }
+            }
+            catch (Exception)
+            {
+            }
+        }
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, PMPermission[] grantResults)
+        {
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            if (requestCode == RequestCameraId)
+            {
+                bool cameraGranted = false;
+                bool microphoneGranted = false;
+
+                for (int i = 0; i < permissions.Length; i++)
+                {
+                    if (permissions[i] == global::Android.Manifest.Permission.Camera)
+                    {
+                        cameraGranted = grantResults[i] == PMPermission.Granted;
+                        System.Diagnostics.Debug.WriteLine($"Camera permission: {cameraGranted}");
+                    }
+                    else if (permissions[i] == global::Android.Manifest.Permission.RecordAudio)
+                    {
+                        microphoneGranted = grantResults[i] == PMPermission.Granted;
+                        System.Diagnostics.Debug.WriteLine($"Microphone permission: {microphoneGranted}");
+                    }
+                }
+
+                if (cameraGranted && microphoneGranted)
+                {
+                    System.Diagnostics.Debug.WriteLine("✅ All permissions granted");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("❌ Some permissions denied");
+                }
             }
         }
         public override bool OnKeyDown([GeneratedEnum] Keycode keyCode, KeyEvent e)

@@ -11,7 +11,7 @@ using LudoClient.Platforms.Android;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
-using LudoClient.Services;
+using LudoClient.Controls;
 
 namespace LudoClient
 {
@@ -43,6 +43,15 @@ namespace LudoClient
             builder.Services.AddSingleton<IGamepadInputService, GamepadInputService>();
 #endif
 
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+#if ANDROID
+                handlers.AddHandler(typeof(CameraWebView), typeof(LudoClient.Platforms.Android.CameraWebViewHandler));
+#endif
+            });
+
+       
+
             AppCenter.Start("android=0c1428a3-a086-4b8d-be30-8253a18b054e;", typeof(Analytics), typeof(Crashes));
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
@@ -70,6 +79,7 @@ namespace LudoClient
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
+            
             builder.AddAudio();
             return builder.Build();
         }

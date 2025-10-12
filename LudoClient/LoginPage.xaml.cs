@@ -42,7 +42,7 @@ namespace LudoClient
                 return;
             _isLoggingIn = true;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            await performLoginAsync("Guest1");
+            await performLoginAsync("Guest3");
             _isLoggingIn = false;
             return;
 
@@ -107,7 +107,7 @@ namespace LudoClient
             {
                 if (GlobalConstants.MatchMaker.Connected)
                 {
-                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
+                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city).ConfigureAwait(false);
 
                     if (UserInfo.Instance.player != null)
                     {

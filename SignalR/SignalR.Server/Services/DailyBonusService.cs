@@ -74,7 +74,7 @@ namespace SignalR.Server.Services
             };
         }
         // New function: Claim today's bonus and update LastResetDate
-        public async Task<DailyBonusDto> ClaimTodayBonus(Player player, String NetworkFlag)
+        public async Task<DailyBonusDto> ClaimTodayBonus(Player player)
         {
             using var ctx = _contextFactory.CreateDbContext();
             var bonus = await ctx.DailyBonus.FirstOrDefaultAsync(x => x.PlayerId == player.PlayerId);
@@ -135,7 +135,7 @@ namespace SignalR.Server.Services
                 // Transfer bonus logic here
                 int bonusAmount = 10;
                 //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
-                bool credited = _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "", NetworkFlag);
+                bool credited = _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
             }
 
             return new DailyBonusDto

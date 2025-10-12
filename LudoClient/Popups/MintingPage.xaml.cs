@@ -24,7 +24,7 @@ public partial class MintingPage : BasePopup
     }
     private void StartNFTTimer()
     {
-        nftTimer = new System.Timers.Timer(30000); // 30 seconds = 30000 ms
+        nftTimer = new System.Timers.Timer(10000); // 30 seconds = 30000 ms
         nftTimer.Elapsed += (s, e) =>
         {
             MainThread.BeginInvokeOnMainThread(() =>
@@ -42,7 +42,7 @@ public partial class MintingPage : BasePopup
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (amount > 1)
             amount--;
-        Cost.Text = $"Cost : {amount} X 10000 = {amount * 1000} LUDC";
+        Cost.Text = $"Cost : {amount} X 100 = {amount * 100} LUDC";
         EntryLabel.Text = amount.ToString();
     }
     private void BtnPlus(object sender, EventArgs e)
@@ -81,6 +81,14 @@ public partial class MintingPage : BasePopup
         {
             if (result.Contains("Success"))
             {
+#if ANDROID
+                if(amount>0)
+                    Toast.Make("Success!", ToastDuration.Short, 22).Show();
+#else
+                if (amount>0)
+                    Application.Current.MainPage.DisplayAlert("Info", "Success", "OK");
+#endif
+
                 result = result.Replace(",Success", "");
                 string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
 
@@ -100,17 +108,31 @@ public partial class MintingPage : BasePopup
 
                 if (validNFTs.Count > 0)
                 {
+#if ANDROID
+                if (amount>0)
+                    Toast.Make("Loaded {validNFTs.Count} NFTs successfully.", ToastDuration.Short, 22).Show();
+#else
+
+                if (amount > 0)
+                    Application.Current.MainPage.DisplayAlert("Info", "Loaded {validNFTs.Count} NFTs successfully.", "OK");
+#endif
+                    // await Toast.Make($"Loaded {validNFTs.Count} NFTs successfully.", ToastDuration.Short, 24).Show();
                     BuildNFTCards(validNFTs);
-                   // await Toast.Make($"Loaded {validNFTs.Count} NFTs successfully.", ToastDuration.Short, 24).Show();
                 }
                 else
                 {
-                    await Toast.Make("No valid NFTs found.", ToastDuration.Long, 24).Show();
+                  //await Toast.Make("No valid NFTs found.", ToastDuration.Long, 24).Show();
                 }
             }
             else
             {
-                await Toast.Make("Error Minting NFT!", ToastDuration.Long, 24).Show();
+#if ANDROID
+                if (amount>0)
+                    Toast.Make("Error Minting NFT!", ToastDuration.Short, 22).Show();
+#else
+                if (amount > 0)
+                    Application.Current.MainPage.DisplayAlert("Info", "Error Minting NFT!", "OK");
+#endif
             }
         });
     }

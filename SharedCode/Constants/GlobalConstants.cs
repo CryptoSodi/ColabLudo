@@ -13,10 +13,9 @@ namespace SharedCode.Constants
         public static readonly string HubUrl;
         public static Client MatchMaker;
         public static Random rnd = new Random();
-        public static string chainType = "CORE";
         static GlobalConstants()
         {
-                Url = Debug ? "http://192.168.1.50" : "http://13.202.76.246";
+            Url = Debug ? "http://192.168.1.50" : "http://13.202.76.246";// "http://13.202.76.246";//"http://13.235.90.3";// 
 #if WINDOWS
 if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());

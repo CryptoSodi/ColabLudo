@@ -21,9 +21,9 @@
             Console.WriteLine("SweeperService starting...");
             while (!stoppingToken.IsCancellationRequested)
             {
+                    _cryptoHelper.SweepAllSubAccounts();
                 try
                 {
-                    _cryptoHelper.SweepAllSubAccounts();
                 }
                 catch (Exception ex)
                 {

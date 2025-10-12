@@ -158,7 +158,7 @@ namespace SharedCode.Network
         {
             try
             {
-                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto, GlobalConstants.chainType).ConfigureAwait(false);
+                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto).ConfigureAwait(false);
                 Console.WriteLine($"Joined room: {roomCode}");
                 RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, roomCode));
             }
@@ -202,7 +202,7 @@ namespace SharedCode.Network
                 return;
             if (GlobalConstants.RoomCode != "")
             {
-                _ = _hubConnection.InvokeAsync("LeaveCloseLobby", GlobalConstants.chainType).ConfigureAwait(false);
+                _ = _hubConnection.InvokeAsync("LeaveCloseLobby").ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
             }
         }
@@ -228,12 +228,12 @@ namespace SharedCode.Network
             String AuthToken = getAuthToken();
             if (AuthToken == "")
                 return null;
-            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken, GlobalConstants.chainType).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
         public async Task<string> SendSolAsync(string destination, decimal solAmount)
         {
             // Use the generic InvokeAsync<DepositInfo>
-            String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount, GlobalConstants.chainType).ConfigureAwait(false);
+            String info = await _hubConnection.InvokeAsync<String>("SendSol", destination, solAmount).ConfigureAwait(false);
             return info;
         }
         internal async Task<List<TournamentDTO>> GetAllTournaments(string type)
@@ -242,7 +242,7 @@ namespace SharedCode.Network
         }
         internal async Task<TournamentDTO> JoinTournament(int TournamentID)
         {
-            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID, GlobalConstants.chainType).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
         }
         internal async Task<TournamentResultDTO> GetResultsTournament(int TournamentID)
         {
@@ -255,7 +255,7 @@ namespace SharedCode.Network
 
         public async Task<string> MintNFT(int amount)
         {
-            return await _hubConnection.InvokeAsync<string>("MintNFT", amount, GlobalConstants.chainType).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);
         }
     }
 }

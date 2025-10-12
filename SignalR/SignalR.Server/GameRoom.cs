@@ -101,7 +101,7 @@ namespace SignalR.Server
                     {
                         try
                         {
-                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId), "Sol"));
+                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
                         }
                         catch (Exception)
                         {
