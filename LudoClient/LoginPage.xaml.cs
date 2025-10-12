@@ -107,7 +107,7 @@ namespace LudoClient
             {
                 if (GlobalConstants.MatchMaker.Connected)
                 {
-                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city).ConfigureAwait(false);
+                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
 
                     if (UserInfo.Instance.player != null)
                     {
