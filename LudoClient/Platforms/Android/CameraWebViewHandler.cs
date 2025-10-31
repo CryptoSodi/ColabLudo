@@ -29,7 +29,7 @@ namespace LudoClient.Platforms.Android
             public override void OnPermissionRequest(PermissionRequest request)
             {
                 request.Grant(request.GetResources());
-                base.OnPermissionRequest(request);
+                //base.OnPermissionRequest(request);
             }
         }
     }

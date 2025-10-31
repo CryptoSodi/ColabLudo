@@ -28,7 +28,7 @@
             </local:Capsule>
             <!-- Convert this into a button 002-->
             <Grid Grid.Row="4" Margin="0,25,0,0" VerticalOptions="End" HorizontalOptions="Center">
-                <Image Source="btn_claim.webp">
+                <Image x:Name="ClaimBTN" Source="btn_claim.webp">
                     <Image.GestureRecognizers>
                         <TapGestureRecognizer Tapped="ClaimDaily_Clicked"></TapGestureRecognizer>
                     </Image.GestureRecognizers>

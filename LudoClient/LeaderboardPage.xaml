@@ -16,7 +16,7 @@
                         <controlview:ImageSwitch x:Name="Tab2" SwitchText="Friends" Grid.Column="1" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
                     <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.webp" HorizontalOptions="Fill" VerticalOptions="Start">
-                        <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions=".3*,.4*,.3*">
+                        <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions=".3*,.4*,.33*">
                             <Label Text="RANK" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,22,0"/>
                             <Label Grid.Column="1" Text="PLAYERS" TextColor="White" HorizontalOptions="Start" VerticalOptions="Center"/>
                             <Label Grid.Column="2" Text="GAMESWON" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,22,0"/>

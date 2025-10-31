@@ -1,4 +1,5 @@
 using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -12,48 +13,81 @@ public partial class HeaderCV : ContentView
     {
         InitializeComponent();
 
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            while (UserInfo.Instance.PictureUrlBlob == "")
-                Task.Delay(10);
-            PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
-        });
-
         // Initialize and start the timer
         _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
         _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
-        _qrCodeTimer.AutoReset = true;
-        _qrCodeTimer.Enabled = true;
+        _qrCodeTimer.AutoReset = _qrCodeTimer.Enabled = true;
 
-        UpdateBalance();
+        Loaded += async (s, e) => {
+            await UpdateBalance();
+            _qrCodeTimer?.Start();
+        };
+
+        Unloaded += (s, e) => {
+            _qrCodeTimer?.Stop();
+        };
     }
     public async Task UpdateBalance()
     {
-        if (GlobalConstants.MatchMaker != null)
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            MainThread.BeginInvokeOnMainThread(() =>
+            // Wait until the PictureUrlBlob is populated
+            while (string.IsNullOrEmpty(UserInfo.Instance.PictureUrlBlob))
+                await Task.Delay(10); // wait properly
+
+            var d = PlayerImageItem.Width;
+            // Only load the image once if it's not already loaded
+            if (d <= 0)
             {
-                try
-                {
-                    if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
-                        Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-                }
-                catch (Exception)
-                {
-                }
-            });
+                PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
+                await Task.Delay(100); // wait properly
+            }
+        });
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            try
+            {
+                if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
+                    Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
+            }
+            catch (Exception)
+            {
+            }
+        });
+    }
+    private async void Navigate_Settings(object sender, EventArgs e)
+    {
+        if (_NavigationCooldown)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.settings = new Settings();
+            Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions { Shape = null });
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
         }
     }
-    private void Navigate_Settings(object sender, EventArgs e)
+    bool _NavigationCooldown = false;
+    private async void OnPlayerTapped(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.settings = new Settings();
-        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions{Shape = null});
-    }
-    private void OnPlayerTapped(object sender, EventArgs e)
-    {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.profileInfo = new ProfileInfo();
-        Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo, new PopupOptions { Shape = null });
+        if (_NavigationCooldown)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.profileInfo = new ProfileInfo();
+            Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo, new PopupOptions { Shape = null });
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
     }
 }

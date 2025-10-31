@@ -67,6 +67,7 @@ public partial class DailyBonus : BasePopup
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
+            bool ShowClaim = false;
             // Day flags array for ease of indexing
             bool[] flags = new[] { dto.Day1, dto.Day2, dto.Day3, dto.Day4, dto.Day5, dto.Day6, dto.Day7 };
             int dc = dto.DayCounter; // 0-based index of current day
@@ -78,7 +79,10 @@ public partial class DailyBonus : BasePopup
                 if (i < dc || (i == dc && flags[i]))
                     state = flags[i] ? "Claimed" : "Missed";
                 else if (i == dc)
+                {
                     state = "Active";
+                    ShowClaim = true;
+                }
                 else
                     state = "InActive";
 
@@ -94,6 +98,7 @@ public partial class DailyBonus : BasePopup
                     case 6: D7.init($"Day {i + 1}", state, dto.Bonus); break;
                 }
             }
+            ClaimBTN.IsVisible = ShowClaim;
         });
         SaveDailyBonus(dto);
     }

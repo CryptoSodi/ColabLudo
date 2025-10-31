@@ -6,7 +6,7 @@
         <Frame x:Name="BGColor" CornerRadius="8" BackgroundColor="Green" HorizontalOptions="Fill" VerticalOptions="Fill"/>
         <Image x:Name="BGCard" Source="days_current_bg.webp" Margin="2"/>
         <StackLayout Orientation="Vertical" Margin="1,2,1,1" Spacing="2" HorizontalOptions="Fill">
-            <Label x:Name ="DayText" Text="Day 1" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+            <Label x:Name ="DayText" Text="Day 1" TextColor="White" FontSize="10" VerticalTextAlignment="Center" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             <Image Source="solicon.webp" Margin="1" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             <Label x:Name ="BonusText" Text="10" Margin="0,0,0,4" TextColor="Black" FontSize="12" VerticalTextAlignment="Center" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
         </StackLayout>

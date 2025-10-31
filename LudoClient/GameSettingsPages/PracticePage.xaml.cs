@@ -34,10 +34,14 @@ public partial class PracticePage : ContentPage
         if (Tab4 == activeTab)
             gameType = "22"; 
     }
+    bool _NavigationCooldown = false;
     private void JoinPracticeTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+
         GameDto gameDto = new GameDto();
         gameDto.GameType = gameType; // Set the game type based on the active tab
         gameDto.IsPracticeGame = true; // Set the practice game flag
@@ -47,6 +51,20 @@ public partial class PracticePage : ContentPage
         if (gameDto.PlayerCount == 22)
             gameDto.PlayerCount = 4;
 
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameDto.GameType, gameDto.BetAmount));
+            ClientGlobalConstants.FlushOld();
+        });
+        try
+        {
+            //Navigation.PushAsync(new GameRoom(gameType, entry));
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        }
+        finally
+        {
+            Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
     }
 }

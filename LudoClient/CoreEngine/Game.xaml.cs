@@ -1,4 +1,4 @@
-using LudoClient.Constants;
+ï»¿using LudoClient.Constants;
 using LudoClient.ControlView;
 using LudoClient.Popups;
 using LudoClient.Services;
@@ -35,32 +35,15 @@ public partial class Game : ContentPage
     List<PlayerDto>? seats = new List<PlayerDto>();
     public Game(string gameMode, string gameType, string playerColor = "", string seatsData = "", string rollsString = "")
     {
-        var sp = Application.Current?.Handler?.MauiContext?.Services
-         ?? throw new InvalidOperationException("No MAUI context yet");
         try
         {
-        var input = sp.GetRequiredService<IGamepadInputService>();
-
+            var sp = Application.Current?.Handler?.MauiContext?.Services ?? throw new InvalidOperationException("No MAUI context yet");
+            var input = sp.GetRequiredService<IGamepadInputService>();
         }
         catch (Exception)
         {
-
         }
-
         this.gameMode = gameMode;
-        //new List<PlayerDto>();
-        //PlayerDto red = new PlayerDto();
-        //red.PlayerColor = "Red";
-        //PlayerDto gre = new PlayerDto();
-        //gre.PlayerColor = "Green";
-        //PlayerDto yel = new PlayerDto();
-        //yel.PlayerColor = "Yellow";
-        //PlayerDto blu = new PlayerDto();
-        //blu.PlayerColor = "Blue";
-        //seats.Add(red);
-        //seats.Add(gre);
-        //seats.Add(yel);
-        //seats.Add(blu);
         if (seatsData != "")
         {
             seats = JsonSerializer.Deserialize<List<PlayerDto>>(seatsData);
@@ -81,9 +64,8 @@ public partial class Game : ContentPage
         {
             if (_input != null)
             {
-        _input.ButtonChanged += OnButtonChanged;
-        _input.AxisChanged += OnAxisChanged;
-
+                _input.ButtonChanged += OnButtonChanged;
+                _input.AxisChanged += OnAxisChanged;
             }
         }
         catch (Exception)
@@ -104,14 +86,13 @@ public partial class Game : ContentPage
         MainThread.BeginInvokeOnMainThread(() =>
         {
             Console.WriteLine(button);
-            //// EXAMPLES — replace with your game logic:
+            //// EXAMPLES â€” replace with your game logic:
             //if (button == "A" && isDown) StartGame();
             //if (button == "B" && isDown) Cancel();
             //if (button == "DpadLeft" && isDown) MoveCursor(-1, 0);
             //if (button == "DpadRight" && isDown) MoveCursor(+1, 0);
         });
     }
-
     void OnAxisChanged(string device, string axis, float value)
     {
         // value typically in [-1 .. +1]
@@ -127,32 +108,15 @@ public partial class Game : ContentPage
     private async Task Build(string gameMode, string gameType, string playerCount, string playerColor, string rollsString = "")
     {
         InitializeComponent();
-        /* CHAT MANAGEMENT*/
-        
-        GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
-
-        ChatMessages cm = new();
-        cm.SenderId = UserInfo.Instance.player.PlayerId;
-        cm.SenderName = UserInfo.Instance.player.Name;
-        cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
-        cm.ReceiverId = -1;
-        cm.ReceiverName = "";
-        cm.Message = "";
-        cm.CreatedDate = DateTime.UtcNow;
-
-        GlobalConstants.MatchMaker?.SendChatMessageAsync(cm, GlobalConstants.RoomCode).ContinueWith(t =>
-        {
-            if (t.Status == TaskStatus.RanToCompletion)
-            {
-                List<ChatMessages> messages = t.Result;
-                UpdateMessages(this, (messages));
-            }
-        });
-        ChatScrollView.IsVisible = false;
-        ChatScrollView.InputTransparent = true;
-        ChatScrollView.IsEnabled = false;
         if (gameMode != "Client")
         {
+            /* CHAT MANAGEMENT*/
+            GlobalConstants.MatchMaker.ReceiveChatMessage += UpdateMessages;
+            
+            ChatScrollView.IsVisible = false;
+            ChatScrollView.InputTransparent = true;
+            ChatScrollView.IsEnabled = false;
+
             MessageEntryContainer.IsVisible = false;
             MessageEntryContainer.IsEnabled = false;
         }
@@ -1118,20 +1082,31 @@ public partial class Game : ContentPage
         
         seat.StopDice(dicevalue);
     }
-    private void PopOverClicked(object sender, EventArgs e)
+    private async void PopOverClicked(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         PopoverButton.ShowAttachedPopover();
+        await WebView2.EvaluateJavaScriptAsync($"createAnswer({JsonSerializer.Serialize(offerString)})");
+       await Task.Delay(1000);
+       string s = await WebView2.EvaluateJavaScriptAsync("getAnswer()");
+        string result = await WebView1.EvaluateJavaScriptAsync($"setAnswerForClient('p1',{ JsonSerializer.Serialize(s)})");
+
+        //setAnswerForClient(clientId, answerJson)
     }
-    private void QuestionClicked(object sender, EventArgs e)
+    private async void QuestionClicked(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        PopoverButton.ShowAttachedPopover();
+        //ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        //PopoverButton.ShowAttachedPopover();
+        string result = await WebView1.EvaluateJavaScriptAsync("getOffers()");
+        offerString = result;
+        Console.WriteLine(result);
     }
+    string offerString = "";
     private void CloseTokenSelector(object sender, EventArgs e)
     {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        // TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
+        if(TokenSelector.IsVisible)
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        //TokenSelector.TranslateTo(0, 0, 10, Easing.CubicIn);
         TokenSelector.IsVisible = false;
     }
     MessageBox mb = null;
@@ -1209,7 +1184,7 @@ public partial class Game : ContentPage
     //CHAT ENGINE
     private void MessageEntry_Completed(object sender, EventArgs e)
     {
-        // … your send logic …
+        // â€¦ your send logic â€¦
         // Dismiss keyboard:
         OnSendButton_Tapped(null, null);
     }
@@ -1302,4 +1277,6 @@ public partial class Game : ContentPage
     inputMethodManager?.HideSoftInputFromWindow(view.WindowToken, Android.Views.InputMethods.HideSoftInputFlags.None);
 #endif
     }
+
+    //WEB ENGINE
 }

@@ -19,7 +19,7 @@
                         </VerticalStackLayout>
                     </ScrollView>
                 </Grid>
-                <Grid Grid.Row="1" VerticalOptions="End" HorizontalOptions="Fill" RowDefinitions="2*,1*,0.4*" >
+                <Grid Grid.Row="1" VerticalOptions="End" HorizontalOptions="Fill" RowDefinitions="1.8*,1*,0.6*" >
                     <local:Capsule ImageSource="{x:Static constants:Skins.Background_Controlbox_Small}" HorizontalOptions="Fill" VerticalOptions="Start">
                         <Grid Margin="10" ColumnDefinitions=".1*,.3*,.1*" ColumnSpacing="10">
                             <Image Source="{x:Static constants:Skins.MinusBTN}" Margin="5,0,0,0" VerticalOptions="Center" HorizontalOptions="Start">
@@ -30,13 +30,13 @@
                             <Grid Grid.Column="1" Margin="5,0,5,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".1*,.2*">
                                 <BoxView CornerRadius="8" BackgroundColor="#3A1E93" Grid.RowSpan="2"/>
                                 <Grid Margin="2" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
-                                    <Label Text="Amount" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
+                                    <Label Text="Amount" TextColor="White" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
                                 </Grid>
                                 <Grid Grid.Row="1" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="Fill">
                                     <BoxView CornerRadius="4" BackgroundColor="#572BD5"/>
                                     <StackLayout Orientation="Horizontal" Margin="5,2,5,5" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand">
                                         <Image Source="solicon.webp" Margin="-4,2,2,2"  HorizontalOptions="Start" VerticalOptions="CenterAndExpand"/>
-                                        <Label x:Name="EntryLabel" Text="1" HorizontalOptions="Start" VerticalOptions="Fill"/>
+                                        <Label x:Name="EntryLabel" Text="1" TextColor="White" HorizontalOptions="Start" VerticalOptions="Fill"/>
                                     </StackLayout>
                                 </Grid>
                             </Grid>
@@ -58,7 +58,7 @@
                     </local:Capsule>
                     
                     <Grid Grid.Row="2" Margin="2" HorizontalOptions="Fill" VerticalOptions="End">
-                        <Label x:Name="Cost" Text="Cost : 1 X 100 = 100 LUDC" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
+                        <Label x:Name="Cost" Text="Cost : 1 X 100 = 100 LUDC" TextColor="White" HorizontalOptions="Fill" VerticalOptions="CenterAndExpand"/>
                     </Grid>
                 </Grid>
             </Grid>

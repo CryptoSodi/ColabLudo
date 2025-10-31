@@ -123,15 +123,15 @@ namespace LudoClient.ControlView
                 SheetDirection.Source = "arr_up.webp";
             }
         }
-        bool joining = false;
+        bool _NavigationCooldown = false;
         private async void Join_Clicked(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            if (joining)
+            if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
                 return;
-            joining = true;
+            _NavigationCooldown = true;
 
-            if (ButtonText.Text == "WAIT") return;
+            if (ButtonText.Text == "WAIT") { _NavigationCooldown = false; return; }
             if (ButtonText.Text == "PLAY")
             {
                 GameDto gameDto = new GameDto();
@@ -142,9 +142,22 @@ namespace LudoClient.ControlView
                 gameDto.IsPracticeGame = false;
                 gameDto.IsPrivateGame = true;
                 gameDto.RoomCode = tournament.TournamentId.ToString();
-                
-                //Navigation.PushAsync(new GameRoom(gameType, entry));
-                _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+              
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameDto.GameType, gameDto.BetAmount));
+                    ClientGlobalConstants.FlushOld();
+                });
+                try
+                {
+                    //Navigation.PushAsync(new GameRoom(gameType, entry));
+                    _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+                }
+                finally
+                {
+                    await Task.Delay(500); // half-second cooldown
+                    _NavigationCooldown = false;
+                }
                 return;
             }
             if (ButtonText.Text == "RESULTS")
@@ -157,6 +170,7 @@ namespace LudoClient.ControlView
                     ClientGlobalConstants.results.init(tournamentResultDTO);
                 });
                 ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.results);
+
             }
             tournament = await GlobalConstants.MatchMaker.JoinTournament(int.Parse(TournamentId.Text));
             Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
@@ -167,7 +181,11 @@ namespace LudoClient.ControlView
             {
                 Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
             }
-            joining = false;
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                Task.Delay(500); // half-second cooldown
+                _NavigationCooldown = false;
+            });
         }
     }
 }

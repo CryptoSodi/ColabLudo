@@ -1,14 +1,15 @@
 using LudoClient.Constants;
 using SharedCode.Constants;
-
 namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
-    public GameRoom(string GameType, double GameCost, string roomCode)
+    public GameRoom(string GameType, decimal GameCost)
     {
         InitializeComponent();
-        shareBox.SetShareCode(roomCode);
+
+        GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
+
         NavigationPage.SetHasBackButton(this, false);
         
         switch (GameType)
@@ -86,15 +87,21 @@ public partial class GameRoom : ContentPage
             });
         };
     }
-
-
+    private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            GlobalConstants.RoomCode = args.RoomCode;
+            GlobalConstants.GameCost = args.GameCost;
+            shareBox.SetShareCode(args.RoomCode);
+        });
+    }
     protected override async void OnAppearing()
     {
         base.OnAppearing();
         // Force layout to update ContentSize
         await GlobalConstants.MatchMaker.ReadyAsync();
     }
-
     protected override bool OnBackButtonPressed()
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");

@@ -12,6 +12,7 @@ using SharedCode.Constants;
 
 public partial class DashboardPage : ContentPage
 {
+    private bool _NavigationCooldown = false;
     public DashboardPage()
     {
         InitializeComponent();
@@ -39,75 +40,122 @@ public partial class DashboardPage : ContentPage
         TournamentImage.Source = isConnected ? Skins.Tournament : Skins.Tournament_Gray;
         DailyBonusImage.Source = isConnected ? Skins.DailyBonus : Skins.DailyBonus_Gray;
     }
-    private void CashGame_Clicked(object sender, EventArgs e)
+    private async void CashGame_Clicked(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
             return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if(UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
+        _NavigationCooldown = true;
+        try
         {
-            ClientGlobalConstants.cashGame = new CashGame();
-            Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
-        }   
-        else
-            MainThread.BeginInvokeOnMainThread(() =>
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
             {
-                Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
-            });
-        
-    }
-    private void Offline_Clicked(object sender, EventArgs e)
-    {
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.offlinePage = new OfflinePage();
-        Navigation.PushAsync(ClientGlobalConstants.offlinePage);//Done
-    }
-    private void PlayWithFriend_Clicked(object sender, EventArgs e)
-    {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
+                ClientGlobalConstants.cashGame = new CashGame();
+                Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
+            }
+            else
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
+                });
+        }
+        finally
         {
-            ClientGlobalConstants.playWithFriends = new PlayWithFriends();
-            Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
-        }   
-        else
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
-            });
-    }
-    private void Practice_Clicked(object sender, EventArgs e)
-    {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.practicePage = new PracticePage();
-        Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
-    }
-    private void Tournament_Clicked(object sender, EventArgs e)
-    {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (Skins.CurrentSkin == Skins.SkinTypes.Adatiya)
-        {
-            ClientGlobalConstants.cashGame = new CashGame();
-            Navigation.PushAsync(ClientGlobalConstants.cashGame);
-        }   
-        else
-        {
-            TournamentPage tournamentPage = new TournamentPage();
-            Navigation.PushAsync(tournamentPage);
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
         }
     }
-    private void Bonus_Clicked(object sender, EventArgs e)
+    private async void Offline_Clicked(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.dailyBonus = new DailyBonus();
-        this.ShowPopup(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.offlinePage = new OfflinePage();
+            await Navigation.PushAsync(ClientGlobalConstants.offlinePage);//Done
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
+    }
+    private async void PlayWithFriend_Clicked(object sender, EventArgs e)
+    {
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
+            {
+                ClientGlobalConstants.playWithFriends = new PlayWithFriends();
+                await Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
+            }
+            else
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
+                });
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
+    }
+    private async void Practice_Clicked(object sender, EventArgs e)
+    {
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.practicePage = new PracticePage();
+            await Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
+    }
+    private async void Tournament_Clicked(object sender, EventArgs e)
+    {
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            TournamentPage tournamentPage = new TournamentPage();
+            await Navigation.PushAsync(tournamentPage);
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
+    }
+    private async void Bonus_Clicked(object sender, EventArgs e)
+    {
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+        try
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.dailyBonus = new DailyBonus();
+            await this.ShowPopupAsync(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
+        }
+        finally
+        {
+            await Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
     }
 }

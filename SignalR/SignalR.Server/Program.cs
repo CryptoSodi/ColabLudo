@@ -20,7 +20,9 @@ builder.Configuration
 .AddUserSecrets<Program>()
 .AddEnvironmentVariables();
 // Add SignalR services
-builder.Services.AddSignalR();
+builder.Services.AddSignalR(o => o.StatefulReconnectBufferSize = 100_000);
+
+
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false));// Turn off verbose logging
@@ -80,11 +82,16 @@ var app = builder.Build();
 // Use CORS policy
 app.UseCors("AllowAnyOrigin");
 // Map SignalR hubs
-app.MapHub<LudoHub>("/LudoHub");
+app.MapHub<LudoHub>("/LudoHub", options => { options.AllowStatefulReconnects = true; }); // Enable stateful reconnect
 // Map SignalR hubs
 app.MapHub<AdminHub>("/AdminHub");
 // Run the app
-app.Run();
+try { 
+    app.Run(); 
+}catch (Exception ex)
+{
+    Console.WriteLine($"Critical error: {ex}");
+}
 namespace SignalR.Server
 {
     public partial class Program { }

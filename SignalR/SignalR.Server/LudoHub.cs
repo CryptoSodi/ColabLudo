@@ -475,9 +475,9 @@ namespace SignalR.Server
             foreach (var (seat, playerId) in seatInfos)
             {
                 if (playerId.HasValue && playerMap.TryGetValue(playerId.Value, out var player))
-                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, player.PlayerId, player.Name, player.PictureUrl ?? "user.png");
+                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, player.PlayerId, player.Name, player.PictureUrl ?? "user.webp");
                 else
-                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, 0, "Waiting", "user.png");
+                    await Clients.Group(existingGame.RoomCode).SendAsync("PlayerSeat", seat, 0, "Waiting", "user.webp");
             }
         }
     }

@@ -48,15 +48,26 @@ namespace LudoClient
 
             tabBar.Items.Add(tab);
         }
+        private bool _isNavigating = false;
         private void TabBarViewCurrentPageChanged(object sender, TabBarEventArgs e)
         {
+            if (_isNavigating) return;
+            _isNavigating = true;
+
             try
             {
-                Shell.Current.GoToAsync("///" + e.CurrentPage.ToString());
+                MainThread.InvokeOnMainThreadAsync(async () =>
+                {
+                    await Shell.Current.GoToAsync("///" + e.CurrentPage.ToString());
+                });
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[Navigation error]: {ex.Message}");
+            }
+            finally
+            {
+                _isNavigating = false;
             }
         }
     }

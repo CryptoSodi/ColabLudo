@@ -39,7 +39,6 @@ namespace LudoClient
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 GlobalConstants.MatchMaker = new Client();
-                GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
                 GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
@@ -206,17 +205,6 @@ namespace LudoClient
                     }   
                 }
                 
-            });
-        }
-        private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)
-        {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                GlobalConstants.RoomCode = args.RoomCode;
-                GlobalConstants.GameCost = args.GameCost;
-
-                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(args.GameType, args.GameCost, args.RoomCode));
-                ClientGlobalConstants.FlushOld();
             });
         }
         protected async Task SetOnline()

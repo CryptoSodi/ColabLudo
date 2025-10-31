@@ -11,7 +11,7 @@
 
                     <Grid HorizontalOptions="Start" >
                         <Image x:Name="PlayerMadel" HorizontalOptions="Center" Source="number_1.webp" Margin="10"/>
-                        <Label x:Name="RankingText" Padding="0,0,0,5" Text="" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Label x:Name="RankingText" TextColor="White" Padding="0,0,0,5" Text="" FontSize="18" HorizontalOptions="Center" VerticalOptions="Center" />
                     </Grid>
 
                     <Grid Grid.Column="1" HorizontalOptions="End" VerticalOptions="Center">
@@ -20,7 +20,6 @@
                     </Grid>
                 </Grid>
                 
-
                 <StackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Start" VerticalOptions="End" Margin="0,5,0,10">
                     <Image x:Name="PlayerLocationImage" HorizontalOptions="Start" Source="pakistan.webp"/>
                     <Label x:Name="PlayerName" Text="Tassaduq" HorizontalOptions="Start"/>

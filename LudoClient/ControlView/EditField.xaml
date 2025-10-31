@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.EditField">
     <Grid HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="1*,2.4*" RowSpacing="5">
-        <Label x:Name="TitleLabel" Margin="3,0,0,0" HorizontalOptions="Start" VerticalOptions="StartAndExpand"/>
+        <Label x:Name="TitleLabel" TextColor="White" Margin="3,0,0,0" HorizontalOptions="Start" VerticalOptions="StartAndExpand"/>
         <Grid Grid.Row="1" VerticalOptions="StartAndExpand" HeightRequest="40">
             <BoxView BackgroundColor="#80000000" CornerRadius="8"/>
             <Entry x:Name="EntryField" TextColor="White" PlaceholderColor="Transparent" Background="Transparent" FontSize="13" VerticalOptions="FillAndExpand" HorizontalTextAlignment="Start" VerticalTextAlignment="Center"/>

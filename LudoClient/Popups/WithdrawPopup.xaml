@@ -42,7 +42,7 @@
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnPasteButtonClicked" />
                                 </Grid.GestureRecognizers>
-                                <Label Text="PASTE" FontSize="12" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                <Label Text="PASTE" FontSize="12" TextColor="White" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                             </Grid>
                         </local:Capsule>
                         <local:Capsule HeightRequest="40" ImageSource="btn_orange.webp" HorizontalOptions="End" VerticalOptions="End">
@@ -50,7 +50,7 @@
                                 <Grid.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnSendButtonClicked" />
                                 </Grid.GestureRecognizers>
-                                <Label Text="SEND" FontSize="12" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                                <Label Text="SEND" FontSize="12" TextColor="White" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
                             </Grid>
                         </local:Capsule>
                     </Grid>

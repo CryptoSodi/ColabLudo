@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.Logging;
 using SharedCode.Constants;
 using System.ComponentModel;
 
@@ -7,7 +8,7 @@ namespace SharedCode.Network
     public class Client
     {
         private bool _connected;
-        public HubConnection _hubConnection;
+        public HubConnection _hubConnection { get; set; }
 
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
@@ -30,23 +31,37 @@ namespace SharedCode.Network
         public Client()
         {
             Connected = false;
-            // Build connection with automatic reconnect
-            _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl + "LudoHub", options =>
-            {
-                options.HttpMessageHandlerFactory = handler =>
-                {
-                    if (handler is HttpClientHandler clientHandler)
-                    {
-                        clientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-                    }
-                    return handler;
-                };
-            }).Build();
             _ = ConnectAsync();
-            RegisterHubEvents();
         }
         private void RegisterHubEvents()
         {
+            // Connection lifecycle events
+            _hubConnection.Reconnecting += error =>
+            {
+                Connected = false;
+                Console.WriteLine("Connection lost. Reconnecting...");
+                if (error != null)
+                {
+                    Console.WriteLine($"Reconnecting due to: {error.Message}");
+                }
+                return Task.CompletedTask;
+            };
+            _hubConnection.Reconnected += connectionId =>
+            {
+                Connected = true;
+                UserConnectedSetID();
+                Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
+                return Task.CompletedTask;
+            };
+            _hubConnection.Closed += async error =>
+            {
+                Connected = false;
+                Console.WriteLine("Connection closed.");
+                if (error != null)
+                {
+                    Console.WriteLine($"Connection closed due to error: {error.Message}");
+                }
+            };
             // Player ReceiveMessage event
             _hubConnection.On<ChatMessages>("ReceiveChatHistory", msg =>
             {
@@ -84,39 +99,25 @@ namespace SharedCode.Network
             {   
                 Console.WriteLine($"{user} says {message}");
             });
-            // Connection lifecycle events
-            _hubConnection.Reconnecting += error =>
-            {
-                Connected = false;
-                Console.WriteLine("Connection lost. Reconnecting...");
-                if (error != null)
-                {
-                    Console.WriteLine($"Reconnecting due to: {error.Message}");
-                }
-                return Task.CompletedTask;
-            };
-            _hubConnection.Reconnected += connectionId =>
-            {
-                Connected = true;
-                UserConnectedSetID();
-                Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
-                return Task.CompletedTask;
-            };
-            _hubConnection.Closed += async error =>
-            {
-                Connected = false;
-                Console.WriteLine("Connection closed.");
-                if (error != null)
-                {
-                    Console.WriteLine($"Connection closed due to error: {error.Message}");
-                }
-                // Optionally, we can try to reconnect manually if automatic reconnect is not desired.
-                // await ConnectAsync();
-            };
         }
         /// Establish the connection to the server asynchronously.
         public async Task ConnectAsync()
         {
+            if (_hubConnection == null)
+            {
+                // Build connection with automatic reconnect
+                _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl + "LudoHub", options =>
+                {
+                    options.HttpMessageHandlerFactory = handler =>
+                    {
+                        if (handler is HttpClientHandler clientHandler)
+                            clientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+                        return handler;
+                    };
+                    options.CloseTimeout = TimeSpan.FromSeconds(30);
+                }).WithAutomaticReconnect().WithStatefulReconnect().ConfigureLogging(logging => logging.AddDebug().SetMinimumLevel(LogLevel.Debug))
+                .Build();
+            }
             if (_hubConnection.State == HubConnectionState.Connected)
             {
                 Connected = true;
@@ -128,6 +129,7 @@ namespace SharedCode.Network
             {
                 await _hubConnection.StartAsync();//.ConfigureAwait(false);
                 Connected = true;
+                RegisterHubEvents();
                 await UserConnectedSetID();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
@@ -252,7 +254,6 @@ namespace SharedCode.Network
         {
             return Preferences.Get("AuthToken", "");
         }
-
         public async Task<string> MintNFT(int amount)
         {
             return await _hubConnection.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);

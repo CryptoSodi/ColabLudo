@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using SharedCode;
@@ -11,6 +12,7 @@ public partial class CashGame : ContentPage
     public decimal win = GlobalConstants.initialEntry * 2;
     public string activeTab = string.Empty;
     public bool defaultTabSelection = true;
+    private bool _NavigationCooldown = false;
     public CashGame()
     {
         InitializeComponent();
@@ -95,6 +97,10 @@ public partial class CashGame : ContentPage
     private void CreateRoom_Clicked(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
+
         string gameType = "2";
         if (Tab1.IsActive)
             gameType = "2";
@@ -112,8 +118,20 @@ public partial class CashGame : ContentPage
         gameDto.PlayerCount = int.Parse(gameType);
         if (gameDto.PlayerCount == 22)
             gameDto.PlayerCount = 4;
-
-        //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameDto.GameType, gameDto.BetAmount));
+            ClientGlobalConstants.FlushOld();
+        });
+        try
+        {
+            //Navigation.PushAsync(new GameRoom(gameType, entry));
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        }
+        finally
+        {
+            Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
     }
 }

@@ -4,9 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LudoClient.Controls
+namespace LudoClient.Controls;
+internal class CameraWebView : WebView
 {
-    internal class CameraWebView : WebView
-    {
-    }
 }

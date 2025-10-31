@@ -112,9 +112,13 @@ public partial class PlayWithFriends : ContentPage
         WinLabel.Text = Math.Round(win, 2).ToString();
     }
 
+    bool _NavigationCooldown = false;
     private void CreateJoinTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            return;
+        _NavigationCooldown = true;
         string gameType = "2";
         if (Tab1.IsActive)
             gameType = "2";
@@ -131,12 +135,28 @@ public partial class PlayWithFriends : ContentPage
         gameDto.IsPrivateGame = true;
         gameDto.BetAmount = entry;
         gameDto.RoomCode = "";
+        if (TabJoin.IsVisible)
+        gameDto.RoomCode = RoomId.entryField.Text;
+        
         gameDto.PlayerCount = int.Parse(gameType);
         if (gameDto.PlayerCount == 22)
             gameDto.PlayerCount = 4;
 
-        //Navigation.PushAsync(new GameRoom(gameType, entry));
-        _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameDto.GameType, gameDto.BetAmount));
+            ClientGlobalConstants.FlushOld();
+        });
+        try
+        {
+            //Navigation.PushAsync(new GameRoom(gameType, entry));
+            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+        }
+        finally
+        {
+            Task.Delay(500); // half-second cooldown
+            _NavigationCooldown = false;
+        }
     }
     private async void BtnPaste(object sender, EventArgs e)
     {

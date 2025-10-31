@@ -33,19 +33,24 @@ public partial class ProfileInfo : BasePopup
             player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
             loadValues();
 
-            string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
-
-            if (string.IsNullOrWhiteSpace(result))
+            if (GlobalConstants.MatchMaker.Connected)
             {
-                return;
+                string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
+
+                if (string.IsNullOrWhiteSpace(result))
+                {
+                    return;
+                }
+                if (result.Contains("Success"))
+                {
+                    result = result.Replace(",Success", "");
+                    string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    Coins.Text = ids.Length + " NFTS";
+                }
             }
-
-
-            if (result.Contains("Success"))
+            else
             {
-                result = result.Replace(",Success", "");
-                string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                Coins.Text = ids.Length+" NFTS";
+
             }
         });
     }

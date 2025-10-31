@@ -40,11 +40,15 @@ namespace LudoClient.ControlView
 
             PrizeAmountLabel.Text = $"{priceamount}";
         }
+        bool _NavigationCooldown = false;
         private void Join_Tapped(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Console.WriteLine("Join Tapped");
-            
+            if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+                return;
+            _NavigationCooldown = true;
+
             GameDto gameDto = new GameDto();
             gameDto.GameType = gameType; // Set the game type based on the active tab
             gameDto.IsPracticeGame = false; // Set the practice game flag
@@ -53,8 +57,23 @@ namespace LudoClient.ControlView
             gameDto.PlayerCount = int.Parse(gameType);
             if (gameDto.PlayerCount == 22)
                 gameDto.PlayerCount = 4;
-            //playerId, userName, pictureUrl, gameType, gameCost, roomName
-            _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                ClientGlobalConstants.dashBoard.Navigation.PushAsync(new GameRoom(gameDto.GameType, gameDto.BetAmount));
+                ClientGlobalConstants.FlushOld();
+            });
+            try
+            {
+                //Navigation.PushAsync(new GameRoom(gameType, entry));
+                _ = GlobalConstants.MatchMaker.CreateJoinLobbyAsync(gameDto);
+            }
+            finally
+            {
+                Task.Delay(500); // half-second cooldown
+                _NavigationCooldown = false;
+            }
+            return;
         }
     }
 }

@@ -11,7 +11,7 @@
         <Grid RowDefinitions="1*,1*" ColumnDefinitions="1*" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
 
             <StackLayout Margin="0,0,5,0" Orientation="Horizontal" Spacing="4" HorizontalOptions="Fill">
-                <Label Margin="1,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+                <Label Margin="1,0,0,0" Text="Tassaduq" x:Name="PlayerNameText" TextColor="White" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
                 <Image x:Name="VerificationImage" Source="lbl_unverified.webp" Margin="0,4,0,4" VerticalOptions="Center" HorizontalOptions="End"/>                
             </StackLayout>
 

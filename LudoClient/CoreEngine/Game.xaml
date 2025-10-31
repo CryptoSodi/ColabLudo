@@ -6,15 +6,15 @@
              xmlns:simpleCore="clr-namespace:SimpleToolkit.Core;assembly=SimpleToolkit.Core"
              xmlns:acrylic="clr-namespace:Xe.AcrylicView;assembly=Xe.AcrylicView"
              xmlns:constants="clr-namespace:LudoClient.Constants"
+             xmlns:controls="clr-namespace:LudoClient.Controls"
              BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
-    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".3*,.4*,.06*,1.6*,.4*,.3*">
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,.3*,.001*,Auto,.3*,Auto">
 
         <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
             <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" Margin="5">
                 <Grid.GestureRecognizers>
                     <TapGestureRecognizer Tapped="CloseTokenSelector"/>
                 </Grid.GestureRecognizers>
-
                 <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
                     <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
@@ -55,14 +55,20 @@
                         </StackLayout>
                     </acrylic:AcrylicView>
                 </AbsoluteLayout>
+                <controls:CameraWebView x:Name="WebView1" Margin="8" IsVisible="False" Grid.RowSpan="6" Grid.ColumnSpan="6" HorizontalOptions="Fill" VerticalOptions="Fill" Source="https://www.ludocities.com/broadcaster.html?1" />
+                <controls:CameraWebView x:Name="WebView2" IsVisible="False" Grid.Row="9" Grid.Column="9" Grid.RowSpan="6" Grid.ColumnSpan="6" HorizontalOptions="Fill" VerticalOptions="Fill" Source="https://www.ludocities.com/receiver.html" />
             </Grid>
         </local:Capsule>
-
-        <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="End">
-        </StackLayout>
-
-        <StackLayout x:Name="Row2" Grid.Row="4" Orientation="Horizontal" HorizontalOptions="Fill" VerticalOptions="Fill">
-        </StackLayout>
+        
+        <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HeightRequest="100" HorizontalOptions="Fill" VerticalOptions="End" />
+        <Grid Grid.Row="4" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,Auto" >
+            <StackLayout x:Name="Row2" Orientation="Horizontal" HeightRequest="100" HorizontalOptions="Fill" VerticalOptions="Fill" />
+            <Grid Grid.Row="1" BackgroundColor="Red" HorizontalOptions="Fill" VerticalOptions="Fill">
+                
+            </Grid>
+        </Grid>
+        
+        
 
         <local:Capsule x:Name="MessageEntryContainer" Grid.Row="5" ImageSource="chatbar_image.webp" HorizontalOptions="Fill" VerticalOptions="End">
             <Grid ColumnDefinitions="0.026*,1*,Auto,0.01*">
@@ -84,6 +90,7 @@
                 </Image>
             </Grid>
         </local:Capsule>
+        
         <ScrollView x:Name="ChatScrollView" Grid.Row="1" Grid.RowSpan="4" HorizontalOptions="Fill" VerticalOptions="Fill" Padding="8,0,8,0">
             <VerticalStackLayout x:Name="MessagesListStack" VerticalOptions="End" Opacity=".9" BackgroundColor="#4DFFFFFF" >
                 <VerticalStackLayout.GestureRecognizers>
@@ -91,6 +98,7 @@
                 </VerticalStackLayout.GestureRecognizers>
             </VerticalStackLayout>
         </ScrollView>
+        
         <local:Capsule ImageSource="footer.webp" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
             <Grid ColumnSpacing="5" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="Auto,Auto,1*">
                 <local:Capsule ImageSource="popover.webp" HorizontalOptions="Center" VerticalOptions="Center">
