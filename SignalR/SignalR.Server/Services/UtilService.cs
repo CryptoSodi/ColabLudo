@@ -69,7 +69,6 @@ namespace SignalR.Server.Services
             }
             return new List<SharedCode.Constants.WalletTransaction>();
         }
-
         public async Task SetPlayerOnlineState(int playerId, bool isOnline)
         {
             try

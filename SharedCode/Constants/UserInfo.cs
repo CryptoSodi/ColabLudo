@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Policy;
+using System.Text.Json;
 
 namespace SharedCode.Constants
 {
@@ -7,7 +8,6 @@ namespace SharedCode.Constants
         private static UserInfo? _instance;
         private static readonly object _lock = new object();
         public PlayerInfo player;
-        public string? PictureUrlBlob { get; set; }
         public string? AddressQRBlob { get; set; }
 
         const string BaseUrl = "https://quickchart.io/qr";
@@ -32,6 +32,9 @@ namespace SharedCode.Constants
                 return _instance;
             }
         }
+
+        public ImageSource ProfileImageSource { get; set; }
+
         // Method to save state
         static bool saving = false;
         public static void SaveState()
@@ -52,8 +55,11 @@ namespace SharedCode.Constants
                 Preferences.Set("UserProfile", playerJson);
                 Preferences.Set("AuthToken", instance.player.AuthToken);
 
-                instance.PictureUrlBlob = DownloadImageAsBase64Async(instance.player.PictureUrl).GetAwaiter().GetResult();
-                Preferences.Set(nameof(PictureUrlBlob), instance.PictureUrlBlob);
+                if (instance.ProfileImageSource == null)
+                {
+                    // Force decode early                    
+                    instance.ProfileImageSource = ImageSource.FromUri(new Uri(instance.player.PictureUrl));
+                }
 
                 String QrUrl = $"{BaseUrl}"
                   + $"?text={UserInfo.Instance.player.Wallet?.WalletAddress}"
@@ -82,7 +88,6 @@ namespace SharedCode.Constants
             Preferences.Clear();
             instance.player = new PlayerInfo();
             instance.player.Wallet = new PlayerWallet();
-            instance.PictureUrlBlob = string.Empty;
             instance.AddressQRBlob = string.Empty;
         }
         // Method to load state
@@ -98,12 +103,14 @@ namespace SharedCode.Constants
                 if (!string.IsNullOrEmpty(playerJson))
                 {
                     instance.player = JsonSerializer.Deserialize<PlayerInfo>(playerJson, options) ?? new PlayerInfo();
+                    // Assign to cached property
+                    UserInfo.Instance.ProfileImageSource = ImageSource.FromUri(new Uri(instance.player.PictureUrl));
 
                     instance.player.PhoneNumber = instance.player.PhoneNumber==null || instance.player.PhoneNumber == "" ? "###########" : instance.player.PhoneNumber;
                     instance.player.CountryCode = instance.player.CountryCode == "" ? "###" : instance.player.CountryCode;
                     instance.player.City = instance.player.City == "" ? "###########" : instance.player.City;
 
-                    instance.PictureUrlBlob = Preferences.Get(nameof(PictureUrlBlob), string.Empty);
+                   
                     instance.AddressQRBlob = Preferences.Get(nameof(instance.AddressQRBlob), string.Empty);
 
                 }
@@ -127,6 +134,26 @@ namespace SharedCode.Constants
         {
             byte[] imageBytes = Convert.FromBase64String(base64String);
             return ImageSource.FromStream(() => new MemoryStream(imageBytes));
+        }
+
+        public async static Task<string> CacheProfileImageAsync(string url, string fileName = "profile_image.png")
+        {
+            try
+            {
+                var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
+
+                using var http = new HttpClient();
+                var bytes = await http.GetByteArrayAsync(url).ConfigureAwait(false);
+
+                // Overwrite file if it exists
+                await File.WriteAllBytesAsync(filePath, bytes);
+
+                return filePath;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

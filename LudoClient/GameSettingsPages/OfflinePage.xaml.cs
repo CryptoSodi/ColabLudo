@@ -80,7 +80,8 @@ public partial class OfflinePage : ContentPage
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         
-        ClientGlobalConstants.game = new Game(gameMode, gameType, playerColor);
+        ClientGlobalConstants.game = new Game();
+        ClientGlobalConstants.game.Init(gameMode, gameType, playerColor);
         ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
 
         ClientGlobalConstants.FlushOld();

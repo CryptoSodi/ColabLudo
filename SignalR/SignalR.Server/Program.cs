@@ -6,38 +6,32 @@ using SignalR.Server;
 using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add CORS policy
+//Add CORS policy
 builder.Services.AddCors(o =>
-{
-    o.AddPolicy("AllowAnyOrigin", p => p
-          .AllowAnyOrigin()    // Allow ANY origin (localhost, IP, external)
-            .AllowAnyHeader()
-            .AllowAnyMethod());
+{// Allow ANY origin (localhost, IP, external)
+    o.AddPolicy("AllowAnyOrigin", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
 // Load secrets (local dev) and environment variables (for production)
 builder.Configuration
-.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-.AddUserSecrets<Program>()
-.AddEnvironmentVariables();
+.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddUserSecrets<Program>().AddEnvironmentVariables();
 // Add SignalR services
 builder.Services.AddSignalR(o => o.StatefulReconnectBufferSize = 100_000);
-
 
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
            .EnableSensitiveDataLogging(false));// Turn off verbose logging
 
-builder.Services.AddHostedService<SweeperService>();
+builder.Services.AddHostedService<PlayerCleanupService>();
 builder.Services.AddScoped<FriendsService>();
 builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<GoogleAuthService>();
-builder.Services.AddScoped<CivicAuthService>();
 builder.Services.AddScoped<UtilService>();
-builder.Services.AddHttpClient<GameShiftService>();
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
-builder.Services.AddDataProtection();
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(@"C:\repos\LudoKeyRing")) 
+    .SetApplicationName("LudoServer");
 
 builder.Services.AddSingleton<DatabaseManager>(sp => {
     var hubContext = sp.GetRequiredService<IHubContext<LudoHub>>();
@@ -67,7 +61,6 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
             protector,
             masterUserId,
             network: "MainNetBeta",
-            relativeStoragePath: "Data/wallets.json",
             protectorKey: "CryptoHelper.WalletProtector"
         );
     }
@@ -86,8 +79,8 @@ app.MapHub<LudoHub>("/LudoHub", options => { options.AllowStatefulReconnects = t
 // Map SignalR hubs
 app.MapHub<AdminHub>("/AdminHub");
 // Run the app
-try { 
-    app.Run(); 
+try {
+    app.Run();
 }catch (Exception ex)
 {
     Console.WriteLine($"Critical error: {ex}");

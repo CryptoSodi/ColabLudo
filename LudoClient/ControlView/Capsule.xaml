@@ -4,14 +4,19 @@
              x:Class="LudoClient.ControlView.Capsule">
     <ContentView.ControlTemplate>
         <ControlTemplate>
-            <Grid VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand">
-                <!-- Bind Image Source here -->
-                <Image Source="{TemplateBinding ImageSource}" x:Name="ImageSourceContainer" VerticalOptions="Start" HorizontalOptions="Center"/>
-                <Grid VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand"
-                     WidthRequest="{Binding Source={x:Reference ImageSourceContainer}, Path=Width}" 
-                     HeightRequest="{Binding Source={x:Reference ImageSourceContainer}, Path=Height}">
-                    <ContentPresenter Content="{TemplateBinding Content}" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"/>
+            <Grid VerticalOptions="Start" HorizontalOptions="Center">
+
+                <Image Source="{TemplateBinding ImageSource}" 
+                       x:Name="ImageSourceContainer" 
+                       VerticalOptions="Start" 
+                       HorizontalOptions="Center"/>
+
+                <Grid x:Name="OverlayGrid" 
+                      VerticalOptions="Start" 
+                      HorizontalOptions="Center" >
+                    <ContentPresenter Content="{TemplateBinding Content}" VerticalOptions="Fill" HorizontalOptions="Fill"/>
                 </Grid>
+
             </Grid>
         </ControlTemplate>
     </ContentView.ControlTemplate>

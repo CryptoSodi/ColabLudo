@@ -135,7 +135,7 @@ namespace SignalR.Server.Services
                 // Transfer bonus logic here
                 int bonusAmount = 10;
                 //await TransferBonusToPlayer(playerId, bonusAmount); // <- Your own logic/method
-                bool credited = _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
+                bool credited = await _crypto.OffChainTransaction(player.PlayerId, bonusAmount, "Daily Bonus", "", false, "");
             }
 
             return new DailyBonusDto

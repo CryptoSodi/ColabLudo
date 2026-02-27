@@ -11,7 +11,7 @@ using System.Collections.Concurrent;
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
 
-    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, GameShiftService gameShiftService) : Hub
+    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService) : Hub
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
@@ -21,10 +21,10 @@ namespace SignalR.Server
             {
                 var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
                 ConnectionToPlayer[Context.ConnectionId]  = _utilService.GetPlayerByID(player.PlayerId);
-                                                            await _utilService.SetPlayerOnlineState(player.PlayerId, true);
+                await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 
                 PlayerInfo playerInfo = await _utilService.CastPlayerToInfoAsync(player);
-                gameShiftService.CreateUserAsync(playerInfo);
+                
                 return playerInfo;
             }
             catch (Exception ex)
@@ -67,6 +67,7 @@ namespace SignalR.Server
         {
             try
             {
+                Console.WriteLine($"User Disconnected: {Context.ConnectionId}");
                 await LeaveCloseLobby();
                 if (ConnectionToPlayer.TryRemove(Context.ConnectionId, out var playerAtConnection))
                 {
@@ -95,7 +96,7 @@ namespace SignalR.Server
             try
             {
                 Player player = await GetCallerPlayer();
-                var r = _crypto.SendSolToExternalWallet(player, destination, amountInSol);
+                var r = _crypto.Withdraw(player, destination, amountInSol);
                 await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
                 return r;
             }
@@ -121,6 +122,17 @@ namespace SignalR.Server
                 return Task.FromResult(new List<GameCommand>());
             }
         }
+        public async Task Ping()
+        {
+            try
+            {
+                if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var player))
+                {
+                    player.LastPingUtc = DateTime.UtcNow;
+                }
+            }
+            catch { }
+        }
         public async Task LeaveCloseLobby()
         {
             try
@@ -142,6 +154,7 @@ namespace SignalR.Server
         {
             try
             {
+                Console.WriteLine("Ready " + DateTime.UtcNow);
                 Player player = await GetCallerPlayer();
                 // Find the game where this player exists
                 Game existingGame = DM.GetActiveGame("Active", player.PlayerId);

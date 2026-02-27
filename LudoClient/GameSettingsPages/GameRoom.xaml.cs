@@ -95,12 +95,7 @@ public partial class GameRoom : ContentPage
             GlobalConstants.GameCost = args.GameCost;
             shareBox.SetShareCode(args.RoomCode);
         });
-    }
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        // Force layout to update ContentSize
-        await GlobalConstants.MatchMaker.ReadyAsync();
+        GlobalConstants.MatchMaker.ReadyAsync();
     }
     protected override bool OnBackButtonPressed()
     {

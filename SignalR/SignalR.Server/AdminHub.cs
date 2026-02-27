@@ -8,7 +8,7 @@ using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {
-    public class AdminHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, CivicAuthService _civicAuthService) : Hub
+    public class AdminHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService) : Hub
     {
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
 
@@ -40,16 +40,13 @@ namespace SignalR.Server
         {
             try
             {
-                var player = await _civicAuthService.CivicAuthentication(idToken, city, countryCode);
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(player.PlayerId);
-                await _utilService.SetPlayerOnlineState(player.PlayerId, true);
-                return await _utilService.CastPlayerToInfoAsync(player);
+                
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in Authentication : {ex.Message}");
-                return null;
             }
+                return null;
         }
         public async Task<PlayerInfo> UserConnectedSetID(String AuthToken)
         {

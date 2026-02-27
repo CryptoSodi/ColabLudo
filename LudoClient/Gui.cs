@@ -26,10 +26,10 @@ namespace LudoClient
         public Token LockHome3;
         public Token LockHome4;
 
-        public PlayerSeat red;
-        public PlayerSeat green;
-        public PlayerSeat yellow;
-        public PlayerSeat blue;
+        public PlayerSeat red { get; set; }
+        public PlayerSeat green { get; set; }
+        public PlayerSeat yellow { get; set; }
+        public PlayerSeat blue { get; set; }
 
         public Gui(Token red1, Token red2, Token red3, Token red4, Token gre1, Token gre2, Token gre3, Token gre4, Token blu1, Token blu2, Token blu3, Token blu4, Token yel1, Token yel2, Token yel3, Token yel4, Token LockHome1, Token LockHome2, Token LockHome3, Token LockHome4, PlayerSeat red, PlayerSeat green, PlayerSeat yellow, PlayerSeat blue)
         {

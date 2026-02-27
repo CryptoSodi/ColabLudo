@@ -8,238 +8,17 @@ using Solnet.Rpc.Builders;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
 using Solnet.Wallet.Utilities;
-using System.Text.Json;
 
 namespace SignalR.Server
 {
     public class SolCryptoHelper
-    { // Number of lamports in one SOL.
+    {
+        // Number of lamports in one SOL.
         private const ulong LamportsPerSol = 1_000_000_000;
-
-        private readonly IRpcClient _rpc;                       // Solana RPC client
-        private readonly string _storageFile;                   // File path for JSON wallet store
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory; // EF factory for ledger DB
-        private readonly IDataProtector _protector;             // Data protector for encrypt/decrypt
-        private readonly Dictionary<int, Wallet> _wallets;   // In-memory wallet cache
-        private readonly int _masterUserId;                  // Identifier for the master wallet
-        private IHostEnvironment env;
-        private IDataProtectionProvider dataProtectionProvider;
-        private string network;
-        private string relativeStoragePath;
-
-        public SolCryptoHelper(IDbContextFactory<LudoDbContext> contextFactory, IHostEnvironment env, IDataProtectionProvider dataProtectionProvider, int masterUserId, string network, string relativeStoragePath, string protectorKey)
-        {
-            _contextFactory = contextFactory;
-            // Create a protector instance scoped to this class
-            _protector = dataProtectionProvider.CreateProtector(protectorKey);
-            _masterUserId = masterUserId;
-
-            // Initialize Solana RPC for MainNet or DevNet
-            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase) ? Cluster.DevNet : Cluster.MainNet;
-            _rpc = ClientFactory.GetClient(cluster);
-
-            // Ensure the folder for storing JSON exists
-            var dataFolder = Path.Combine(env.ContentRootPath, Path.GetDirectoryName(relativeStoragePath) ?? string.Empty);
-            Directory.CreateDirectory(dataFolder);
-            _storageFile = Path.Combine(env.ContentRootPath, relativeStoragePath);
-
-            // Load existing wallets or initialize empty dictionary
-            if (File.Exists(_storageFile))
-                _wallets = JsonSerializer.Deserialize<Dictionary<int, Wallet>>(File.ReadAllText(_storageFile)) ?? new Dictionary<int, Wallet>();
-            else
-                _wallets = new Dictionary<int, Wallet>();
-
-            // Ensure the master (hot) wallet exists; if not, generate and persist it.
-            if (!_wallets.ContainsKey(_masterUserId))
-            {
-                using var ctx = _contextFactory.CreateDbContext();
-
-                bool playerExists = ctx.Players.Any(p => p.PlayerId == _masterUserId);
-                if (!playerExists)
-                {
-                    Player admin = new Player
-                    {
-                        GoogleId = "",
-                        Name = "Admin",
-                        Email = "Admin@LudoNFT.com",
-                        PictureUrl = "",
-                        City = "Global",
-                        CountryCode = "+1"
-                    };
-                    ctx.Players.Add(admin);
-                    // Save changes to the database
-                    ctx.SaveChangesAsync();
-                }
-                GetOrCreateAccount(_masterUserId, true, true).GetAwaiter().GetResult();
-            }
-        }
-        /// Constructor sets up RPC client, loads or creates wallets, and ensures
-        /// master wallet is present in the JSON store.
-        public async Task<string> GetOrCreateAccount(int playerId, bool isMaster = false, bool save = true, CancellationToken cancellationToken = default)
-        {
-            // If already exists, return the public key
-            if (_wallets.TryGetValue(playerId, out var w) && w.PublicKey != null)
-                return await Task.FromResult(w.PublicKey);
-
-            var account = new Account();
-            // Encode and encrypt the private key
-            var rawPriv = new Base58Encoder().EncodeData(account.PrivateKey);
-            var cipherPriv = _protector.Protect(rawPriv);
-            var pub = account.PublicKey.Key;
-
-            _wallets[playerId] = new Wallet
-            {
-                PlayerId = playerId,
-                EncryptedPrivateKey = cipherPriv,
-                PublicKey = pub,
-                IsMaster = isMaster
-            };
-            await EnsurePlayerWalletExists(playerId, pub);
-            if (save)
-                PersistWallets(); // Persist updated store
-            Console.WriteLine($"Sub-account created: {playerId} -> {pub}");
-            return await Task.FromResult(pub);
-        }
-        public async Task<PlayerWallet?> EnsurePlayerWalletExists(int playerId, String WalletAddress = "none")
-        {
-            using var ctx = _contextFactory.CreateDbContext();
-            var exists = ctx.PlayerWallet.Any(p => p.PlayerId == playerId);
-            if (!exists)
-            {
-                if (WalletAddress == "none")
-                {
-                    ctx.PlayerWallet.Add(new PlayerWallet
-                    {
-                        PlayerId = playerId,
-                        AddressType = "SOL",
-                        WalletAddress = await GetOrCreateAccount(playerId, false, true),
-                        AvailableBalance = 0m  // 0m is C# syntax for a decimal literal with value zero
-                    });
-                    await ctx.SaveChangesAsync();
-                    await OffChainTransaction(playerId, 10000.0m, "Signup Bonus", "", false, "");
-                }
-            }
-            //if ()ctx.PlayerWallet.transactions == null)
-            //var sub = ctx.PlayerWallet.Include(p => p.Transactions).FirstOrDefaultAsync(p => p.PlayerId == playerId);
-            var sub = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-            return sub;
-        }
-        /// Serializes in-memory wallet records back to the JSON storage file.
-        private void PersistWallets()
-        {
-            var json = JsonSerializer.Serialize(_wallets, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_storageFile, json);
-        }
-        public async Task<bool> OffChainTransaction(int playerId, decimal solAmount, String description, String txId = "", bool IsOnChain = false, String RoomCode = "")
-        {
-            using var ctx = _contextFactory.CreateDbContext();
-            var sub = await EnsurePlayerWalletExists(playerId);
-            sub.AvailableBalance += solAmount;
-
-            ctx.WalletTransaction.Add(new WalletTransaction
-            {
-                PlayerId = playerId,
-                Amount = solAmount,
-                BalanceAfter = sub.AvailableBalance,
-                Type = TransactionType.Sweep,
-                Description = description,
-                RoomCode = RoomCode,
-                IsOnChain = IsOnChain,
-                txId = txId,
-                CreatedDate = DateTime.UtcNow
-            });
-            ctx.PlayerWallet.Update(sub);
-            await ctx.SaveChangesAsync();
-            return true;
-        }
-        internal async Task<string> SendSolToExternalWallet(Player player, string destination, decimal amountInSol)
-        {
-            try
-            {
-                var txSignature = await SendFromMasterAsync(destination, amountInSol);
-
-                // 0) Check total balance (on-chain + off-chain)
-                var totalBalance = await GetTotalBalanceAsync(player.PlayerId);
-                if (totalBalance < amountInSol)
-                {
-                    Console.WriteLine($"Withdrawal failed: insufficient total balance for {player.PlayerId}. Have {totalBalance} SOL, tried {amountInSol} SOL.");
-                    return "INSUFFICIENT_FUNDS";
-                }
-
-                // 1) Debit from off-chain ledger (credit master balance)
-                var debited = await OffChainTransaction(player.PlayerId, -amountInSol, "Withdraw", txSignature, true);
-                if (!debited)
-                {
-                    Console.WriteLine($"Withdrawal failed: insufficient off-chain funds for {player.PlayerId}");
-                    return "INSUFFICIENT_OFFCHAIN";
-                }
-
-                // 2) Send on-chain using master wallet
-                Console.WriteLine($"Withdrawal of {amountInSol} SOL for {player.PlayerId} sent from master. Tx: {txSignature}");
-                return txSignature;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error during withdrawal for {player.PlayerId}: {ex.Message}");
-                return "ERROR";
-            }
-        }
-        /// Sends SOL on-chain directly from the master account to an external address.
-        /// Useful for withdrawals if you prefer using the main hot wallet.
-        public async Task<string> SendFromMasterAsync(string toPubKey, decimal solAmount)
-        {
-            if (!_wallets.TryGetValue(_masterUserId, out var master))
-                throw new InvalidOperationException("Master wallet not found");
-
-            // Unprotect and reconstruct master account
-            var rawPriv = _protector.Unprotect(master.EncryptedPrivateKey);
-            var acct = new Account(rawPriv, master.PublicKey);
-
-            // Prepare and send transaction similarly
-            var lamports = (ulong)(solAmount * LamportsPerSol);
-            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
-
-            var tx = new TransactionBuilder()
-                .SetRecentBlockHash(blockhash)
-                .SetFeePayer(acct.PublicKey)
-                .AddInstruction(
-                    SystemProgram.Transfer(
-                        acct.PublicKey,
-                        new PublicKey(toPubKey),
-                        lamports))
-                .Build(acct);
-
-            var resp = await _rpc.SendTransactionAsync(tx, skipPreflight: false, commitment: Commitment.Confirmed);
-            if (resp.WasSuccessful)
-            {
-                Console.WriteLine($"Master sent {solAmount} SOL to {toPubKey}. Tx: {resp.Result}");
-                return resp.Result;
-            }
-            Console.WriteLine($"Master send failed: {resp.Reason}");
-            throw new Exception(resp.Reason);
-        }
-        /// Combines on-chain deposits and off-chain ledger balances for a user.
-        public async Task<decimal> GetTotalBalanceAsync(int playerId)
-        {
-            // Get or create sub-account, sum on-chain and off-chain balances
-            var pub = await GetOrCreateAccount(playerId);
-            // 1) Query current fee schedule
-
-            ulong feeBuffer = await getFeeBuffer();
-
-            var onChain = await GetOnChainBalanceAsync(pub);
-            decimal onSol;
-            if (onChain > feeBuffer)
-                onSol = (onChain - feeBuffer) / (decimal)LamportsPerSol;
-            else
-                onSol = (onChain) / (decimal)LamportsPerSol;
-
-            using var ctx = _contextFactory.CreateDbContext();
-            var off = await ctx.PlayerWallet.FindAsync(playerId);
-            var offSol = off?.AvailableBalance ?? 0m;
-
-            return onSol + offSol;
-        }
+        private readonly IRpcClient _rpc;                                   // Solana RPC client
+        private readonly IDbContextFactory<LudoDbContext> _contextFactory;  // EF factory for ledger DB
+        private readonly IDataProtector _protector;                         // Data protector for encrypt/decrypt
+        private readonly int _masterUserId;                                 // Identifier for the master wallet
         private async Task<ulong> getFeeBuffer()
         {
             // 1) Optional: dynamically get accurate fee estimate
@@ -255,187 +34,303 @@ namespace SignalR.Server
             //  Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
             return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2;
         }
-        /// Queries the on-chain SOL balance (in lamports) for a given public key.
-        public async Task<ulong> GetOnChainBalanceAsync(string pubKey)
+        public SolCryptoHelper(IDbContextFactory<LudoDbContext> contextFactory, IHostEnvironment env, IDataProtectionProvider dataProtectionProvider, int masterUserId, string network, string purpose)
         {
+            _contextFactory = contextFactory;            
+            _protector = dataProtectionProvider.CreateProtector(purpose);
+            _masterUserId = masterUserId;
+            // Initialize Solana RPC for MainNet or DevNet
+            // Constructor sets up RPC client, loads or creates wallets, and ensures
+            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase) ? Cluster.DevNet : Cluster.MainNet;
+            _rpc = ClientFactory.GetClient(cluster);
+            EnsureWalletAsync(_masterUserId).GetAwaiter().GetResult();            
+        }
+        /* =========================================================
+       * WALLET INITIALIZATION (SINGLE SOURCE OF TRUTH)
+       * ========================================================= */
+        public async Task<PlayerWallet> EnsureWalletAsync(int playerId, bool applySignupBonus = false)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            using var tx = await ctx.Database.BeginTransactionAsync();
+
+            bool isMaster = playerId == _masterUserId;
+
+            // =========================================================
+            // 1️⃣ ENSURE PLAYER EXISTS (NORMAL OR MASTER)
+            // =========================================================
+            var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            if (player == null && isMaster)
+            {
+                player = new Player
+                {
+                    CreatedDate = DateTime.UtcNow,
+                    Name = isMaster ? "SYSTEM" : $"Player_{playerId}"
+                };
+
+                ctx.Players.Add(player);
+                await ctx.SaveChangesAsync(); // FK safety
+            }
+
+            // ---- Wallet Key ----
+            var walletKey = await ctx.PlayerWalletKey.FirstOrDefaultAsync(w => w.PlayerId == playerId);
+
+            if (walletKey == null)
+            {
+                var acct = new Account();
+                var rawPriv = new Base58Encoder().EncodeData(acct.PrivateKey);
+
+                walletKey = new PlayerWalletKey
+                {
+                    PlayerId = playerId,
+                    PublicKey = acct.PublicKey.Key,
+                    EncryptedPrivateKey = _protector.Protect(rawPriv),
+                    IsMaster = isMaster
+                };
+
+                ctx.PlayerWalletKey.Add(walletKey);
+                await ctx.SaveChangesAsync();
+            }
+
+            // ---- Player Wallet ----
+            var wallet = await ctx.PlayerWallet
+                .FirstOrDefaultAsync(w => w.PlayerId == playerId);
+
+            if (wallet == null)
+            {
+                wallet = new PlayerWallet
+                {
+                    PlayerId = playerId,
+                    AddressType = "LUDC",
+                    WalletAddress = walletKey.PublicKey,
+                    AvailableBalance = 0m
+                };
+
+                ctx.PlayerWallet.Add(wallet);
+                await ctx.SaveChangesAsync();
+
+                if (applySignupBonus && !isMaster)
+                {
+                    ApplyOffChainLedger(
+                        ctx,
+                        wallet,
+                        10000m,
+                        "Signup Bonus"
+                    );
+
+                    await ctx.SaveChangesAsync();
+                }
+            }
+
+            await tx.CommitAsync();
+            return wallet;
+        }
+
+        /* =========================================================
+         * INTERNAL LEDGER WRITER (NO DB CONTEXT / NO COMMIT)
+         * ========================================================= */
+
+        public void ApplyOffChainLedger(LudoDbContext ctx, PlayerWallet wallet, decimal amount, string description, string roomCode = "", bool isOnChain = false, string txId = "")
+        {
+            wallet.AvailableBalance += amount;
+
+            ctx.WalletTransaction.Add(new WalletTransaction
+            {
+                PlayerId = wallet.PlayerId,
+                OperationId = Guid.NewGuid(),
+                Amount = amount,
+                BalanceAfter = wallet.AvailableBalance,
+                Type = amount >= 0 ? TransactionType.Deposit : TransactionType.Sweep,
+                Status = WalletTransactionStatus.Completed,
+                Description = description,
+                RoomCode = roomCode,
+                IsOnChain = isOnChain,
+                txId = txId
+            });
+
+            ctx.PlayerWallet.Update(wallet);
+        }
+        /* =========================================================
+          * WITHDRAW (IDEMPOTENT, ADMIN FALLBACK)
+          * ========================================================= */
+
+        public async Task<string> Withdraw(Player player, string destination, decimal amount, Guid operationId)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+
+            var existing = await ctx.WalletTransaction.FirstOrDefaultAsync(t => t.OperationId == operationId);
+
+            if (existing != null)
+            {
+                if (existing.Status == WalletTransactionStatus.Completed)
+                    return existing.txId;
+
+                if (existing.Status == WalletTransactionStatus.Pending)
+                    return "WITHDRAW_PENDING";
+            }
+
+            using var tx = await ctx.Database.BeginTransactionAsync();
+
+            var wallet = await ctx.PlayerWallet.FirstAsync(p => p.PlayerId == player.PlayerId);
+
+            if (wallet.IsWithdrawalLocked || wallet.AvailableBalance < amount)
+                return "WITHDRAW_NOT_ALLOWED";
+
+            wallet.AvailableBalance -= amount;
+            wallet.IsWithdrawalLocked = true;
+
+            var ledger = new WalletTransaction
+            {
+                PlayerId = player.PlayerId,
+                OperationId = operationId,
+                Amount = -amount,
+                BalanceAfter = wallet.AvailableBalance,
+                Type = TransactionType.Withdrawal,
+                Status = WalletTransactionStatus.Pending,
+                Description = "Withdraw Pending"
+            };
+
+            ctx.PlayerWallet.Update(wallet);
+            ctx.WalletTransaction.Add(ledger);
+
+            await ctx.SaveChangesAsync();
+            await tx.CommitAsync();
+
             try
             {
-                var r = await _rpc.GetBalanceAsync(pubKey);
-                if (r.WasSuccessful)
-                    return r.Result.Value;
+                string sig;
+                ulong feeBuffer = (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2;
+
+                var userKey = await GetWalletKeyAsync(player.PlayerId);
+                var userBal = (await _rpc.GetBalanceAsync(userKey.PublicKey)).Result.Value;
+
+                if ((userBal - feeBuffer) / (decimal)LamportsPerSol >= amount)
+                    sig = await SendRawAsync(userKey, destination, amount);
                 else
-                    return 0;
+                    sig = await SendRawAsync(await GetWalletKeyAsync(_masterUserId), destination, amount);
+
+                wallet.IsWithdrawalLocked = false;
+                ledger.Status = WalletTransactionStatus.Completed;
+                ledger.IsOnChain = true;
+                ledger.txId = sig;
+                ledger.Description = "Withdraw";
+
+                ctx.PlayerWallet.Update(wallet);
+                ctx.WalletTransaction.Update(ledger);
+                await ctx.SaveChangesAsync();
+
+                return sig;
             }
-            catch (Exception)
+            catch
             {
-                Console.WriteLine("Error getting GetOnChainBalanceAsync");
-                return await GetOnChainBalanceAsync(pubKey);
+                wallet.AvailableBalance += amount;
+                wallet.IsWithdrawalLocked = false;
+
+                ledger.Status = WalletTransactionStatus.Failed;
+                ledger.Description = "Withdraw Failed";
+
+                ctx.PlayerWallet.Update(wallet);
+                ctx.WalletTransaction.Update(ledger);
+                await ctx.SaveChangesAsync();
+
+                return "WITHDRAW_FAILED";
             }
         }
-        public async Task<bool> DeductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
+        /* =========================================================
+          * RAW SOLANA SEND
+          * ========================================================= */
+        private async Task<string> SendRawAsync(PlayerWalletKey key, string to, decimal amount)
         {
-            bool debited = false;
-            var balance = await GetOffChainBalanceAsync(playerId);
-            if ((betAmount > 0 && balance < betAmount) || betAmount < 0)
-                return debited; // Not enough balance to deduct the game fee   
+            var rawPriv = _protector.Unprotect(key.EncryptedPrivateKey);
+            var acct = new Account(rawPriv, key.PublicKey);
+
+            var lamports = (ulong)(amount * LamportsPerSol);
+            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
+
+            var tx = new TransactionBuilder()
+                .SetRecentBlockHash(blockhash)
+                .SetFeePayer(acct.PublicKey)
+                .AddInstruction(SystemProgram.Transfer(
+                    acct.PublicKey,
+                    new PublicKey(to),
+                    lamports)).Build(acct);
+
+            var res = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
+            if (!res.WasSuccessful)
+                throw new Exception(res.Reason);
+
+            return res.Result;
+        }
+        private async Task<PlayerWalletKey> GetWalletKeyAsync(int playerId)
+        {
+            using var ctx = _contextFactory.CreateDbContext();
+            return await ctx.PlayerWalletKey.FirstAsync(w => w.PlayerId == playerId);
+        }
+        public async Task<bool> DeductGameFee(int playerId,int? tournamentId,string roomCode,bool isTournamentGame,decimal betAmount)
+        {
+            if (betAmount <= 0)
+                return false;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            using var tx = await ctx.Database.BeginTransactionAsync();
+
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            if (wallet == null)
+                return false;
+
+            // ❗ Block game actions during withdrawal
+            if (wallet.IsWithdrawalLocked)
+                return false;
+
+            if (wallet.AvailableBalance < betAmount)
+                return false;
+
             if (isTournamentGame)
             {
-                using var ctx = _contextFactory.CreateDbContext();
+                var challenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc =>tc.TournamentId == tournamentId &&tc.PlayerId == playerId);
 
-                var existingChallenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
-                if (existingChallenger == null)
+                if (challenger == null)
                 {
-                    ctx.TournamentChallengers.Add(new TournamentChallenger
+                    challenger = new TournamentChallenger
                     {
                         PlayerId = playerId,
-                        TournamentId = tournamentId
-                    });
-                    ctx.SaveChanges();
-                    debited = await OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
+                        TournamentId = tournamentId,
+                        Status = "JOINED",
+                        RetryCount = 0
+                    };
+
+                    ctx.TournamentChallengers.Add(challenger);
                 }
-                else if (existingChallenger.Status == "FAILED")
+                else if (challenger.Status == "FAILED")
                 {
-                    existingChallenger.RetryCount++;
-                    existingChallenger.Status = "JOINEND";
-                    ctx.SaveChanges();
-                    debited = await OffChainTransaction(playerId, -betAmount, "Tournament Fee", tournamentId.ToString(), false, roomCode);
+                    challenger.RetryCount++;
+                    challenger.Status = "JOINED";
+                    ctx.TournamentChallengers.Update(challenger);
                 }
                 else
                 {
-                    debited = true;
+                    // Already joined & paid
+                    await tx.CommitAsync();
+                    return true;
                 }
+
+                // 💰 Deduct tournament fee (OFF-CHAIN, ATOMIC)
+                ApplyOffChainLedger(ctx,wallet,-betAmount,"Tournament Fee",tournamentId?.ToString() ?? "",false,roomCode);
             }
             else
             {
-                debited = await OffChainTransaction(playerId, -betAmount, "Game Fee", "", false, roomCode);
+                // 💰 Deduct normal game fee
+                ApplyOffChainLedger(ctx,wallet,-betAmount,"Game Fee","",false,roomCode);
             }
-            return debited;
+
+            await ctx.SaveChangesAsync();
+            await tx.CommitAsync();
+            return true;
         }
-        public async Task<decimal> GetOffChainBalanceAsync(int playerId)
-        {
-            using var ctx = _contextFactory.CreateDbContext();
-            var off = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-            if (off == null)
-            {
 
-            }
-            return off?.AvailableBalance ?? 0m;
-        }
-        /// Serializes in-memory wallet records back to the JSON storage file.
-        /// Sweeps any positive on-chain balances from sub-account addresses back to master.
-        public async Task SweepAllSubAccountsAsync()
-        {
-            using var ctx = _contextFactory.CreateDbContext();
-            var masterPub = await GetOrCreateAccount(_masterUserId, true, true);
-
-            foreach (var kv in _wallets.Where(w => !w.Value.IsMaster))
-            {
-                var playerId = kv.Key;
-                var pub = kv.Value.PublicKey;
-                ulong lamports = await GetOnChainBalanceAsync(pub);
-
-                // 2) Apply a safety multiplier (e.g. ×2) for headroom
-
-                ulong feeBuffer = await getFeeBuffer();
-
-                if (lamports > feeBuffer)
-                {
-                    decimal sol = (lamports - feeBuffer) / (decimal)LamportsPerSol;
-
-                    var txId = await SendOnChainAsync(playerId, masterPub, sol);
-                    Console.WriteLine($"On-chain sweep successful: {sol} SOL, tx {txId}");
-
-                    var sub = await EnsurePlayerWalletExists(playerId);
-
-                    // Debit sub-account and credit master in DB
-                    sub.AvailableBalance += sol;
-                    // Record the sweep transaction
-                    ctx.WalletTransaction.Add(new WalletTransaction
-                    {
-                        PlayerId = playerId,
-                        Amount = sol,
-                        BalanceAfter = sub.AvailableBalance,
-                        Type = TransactionType.Sweep,
-                        Description = $"On-chain sweep",
-                        IsOnChain = true,
-                        RoomCode = "",
-                        txId = txId,
-                        CreatedDate = DateTime.UtcNow
-                    });
-
-                    ctx.PlayerWallet.Update(sub);
-                    await ctx.SaveChangesAsync();
-                }
-                else
-                {
-                    // Console.WriteLine($"Skipped sweep, balance {lamports} ≤ fee buffer");
-                }
-            }
-        }
-        /// <summary>
-        /// Builds, signs, and sends a SOL transfer transaction on-chain.
-        /// </summary>
-        public async Task<string> SendOnChainAsync(int fromPlayerId, string toPubKey, decimal solAmount)
-        {
-            if (!_wallets.TryGetValue(fromPlayerId, out var w))
-                throw new InvalidOperationException("Wallet not found");
-
-            // Decrypt (unprotect) the stored private key
-            var rawPriv = _protector.Unprotect(w.EncryptedPrivateKey);
-            var acct = new Account(rawPriv, w.PublicKey);
-
-            // Convert SOL to lamports and fetch latest blockhash
-
-            var lamports = (ulong)(solAmount * LamportsPerSol);
-            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
-
-            var balance = (await _rpc.GetBalanceAsync(acct.PublicKey)).Result.Value;
-
-            // Optional: Fetch required minimum lamports for a system account
-            var rentExemptMin = (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result;
-
-            // Add this to the transfer amount if you're sending to a fresh public key
-            ulong lamportsToSend = (ulong)(solAmount * LamportsPerSol);
-
-            ulong feeBuffer = await getFeeBuffer();
-
-            if (lamportsToSend + feeBuffer > balance)
-                throw new InvalidOperationException("Not enough funds to cover fee buffer.");
-
-            var tx = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(acct.PublicKey).AddInstruction(SystemProgram.Transfer(acct.PublicKey, new PublicKey(toPubKey), lamportsToSend)).Build(acct);
-
-            var s = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
-            Console.WriteLine($"Tx failed: {s.Reason}");
-            if (!s.WasSuccessful)
-            {
-                var errorJson = JsonSerializer.Serialize(s);
-                Console.WriteLine($"Tx failed: {errorJson}");
-                throw new Exception("Transaction failed.");
-            }
-            return s.Result;
-        }
+        // Builds, signs, and sends a SOL transfer transaction on-chain.
         internal async Task<string> MintNFT(int playerid, int amount)
         {
             throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Represents metadata for an on-chain wallet, either master or sub-account.
-        /// </summary>
-        public class Wallet
-        {
-            /// <summary>User or manager identifier.</summary>
-            public int PlayerId { get; set; }
-
-            /// <summary>Encrypted Base58 private key for signing transactions.</summary>
-            public string EncryptedPrivateKey { get; set; }
-
-            /// <summary>Base58-encoded public key for deposit/withdrawal.</summary>
-            public string PublicKey { get; set; }
-
-            /// <summary>Flag indicating if this wallet is the master (hot) wallet.</summary>
-            public bool IsMaster { get; set; }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿
-using LudoClient.Constants;
+﻿using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
@@ -163,7 +162,7 @@ namespace LudoClient
                 
                 if(ClientGlobalConstants.game == null)
                     return;
-                ClientGlobalConstants.GoBack();
+                //ClientGlobalConstants.GoBack();
                 await ClientGlobalConstants.game.ShowResults(e.seats, e.GameType, e.GameCost);
 
                 ClientGlobalConstants.game.engine.cleanGame();
@@ -184,7 +183,10 @@ namespace LudoClient
                 try
                 {
                     GlobalConstants.lastSeenIndex = -1;
-                    ClientGlobalConstants.game = new LudoClient.CoreEngine.Game("Client", args.GameType, "", args.seatsData, args.rollsString);
+                    ClientGlobalConstants.game = new LudoClient.CoreEngine.Game();
+                    
+                    ClientGlobalConstants.game.Init("Client", args.GameType, "", args.seatsData, args.rollsString);
+                   
                     ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
                     ClientGlobalConstants.FlushOld();
                     Task.Run(() => PollForCommandsAsync(_pollingTokenSource.Token));

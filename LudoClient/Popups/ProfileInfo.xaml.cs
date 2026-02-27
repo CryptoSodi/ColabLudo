@@ -18,7 +18,7 @@ public partial class ProfileInfo : BasePopup
 
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            player.playerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
+            player.playerImageItem.Source = UserInfo.Instance.ProfileImageSource;
             player.PlayerName = UserInfo.Instance.player.Name;
             Email.Text = UserInfo.Instance.player.Email;
             Number.Text = UserInfo.Instance.player.PhoneNumber;

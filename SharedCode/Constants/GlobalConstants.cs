@@ -7,7 +7,7 @@ namespace SharedCode.Constants
     {
         public static int GameHistorySaveIndex = 0;
         public static readonly decimal initialEntry = (decimal)1;
-        public static readonly bool Debug = false;
+        public static readonly bool Debug = true;
         public static readonly string Url;
         public static readonly string BaseUrl;
         public static readonly string HubUrl;
@@ -15,7 +15,7 @@ namespace SharedCode.Constants
         public static Random rnd = new Random();
         static GlobalConstants()
         {
-            Url = Debug ? "http://192.168.1.50" : "http://13.202.76.246";// "http://13.202.76.246";//"http://13.235.90.3";// 
+            Url = Debug ? "http://192.168.1.12" : "http://13.202.76.246";// "http://13.202.76.246";//"http://13.235.90.3";// 
 #if WINDOWS
 if(Debug){
             var host = Dns.GetHostEntry(Dns.GetHostName());

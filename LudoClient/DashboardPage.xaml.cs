@@ -36,7 +36,7 @@ public partial class DashboardPage : ContentPage
     {
         CashImage.Source = isConnected ? Skins.Cash : Skins.Cash_Gray;
         PlayWithFriendsImage.Source = isConnected ? Skins.Play : Skins.Play_Gray;
-        PracticeImage.Source = isConnected ? Skins.Practice : Skins.Practice_Gray;
+       // PracticeImage.Source = isConnected ? Skins.Practice : Skins.Practice_Gray;
         TournamentImage.Source = isConnected ? Skins.Tournament : Skins.Tournament_Gray;
         DailyBonusImage.Source = isConnected ? Skins.DailyBonus : Skins.DailyBonus_Gray;
     }

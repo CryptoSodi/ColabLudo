@@ -5,13 +5,14 @@ using SimpleToolkit.Core;
 using SimpleToolkit.SimpleShell;
 using Xe.AcrylicView;
 #if ANDROID
-using LudoClient.Services;
 using LudoClient.Platforms.Android;
 #endif
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using LudoClient.Controls;
+using LudoClient.Services;
+using LudoClient.CoreEngine;
 
 namespace LudoClient
 {
@@ -42,6 +43,14 @@ namespace LudoClient
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddSingleton<IGamepadInputService, GamepadInputService>();
 #endif
+
+#if ANDROID
+builder.Services.AddSingleton<ISoundService, SoundPoolService>();
+#else
+builder.Services.AddSingleton<ISoundService, MauiAudioService>();
+#endif
+
+            builder.Services.AddSingleton<HepticEngine>();
 
             builder.ConfigureMauiHandlers(handlers =>
             {

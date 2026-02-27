@@ -12,9 +12,9 @@ public partial class HeaderCV : ContentView
     public HeaderCV()
     {
         InitializeComponent();
-
-        // Initialize and start the timer
-        _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
+        PlayerImageItem.Source = UserInfo.Instance.ProfileImageSource;
+            // Initialize and start the timer
+            _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
         _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
         _qrCodeTimer.AutoReset = _qrCodeTimer.Enabled = true;
 
@@ -29,20 +29,6 @@ public partial class HeaderCV : ContentView
     }
     public async Task UpdateBalance()
     {
-        MainThread.BeginInvokeOnMainThread(async () =>
-        {
-            // Wait until the PictureUrlBlob is populated
-            while (string.IsNullOrEmpty(UserInfo.Instance.PictureUrlBlob))
-                await Task.Delay(10); // wait properly
-
-            var d = PlayerImageItem.Width;
-            // Only load the image once if it's not already loaded
-            if (d <= 0)
-            {
-                PlayerImageItem.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.PictureUrlBlob);
-                await Task.Delay(100); // wait properly
-            }
-        });
         MainThread.BeginInvokeOnMainThread(() =>
         {
             try

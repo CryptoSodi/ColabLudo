@@ -1,4 +1,4 @@
-﻿using Plugin.Maui.Audio;
+﻿using LudoClient.Services;
 
 namespace LudoClient.CoreEngine
 {
@@ -6,14 +6,24 @@ namespace LudoClient.CoreEngine
     {
         private bool IsSoundEnabled;
         private bool IsVibrationEnabled;
-        private readonly IAudioManager audioManager;
-        private readonly Dictionary<string, IAudioPlayer> audioPlayers = new();
+        private readonly ISoundService _soundService;
 
-        public HepticEngine()
+        public HepticEngine(ISoundService soundService)
         {
+            _soundService = soundService;
             IsSoundEnabled = Preferences.Default.Get("IsSoundEnabled", true);
             IsVibrationEnabled = Preferences.Default.Get("IsVibrationEnabled", true);
-            audioManager = AudioManager.Current;
+
+            // Preload sounds once
+            _soundService.Preload("click.mp3");
+            _soundService.Preload("diceroll.mp3");
+            _soundService.Preload("ding.mp3");
+            _soundService.Preload("home.mp3");
+            _soundService.Preload("kill.mp3");
+            _soundService.Preload("left.mp3");
+            _soundService.Preload("move.mp3");
+            _soundService.Preload("playerjoin.mp3");
+            _soundService.Preload("tak.mp3");
         }
 
         public async Task PlayHapticFeedback(string hapticInstruct)
@@ -28,16 +38,7 @@ namespace LudoClient.CoreEngine
             {
                 try
                 {
-                    if (!audioPlayers.ContainsKey(soundFileName))
-                    {
-                        var stream = await FileSystem.OpenAppPackageFileAsync(soundFileName);
-                        var player = audioManager.CreatePlayer(stream);
-                        audioPlayers[soundFileName] = player;
-                    }
-
-                    var audioPlayer = audioPlayers[soundFileName];
-                    audioPlayer.Stop(); // Ensure the player is stopped before replaying
-                    audioPlayer.Play();
+                    _soundService.Play(soundFileName);
                 }
                 catch (Exception ex)
                 {
@@ -69,21 +70,11 @@ namespace LudoClient.CoreEngine
                 {
                     Vibration.Default.Vibrate(TimeSpan.FromMilliseconds(vibeMS));
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    Console.WriteLine($"Vibration error: {ex.Message}");
+                   // Console.WriteLine($"Vibration error: {ex.Message}");
                 }
             }
-        }
-
-        public void Dispose()
-        {
-            foreach (var player in audioPlayers.Values)
-            {
-                player.Stop();
-                player.Dispose();
-            }
-            audioPlayers.Clear();
         }
     }
 }

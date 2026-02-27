@@ -5,7 +5,9 @@ namespace LudoClient.Constants
 {
     public static class ClientGlobalConstants
     {
-        public static HepticEngine hepticEngine = new HepticEngine();
+        public static HepticEngine hepticEngine => Application.Current?.Handler?.MauiContext?
+         .Services.GetService<HepticEngine>();
+
         public static DashboardPage dashBoard;
         private static double width;
         private static double height;

@@ -27,8 +27,6 @@ namespace LudoClient.Constants
         public static string Background_Controlbox => $"controlbox{CurrentSkinType}.webp";
         public static string Background_Controlbox_Small => $"controlbox_small{CurrentSkinType}.webp";
         
-        //GRIDS
-        public static string DashboardMainGridDefinition => CurrentSkin == SkinTypes.DefaultSkin ? ".8*,1.6*,1*,1*,1*,1*,.8*" : ".8*,2*,.1*,1.3*,1.3*,1*,.7*";
         public static string OfflineGridDefinition => CurrentSkin == SkinTypes.DefaultSkin ? "1*" : "3*,1*";
 
         //COMMON BUTTONS

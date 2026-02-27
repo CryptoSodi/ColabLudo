@@ -15,7 +15,7 @@ namespace SignalR.Server
         
         public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO)
         {
-            Console.WriteLine(DateTime.UtcNow);
+            Console.WriteLine("Join "+DateTime.UtcNow);
             Game existingGame = null;
             int tournamentId = -1;
             using var ctx = _contextFactory.CreateDbContext();

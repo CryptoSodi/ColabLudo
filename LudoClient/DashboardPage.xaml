@@ -9,46 +9,30 @@
     BackgroundImageSource="{x:Static constants:Skins.Background}"
     NavigationPage.HasNavigationBar="False">
 
-    <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"><Grid.RowDefinitions>
-            <extensions:GridRowDefinitionExtension RowDefinitionString="{x:Static constants:Skins.DashboardMainGridDefinition}" />
-        </Grid.RowDefinitions>
+    <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".8*,1*,1*,1*,1*,1*,.8*">
 
-        <Image Grid.Row="1" Source="logo.webp" VerticalOptions="Center" HorizontalOptions="Center"/>
+        <Image Grid.Row="1" Margin="40,20,40,20" Grid.RowSpan="2" Source="logo.webp" VerticalOptions="Center" HorizontalOptions="Center"/>
 
-        <Image x:Name="CashImage" Grid.Row="2" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
+        <Image x:Name="CashImage" Grid.Row="3" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="CashGame_Clicked" />
             </Image.GestureRecognizers>
         </Image>
 
-       <Grid Grid.Row="3" Margin="40,0,40,0" HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="50*,50*">
-
-            <Image Source="{x:Static constants:Skins.Offline}">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="Offline_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
-            <Image x:Name="PlayWithFriendsImage" Source="{x:Static constants:Skins.Play}" Margin="0,0,0,4" Grid.Column="1">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="PlayWithFriend_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
-        </Grid>
-        
         <Grid Grid.Row="4" Margin="40,0,40,0" HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions="50*,50*">
 
-            <Image x:Name="PracticeImage" Source="{x:Static constants:Skins.Practice}" Margin="0,4,0,0">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="Practice_Clicked" />
-                </Image.GestureRecognizers>
-            </Image>
             <Image x:Name="TournamentImage" Grid.Column="1" Source="{x:Static constants:Skins.Tournament}">
                 <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Tournament_Clicked" />
                 </Image.GestureRecognizers>
             </Image>
+            <Image x:Name="PlayWithFriendsImage" Source="{x:Static constants:Skins.Play}" Margin="0,0,0,4">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="PlayWithFriend_Clicked" />
+                </Image.GestureRecognizers>
+            </Image>
         </Grid>
-        <Image x:Name="DailyBonusImage"  Source="{x:Static constants:Skins.DailyBonus}" Grid.Row="5" Margin="75,0,75,0" VerticalOptions="Center" HorizontalOptions="Center">
+        <Image x:Name="DailyBonusImage" Source="{x:Static constants:Skins.DailyBonus}" Grid.Row="5" Margin="75,0,75,0" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="Bonus_Clicked" />
             </Image.GestureRecognizers>

@@ -18,6 +18,8 @@ namespace SharedCode.Network
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
+
+        private CancellationTokenSource _pingCts;
         public bool Connected
         {
             get => _connected;
@@ -32,6 +34,29 @@ namespace SharedCode.Network
         {
             Connected = false;
             _ = ConnectAsync();
+        }
+
+        private void StartHeartbeat()
+        {
+            _pingCts?.Cancel();
+            _pingCts = new CancellationTokenSource();
+
+            _ = Task.Run(async () =>
+            {
+                while (!_pingCts.Token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        if (_hubConnection.State == HubConnectionState.Connected)
+                        {
+                            await _hubConnection.SendAsync("Ping");
+                        }
+                    }
+                    catch { }
+
+                    await Task.Delay(TimeSpan.FromSeconds(10), _pingCts.Token);
+                }
+            });
         }
         private void RegisterHubEvents()
         {
@@ -131,6 +156,7 @@ namespace SharedCode.Network
                 Connected = true;
                 RegisterHubEvents();
                 await UserConnectedSetID();
+                StartHeartbeat();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)

@@ -90,7 +90,7 @@ namespace SignalR.Server
                 var winnerId = winnerSeat.PlayerId;
                 try
                 {
-                    bool credited = _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
+                    bool credited = await _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
                     if (!credited)
                     {
                         Console.WriteLine($"Failed to credit {winnerId}.");

@@ -8,27 +8,52 @@ public partial class PlayerSeat : ContentView
     public bool isAutoPlayDisabled = false;//Set it to true to prevent Auto Play of other players on localclient
     public String seatColor { get; set; }
     public String PlayerName { get; set; }
-    public String PlayerImageSource { get; set; }
+    public String PictureUrl { get; set; }
     public EngineHelper engineHelper { get; internal set; }
-    public bool IsRendered { get; private set; } = false;
+    public bool IsRendered { get; private set; } = false;    
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
-    {
-        var control = (PlayerSeat)bindable;
-        control.playerBG.ImageSource = (string)newValue;
-    });
+        {
+            var control = (PlayerSeat)bindable;
+            control.playerBG.ImageSource = (string)newValue;
+        });
     public string PlayerBG
     {
         get => GetValue(PlayerImageProperty) as string;
         set => SetValue(PlayerImageProperty, value);
     }
-
+    public PlayerSeat setColor(string seatColor)
+    {
+        this.seatColor = seatColor;
+        CheckBox.Source = "checkbox_" + seatColor + ".webp";
+        switch (seatColor.ToLower())
+        {
+            case "green":
+                PlayerBG = "green_container.webp";
+                break;
+            case "yellow":
+                PlayerBG = "yellow_container.webp";
+                break;
+            case "blue":
+                PlayerBG = "blue_container.webp";
+                break;
+            case "red":
+                PlayerBG = "red_container.webp";
+                break;
+        }
+        return this;
+    }
     public void initAuto(String PlayerName, String PictureUrl, string checkBoxFlag="Show", bool autoPlayFlag = true, bool isAutoPlayDisabled = false)
     {
+        Console.WriteLine($"Initializing PlayerSeat for {PlayerName} with image {PictureUrl} and checkbox flag {checkBoxFlag}");
         this.PlayerName = PlayerName;
         PlayerNameText.Text = this.PlayerName;
-        PlayerImageSource = PictureUrl;
-        PlayerImage.Source = PlayerImageSource;
+        this.PictureUrl = PictureUrl;
+        // Delay image loading by 1 second
+        Dispatcher.DispatchDelayed(TimeSpan.FromSeconds(1), () =>
+        {
+            PlayerImage.Source = this.PictureUrl;
+        });
 
         switch (checkBoxFlag)
         {
@@ -55,21 +80,14 @@ public partial class PlayerSeat : ContentView
                 Grid.SetColumnSpan(ProgressBoxParent, 2);
                 break;
         }
-        
+
         this.autoPlayFlag = autoPlayFlag;
         this.isAutoPlayDisabled = isAutoPlayDisabled;
     }
-    public PlayerSeat(string seatColor)
+    public PlayerSeat()
     {
-        this.seatColor = seatColor;
         InitializeComponent();
-        this.Loaded += OnLoaded;
-        CheckBox.Source = "checkbox_"+seatColor+ ".webp";
-    }
-    private void OnLoaded(object sender, EventArgs e)
-    {
         IsRendered = true; // Mark as rendered once layout completes
-        this.Loaded -= OnLoaded; // Unsubscribe to avoid repeated events
     }
     private void AutoClicked(object sender, EventArgs e)
     {
@@ -91,7 +109,7 @@ public partial class PlayerSeat : ContentView
         StopProgressAnimation();
         _animationCancellationTokenSource = new CancellationTokenSource();
         await AnimateProgress(_animationCancellationTokenSource.Token);
-        
+
     }
     public void StopProgressAnimation()
     {
@@ -125,7 +143,7 @@ public partial class PlayerSeat : ContentView
                     if (engineHelper.gameMode == "Client")
                         await ExecuteAutoPlayLogic();
                     break;
-                }   
+                }
                 ProgressBox.WidthRequest = i * widthChange;
                 await Task.Delay((int)interval);
             }
