@@ -1,5 +1,6 @@
 using LudoClient.Constants;
 using SharedCode.Constants;
+
 namespace LudoClient;
 
 public partial class GameRoom : ContentPage
@@ -9,9 +10,8 @@ public partial class GameRoom : ContentPage
         InitializeComponent();
 
         GlobalConstants.MatchMaker.RoomJoined += OnRoomJoined;
-
-        NavigationPage.SetHasBackButton(this, false);
-        
+        GlobalConstants.MatchMaker.PlayerSeated += PlayerSeated;
+        NavigationPage.SetHasBackButton(this, false);        
         switch (GameType)
         {
             case "2":
@@ -56,46 +56,53 @@ public partial class GameRoom : ContentPage
                 thunder.Source = "thunder_" + 2 + ".gif";
                 break;
         }
-        GlobalConstants.MatchMaker.PlayerSeated += (sender, args) =>
-        {
-            Console.WriteLine("PlayerSeated event received with args: " + string.Join(", ", args));
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("playerjoin");
-            var (playerType, playerId, userName, pictureUrl) = args;
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                if (playerType=="P1")
-                {
-                    player1.PlayerImage = pictureUrl;
-                    player1.PlayerName = userName;
-                }
-                else if (playerType == "P2")
-                {
-                    player2.PlayerImage = pictureUrl;
-                    player2.PlayerName = userName;
-                }
-                else if (playerType == "P3")
-                {
-                    player3.PlayerImage = pictureUrl;
-                    player3.PlayerName = userName;
-                }
-                else if (playerType == "P4")
-                {
-                    player4.PlayerImage = pictureUrl;
-                    player4.PlayerName = userName;
-                }
-                // Handle the request here
-            });
-        };
     }
+
+    private void PlayerSeated(object? sender, (string PlayerType, int PlayerId, string UserName, string PictureUrl) args)
+    {
+        Console.WriteLine("PlayerSeated event received with args: " + string.Join(", ", args));
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("playerjoin");
+
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (args.PlayerType == "P1")
+            {
+                player1.PlayerImage = args.PictureUrl;
+                player1.PlayerName = args.UserName;
+            }
+            else if (args.PlayerType == "P2")
+            {
+                player2.PlayerImage = args.PictureUrl;
+                player2.PlayerName = args.UserName;
+            }
+            else if (args.PlayerType == "P3")
+            {
+                player3.PlayerImage = args.PictureUrl;
+                player3.PlayerName = args.UserName;
+            }
+            else if (args.PlayerType == "P4")
+            {
+                player4.PlayerImage = args.PictureUrl;
+                player4.PlayerName = args.UserName;
+            }
+        });
+    }
+
     private void OnRoomJoined(object? sender, (string GameType, double GameCost, string RoomCode) args)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             GlobalConstants.RoomCode = args.RoomCode;
             GlobalConstants.GameCost = args.GameCost;
             shareBox.SetShareCode(args.RoomCode);
+            await GlobalConstants.MatchMaker.ReadyAsync();
         });
-        GlobalConstants.MatchMaker.ReadyAsync();
+    }
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        GlobalConstants.MatchMaker.RoomJoined -= OnRoomJoined;
+        GlobalConstants.MatchMaker.PlayerSeated -= PlayerSeated;
     }
     protected override bool OnBackButtonPressed()
     {

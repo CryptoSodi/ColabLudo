@@ -156,13 +156,11 @@ namespace SignalR.Server
             {
                 Console.WriteLine("Ready " + DateTime.UtcNow);
                 Player player = await GetCallerPlayer();
-                // Find the game where this player exists
-                Game existingGame = DM.GetActiveGame("Active", player.PlayerId);
-                var (existingGameReady, seats, rollsString) = await DM.Ready(existingGame);
+                var (existingGameReady, seats, rollsString) = await DM.Ready(player.PlayerId);
                 await BroadcastPlayersAsync(existingGameReady);
                 if (existingGameReady != null && seats != null && rollsString != "")
                 {
-                    await Clients.Group(existingGame.RoomCode).SendAsync("GameStarted", existingGame.GameType, JsonConvert.SerializeObject(seats), rollsString);
+                    await Clients.Group(existingGameReady.RoomCode).SendAsync("GameStarted", existingGameReady.GameType, JsonConvert.SerializeObject(seats), rollsString);
                     return "game started";
                 }
                 return "ready";

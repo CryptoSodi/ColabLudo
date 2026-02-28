@@ -173,6 +173,7 @@ namespace LudoClient
         }
         private void OnGameStarted(object? sender, (string GameType, string seatsData, string rollsString) args)
         {
+            Console.WriteLine("Starting Game: " + args.GameType + " " + args.seatsData + " " + args.rollsString);
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();

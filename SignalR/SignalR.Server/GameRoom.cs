@@ -41,12 +41,12 @@ namespace SignalR.Server
         }
         private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
         {
-            
+            using var ctx = _contextFactory.CreateDbContext();
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
             List<SharedCode.PlayerDto> orderedSeats;
             // 2) Update game state in DM and database
-            var existingGame = DM.games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
+            var existingGame = ctx.Games.Include(g => g.MultiPlayer).FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);            
 
             List<string> winnerIds = gameDTO.GameType == "22"
                     ? PlayerColor.Split(",").Select(c => c.Trim()).ToList()
@@ -68,12 +68,9 @@ namespace SignalR.Server
                     existingGame.Winner2 = orderedSeats.FirstOrDefault(seat => string.Equals(seat.PlayerColor, winnerIds[1], StringComparison.OrdinalIgnoreCase)).PlayerId;
 
                 existingGame.State = "Completed";
-                existingGame.IsDirty = true; // Mark the game as dirty for further processing
+                ctx.Games.Update(existingGame);
+                ctx.SaveChanges();
             }
-            await DM.SaveData();
-
-
-            using var ctx = _contextFactory.CreateDbContext();
     
             decimal betAmount = existingGame.BetAmount; // per player
             decimal totalPot = betAmount * orderedSeats.Count;

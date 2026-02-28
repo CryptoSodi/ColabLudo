@@ -39,8 +39,7 @@ builder.Services.AddSingleton<DatabaseManager>(sp => {
     var crypto = sp.GetRequiredService<CryptoHelper>();
     var utilService = sp.GetRequiredService<UtilService>();
     var dm = new DatabaseManager(hubContext, contextFactory, crypto, utilService);
-    // Call LoadData in background
-    Task.Run(dm.LoadData);
+    
     return dm;
 });
 

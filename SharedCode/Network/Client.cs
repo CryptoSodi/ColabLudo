@@ -13,8 +13,8 @@ namespace SharedCode.Network
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
         public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
-        public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
+        public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
