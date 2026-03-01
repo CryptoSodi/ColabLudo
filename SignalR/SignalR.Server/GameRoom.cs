@@ -149,25 +149,26 @@ namespace SignalR.Server
             // Save changes to the database
             ctx.SaveChanges();
         }
-        public async Task<User> PlayerLeft(int playerId)
+        public User PlayerLeft(int playerId)
         {
             // Try to find the user in the game room's user list using the connection ID.
-            var user = Users.FirstOrDefault(u => u.player.PlayerId == playerId);
-            if (user != null && engine != null)
+            var user = Users.FirstOrDefault(u => u.player?.PlayerId == playerId);
+            if (user != null)
             {
                 // Remove the user from the room.
                 Users.Remove(user);
-                engine.PlayerLeft(user.PlayerColor);
-
-                GameCommand command = new GameCommand
+                if (engine != null)
                 {
-                    SendToClientFunctionName = "PlayerLeft",
-                    seatName = user.PlayerColor,
-                    Index = engine.EngineHelper.index++
-                };
-                lock (_commandStore)
-                    _commandStore.Add(command);
-
+                    engine.PlayerLeft(user.PlayerColor);
+                    GameCommand command = new GameCommand
+                    {
+                        SendToClientFunctionName = "PlayerLeft",
+                        seatName = user.PlayerColor,
+                        Index = engine.EngineHelper.index++
+                    };
+                    lock (_commandStore)
+                        _commandStore.Add(command);
+                }
                 Console.WriteLine("User removed: " + user.PlayerColor);
             }
             else

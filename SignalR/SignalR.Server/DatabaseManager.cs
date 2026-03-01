@@ -104,132 +104,180 @@ namespace SignalR.Server
         }
         public async Task<(Game game, User user)> LeaveGameLobby(int playerId)
         {
-            using LudoDbContext ctx = _contextFactory.CreateDbContext();
-            User user = null;
-            Game existingGame = null;
+            using var ctx = _contextFactory.CreateDbContext();
 
-            // Find the game where this player exists
-            existingGame = await GetActiveGameAsync("Active", playerId, ctx);
-            if (existingGame != null)
+            Game existingGame =
+                await GetActiveGameAsync("Active", playerId, ctx) ??
+                await GetActiveGameAsync("Playing", playerId, ctx);
+
+            if (existingGame == null)
+                return (null, null);
+
+            var roomLock = GetRoomLock(existingGame.RoomCode);
+            await roomLock.WaitAsync();
+            try
             {
+                // 🔒 Reload inside lock
+                existingGame =
+                    await GetActiveGameAsync("Active", playerId, ctx) ??
+                    await GetActiveGameAsync("Playing", playerId, ctx);
 
-                var multiPlayer = existingGame.MultiPlayer;
-                // Clear the player slot
-                if (multiPlayer.P1 == playerId)
-                    multiPlayer.P1 = null;
-                else if (multiPlayer.P2 == playerId)
-                    multiPlayer.P2 = null;
-                else if (multiPlayer.P3 == playerId)
-                    multiPlayer.P3 = null;
-                else if (multiPlayer.P4 == playerId)
-                    multiPlayer.P4 = null;
+                if (existingGame == null)
+                    return (null, null);
 
-                // Check if all player slots are empty                    
-                if (multiPlayer.P1 == null && multiPlayer.P2 == null && multiPlayer.P3 == null && multiPlayer.P4 == null)
+                bool isPlaying = existingGame.State == "Playing";
+                bool wasActive = existingGame.State == "Active";
+                bool isEmpty = false;
+                // ✅ Refund ONLY if game was still Active
+                if (wasActive)
                 {
-                    existingGame.State = "Terminated";
-                    // Remove GameRoom from memory
-                    if (_gameRooms.TryRemove(existingGame.RoomCode, out var removedRoom))
+                    var multiPlayer = existingGame.MultiPlayer;
+
+                    if (multiPlayer.P1 == playerId) multiPlayer.P1 = null;
+                    else if (multiPlayer.P2 == playerId) multiPlayer.P2 = null;
+                    else if (multiPlayer.P3 == playerId) multiPlayer.P3 = null;
+                    else if (multiPlayer.P4 == playerId) multiPlayer.P4 = null;
+
+                    isEmpty =
+                        multiPlayer.P1 == null &&
+                        multiPlayer.P2 == null &&
+                        multiPlayer.P3 == null &&
+                        multiPlayer.P4 == null;
+
+                    if (isEmpty)
+                        existingGame.State = "Terminated";
+                    await ctx.SaveChangesAsync();
+                    if (!existingGame.IsPractice && existingGame.TournamentId == null)
                     {
-                        Console.WriteLine($"GameRoom {existingGame.RoomCode} removed from memory.");
+                        try
+                        {
+                            await _crypto.OffChainTransaction(playerId, existingGame.BetAmount, "Game Refund", "", false, existingGame.RoomCode);
+                            Console.WriteLine($"Refunded {existingGame.BetAmount} to player {playerId} for game {existingGame.RoomCode}.");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Refund failed for player {playerId} in game {existingGame.RoomCode}: {ex.Message}");
+                            // Optionally: Re-add the player to the game or log for manual investigation
+                        }
                     }
                 }
-                // Refund the player if this is not a practice or tournament game
-                if (!existingGame.IsPractice && existingGame.TournamentId == null)
-                {
-                    try
-                    {
-                        decimal betAmount = existingGame.BetAmount;
-                        _crypto.OffChainTransaction(playerId, betAmount, "Game Refund", "", false, existingGame.RoomCode);
-                        Console.WriteLine($"Refunded {betAmount} to player {playerId} for game {existingGame.RoomCode}.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Refund failed for player {playerId} in game {existingGame.RoomCode}: {ex.Message}");
-                        // Optionally: Re-add the player to the game or log for manual investigation
-                    }
-                }
-                await ctx.SaveChangesAsync();
+                
+                User user = null;
+
+                if (_gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom room))
+                    user = room.PlayerLeft(playerId);
+
+                if (isEmpty)
+                    _gameRooms.TryRemove(existingGame.RoomCode, out _);
+                return (existingGame, user);
             }
-            else
+            finally
             {
-                Console.WriteLine($"No Active game found for player {playerId}.");
-                // Find the game where this player exists
-                existingGame = await GetActiveGameAsync("Playing", playerId, ctx);
+                roomLock.Release();
             }
-            if (existingGame != null)
-            {
-                // Notify GameRoom about the player leaving
-                if (_gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom))
-                    user = await gameRoom.PlayerLeft(playerId);
-            }
-            else
-                Console.WriteLine($"No Playing game found for player {playerId}.");
-            return (existingGame, user);
         }
-        internal async Task<(Game existingGame, List<SharedCode.PlayerDto> seats, String rollsString)> Ready(int PlayerId)
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _roomLocks = new();
+        private SemaphoreSlim GetRoomLock(string roomCode)
+        {
+            return _roomLocks.GetOrAdd(roomCode, _ => new SemaphoreSlim(1, 1));
+        }
+        private void RemoveRoomLock(string roomCode)
+        {
+            _roomLocks.TryRemove(roomCode, out _);
+        }
+        internal async Task<(Game existingGame, List<SharedCode.PlayerDto> seats, string rollsString)> Ready(int playerId)
         {
             using var ctx = _contextFactory.CreateDbContext();
-            // Find the game where this player exists
-            Game existingGame = await GetActiveGameAsync("Active", PlayerId, ctx);
-            if (existingGame != null)
+
+            Game existingGame = await GetActiveGameAsync("Active", playerId, ctx);
+            if (existingGame == null)
+                return (null, null, null);
+
+            var roomLock = GetRoomLock(existingGame.RoomCode);
+            await roomLock.WaitAsync();
+
+            try
             {
-                // Build playerId-to-color mapping
-                var playerSlots = new (int? PlayerId, string Color)[]{
-                (existingGame.MultiPlayer.P1, "Red"),
-                (existingGame.MultiPlayer.P2, existingGame.GameType == "2" ? "Yellow" : "Green"),
-                (existingGame.MultiPlayer.P3, "Yellow"),
-                (existingGame.MultiPlayer.P4, "Blue")};
-                // Get all player IDs that are not null
-                var playerIds = playerSlots.Where(slot => slot.PlayerId.HasValue).Select(slot => slot.PlayerId.Value).ToList();
-                // Fetch all players in a single query
-                var players = await ctx.Players.Where(p => playerIds.Contains(p.PlayerId)).ToListAsync();
+                // Reload inside lock
+                existingGame = await GetActiveGameAsync("Active", playerId, ctx);
+                if (existingGame == null)
+                    return (null, null, null);
 
-                // Build PlayerDto and Player lists
-                List<SharedCode.PlayerDto> seats = new();
-                List<Player> playerList = new();
-                foreach (var (playerId, color) in playerSlots.Where(s => s.PlayerId.HasValue))
-                {
-                    var playerSub = players.FirstOrDefault(p => p.PlayerId == playerId.Value);
-                    if (playerSub != null)
-                    {
-                        playerList.Add(playerSub);
-                        seats.Add(new SharedCode.PlayerDto
-                        {
-                            PlayerId = playerSub.PlayerId,
-                            PlayerName = playerSub.Name,
-                            PlayerPicture = playerSub.PictureUrl,
-                            PlayerColor = color
-                        });
-                    }
-                }
+                if (existingGame.State == "Playing")
+                    return (existingGame, null, "");
 
-                // Check if game is full
-                if (existingGame.GameType == seats.Count.ToString() || (seats.Count == 4 && existingGame.GameType == "22"))
+                var (seats, playerList) = await BuildSeats(existingGame, ctx);
+
+                int requiredPlayers = ParseGameType(existingGame.GameType);
+
+                if (seats.Count == requiredPlayers)
                 {
                     existingGame.State = "Playing";
                     await ctx.SaveChangesAsync();
 
-                    await Task.Delay(2000);
-
-                    _gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom gameRoom);
-
-                    for (int i = 0; i < gameRoom.Users.Count; i++)
+                    if (_gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom room))
                     {
-                        gameRoom.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
-                        gameRoom.Users[i].player = playerList[i];
+                        if (room.engine == null)
+                        {
+                            for (int i = 0; i < room.Users.Count; i++)
+                            {
+                                room.Users[i].PlayerColor = seats[i].PlayerColor.ToLower();
+                                room.Users[i].player = playerList[i];
+                            }
+                            room.InitializeEngine(seats);
+                        }
+                        return (existingGame, seats, room.engine.EngineHelper.rollsString);
                     }
-                    gameRoom.InitializeEngine(seats);
-                    return (existingGame, seats, gameRoom.engine.EngineHelper.rollsString);
                 }
                 return (existingGame, seats, "");
             }
-            else
+            finally
             {
-                //"No active game found."
-                Console.WriteLine($"No active game found for player.");
-                return (null, null, null);
+                roomLock.Release();
             }
+        }
+        private int ParseGameType(string gameType)
+        {
+            return gameType switch
+            {
+                "2" => 2,
+                "4" => 4,
+                "22" => 4,
+                _ => int.TryParse(gameType, out int val) ? val : 4
+            };
+        }
+        private async Task<(List<SharedCode.PlayerDto> seats, List<Player> playerList)> BuildSeats(Game existingGame, LudoDbContext ctx)
+        {
+            // Build playerId-to-color mapping
+            var playerSlots = new (int? PlayerId, string Color)[]{
+                (existingGame.MultiPlayer.P1, "Red"),
+                (existingGame.MultiPlayer.P2, existingGame.GameType == "2" ? "Yellow" : "Green"),
+                (existingGame.MultiPlayer.P3, "Yellow"),
+                (existingGame.MultiPlayer.P4, "Blue")};
+            // Get all player IDs that are not null
+            var playerIds = playerSlots.Where(slot => slot.PlayerId.HasValue).Select(slot => slot.PlayerId.Value).ToList();
+            // Fetch all players in a single query
+            var players = await ctx.Players.Where(p => playerIds.Contains(p.PlayerId)).ToListAsync();
+
+            // Build PlayerDto and Player lists
+            List<SharedCode.PlayerDto> seats = new();
+            List<Player> playerList = new();
+            foreach (var (playerId, color) in playerSlots.Where(s => s.PlayerId.HasValue))
+            {
+                var playerSub = players.FirstOrDefault(p => p.PlayerId == playerId.Value);
+                if (playerSub != null)
+                {
+                    playerList.Add(playerSub);
+                    seats.Add(new SharedCode.PlayerDto
+                    {
+                        PlayerId = playerSub.PlayerId,
+                        PlayerName = playerSub.Name,
+                        PlayerPicture = playerSub.PictureUrl,
+                        PlayerColor = color
+                    });
+                }
+            }
+            return (seats, playerList);
         }
         private MultiPlayer GetGamePlayers(int playerId, MultiPlayer multiPlayer, LudoDbContext ctx)
         {

@@ -161,6 +161,7 @@ namespace SignalR.Server
                 if (existingGameReady != null && seats != null && rollsString != "")
                 {
                     await Clients.Group(existingGameReady.RoomCode).SendAsync("GameStarted", existingGameReady.GameType, JsonConvert.SerializeObject(seats), rollsString);
+                    Console.WriteLine($"game started {DateTime.UtcNow} : {existingGameReady.RoomCode}");
                     return "game started";
                 }
                 return "ready";
