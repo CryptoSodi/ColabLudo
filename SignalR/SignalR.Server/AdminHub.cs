@@ -3,6 +3,7 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedCode.Constants;
+using SignalR.Server.Payments;
 using SignalR.Server.Services;
 using System.Collections.Concurrent;
 
@@ -54,7 +55,7 @@ namespace SignalR.Server
             try
             {
                 Console.WriteLine($"Ping {Context.ConnectionId}");
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(int.Parse(_utilService.Decrypt(AuthToken)));
                 return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)
@@ -68,7 +69,7 @@ namespace SignalR.Server
             try
             {
                 using var ctx = _contextFactory.CreateDbContext();
-                var player = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                Player player = await _utilService.GetPlayerByID(int.Parse(_utilService.Decrypt(AuthToken)));
                 //g.State == "Active"
                 return await ctx.Games.Where(g => g.MultiPlayer.P1 == player.PlayerId || g.MultiPlayer.P2 == player.PlayerId || g.MultiPlayer.P3 == player.PlayerId || g.MultiPlayer.P4 == player.PlayerId && g.State == "Completed").ToListAsync();
             }

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.Constants;
+using SignalR.Server.Payments;
 using SignalR.Server.Services;
 using System.Collections.Concurrent;
 
@@ -20,7 +21,7 @@ namespace SignalR.Server
             try
             {
                 var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
-                ConnectionToPlayer[Context.ConnectionId]  = _utilService.GetPlayerByID(player.PlayerId);
+                ConnectionToPlayer[Context.ConnectionId]  = await _utilService.GetPlayerByID(player.PlayerId);
                 await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 
                 PlayerInfo playerInfo = await _utilService.CastPlayerToInfoAsync(player);
@@ -40,7 +41,7 @@ namespace SignalR.Server
             // 1) Store SignalR connection
             try
             {
-                ConnectionToPlayer[Context.ConnectionId] = _utilService.GetPlayerByID(int.Parse(_crypto.Decrypt(AuthToken)));
+                ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(int.Parse(_utilService.Decrypt(AuthToken)));
                 return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)

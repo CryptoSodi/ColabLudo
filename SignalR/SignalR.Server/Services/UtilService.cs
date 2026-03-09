@@ -3,14 +3,17 @@ using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedCode.Constants;
+using SignalR.Server.Payments;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace SignalR.Server.Services
 {
-    public class UtilService(IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto)
+    public class UtilService(IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, string protectorKey = "CryptoHelper.WalletProtector")
     {
         public async Task<PlayerInfo> CastPlayerToInfoAsync(Player player)
         {
-            var pw = _crypto.EnsurePlayerWalletExists(player.PlayerId);
+            var pw = await _crypto.EnsurePlayerWalletExists(player.PlayerId, CurrencyType.LUDC);
 
             return new PlayerInfo
             {
@@ -59,8 +62,7 @@ namespace SignalR.Server.Services
                     Description = t.Description,
                     IsOnChain = t.IsOnChain,
                     RoomCode = t.RoomCode
-                })
-            .ToList();
+                }).ToList();
                 return transactions;
             }
             catch (Exception ex)
@@ -84,14 +86,14 @@ namespace SignalR.Server.Services
                 Console.WriteLine($"Error updating online status for player {playerId}: {ex.Message}");
             }
         }
-        public Player GetPlayerByID(int PlayerId)
+        public async Task<Player> GetPlayerByID(int PlayerId)
         {
             using var ctx = _contextFactory.CreateDbContext();
             Player sender = ctx.Players.Find(PlayerId);
             if (sender == null)
                 throw new HubException("Player not recognized.");
 
-            var wal = _crypto.EnsurePlayerWalletExists(PlayerId);
+            LudoServer.Models.PlayerWallet wal = await _crypto.EnsurePlayerWalletExists(PlayerId, CurrencyType.LUDC);
             if (wal == null)
                 throw new HubException("Player Wallet not Found.");
 
@@ -106,6 +108,33 @@ namespace SignalR.Server.Services
                     }
                 };
             return sender;
+        }
+        public string Encrypt(string plainText)
+        {
+            using var aes = Aes.Create();
+            aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(protectorKey));
+            aes.IV = new byte[16]; // 16 bytes IV for AES
+            var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+
+            using var ms = new MemoryStream();
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            using (var sw = new StreamWriter(cs))
+            {
+                sw.Write(plainText);
+            }
+            return Convert.ToBase64String(ms.ToArray());
+        }
+        public string Decrypt(string cipherText)
+        {
+            using var aes = Aes.Create();
+            aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(protectorKey));
+            aes.IV = new byte[16]; // 16 bytes IV for AES
+            var decryptor = aes.CreateDecryptor(aes.Key, aes.IV);
+
+            using var ms = new MemoryStream(Convert.FromBase64String(cipherText));
+            using var cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
+            using var sr = new StreamReader(cs);
+            return sr.ReadToEnd();
         }
     }
 }

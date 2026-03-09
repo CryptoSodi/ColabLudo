@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SharedCode;
 using SharedCode.CoreEngine;
+using SignalR.Server.Payments;
 using SignalR.Server.Services;
 
 namespace SignalR.Server

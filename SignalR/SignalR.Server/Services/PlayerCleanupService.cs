@@ -15,9 +15,11 @@ namespace SignalR.Server.Services
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            Console.WriteLine("🔥 PlayerCleanupService STARTED");
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
+                Console.WriteLine($"Ping check : {now} : Count {LudoHub.ConnectionToPlayer.ToList().Count()}");
 
                 foreach (var kv in LudoHub.ConnectionToPlayer.ToList())
                 {

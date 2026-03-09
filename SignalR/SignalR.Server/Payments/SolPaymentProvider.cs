@@ -2,7 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
-using SignalR.Server.Payments;
+using SignalR.Server.Interfaces;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
@@ -10,56 +10,33 @@ using Solnet.Rpc.Types;
 using Solnet.Wallet;
 using Solnet.Wallet.Utilities;
 
-namespace SignalR.Server
+namespace SignalR.Server.Payments
 {
-    public class SolCryptoHelper
+    public class SolPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, int _masterUserId, bool debug, string purpose) : IPaymentProvider
     {
+        public CurrencyType Currency => CurrencyType.SOL;
         // Number of lamports in one SOL.
         private const ulong LamportsPerSol = 1_000_000_000;
-        private readonly IRpcClient _rpc;                                   // Solana RPC client
-        private readonly IDbContextFactory<LudoDbContext> _contextFactory;  // EF factory for ledger DB
-        private readonly IDataProtector _protector;                         // Data protector for encrypt/decrypt
-        private readonly int _masterUserId;                                 // Identifier for the master wallet
-        private async Task<ulong> getFeeBuffer()
-        {
-            // 1) Optional: dynamically get accurate fee estimate
-            /*
-            var message = new TransactionBuilder()
-                .SetFeePayer(new PublicKey(pub))
-                .AddInstruction(SystemProgram.Transfer(...))
-                .BuildMessage();
-            var feeEstimate = await _rpc.GetFeeForMessageAsync(Convert.ToBase64String(message));
-            if (feeEstimate.Value > feeBuffer)
-                feeBuffer = feeEstimate.Value;
-            */
-            //  Console.WriteLine("Fetching fee buffer..."+ (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2);
-            return (await _rpc.GetMinimumBalanceForRentExemptionAsync(0)).Result * 2;
-        }
-        public SolCryptoHelper(IDbContextFactory<LudoDbContext> contextFactory, IDataProtectionProvider dataProtectionProvider, int masterUserId, string network, string purpose)
-        {
-            _contextFactory = contextFactory;
-            _protector = dataProtectionProvider.CreateProtector(purpose);
-            _masterUserId = masterUserId;
-            // Initialize Solana RPC for MainNet or DevNet
-            // Constructor sets up RPC client, loads or creates wallets, and ensures
-            var cluster = network.Equals("DevNet", StringComparison.OrdinalIgnoreCase) ? Cluster.DevNet : Cluster.MainNet;
-            _rpc = ClientFactory.GetClient(cluster);
-            EnsureWalletAsync(_masterUserId).GetAwaiter().GetResult();
-        }
+        // Initialize Solana RPC for MainNet or DevNet
+        // Constructor sets up RPC client, loads or creates wallets, and ensures
+
+        private readonly IRpcClient _rpc = ClientFactory.GetClient(debug ? Cluster.DevNet : Cluster.MainNet);                 // Solana RPC client
+        private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(purpose);                         // Data protector for encrypt/decrypt
+
         /* =========================================================
        * WALLET INITIALIZATION (SINGLE SOURCE OF TRUTH)
        * ========================================================= */
-        public async Task<PlayerWallet> EnsureWalletAsync(int playerId, bool applySignupBonus = false)
+        public async Task<PlayerWallet> EnsurePlayerWalletExists(int playerId, string addressType)
         {
             using var ctx = _contextFactory.CreateDbContext();
             using var tx = await ctx.Database.BeginTransactionAsync();
 
             bool isMaster = playerId == _masterUserId;
-
             // =========================================================
-            // 1️⃣ ENSURE PLAYER EXISTS (NORMAL OR MASTER)
+            // 1️⃣ ENSURE PLAYER EXISTS
             // =========================================================
             var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+
             if (player == null && isMaster)
             {
                 player = new Player
@@ -67,66 +44,51 @@ namespace SignalR.Server
                     CreatedDate = DateTime.UtcNow,
                     Name = "SYSTEM"
                 };
+
                 ctx.Players.Add(player);
-                await ctx.SaveChangesAsync(); // FK safety
+                await ctx.SaveChangesAsync();
             }
-
-            // ---- Wallet Key ----
-            var walletKey = await ctx.PlayerWalletKey.FirstOrDefaultAsync(w => w.PlayerId == playerId);
-
+            // =========================================================
+            // 2️⃣ ENSURE WALLET KEY EXISTS
+            // =========================================================
+            var walletKey = await ctx.PlayerWalletKey.FirstOrDefaultAsync(w => w.PlayerId == playerId && w.AddressType == addressType);
             if (walletKey == null)
             {
                 var acct = new Account();
                 var rawPriv = new Base58Encoder().EncodeData(acct.PrivateKey);
-
                 walletKey = new PlayerWalletKey
                 {
-                    PlayerId = playerId,
+                    PlayerId = player.PlayerId,
                     PublicKey = acct.PublicKey.Key,
                     EncryptedPrivateKey = _protector.Protect(rawPriv),
                     IsMaster = isMaster,
-                    AddressType = CurrencyType.LUDC+""
+                    AddressType = addressType
                 };
                 ctx.PlayerWalletKey.Add(walletKey);
                 await ctx.SaveChangesAsync();
             }
-
-            // ---- Player Wallet ----
-            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId);
-
+            // =========================================================
+            // 3️⃣ ENSURE PLAYER WALLET EXISTS
+            // =========================================================
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId && w.AddressType == addressType);
             if (wallet == null)
             {
                 wallet = new PlayerWallet
                 {
-                    PlayerId = playerId,
-                    AddressType = "LUDC",
+                    PlayerId = player.PlayerId,
                     WalletAddress = walletKey.PublicKey,
-                    AvailableBalance = 0m
+                    AvailableBalance = 0m,
+                    AddressType = addressType
                 };
                 ctx.PlayerWallet.Add(wallet);
                 await ctx.SaveChangesAsync();
-
-                if (applySignupBonus && !isMaster)
-                {
-                    ApplyOffChainLedger(
-                        ctx,
-                        wallet,
-                        100m,
-                        "Signup Bonus"
-                    );
-
-                    await ctx.SaveChangesAsync();
-                }
             }
-
             await tx.CommitAsync();
             return wallet;
         }
-
         /* =========================================================
          * INTERNAL LEDGER WRITER (NO DB CONTEXT / NO COMMIT)
          * ========================================================= */
-
         public void ApplyOffChainLedger(LudoDbContext ctx, PlayerWallet wallet, decimal amount, string description, string roomCode = "", bool isOnChain = false, string txId = "")
         {
             wallet.AvailableBalance += amount;
@@ -142,7 +104,8 @@ namespace SignalR.Server
                 Description = description,
                 RoomCode = roomCode,
                 IsOnChain = isOnChain,
-                txId = txId
+                txId = txId,
+                AddressType = wallet.AddressType,
             });
 
             ctx.PlayerWallet.Update(wallet);
@@ -150,8 +113,7 @@ namespace SignalR.Server
         /* =========================================================
           * WITHDRAW (IDEMPOTENT, ADMIN FALLBACK)
           * ========================================================= */
-
-        public async Task<string> Withdraw(Player player, string destination, decimal amount, Guid operationId)
+        public async Task<string> WithdrawAsync(Player player, string destination, decimal amount, Guid operationId)
         {
             using var ctx = _contextFactory.CreateDbContext();
 
@@ -263,7 +225,7 @@ namespace SignalR.Server
             using var ctx = _contextFactory.CreateDbContext();
             return await ctx.PlayerWalletKey.FirstAsync(w => w.PlayerId == playerId);
         }
-        public async Task<bool> DeductGameFee(int playerId,int? tournamentId,string roomCode,bool isTournamentGame,decimal betAmount)
+        public async Task<bool> DeductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
         {
             if (betAmount <= 0)
                 return false;
@@ -284,7 +246,7 @@ namespace SignalR.Server
 
             if (isTournamentGame)
             {
-                var challenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc =>tc.TournamentId == tournamentId &&tc.PlayerId == playerId);
+                var challenger = await ctx.TournamentChallengers.FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == playerId);
 
                 if (challenger == null)
                 {
@@ -312,12 +274,12 @@ namespace SignalR.Server
                 }
 
                 // 💰 Deduct tournament fee (OFF-CHAIN, ATOMIC)
-                ApplyOffChainLedger(ctx,wallet,-betAmount,"Tournament Fee",tournamentId?.ToString() ?? "",false,roomCode);
+                ApplyOffChainLedger(ctx, wallet, -betAmount, "Tournament Fee", tournamentId?.ToString() ?? "", false, roomCode);
             }
             else
             {
                 // 💰 Deduct normal game fee
-                ApplyOffChainLedger(ctx,wallet,-betAmount,"Game Fee","",false,roomCode);
+                ApplyOffChainLedger(ctx, wallet, -betAmount, "Game Fee", "", false, roomCode);
             }
 
             await ctx.SaveChangesAsync();
@@ -329,6 +291,26 @@ namespace SignalR.Server
         internal async Task<string> MintNFT(int playerid, int amount)
         {
             throw new NotImplementedException();
+        }
+        public async Task<string> SweepAsync(int playerId, decimal amount)
+        {
+            var playerKey = await GetWalletKeyAsync(playerId);
+            var masterKey = await GetWalletKeyAsync(_masterUserId);
+
+            return await SendRawAsync(playerKey, masterKey.PublicKey, amount);
+        }
+        public async Task<decimal> GetOnChainBalanceAsync(string walletAddress)
+        {
+            var result = await _rpc.GetBalanceAsync(walletAddress);
+
+            if (!result.WasSuccessful)
+                throw new Exception(result.Reason);
+
+            return result.Result.Value / (decimal)LamportsPerSol;
+        }
+        public async Task<List<TokenDeposit>> GetRecentDeposits(string? beforeSignature = null)
+        {
+            return null;
         }
     }
 }

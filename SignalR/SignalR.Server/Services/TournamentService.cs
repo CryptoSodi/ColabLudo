@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.EntityFrameworkCore;
 using SharedCode;
+using SignalR.Server.Payments;
 
 namespace SignalR.Server.Services
 {
@@ -116,7 +117,7 @@ namespace SignalR.Server.Services
             {
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "NOTFOUND");
             }
-            if (!_crypto.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee))
+            if (! await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, "", true, tournament.EntryFee))
             {
                 Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId}.");
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");

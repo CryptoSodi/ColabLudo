@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -34,9 +34,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.77.0" />
-    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="5.0.0" />
-    <PackageReference Include="Nethereum.Web3" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.82.1" />
+    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="5.8.0" />
+    <PackageReference Include="Nethereum.Web3" Version="5.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Solnet.Programs" Version="6.1.0" />
     <PackageReference Include="Solnet.Rpc" Version="6.1.0" />
@@ -45,7 +45,6 @@
 
   <ItemGroup>
     <Folder Include="Data\" />
-    <Folder Include="Interfaces\" />
     <Folder Include="CoreEngine\" />
     <Folder Include="Constants\" />
     <Folder Include="CoreEngine\" />

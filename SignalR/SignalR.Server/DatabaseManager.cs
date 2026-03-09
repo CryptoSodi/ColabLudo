@@ -2,6 +2,7 @@
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using SignalR.Server.Payments;
 using SignalR.Server.Services;
 using System.Collections.Concurrent;
 
@@ -10,6 +11,8 @@ namespace SignalR.Server
     public class DatabaseManager(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService)
     {
         public ConcurrentDictionary<string, GameRoom> _gameRooms { get; set; } = new();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _roomLocks = new();
+
         public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO)
         {
             Console.WriteLine("Join " + DateTime.UtcNow);
@@ -50,7 +53,7 @@ namespace SignalR.Server
 
                 if (!gameDTO.IsPracticeGame)
                 {
-                    bool deducted = _crypto.deductGameFee(player.PlayerId, ParsedId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount);
+                    bool deducted = await _crypto.deductGameFee(player.PlayerId, ParsedId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount);
                     if (!deducted)
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
@@ -82,7 +85,7 @@ namespace SignalR.Server
             else
             {
                 if (!existingGame.IsPractice)
-                    if (!_crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
+                    if (! await _crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
                         Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
                         return null;
@@ -125,11 +128,9 @@ namespace SignalR.Server
                 if (existingGame == null)
                     return (null, null);
 
-                bool isPlaying = existingGame.State == "Playing";
-                bool wasActive = existingGame.State == "Active";
                 bool isEmpty = false;
                 // ✅ Refund ONLY if game was still Active
-                if (wasActive)
+                if (existingGame.State == "Active")
                 {
                     var multiPlayer = existingGame.MultiPlayer;
 
@@ -176,7 +177,6 @@ namespace SignalR.Server
                 roomLock.Release();
             }
         }
-        private readonly ConcurrentDictionary<string, SemaphoreSlim> _roomLocks = new();
         private SemaphoreSlim GetRoomLock(string roomCode)
         {
             return _roomLocks.GetOrAdd(roomCode, _ => new SemaphoreSlim(1, 1));

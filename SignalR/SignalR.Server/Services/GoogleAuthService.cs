@@ -2,6 +2,7 @@
 using LudoServer.Data;
 using LudoServer.Models;
 using Microsoft.EntityFrameworkCore;
+using SignalR.Server.Payments;
 
 namespace SignalR.Server.Services
 {
@@ -71,7 +72,7 @@ namespace SignalR.Server.Services
                     // Save changes to the database
                     await ctx.SaveChangesAsync();
                     existingPlayer = ctx.Players.FirstOrDefault(p => p.Email == email);
-                    existingPlayer.AuthToken = crypto.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
+                    existingPlayer.AuthToken = utilService.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                     await ctx.SaveChangesAsync();
                 }
                 return existingPlayer;
