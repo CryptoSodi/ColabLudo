@@ -136,14 +136,17 @@ namespace SignalR.Server.Payments
 
             return res.Result;
         }
-        public async Task<List<TokenDeposit>> GetRecentDeposits(string? beforeSignature = null)
+        public async Task<List<TokenDeposit>> GetRecentDeposits(string? lastProcessedSignature = null)
         {
             var deposits = new List<TokenDeposit>();
-            // Fetch recent transactions involving the LUDC mint
-            var sigs = await _rpc.GetSignaturesForAddressAsync(LUDC_MINT, before: beforeSignature, limit: 50);
 
-            if (!sigs.WasSuccessful || sigs.Result == null)
+            // Fetch newest signatures
+            var sigs = await _rpc.GetSignaturesForAddressAsync(LUDC_MINT,until: lastProcessedSignature,limit: 100);
+
+            if (!sigs.WasSuccessful || sigs.Result == null || sigs.Result.Count == 0)
                 return deposits;
+            
+            sigs.Result.Reverse();
 
             foreach (var sig in sigs.Result)
             {
@@ -167,20 +170,21 @@ namespace SignalR.Server.Payments
 
                     var accountIndex = balance.AccountIndex;
 
-                    // This is the token account (ATA)
                     var tokenAccountAddress =
                         tx.Result.Transaction.Message.AccountKeys[accountIndex];
 
                     var pre = meta.PreTokenBalances?
                         .FirstOrDefault(x => x.AccountIndex == accountIndex);
 
+                    // Ignore mint events (no previous balance)
+                    if (pre == null)
+                        continue;
+
                     decimal postAmount =
                         decimal.Parse(balance.UiTokenAmount.UiAmountString);
 
-                    decimal preAmount = 0;
-
-                    if (pre != null)
-                        preAmount = decimal.Parse(pre.UiTokenAmount.UiAmountString);
+                    decimal preAmount =
+                        decimal.Parse(pre.UiTokenAmount.UiAmountString);
 
                     decimal delta = postAmount - preAmount;
 
@@ -188,18 +192,15 @@ namespace SignalR.Server.Payments
                     if (delta <= 0)
                         continue;
 
-                    // Get ATA account info
+                    // Fetch ATA account info
                     var accountInfo = await _rpc.GetAccountInfoAsync(tokenAccountAddress);
 
                     if (!accountInfo.WasSuccessful || accountInfo.Result?.Value == null)
                         continue;
 
-                    // Decode base64 account data
                     var data = Convert.FromBase64String(accountInfo.Result.Value.Data[0]);
 
-                    // SPL token layout:
-                    // 0..32   = mint
-                    // 32..64  = owner wallet
+                    // SPL token account layout
                     var ownerBytes = data.Skip(32).Take(32).ToArray();
 
                     var owner = new PublicKey(ownerBytes).Key;
@@ -207,7 +208,7 @@ namespace SignalR.Server.Payments
                     deposits.Add(new TokenDeposit
                     {
                         Signature = sig.Signature,
-                        WalletAddress = owner, // ATA address
+                        WalletAddress = owner,
                         Amount = delta
                     });
                 }

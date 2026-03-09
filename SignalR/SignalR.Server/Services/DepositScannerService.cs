@@ -76,7 +76,7 @@ namespace SignalR.Server.Services
 
                 await ctx.SaveChangesAsync();
 
-                Console.WriteLine($"Deposit detected: Player {wallet.PlayerId} +{deposit.Amount} LUDC");
+                Console.WriteLine($"Deposit detected: Player {wallet.PlayerId} + {deposit.Amount} LUDC");
             }
             // update last processed signature
             _lastProcessedSignature = deposits.Last().Signature;
