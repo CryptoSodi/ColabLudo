@@ -10,6 +10,5 @@ namespace SignalR.Server.Interfaces
         Task<string> SweepAsync(int playerId, decimal amount);
         Task<PlayerWallet> EnsurePlayerWalletExists(int playerId, string addressType);
         Task<List<TokenDeposit>> GetRecentDeposits(string beforeSignature);
-
     }
 }

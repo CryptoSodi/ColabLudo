@@ -85,22 +85,79 @@ namespace SignalR.Server.Payments
             var senderAccount = new Account(rawPriv, senderKey.PublicKey);
             var receiverPub = new PublicKey(destination);
 
-            // Correct ATA derivation for Token-2022
-            PublicKey.TryFindProgramAddress(new[]{
-                    senderAccount.PublicKey.KeyBytes,
-                    TOKEN_2022_PROGRAM.KeyBytes,
-                    LUDC_MINT.KeyBytes
-                }, AssociatedTokenAccountProgram.ProgramIdKey, out var senderAta, out _);
+            // ================= DERIVE ATA =================
 
-            PublicKey.TryFindProgramAddress(new[]{
-                    receiverPub.KeyBytes,
-                    TOKEN_2022_PROGRAM.KeyBytes,
-                    LUDC_MINT.KeyBytes
-                }, AssociatedTokenAccountProgram.ProgramIdKey, out var receiverAta, out _);
+            PublicKey.TryFindProgramAddress(
+                new[]
+                {
+            senderAccount.PublicKey.KeyBytes,
+            TOKEN_2022_PROGRAM.KeyBytes,
+            LUDC_MINT.KeyBytes
+                },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var senderAta,
+                out _
+            );
 
-            ulong tokenAmount = Convert.ToUInt64(decimal.Round(amount * 1_000_000_000m, 0, MidpointRounding.AwayFromZero));
+            PublicKey.TryFindProgramAddress(
+                new[]
+                {
+            receiverPub.KeyBytes,
+            TOKEN_2022_PROGRAM.KeyBytes,
+            LUDC_MINT.KeyBytes
+                },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var receiverAta,
+                out _
+            );
 
-            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
+            // ================= CHECK RECEIVER ATA =================
+
+            var receiverAtaInfo = await _rpc.GetAccountInfoAsync(receiverAta);
+
+            bool receiverAtaExists =
+                receiverAtaInfo.WasSuccessful &&
+                receiverAtaInfo.Result?.Value != null;
+
+            // ================= TOKEN AMOUNT =================
+
+            ulong tokenAmount =
+                Convert.ToUInt64(decimal.Round(
+                    amount * 1_000_000_000m,
+                    0,
+                    MidpointRounding.AwayFromZero));
+
+            var blockhash =
+                (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
+
+            // ================= BUILD TRANSACTION =================
+
+            var builder = new TransactionBuilder()
+                .SetRecentBlockHash(blockhash)
+                .SetFeePayer(senderAccount.PublicKey);
+
+            // ================= CREATE ATA IF MISSING =================
+
+            if (!receiverAtaExists)
+            {
+                var createAtaInstruction = new TransactionInstruction
+                {
+                    ProgramId = AssociatedTokenAccountProgram.ProgramIdKey,
+                    Keys = new List<AccountMeta>
+    {
+        AccountMeta.Writable(senderAccount.PublicKey, true),     // payer
+        AccountMeta.Writable(receiverAta, false),                // ATA
+        AccountMeta.ReadOnly(receiverPub, false),                // owner
+        AccountMeta.ReadOnly(LUDC_MINT, false),                  // mint
+        AccountMeta.ReadOnly(SystemProgram.ProgramIdKey, false), // system program
+        AccountMeta.ReadOnly(TOKEN_2022_PROGRAM, false)          // token program
+    },
+                    Data = Array.Empty<byte>() // ATA create has empty data
+                };
+                builder.AddInstruction(createAtaInstruction);
+            }
+
+            // ================= TRANSFER INSTRUCTION =================
 
             var data = new List<byte> { 12 };
 
@@ -108,26 +165,28 @@ namespace SignalR.Server.Payments
             System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(amountBytes, tokenAmount);
             data.AddRange(amountBytes);
 
-            data.Add((byte)9);
+            data.Add((byte)LUDC_DECIMALS);
 
-            var instruction = new TransactionInstruction
+            var transferInstruction = new TransactionInstruction
             {
                 ProgramId = TOKEN_2022_PROGRAM,
                 Keys = new List<AccountMeta>
-                {
-                    AccountMeta.Writable(senderAta, false),
-                    AccountMeta.ReadOnly(LUDC_MINT, false),
-                    AccountMeta.Writable(receiverAta, false),
-                    AccountMeta.ReadOnly(senderAccount.PublicKey, true)
-                },
+        {
+            AccountMeta.Writable(senderAta, false),
+            AccountMeta.ReadOnly(LUDC_MINT, false),
+            AccountMeta.Writable(receiverAta, false),
+            AccountMeta.ReadOnly(senderAccount.PublicKey, true)
+        },
                 Data = data.ToArray()
             };
 
-            var tx = new TransactionBuilder()
-                .SetRecentBlockHash(blockhash)
-                .SetFeePayer(senderAccount.PublicKey)
-                .AddInstruction(instruction)
-                .Build(senderAccount);
+            builder.AddInstruction(transferInstruction);
+
+            // ================= BUILD TX =================
+
+            var tx = builder.Build(senderAccount);
+
+            // ================= SEND TX =================
 
             var res = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
 

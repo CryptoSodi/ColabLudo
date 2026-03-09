@@ -1,7 +1,6 @@
 ﻿using LudoServer.Data;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server.Payments;
-using Solnet.Rpc;
 using System.Text.Json;
 
 namespace SignalR.Server.Services
@@ -39,7 +38,7 @@ namespace SignalR.Server.Services
                 }
 
                 // scan every 10 seconds
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
         /// <summary>
