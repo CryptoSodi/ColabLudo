@@ -2,113 +2,119 @@ using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
 using SharedCode.Constants;
-
 namespace LudoClient.Popups;
-
 public partial class WithdrawPopup : BasePopup
 {
-    String Address = "";
+    String Address { get; set; } = "";
     String recAddress = "";
-    decimal SolBalance=0;
-    private System.Timers.Timer _qrCodeTimer;
+    decimal SolBalance = 0;
     public WithdrawPopup()
     {
         InitializeComponent();
-        // Update the image source asynchronously (UI thread)
-        // Initialize and start the timer
-        _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
-        _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
-        _qrCodeTimer.AutoReset = true;
-        _qrCodeTimer.Enabled = true;
-        GenerateQRCodeAsync();
+        Loaded += WithdrawPopup_Loaded;
+        Unloaded += WithdrawPopup_Unloaded;
     }
-    public async Task GenerateQRCodeAsync()
+    private void WithdrawPopup_Loaded(object sender, EventArgs e)
     {
-        const string BaseUrl = "https://quickchart.io/qr";
-        // You can tweak these hex colors and size as you like:
-        var lightColor = "4031af";
-        var darkColor = "ededed";
-        var size = 200;
-
-        String QrUrl = $"{BaseUrl}"
-              + $"?text={UserInfo.Instance.player.Wallet?.WalletAddress}"
-              + $"&light={lightColor}"
-              + $"&dark={darkColor}"
-              + $"&size={size}";
-        Address = UserInfo.Instance.player.Wallet?.WalletAddress;
-      
-        MainThread.BeginInvokeOnMainThread(() =>
+        var wallet = UserInfo.Instance.player.Wallet;
+        if (wallet != null)
         {
-            try
-            {
-                AmmountEntry.entryField.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-            }
-            catch (Exception)
-            {
-            }
-        });
-        UpdateBalance();
-    }
-    public async Task UpdateBalance()
-    {
-        if (GlobalConstants.MatchMaker != null)
-        {
+            if (wallet.WalletAddress != null)
+                Address = wallet.WalletAddress;
             MainThread.BeginInvokeOnMainThread(() =>
             {
                 try
                 {
-                    Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-                    SolBalance = (decimal)UserInfo.Instance.player.Wallet?.AvailableBalance;
-
+                    AmmountEntry.entryField.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
                 }
                 catch (Exception)
                 {
                 }
             });
+
+            OnBalanceChanged((decimal)wallet.AvailableBalance);
+            wallet.BalanceChanged += OnBalanceChanged;
         }
     }
-    private void OnSendButtonClicked(object sender, TappedEventArgs e)
+    private void WithdrawPopup_Unloaded(object sender, EventArgs e)
+    {
+        var wallet = UserInfo.Instance.player.Wallet;
+
+       // if (wallet != null)
+         //   wallet.BalanceChanged -= OnBalanceChanged;
+    }
+    void OnBalanceChanged(decimal balance)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (GlobalConstants.MatchMaker != null)
+                try
+                {
+                    Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
+                    SolBalance = balance;
+                }
+                catch (Exception)
+                {
+                }
+        });
+    }
+    private async void OnSendButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        string amountInSoltext = AmmountEntry.entryField.Text.Replace("LUDC", "");
-        recAddress = AddressEntry.entryField.Text;
-        if (decimal.TryParse(amountInSoltext, out decimal amountInSol))
+
+        string amountText = AmmountEntry.entryField.Text?.Replace("LUDC", "").Trim();
+        string recAddress = AddressEntry.entryField.Text?.Trim();
+
+        if (string.IsNullOrWhiteSpace(amountText) || !decimal.TryParse(amountText, out decimal amount))
         {
-            if (SolBalance < amountInSol)
-            {
-#if ANDROID
-                Toast.Make("Insufficient Balance!", ToastDuration.Short, 22).Show();
-            #else
-                Application.Current.MainPage.DisplayAlert("Info", "Insufficient Balance!", "OK");
-#endif
-                return;
-            }
-            String result = GlobalConstants.MatchMaker.SendSolAsync(recAddress, amountInSol).GetAwaiter().GetResult();
+            await ShowMessage("Please enter a valid number.");
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(recAddress))
+        {
+            await ShowMessage("Please enter a valid address.");
+            return;
+        }
+
+        if (recAddress.Length < 32 || recAddress.Length > 44)
+        {
+            await ShowMessage("Invalid wallet address.");
+            return;
+        }
+
+        if (SolBalance < amount)
+        {
+            await ShowMessage("Insufficient Balance!");
+            return;
+        }
+
+        try
+        {
+            string result = await GlobalConstants.MatchMaker.Withdraw(recAddress, amount);
+
             if (result == "ERROR")
             {
-#if ANDROID
-                Toast.Make("ERROR SENDING FAILED!", ToastDuration.Short, 22).Show();
-#else
-                Application.Current.MainPage.DisplayAlert("Info", "ERROR SENDING FAILED!", "OK");
-#endif
+                await ShowMessage("Error sending transaction!");
             }
             else
             {
-#if ANDROID
-                Toast.Make("Success!", ToastDuration.Short, 22).Show();
-#else
-                Application.Current.MainPage.DisplayAlert("Info", "Success", "OK");
-#endif
+                await ShowMessage("Transaction Successful!");
             }
         }
-        else
+        catch (Exception ex)
         {
-#if ANDROID
-            Toast.Make("Please enter a valid number.", ToastDuration.Short, 22).Show();
-#else
-            Application.Current.MainPage.DisplayAlert("Info", "Please enter a valid number.", "OK");
-#endif
+            await ShowMessage("Unexpected error occurred.");
+            System.Diagnostics.Debug.WriteLine(ex);
         }
+    }
+    private async Task ShowMessage(string message)
+    {
+#if ANDROID
+        Toast.Make(message, ToastDuration.Short, 22).Show();
+#else
+    await Application.Current.MainPage.DisplayAlert("Info", message, "OK");
+#endif
     }
     private void OnPasteButtonClicked(object sender, TappedEventArgs e)
     {

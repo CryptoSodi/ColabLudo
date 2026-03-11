@@ -1,10 +1,6 @@
 using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
-using SharedCode;
 using SharedCode.Constants;
 
 namespace LudoClient.Popups;

@@ -9,9 +9,12 @@ using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 const int masterUserId = 1;
-const bool debug = true;
+const bool debug = false;
 const string LUDC_MINT_ADDRESS = debug ? "8Abr4aSqHbqUNK1ubRVfcdnAhS3RjmYRPDf11dt7pcfW" : "JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai" ;
+builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddUserSecrets<Program>().AddEnvironmentVariables();
 
+string dbstring = builder.Configuration.GetConnectionString("DefaultConnection");
+string purpose = builder.Configuration.GetConnectionString("purpose");
 
 //Add CORS policy
 builder.Services.AddCors(o =>
@@ -19,11 +22,11 @@ builder.Services.AddCors(o =>
     o.AddPolicy("AllowAnyOrigin", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 });
 // Load secrets (local dev) and environment variables (for production)
-builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddUserSecrets<Program>().AddEnvironmentVariables();
+
 // Add SignalR services
 builder.Services.AddSignalR(o => o.StatefulReconnectBufferSize = 100_000);
 
-builder.Services.AddDbContextFactory<LudoDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")).EnableSensitiveDataLogging(false));// Turn off verbose logging
+builder.Services.AddDbContextFactory<LudoDbContext>(options => options.UseSqlServer(dbstring).EnableSensitiveDataLogging(false));// Turn off verbose logging
 
 builder.Services.AddScoped<FriendsService>();
 builder.Services.AddScoped<TournamentService>();
@@ -33,11 +36,11 @@ builder.Services.AddScoped<UtilService>();
 
 builder.Services.AddSingleton<SolPaymentProvider>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
-    return new SolPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), masterUserId, debug, "CryptoHelper.WalletProtector");
+    return new SolPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), masterUserId, debug, purpose);
 });
 builder.Services.AddSingleton<LudcPaymentProvider>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
-    return new LudcPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), sp.GetRequiredService<SolPaymentProvider>(), masterUserId, debug, "CryptoHelper.WalletProtector", LUDC_MINT_ADDRESS);
+    return new LudcPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), sp.GetRequiredService<SolPaymentProvider>(), masterUserId, debug, purpose, LUDC_MINT_ADDRESS);
 });
 
 builder.Services.AddSingleton<IPaymentProvider>(sp => sp.GetRequiredService<SolPaymentProvider>());

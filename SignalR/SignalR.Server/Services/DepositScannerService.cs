@@ -26,6 +26,10 @@ namespace SignalR.Server.Services
         /// </summary>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            using var scope = _scopeFactory.CreateScope();
+            var ludcProvider = scope.ServiceProvider.GetRequiredService<LudcPaymentProvider>();
+            _lastProcessedSignature = await ludcProvider.InitializeLatestSignature();
+            Console.WriteLine($"SIGNATURE : {_lastProcessedSignature}");
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
@@ -38,7 +42,7 @@ namespace SignalR.Server.Services
                 }
 
                 // scan every 10 seconds
-                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
             }
         }
         /// <summary>
@@ -79,6 +83,7 @@ namespace SignalR.Server.Services
             }
             // update last processed signature
             _lastProcessedSignature = deposits.Last().Signature;
+            Console.WriteLine($"SIGNATURE x 2 : {_lastProcessedSignature}");
         }
     }
 }

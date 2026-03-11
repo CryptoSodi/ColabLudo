@@ -9,6 +9,8 @@ using Solnet.Rpc.Builders;
 using Solnet.Rpc.Models;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
+using System.Text.Json;
+using System.Transactions;
 namespace SignalR.Server.Payments
 {
     public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS) : IPaymentProvider
@@ -30,32 +32,26 @@ namespace SignalR.Server.Payments
             return await solPaymentProvider.EnsurePlayerWalletExists(playerId, addressType);
         }
         // ================= WITHDRAW =================
-
         public async Task<string> WithdrawAsync(Player player, string destination, decimal amount, Guid operationId)
         {
             using var ctx = _contextFactory.CreateDbContext();
             using var tx = await ctx.Database.BeginTransactionAsync();
 
             var wallet = await EnsurePlayerWalletExists(player.PlayerId);
-
             if (wallet.AvailableBalance < amount)
                 return "INSUFFICIENT_BALANCE";
-
-            wallet.AvailableBalance -= amount;
-
-            ctx.Update(wallet);
-            await ctx.SaveChangesAsync();
-            await tx.CommitAsync();
-
             var masterKey = await ctx.PlayerWalletKey.FirstAsync(x => x.PlayerId == _masterUserId);
-
             var sig = await SendLudcAsync(masterKey, destination, amount);
-
+            if(sig != "ERROR")
+            {
+                wallet.AvailableBalance -= amount;
+                ctx.Update(wallet);
+                await ctx.SaveChangesAsync();
+                await tx.CommitAsync();
+            }
             return sig;
         }
-
         // ================= SWEEP =================
-
         public async Task<string> SweepAsync(int playerId, decimal amount)
         {
             using var ctx = _contextFactory.CreateDbContext();
@@ -64,9 +60,7 @@ namespace SignalR.Server.Payments
             var masterKey = await ctx.PlayerWalletKey.FirstAsync(x => x.PlayerId == _masterUserId);
             return await SendLudcAsync(playerKey, masterKey.PublicKey, amount);
         }
-
         // ================= BALANCE =================
-
         public async Task<decimal> GetOnChainBalanceAsync(string walletAddress)
         {
             var owner = new PublicKey(walletAddress);
@@ -76,124 +70,74 @@ namespace SignalR.Server.Payments
                 return 0m;
             return decimal.Parse(balance.Result.Value.UiAmountString);
         }
-
         // ================= INTERNAL SEND =================
-
         private async Task<string> SendLudcAsync(PlayerWalletKey senderKey, string destination, decimal amount)
         {
             var rawPriv = _protector.Unprotect(senderKey.EncryptedPrivateKey);
             var senderAccount = new Account(rawPriv, senderKey.PublicKey);
             var receiverPub = new PublicKey(destination);
-
             // ================= DERIVE ATA =================
-
-            PublicKey.TryFindProgramAddress(
-                new[]
-                {
-            senderAccount.PublicKey.KeyBytes,
-            TOKEN_2022_PROGRAM.KeyBytes,
-            LUDC_MINT.KeyBytes
-                },
-                AssociatedTokenAccountProgram.ProgramIdKey,
-                out var senderAta,
-                out _
-            );
-
-            PublicKey.TryFindProgramAddress(
-                new[]
-                {
-            receiverPub.KeyBytes,
-            TOKEN_2022_PROGRAM.KeyBytes,
-            LUDC_MINT.KeyBytes
-                },
-                AssociatedTokenAccountProgram.ProgramIdKey,
-                out var receiverAta,
-                out _
-            );
-
+            PublicKey.TryFindProgramAddress(new[]{senderAccount.PublicKey.KeyBytes,TOKEN_2022_PROGRAM.KeyBytes,LUDC_MINT.KeyBytes},
+                AssociatedTokenAccountProgram.ProgramIdKey,out var senderAta,out _);
+            PublicKey.TryFindProgramAddress(new[]{receiverPub.KeyBytes,TOKEN_2022_PROGRAM.KeyBytes,LUDC_MINT.KeyBytes},
+                AssociatedTokenAccountProgram.ProgramIdKey,out var receiverAta,out _);
             // ================= CHECK RECEIVER ATA =================
-
             var receiverAtaInfo = await _rpc.GetAccountInfoAsync(receiverAta);
-
-            bool receiverAtaExists =
-                receiverAtaInfo.WasSuccessful &&
-                receiverAtaInfo.Result?.Value != null;
-
+            bool receiverAtaExists = receiverAtaInfo.WasSuccessful && receiverAtaInfo.Result?.Value != null;
             // ================= TOKEN AMOUNT =================
-
-            ulong tokenAmount =
-                Convert.ToUInt64(decimal.Round(
-                    amount * 1_000_000_000m,
-                    0,
-                    MidpointRounding.AwayFromZero));
-
-            var blockhash =
-                (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
-
+            ulong tokenAmount = Convert.ToUInt64(decimal.Round(amount * 1_000_000_000m,0,MidpointRounding.AwayFromZero));
+            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
             // ================= BUILD TRANSACTION =================
-
-            var builder = new TransactionBuilder()
-                .SetRecentBlockHash(blockhash)
-                .SetFeePayer(senderAccount.PublicKey);
-
+            var builder = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(senderAccount.PublicKey);
             // ================= CREATE ATA IF MISSING =================
-
             if (!receiverAtaExists)
             {
                 var createAtaInstruction = new TransactionInstruction
                 {
-                    ProgramId = AssociatedTokenAccountProgram.ProgramIdKey,
-                    Keys = new List<AccountMeta>
-    {
-        AccountMeta.Writable(senderAccount.PublicKey, true),     // payer
-        AccountMeta.Writable(receiverAta, false),                // ATA
-        AccountMeta.ReadOnly(receiverPub, false),                // owner
-        AccountMeta.ReadOnly(LUDC_MINT, false),                  // mint
-        AccountMeta.ReadOnly(SystemProgram.ProgramIdKey, false), // system program
-        AccountMeta.ReadOnly(TOKEN_2022_PROGRAM, false)          // token program
-    },
+                    ProgramId = AssociatedTokenAccountProgram.ProgramIdKey, Keys = new List<AccountMeta>
+                    {
+                        AccountMeta.Writable(senderAccount.PublicKey, true),     // payer        
+                        AccountMeta.Writable(receiverAta, false),                // ATA        
+                        AccountMeta.ReadOnly(receiverPub, false),                // owner        
+                        AccountMeta.ReadOnly(LUDC_MINT, false),                  // mint        
+                        AccountMeta.ReadOnly(SystemProgram.ProgramIdKey, false), // system program        
+                        AccountMeta.ReadOnly(TOKEN_2022_PROGRAM, false)          // token program    
+                    },
                     Data = Array.Empty<byte>() // ATA create has empty data
                 };
                 builder.AddInstruction(createAtaInstruction);
             }
-
             // ================= TRANSFER INSTRUCTION =================
-
-            var data = new List<byte> { 12 };
-
+            var data = new List<byte> {12};
             var amountBytes = new byte[8];
             System.Buffers.Binary.BinaryPrimitives.WriteUInt64LittleEndian(amountBytes, tokenAmount);
             data.AddRange(amountBytes);
-
             data.Add((byte)LUDC_DECIMALS);
-
             var transferInstruction = new TransactionInstruction
             {
                 ProgramId = TOKEN_2022_PROGRAM,
                 Keys = new List<AccountMeta>
-        {
-            AccountMeta.Writable(senderAta, false),
-            AccountMeta.ReadOnly(LUDC_MINT, false),
-            AccountMeta.Writable(receiverAta, false),
-            AccountMeta.ReadOnly(senderAccount.PublicKey, true)
-        },
+                {            
+                    AccountMeta.Writable(senderAta, false),            
+                    AccountMeta.ReadOnly(LUDC_MINT, false),            
+                    AccountMeta.Writable(receiverAta, false),            
+                    AccountMeta.ReadOnly(senderAccount.PublicKey, true)        
+                },
                 Data = data.ToArray()
             };
-
             builder.AddInstruction(transferInstruction);
-
             // ================= BUILD TX =================
-
             var tx = builder.Build(senderAccount);
-
             // ================= SEND TX =================
-
             var res = await _rpc.SendTransactionAsync(tx, false, Commitment.Confirmed);
-
             if (!res.WasSuccessful)
-                throw new Exception(res.Reason);
-
-            return res.Result;
+            {
+                Console.WriteLine($"SEND FAILED : {res.Reason}");
+                return "ERROR";
+            }
+            else
+                Console.WriteLine($"SEND SUCCESS : {res.Result}");
+                return "SUCCESS";
         }
         public async Task<List<TokenDeposit>> GetRecentDeposits(string? lastProcessedSignature = null)
         {
@@ -213,7 +157,7 @@ namespace SignalR.Server.Payments
                     sig.Signature,
                     Commitment.Confirmed);
 
-                if (!tx.WasSuccessful || tx.Result == null)
+                if (tx == null)
                     continue;
 
                 var meta = tx.Result.Meta;
@@ -271,8 +215,54 @@ namespace SignalR.Server.Payments
                         Amount = delta
                     });
                 }
-            }
+            }        
             return deposits;
+        }
+        private static readonly HttpClient _http = new HttpClient();
+        private async Task<JsonDocument?> GetTransactionRaw(string signature)
+        {
+            var request = new
+            {
+                jsonrpc = "2.0",
+                id = 1,
+                method = "getTransaction",
+                @params = new object[]
+                {
+            signature,
+            new
+            {
+                encoding = "jsonParsed",
+                commitment = "confirmed",
+                maxSupportedTransactionVersion = 0
+            }
+                }
+            };
+
+            var response = await _http.PostAsJsonAsync(
+                "https://api.mainnet-beta.solana.com",
+                request);
+
+            var json = await response.Content.ReadAsStringAsync();
+
+            var doc = JsonDocument.Parse(json);
+
+            if (!doc.RootElement.TryGetProperty("result", out var result) || result.ValueKind == JsonValueKind.Null)
+                return null;
+
+            return doc;
+        }
+        public async Task<string> InitializeLatestSignature()
+        {
+            var sigs = await _rpc.GetSignaturesForAddressAsync(LUDC_MINT, limit: 1);
+
+            if (sigs.WasSuccessful && sigs.Result?.Count > 0)
+            {
+               string _lastProcessedSignature = sigs.Result[0].Signature;
+
+                Console.WriteLine($"Deposit scanner starting from: {_lastProcessedSignature}");
+                return _lastProcessedSignature;
+            }
+            return null;
         }
     }
     public class TokenDeposit

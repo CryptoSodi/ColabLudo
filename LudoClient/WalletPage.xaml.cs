@@ -1,6 +1,5 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using LudoClient.Popups;
 using SharedCode.Constants;
@@ -10,22 +9,33 @@ public partial class WalletPage : ContentPage
     public WalletPage()
     {
         InitializeComponent();
-
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;
-            Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
-        });
-        //this.ShowPopup(new AddCash());
-        // Initialize and start the timer        
     }
     protected override void OnAppearing()
     {
         base.OnAppearing();
-        // Force layout to update ContentSize
-        Task.Run(UpdateBalance); // Run async without blocking constructor
+        if (UserInfo.Instance.player != null)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+            if (wallet != null)
+            {
+                wallet.BalanceChanged += Wallet_BalanceChanged;
+                // Update immediately
+                Wallet_BalanceChanged(wallet.AvailableBalance);
+            }
+        }
     }
-    public void UpdateBalance()
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+
+        var wallet = UserInfo.Instance.player?.Wallet;
+
+        if (wallet != null)
+        {
+            wallet.BalanceChanged -= Wallet_BalanceChanged;
+        }
+    }
+    public void Wallet_BalanceChanged(decimal balance)
     {
         MainThread.BeginInvokeOnMainThread(() =>
             {
@@ -33,7 +43,6 @@ public partial class WalletPage : ContentPage
                 {
                     if (UserInfo.Instance.player != null)
                     {
-                        var balance = UserInfo.Instance.player.Wallet?.AvailableBalance ?? 0;                        
                         Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
                         balance = UserInfo.Instance.player.Wallet?.SignupBonus ?? 0;
                         SignupBonus.Text = ClientGlobalConstants.NormalizeCoins(balance);

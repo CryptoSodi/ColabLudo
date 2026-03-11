@@ -1,37 +1,14 @@
 ﻿using SharedCode.Network;
-using System.Net;
-using System.Net.Sockets;
 namespace SharedCode.Constants
 {
     public static class GlobalConstants
     {
-        public static int GameHistorySaveIndex = 0;
         public static readonly decimal initialEntry = (decimal)1;
         public static readonly bool Debug = true;
-        public static readonly string Url;
-        public static readonly string BaseUrl;
-        public static readonly string HubUrl;
+        public static readonly string HubUrl = (Debug ? "http://192.168.1.13" : "http://13.202.76.246") + ":8085/";
         public static Client MatchMaker;
         public static Random rnd = new Random();
-        static GlobalConstants()
-        {
-            Url = Debug ? "http://192.168.1.12" : "http://13.202.76.246";// "http://13.202.76.246";//"http://13.235.90.3";// 
-#if WINDOWS
-if(Debug){
-            var host = Dns.GetHostEntry(Dns.GetHostName());
-            foreach (var ip in host.AddressList)
-                if (ip.AddressFamily == AddressFamily.InterNetwork) // IPv4 address
-                {
-                    Console.WriteLine( ip.ToString());
-                    Url = "http://"+ip.ToString();
-                }
-            }
-#endif
-            BaseUrl = Url.Replace("http:", "https:") + ":7255/";
-            HubUrl  = Url + ":8085/";
-
-        }
-        public static int lastSeenIndex = -1;
+        public static int lastSeenIndex { get; internal set; } =-1;
         public static string RoomCode { get; internal set; }
         public static double GameCost { get; internal set; }
     }

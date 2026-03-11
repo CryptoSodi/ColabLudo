@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
-using SharedCode;
 using SharedCode.Constants;
 
 namespace LudoClient.Popups;
@@ -12,16 +11,53 @@ public partial class AddCash : BasePopup
     public AddCash()
     {
         InitializeComponent();
+        Loaded += AddCash_Loaded;
+        Unloaded += AddCash_Unloaded;
         GenerateQRCodeAsync();
+    }
+    private void AddCash_Loaded(object sender, EventArgs e)
+    {
+        if (UserInfo.Instance.player != null)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+            if (wallet != null)
+            {
+                wallet.BalanceChanged += Wallet_BalanceChanged;
+                // Update immediately
+                Wallet_BalanceChanged(wallet.AvailableBalance);
+            }
+        }
+    }
+
+    private void AddCash_Unloaded(object sender, EventArgs e)
+    {
+        if (UserInfo.Instance.player != null)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+
+            // if (wallet != null)
+            //  wallet.BalanceChanged -= Wallet_BalanceChanged;
+        }
+    }
+    private void Wallet_BalanceChanged(decimal balance)
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
+        });
     }
     public void GenerateQRCodeAsync()
     {
         // Update the image source asynchronously (UI thread)
         MainThread.BeginInvokeOnMainThread(() =>
-        {
-            Address = UserInfo.Instance.player.Wallet?.WalletAddress;
-            Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-            AddressText.Text = UserInfo.Instance.player.Wallet?.WalletAddress;
+        { 
+            var wallet = UserInfo.Instance.player.Wallet;
+            if (wallet != null)
+            {
+                Address = wallet.WalletAddress;
+                Coins.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
+                AddressText.Text = wallet.WalletAddress;
+            }
             QRCodeImage.Source = UserInfo.ConvertBase64ToImage(UserInfo.Instance.AddressQRBlob);
         });
     }

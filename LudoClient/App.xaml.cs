@@ -55,11 +55,31 @@ namespace LudoClient
             }
         }
 
-        private void OnPlayerInfoUpdate(object? sender, PlayerInfo playerInfo)
-        {
-            UserInfo.Instance.player = playerInfo;
-            if (UserInfo.Instance.player != null)
+        private void OnPlayerInfoUpdate(object? sender, PlayerInfo newPlayer)
+        {   
+            if (newPlayer != null)
             {
+                var currentPlayer = UserInfo.Instance.player;
+
+                if (currentPlayer != null)
+                {
+                    currentPlayer.Name = newPlayer.Name;
+                    currentPlayer.Email = newPlayer.Email;
+                    currentPlayer.Score = newPlayer.Score;
+
+                    if (currentPlayer.Wallet != null && newPlayer.Wallet != null)
+                    {
+                        currentPlayer.Wallet.AvailableBalance = newPlayer.Wallet.AvailableBalance;
+                        currentPlayer.Wallet.ReferBonus = newPlayer.Wallet.ReferBonus;
+                        currentPlayer.Wallet.SurpriseCoins = newPlayer.Wallet.SurpriseCoins;
+                        currentPlayer.Wallet.SignupBonus = newPlayer.Wallet.SignupBonus;
+                    }
+                }
+                else
+                {
+                    UserInfo.Instance.player = newPlayer;
+                }
+
                 UserInfo.SaveState();
             }
         }
@@ -218,9 +238,31 @@ namespace LudoClient
                 {
                     try
                     {
-                        UserInfo.Instance.player = await GlobalConstants.MatchMaker.UserConnectedSetID();
-                        if (UserInfo.Instance.player != null)
+                        var newPlayer = await GlobalConstants.MatchMaker.UserConnectedSetID();
+
+                        if (newPlayer != null)
                         {
+                            var currentPlayer = UserInfo.Instance.player;
+
+                            if (currentPlayer != null)
+                            {
+                                currentPlayer.Name = newPlayer.Name;
+                                currentPlayer.Email = newPlayer.Email;
+                                currentPlayer.Score = newPlayer.Score;
+
+                                if (currentPlayer.Wallet != null && newPlayer.Wallet != null)
+                                {
+                                    currentPlayer.Wallet.AvailableBalance = newPlayer.Wallet.AvailableBalance;
+                                    currentPlayer.Wallet.ReferBonus = newPlayer.Wallet.ReferBonus;
+                                    currentPlayer.Wallet.SurpriseCoins = newPlayer.Wallet.SurpriseCoins;
+                                    currentPlayer.Wallet.SignupBonus = newPlayer.Wallet.SignupBonus;
+                                }
+                            }
+                            else
+                            {
+                                UserInfo.Instance.player = newPlayer;
+                            }
+
                             UserInfo.SaveState();
                         }
                     }

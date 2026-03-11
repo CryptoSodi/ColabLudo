@@ -19,7 +19,7 @@ namespace SignalR.Server.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 var now = DateTime.UtcNow;
-                Console.WriteLine($"Ping check : {now} : Count {LudoHub.ConnectionToPlayer.ToList().Count()}");
+                //Console.WriteLine($"Ping check : {now} : Count {LudoHub.ConnectionToPlayer.ToList().Count()}");
 
                 foreach (var kv in LudoHub.ConnectionToPlayer.ToList())
                 {

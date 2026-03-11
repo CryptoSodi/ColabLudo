@@ -41,10 +41,20 @@ public class PlayerWallet
     public int PlayerId { get; set; }
     public string? AddressType { get; set; } = "";
     public string? WalletAddress { get; set; } = "";
-
+    private decimal _availableBalance = 0;
     [Column(TypeName = "decimal(18,8)")]
-    public decimal AvailableBalance { get; set; } = 0;
-
+    public decimal AvailableBalance
+    {
+        get => _availableBalance;
+        set
+        {
+            if (_availableBalance != value)
+            {
+                _availableBalance = value;
+                OnBalanceChanged(_availableBalance);
+            }
+        }
+    }
     [Column(TypeName = "decimal(18,8)")]
     public decimal UnUtilizedCoins { get; set; } = 0;
     [Column(TypeName = "decimal(18,8)")]
@@ -54,6 +64,12 @@ public class PlayerWallet
     [Column(TypeName = "decimal(18,8)")]
     public decimal SignupBonus { get; set; } = 0;
     public ICollection<WalletTransaction> Transactions { get; set; } = new List<WalletTransaction>();
+    // 🔔 Custom event
+    public event Action<decimal>? BalanceChanged;
+    protected void OnBalanceChanged(decimal newBalance)
+    {
+        BalanceChanged?.Invoke(newBalance);
+    }
 }
 public class WalletTransaction
 {

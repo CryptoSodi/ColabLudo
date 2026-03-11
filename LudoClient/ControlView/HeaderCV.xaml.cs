@@ -1,5 +1,4 @@
 using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
 using LudoClient.Popups;
@@ -8,37 +7,42 @@ namespace LudoClient;
 
 public partial class HeaderCV : ContentView
 {
-    private System.Timers.Timer _qrCodeTimer;
     public HeaderCV()
     {
         InitializeComponent();
         PlayerImageItem.Source = UserInfo.Instance.ProfileImageSource;
-            // Initialize and start the timer
-            _qrCodeTimer = new System.Timers.Timer(1000); // 60,000 milliseconds = 60 seconds
-        _qrCodeTimer.Elapsed += async (sender, e) => await UpdateBalance();
-        _qrCodeTimer.AutoReset = _qrCodeTimer.Enabled = true;
-
-        Loaded += async (s, e) => {
-            await UpdateBalance();
-            _qrCodeTimer?.Start();
-        };
-
-        Unloaded += (s, e) => {
-            _qrCodeTimer?.Stop();
-        };
+        Loaded += HeaderCV_Loaded;
+        Unloaded += HeaderCV_Unloaded;
     }
-    public async Task UpdateBalance()
+    private void HeaderCV_Loaded(object sender, EventArgs e)
+    {
+        if(UserInfo.Instance.player != null)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+            if (wallet != null)
+            {
+                wallet.BalanceChanged += Wallet_BalanceChanged;
+                // Update immediately
+                Wallet_BalanceChanged(wallet.AvailableBalance);
+            }
+        }
+    }
+
+    private void HeaderCV_Unloaded(object sender, EventArgs e)
+    {
+        if (UserInfo.Instance.player != null)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+
+            if (wallet != null)
+                wallet.BalanceChanged -= Wallet_BalanceChanged;
+        }
+    }
+    private void Wallet_BalanceChanged(decimal balance)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
-            try
-            {
-                if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
-                    Coins.Text = ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.Wallet.AvailableBalance);
-            }
-            catch (Exception)
-            {
-            }
+            Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
         });
     }
     private async void Navigate_Settings(object sender, EventArgs e)

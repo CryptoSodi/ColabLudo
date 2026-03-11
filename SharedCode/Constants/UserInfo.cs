@@ -8,6 +8,7 @@ namespace SharedCode.Constants
         private static UserInfo? _instance;
         private static readonly object _lock = new object();
         public PlayerInfo player;
+        
         public string? AddressQRBlob { get; set; }
 
         const string BaseUrl = "https://quickchart.io/qr";
@@ -69,7 +70,6 @@ namespace SharedCode.Constants
                 instance.AddressQRBlob = DownloadImageAsBase64Async(QrUrl).GetAwaiter().GetResult();
                 Preferences.Set(nameof(instance.AddressQRBlob), instance.AddressQRBlob);
 
-                
                 Preferences.Set("IsUserLoggedIn", true);
             }
             catch (Exception ex)
@@ -134,26 +134,6 @@ namespace SharedCode.Constants
         {
             byte[] imageBytes = Convert.FromBase64String(base64String);
             return ImageSource.FromStream(() => new MemoryStream(imageBytes));
-        }
-
-        public async static Task<string> CacheProfileImageAsync(string url, string fileName = "profile_image.png")
-        {
-            try
-            {
-                var filePath = Path.Combine(FileSystem.CacheDirectory, fileName);
-
-                using var http = new HttpClient();
-                var bytes = await http.GetByteArrayAsync(url).ConfigureAwait(false);
-
-                // Overwrite file if it exists
-                await File.WriteAllBytesAsync(filePath, bytes);
-
-                return filePath;
-            }
-            catch
-            {
-                return null;
-            }
         }
     }
 }

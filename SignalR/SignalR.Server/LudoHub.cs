@@ -92,7 +92,7 @@ namespace SignalR.Server
             }
             throw new HubException("Player not recognized.");
         }
-        public async Task<String> SendSol(string destination, decimal amountInSol)
+        public async Task<String> Withdraw(string destination, decimal amountInSol)
         {
             try
             {
@@ -103,6 +103,7 @@ namespace SignalR.Server
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 return ex.Message;
             }
         }
