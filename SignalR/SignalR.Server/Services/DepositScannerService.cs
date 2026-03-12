@@ -28,7 +28,12 @@ namespace SignalR.Server.Services
         {
             using var scope = _scopeFactory.CreateScope();
             var ludcProvider = scope.ServiceProvider.GetRequiredService<LudcPaymentProvider>();
-            _lastProcessedSignature = await ludcProvider.InitializeLatestSignature();
+            _lastProcessedSignature = await LoadLastSignature();
+
+            if (string.IsNullOrEmpty(_lastProcessedSignature))
+            {
+                await UpdateLastSignature(await ludcProvider.InitializeLatestSignature());             
+            }
             Console.WriteLine($"SIGNATURE : {_lastProcessedSignature}");
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -42,7 +47,7 @@ namespace SignalR.Server.Services
                 }
 
                 // scan every 10 seconds
-                await Task.Delay(TimeSpan.FromSeconds(10), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
             }
         }
         /// <summary>
@@ -82,8 +87,27 @@ namespace SignalR.Server.Services
                 Console.WriteLine($"Deposit detected: Player {wallet.PlayerId} + {deposit.Amount} LUDC");
             }
             // update last processed signature
-            _lastProcessedSignature = deposits.Last().Signature;
+            await UpdateLastSignature(deposits.Last().Signature);            
             Console.WriteLine($"SIGNATURE x 2 : {_lastProcessedSignature}");
+        }
+        private const string SignatureFile = "last_signature.txt";
+        private async Task<string?> LoadLastSignature()
+        {
+            if (!File.Exists(SignatureFile))
+                return null;
+
+            return (await File.ReadAllTextAsync(SignatureFile)).Trim();
+        }
+        private async Task UpdateLastSignature(string signature)
+        {
+            if (_lastProcessedSignature == signature)
+                return;
+
+            _lastProcessedSignature = signature;
+
+            await File.WriteAllTextAsync(SignatureFile, signature);
+
+            Console.WriteLine($"SIGNATURE UPDATED : {_lastProcessedSignature}");
         }
     }
 }

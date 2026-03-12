@@ -35,32 +35,43 @@ namespace SharedCode.Network
             Connected = false;
             _ = ConnectAsync();
         }
-
-        private void StartHeartbeat()
+        private async Task StartHeartbeat()
         {
             _pingCts?.Cancel();
             _pingCts = new CancellationTokenSource();
 
-            _ = Task.Run(async () =>
-            {
-                while (!_pingCts.Token.IsCancellationRequested)
-                {
-                    try
-                    {
-                        if (_hubConnection.State == HubConnectionState.Connected)
-                        {
-                            await _hubConnection.SendAsync("Ping");
-                        }
-                    }
-                    catch { }
+            var token = _pingCts.Token;
 
-                    await Task.Delay(TimeSpan.FromSeconds(10), _pingCts.Token);
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (_hubConnection.State == HubConnectionState.Connected)
+                        await _hubConnection.SendAsync("Ping", token);
                 }
-            });
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Heartbeat error: {ex}");
+                }
+
+                await Task.Delay(TimeSpan.FromSeconds(10), token);
+            }
         }
         private void RegisterHubEvents()
         {
-            // Connection lifecycle events
+            _hubConnection.Reconnected += async connectionId =>
+            {
+                Connected = true;
+                Console.WriteLine("Connection lost. Reconnecting...");
+                try
+                {
+                    await UserConnectedSetID();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Reconnect sync error: {ex}");
+                }
+            };
             _hubConnection.Reconnecting += error =>
             {
                 Connected = false;
@@ -69,13 +80,6 @@ namespace SharedCode.Network
                 {
                     Console.WriteLine($"Reconnecting due to: {error.Message}");
                 }
-                return Task.CompletedTask;
-            };
-            _hubConnection.Reconnected += connectionId =>
-            {
-                Connected = true;
-                UserConnectedSetID();
-                Console.WriteLine($"Reconnected. ConnectionId: {connectionId}");
                 return Task.CompletedTask;
             };
             _hubConnection.Closed += async error =>
@@ -90,9 +94,7 @@ namespace SharedCode.Network
             // Player ReceiveMessage event
             _hubConnection.On<ChatMessages>("ReceiveChatHistory", msg =>
             {
-                List<ChatMessages> lcm = new List<ChatMessages>();
-                lcm.Add(msg);
-                // This lambda runs on a non-UI thread:
+                var lcm = new List<ChatMessages> { msg };
                 ReceiveChatMessage?.Invoke(this, (lcm));
             });
             _hubConnection.On<PlayerInfo>("PlayerInfoUpdate", playerInfo =>
@@ -152,11 +154,11 @@ namespace SharedCode.Network
             }
             try
             {
+                RegisterHubEvents();
                 await _hubConnection.StartAsync();//.ConfigureAwait(false);
                 Connected = true;
-                RegisterHubEvents();
                 await UserConnectedSetID();
-                StartHeartbeat();
+                _ = StartHeartbeat();
                 Console.WriteLine("Connection started. Waiting for messages from the server...");
             }
             catch (Exception ex)

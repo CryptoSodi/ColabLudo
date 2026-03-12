@@ -41,20 +41,17 @@ namespace LudoClient
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
                 GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
-                SetOnline();
+                _ = Task.Run(() => SetOnline(_onlineCts.Token));
             });
             if (isUserLoggedIn)
             {
                 MainPage = new AppShell();
-                //MainPage = new ChatPage();
-                //MainPage = new Game("local", "2", "Red");
             }
             else
             {
                 MainPage = new LoginPage();
             }
         }
-
         private void OnPlayerInfoUpdate(object? sender, PlayerInfo newPlayer)
         {   
             if (newPlayer != null)
@@ -83,74 +80,81 @@ namespace LudoClient
                 UserInfo.SaveState();
             }
         }
-
-        private CancellationTokenSource _pollingTokenSource;
+        private CancellationTokenSource _pollingTokenSource { get; set; }
         private async Task PollForCommandsAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    if (GlobalConstants.MatchMaker != null && ClientGlobalConstants.game != null && GlobalConstants.RoomCode != null && GlobalConstants.RoomCode != "")
+                    var game = ClientGlobalConstants.game; 
+                    if (game == null)
+                        break;
+                    if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
                     {
                         if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State != HubConnectionState.Disconnected)
                         {
                             // Invoke the hub method to pull commands newer than _lastSeenIndex.
-                            int lastSeen = ClientGlobalConstants.game.engine.EngineHelper.indexServer;
+                            int lastSeen = game.engine.EngineHelper.indexServer;
                             List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
 
-                            if (commands != null && commands.Count > 0)
+                            if (commands?.Count > 0)
                             {
                                 foreach (var command in commands.OrderBy(c => c.IndexServer))
                                 {
-                                    while (ClientGlobalConstants.game.engine.processing)
-                                        await Task.Delay(100);
+                                    game = ClientGlobalConstants.game;
+                                    if (game == null)
+                                        break;
+                                    while (game != null && game.engine.processing)
+                                    {
+                                        cancellationToken.ThrowIfCancellationRequested();
+                                        await Task.Delay(100, cancellationToken);
+                                    }
 
                                     //  Console.WriteLine($"Room {GlobalConstants.RoomCode} LastSeenIndex {ClientGlobalConstants.game.engine.EngineHelper.index} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
                                     // Process the command here (e.g., call a local method based on the command type).
                                     // Update _lastSeenIndex with the highest received index.
-                                    if (ClientGlobalConstants.game.engine.EngineHelper.index <= command.Index)
+                                    if (game != null && game.engine.EngineHelper.index <= command.Index)
                                     {
-                                        switch (command.SendToClientFunctionName)
+                                        await MainThread.InvokeOnMainThreadAsync(async () =>
                                         {
-                                            case "MovePiece":
-                                                MainThread.BeginInvokeOnMainThread(async () =>
+                                            try
+                                            {
+                                                switch (command.SendToClientFunctionName)
                                                 {
-                                                    //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
-                                                    await ClientGlobalConstants.game.MovePiece(command.piece1, command.piece2, false);
-                                                });
-                                                break;
-                                            case "DiceRoll":
-                                                // For other command types, for example, SeatTurn:
-                                                // If SeatTurn returns a string, you can wait for it.
-                                                MainThread.BeginInvokeOnMainThread(() =>
-                                                {
-                                                    //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
-                                                    ClientGlobalConstants.game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
-                                                });
-                                                break;
-                                            case "PlayerLeft":
-                                                MainThread.BeginInvokeOnMainThread(() =>
-                                                {
-                                                    ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                                                    ClientGlobalConstants.game.engine.EngineHelper.index++;
-                                                    if (ClientGlobalConstants.game != null)
-                                                        ClientGlobalConstants.game.engine.PlayerLeft(command.seatName, false);
-
-                                                    ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
-                                                });
-                                                break;
-                                        }
+                                                    case "MovePiece":
+                                                        //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                                                        if (command.piece1 != null && command.piece2 != null)
+                                                            await game.MovePiece(command.piece1, command.piece2, false);
+                                                        break;
+                                                    case "DiceRoll":
+                                                        // For other command types, for example, SeatTurn:
+                                                        // If SeatTurn returns a string, you can wait for it.
+                                                        //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
+                                                        if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
+                                                            game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                        break;
+                                                    case "PlayerLeft":
+                                                        game.engine.EngineHelper.index++;
+                                                        if (game != null && command.seatName != null)
+                                                            game.engine.PlayerLeft(command.seatName, false);
+                                                        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                        break;
+                                                }
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Console.WriteLine($"ERROR IN SWITCH : 001 {ex.Message}");
+                                            }
+                                        });
                                         // Wait a bit before polling again.
-                                        await Task.Delay(200);
+                                        game.engine.EngineHelper.indexServer = command.IndexServer;
+                                        await Task.Delay(200, cancellationToken);
                                     }
                                 }
-
-                                if (commands.Any())
-                                    ClientGlobalConstants.game.engine.EngineHelper.indexServer = commands.Max(c => c.IndexServer);
                             }
-                            if(ClientGlobalConstants.game!=null)
-                                if (lastSeen != ClientGlobalConstants.game.engine.EngineHelper.index)
+                            if (game != null)
+                                if (lastSeen != game.engine.EngineHelper.index)
                                     Console.WriteLine("DESYNC WARNING!");
                         }
                     }
@@ -158,7 +162,6 @@ namespace LudoClient
                 catch (TaskCanceledException)
                 {
                     // Normal exit
-
                     Console.WriteLine($"Error pulling commands: EXIT 101");
                     break;
                 }
@@ -199,24 +202,25 @@ namespace LudoClient
                 var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
                 if (existingPages.Count == 1)
                     return;
+                // Cancel previous polling loop if it exists
+                _pollingTokenSource?.Cancel();
+                _pollingTokenSource?.Dispose();
                 // Remove all pages except the first one (which is the dashboard).
                 _pollingTokenSource = new CancellationTokenSource();
                 try
                 {
-                    GlobalConstants.lastSeenIndex = -1;
-                    ClientGlobalConstants.game = new LudoClient.CoreEngine.Game();
-                    
-                    ClientGlobalConstants.game.Init("Client", args.GameType, "", args.seatsData, args.rollsString);
-                   
+                    ClientGlobalConstants.game = new LudoClient.CoreEngine.Game();                    
+                    ClientGlobalConstants.game.Init("Client", args.GameType, "", args.seatsData, args.rollsString);                   
                     ClientGlobalConstants.dashBoard.Navigation.PushAsync(ClientGlobalConstants.game);
                     ClientGlobalConstants.FlushOld();
-                    Task.Run(() => PollForCommandsAsync(_pollingTokenSource.Token));
+                    _ = PollForCommandsAsync(_pollingTokenSource.Token);
                 }
                 catch (Exception)
                 {
                     Console.WriteLine("Error starting game: " + args.GameType + " " + args.seatsData + " " + args.rollsString);
                     // Handle the error, e.g., show an alert or log it.
-                    ClientGlobalConstants.game.engine.cleanGame();
+                    
+                    ClientGlobalConstants.game?.engine?.cleanGame();
                     ClientGlobalConstants.game = null;
                     GlobalConstants.RoomCode = "";
                     GlobalConstants.GameCost = 0;
@@ -225,54 +229,46 @@ namespace LudoClient
                         _pollingTokenSource.Cancel();
                         _pollingTokenSource.Dispose();
                         _pollingTokenSource = null;
-                    }   
+                    }
                 }
-                
             });
         }
-        protected async Task SetOnline()
+        private CancellationTokenSource _onlineCts = new();
+        protected async Task SetOnline(CancellationToken token)
         {
-            while (true)
+            while (!token.IsCancellationRequested)
             {
-                if (GlobalConstants.MatchMaker != null && GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State != HubConnectionState.Disconnected)
+                try
                 {
-                    try
-                    {
-                        var newPlayer = await GlobalConstants.MatchMaker.UserConnectedSetID();
+                    var matchMaker = GlobalConstants.MatchMaker;
 
+                    if (matchMaker?.Connected == true && matchMaker._hubConnection.State != HubConnectionState.Disconnected)
+                    {
+                        var newPlayer = await matchMaker.UserConnectedSetID();
                         if (newPlayer != null)
-                        {
-                            var currentPlayer = UserInfo.Instance.player;
-
-                            if (currentPlayer != null)
-                            {
-                                currentPlayer.Name = newPlayer.Name;
-                                currentPlayer.Email = newPlayer.Email;
-                                currentPlayer.Score = newPlayer.Score;
-
-                                if (currentPlayer.Wallet != null && newPlayer.Wallet != null)
-                                {
-                                    currentPlayer.Wallet.AvailableBalance = newPlayer.Wallet.AvailableBalance;
-                                    currentPlayer.Wallet.ReferBonus = newPlayer.Wallet.ReferBonus;
-                                    currentPlayer.Wallet.SurpriseCoins = newPlayer.Wallet.SurpriseCoins;
-                                    currentPlayer.Wallet.SignupBonus = newPlayer.Wallet.SignupBonus;
-                                }
-                            }
-                            else
-                            {
-                                UserInfo.Instance.player = newPlayer;
-                            }
-
-                            UserInfo.SaveState();
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
+                            OnPlayerInfoUpdate(null, newPlayer);
                     }
                 }
-                await Task.Delay(TimeSpan.FromMinutes(1));
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SetOnline error: {ex}");
+                }
+
+                await Task.Delay(TimeSpan.FromMinutes(1), token);
             }
+        }
+        protected override void OnSleep()
+        {
+            Console.WriteLine("App backgrounded");
+        }
+
+        protected override void OnResume()
+        {
+            Console.WriteLine("App resumed");
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)

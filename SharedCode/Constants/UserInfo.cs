@@ -109,10 +109,7 @@ namespace SharedCode.Constants
                     instance.player.PhoneNumber = instance.player.PhoneNumber==null || instance.player.PhoneNumber == "" ? "###########" : instance.player.PhoneNumber;
                     instance.player.CountryCode = instance.player.CountryCode == "" ? "###" : instance.player.CountryCode;
                     instance.player.City = instance.player.City == "" ? "###########" : instance.player.City;
-
-                   
                     instance.AddressQRBlob = Preferences.Get(nameof(instance.AddressQRBlob), string.Empty);
-
                 }
                 else
                 {

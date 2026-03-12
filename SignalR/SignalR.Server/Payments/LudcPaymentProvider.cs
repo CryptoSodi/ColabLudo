@@ -10,7 +10,6 @@ using Solnet.Rpc.Models;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
 using System.Text.Json;
-using System.Transactions;
 namespace SignalR.Server.Payments
 {
     public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS) : IPaymentProvider

@@ -590,8 +590,8 @@
     }
     public class EngineHelper
     {
-        public int index = 0;
-        internal int indexServer = 0;
+        public int index { get; set; } = 0;
+        internal int indexServer { get; set; } = 0;
         // Game logic helpers
         public List<int> rolls = new List<int>();
         public string rollsString = "";

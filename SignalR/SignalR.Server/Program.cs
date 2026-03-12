@@ -9,7 +9,7 @@ using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 const int masterUserId = 1;
-const bool debug = false;
+const bool debug = true;
 const string LUDC_MINT_ADDRESS = debug ? "8Abr4aSqHbqUNK1ubRVfcdnAhS3RjmYRPDf11dt7pcfW" : "JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai" ;
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddUserSecrets<Program>().AddEnvironmentVariables();
 
