@@ -18,13 +18,18 @@ public partial class Settings : BasePopup
         string version = VersionTracking.CurrentVersion;// e.g., "1.1.0"
         string build = VersionTracking.CurrentBuild;
 
-        VersionText.Text = "Version : " + build;
+        VersionText.Text = "Version : " + build; 
+        Loaded += OnAppearing;
+    }
+    private void OnAppearing(object sender, EventArgs e)
+    {
+        ClientGlobalConstants.sw.Stop();
+        Console.WriteLine($"CashGame full load time: {ClientGlobalConstants.sw.ElapsedMilliseconds} ms");
     }
     private void OnHelpTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         CloseAsync();
-        ClientGlobalConstants.helpDesk = new HelpDesk();
         Application.Current?.MainPage.ShowPopup(ClientGlobalConstants.helpDesk, new PopupOptions { Shape = null });
         //Close the popup when the background is tapped
     }

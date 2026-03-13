@@ -9,6 +9,7 @@ using LudoClient.Constants;
 using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 using SharedCode.Constants;
+using System.Diagnostics;
 
 public partial class DashboardPage : ContentPage
 {
@@ -30,7 +31,7 @@ public partial class DashboardPage : ContentPage
                     MainThread.BeginInvokeOnMainThread(() =>
                         UpdateButtons(GlobalConstants.MatchMaker.Connected));
             };
-        });
+        }); 
     }
     void UpdateButtons(bool isConnected)
     {
@@ -50,31 +51,13 @@ public partial class DashboardPage : ContentPage
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
             {
-                ClientGlobalConstants.cashGame = new CashGame();
-                Navigation.PushAsync(ClientGlobalConstants.cashGame).Wait();
+                Navigation.PushAsync(ClientGlobalConstants.cashGame);
             }
             else
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
                 });
-        }
-        finally
-        {
-            await Task.Delay(500); // half-second cooldown
-            _NavigationCooldown = false;
-        }
-    }
-    private async void Offline_Clicked(object sender, EventArgs e)
-    {
-        if (_NavigationCooldown)
-            return;
-        _NavigationCooldown = true;
-        try
-        {
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.offlinePage = new OfflinePage();
-            await Navigation.PushAsync(ClientGlobalConstants.offlinePage);//Done
         }
         finally
         {
@@ -92,7 +75,6 @@ public partial class DashboardPage : ContentPage
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (UserInfo.Instance.player.Wallet?.AvailableBalance >= GlobalConstants.initialEntry)
             {
-                ClientGlobalConstants.playWithFriends = new PlayWithFriends();
                 await Navigation.PushAsync(ClientGlobalConstants.playWithFriends);//Done
             }
             else
@@ -100,23 +82,6 @@ public partial class DashboardPage : ContentPage
                 {
                     Toast.Make("Not enough coins!", ToastDuration.Long, 24).Show();
                 });
-        }
-        finally
-        {
-            await Task.Delay(500); // half-second cooldown
-            _NavigationCooldown = false;
-        }
-    }
-    private async void Practice_Clicked(object sender, EventArgs e)
-    {
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
-            return;
-        _NavigationCooldown = true;
-        try
-        {
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.practicePage = new PracticePage();
-            await Navigation.PushAsync(ClientGlobalConstants.practicePage);//Done
         }
         finally
         {
@@ -149,7 +114,6 @@ public partial class DashboardPage : ContentPage
         try
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.dailyBonus = new DailyBonus();
             await this.ShowPopupAsync(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
         }
         finally

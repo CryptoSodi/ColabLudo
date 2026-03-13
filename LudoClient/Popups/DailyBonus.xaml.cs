@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
@@ -9,6 +8,10 @@ public partial class DailyBonus : BasePopup
     public DailyBonus()
     {
         InitializeComponent();
+        Loaded += DailyBonus_Loaded;
+    }
+    private void DailyBonus_Loaded(object sender, EventArgs e)
+    {
         DailyBonusDto dto = LoadDailyBonus();
         if (dto != null)
             UpdateFromDto(dto);

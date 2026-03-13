@@ -265,7 +265,6 @@ namespace LudoClient
         {
             Console.WriteLine("App backgrounded");
         }
-
         protected override void OnResume()
         {
             Console.WriteLine("App resumed");

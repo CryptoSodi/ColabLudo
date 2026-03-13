@@ -12,8 +12,7 @@ public partial class AddCash : BasePopup
     {
         InitializeComponent();
         Loaded += AddCash_Loaded;
-        Unloaded += AddCash_Unloaded;
-        GenerateQRCodeAsync();
+        Unloaded += AddCash_Unloaded;        
     }
     private void AddCash_Loaded(object sender, EventArgs e)
     {
@@ -27,6 +26,7 @@ public partial class AddCash : BasePopup
                 Wallet_BalanceChanged(wallet.AvailableBalance);
             }
         }
+        GenerateQRCodeAsync();
     }
 
     private void AddCash_Unloaded(object sender, EventArgs e)
@@ -35,8 +35,8 @@ public partial class AddCash : BasePopup
         {
             var wallet = UserInfo.Instance.player?.Wallet;
 
-            // if (wallet != null)
-            //  wallet.BalanceChanged -= Wallet_BalanceChanged;
+            if (wallet != null)
+              wallet.BalanceChanged -= Wallet_BalanceChanged;
         }
     }
     private void Wallet_BalanceChanged(decimal balance)

@@ -40,8 +40,8 @@ public partial class WithdrawPopup : BasePopup
     {
         var wallet = UserInfo.Instance.player.Wallet;
 
-       // if (wallet != null)
-         //   wallet.BalanceChanged -= OnBalanceChanged;
+        if (wallet != null)
+            wallet.BalanceChanged -= OnBalanceChanged;
     }
     void OnBalanceChanged(decimal balance)
     {

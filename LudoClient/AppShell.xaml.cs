@@ -1,4 +1,5 @@
-﻿using LudoClient.Utilities;
+﻿using LudoClient.Constants;
+using LudoClient.Utilities;
 using SimpleToolkit.Core;
 
 namespace LudoClient
@@ -29,6 +30,12 @@ namespace LudoClient
                 }
             };
         }
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+            ClientGlobalConstants.Init();
+        }
+
         private static void AppShellLoaded(object sender, EventArgs e)
         {
             var shell = sender as AppShell;

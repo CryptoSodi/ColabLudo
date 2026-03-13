@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
 using LudoClient.Popups;
 using SharedCode.Constants;
+using System.Diagnostics;
 namespace LudoClient;
 
 public partial class HeaderCV : ContentView
@@ -52,8 +53,8 @@ public partial class HeaderCV : ContentView
         _NavigationCooldown = true;
         try
         {
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.settings = new Settings();
+            ClientGlobalConstants.sw = Stopwatch.StartNew();
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");            
             Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions { Shape = null });
         }
         finally
@@ -70,8 +71,8 @@ public partial class HeaderCV : ContentView
         _NavigationCooldown = true;
         try
         {
+            ClientGlobalConstants.sw = Stopwatch.StartNew();
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.profileInfo = new ProfileInfo();
             Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo, new PopupOptions { Shape = null });
         }
         finally

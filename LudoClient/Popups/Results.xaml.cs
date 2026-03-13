@@ -18,11 +18,10 @@ public partial class Results : ContentPage
                 <Image Source="star_gold.webp" />
                 <Image Source="ic_chips_spades.webp" />
                 */
-
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("tak");
     }
     internal void init(List<PlayerDto> seats, string GameType, string GameCost)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("tak");
         switch (GameType)
         {
             case "22":
@@ -55,6 +54,7 @@ public partial class Results : ContentPage
 
     internal void init(TournamentResultDTO tournamentResultDTO)
     {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("tak");
         switch (tournamentResultDTO.GameType)
         {
             case "22":                

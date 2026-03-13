@@ -11,7 +11,10 @@ public partial class ProfileInfo : BasePopup
     {
         InitializeComponent();
         //reload this if pictureblock is ""
-
+        Loaded += OnAppearing;
+    }
+    private void OnAppearing(object sender, EventArgs e)
+    {
         MainThread.BeginInvokeOnMainThread(() =>
         {
             player.playerImageItem.Source = UserInfo.Instance.ProfileImageSource;
@@ -27,65 +30,60 @@ public partial class ProfileInfo : BasePopup
             C5.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalWin));
             C6.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalLost));
             player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
-            loadValues();
-
-            if (GlobalConstants.MatchMaker.Connected)
-            {
-                string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
-
-                if (string.IsNullOrWhiteSpace(result))
-                {
-                    return;
-                }
-                if (result.Contains("Success"))
-                {
-                    result = result.Replace(",Success", "");
-                    string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
-                    Coins.Text = ids.Length + " NFTS";
-                }
-            }
-            else
-            {
-
-            }
         });
+        _=loadValues();
+        ClientGlobalConstants.sw.Stop();
+        Console.WriteLine($"CashGame full load time: {ClientGlobalConstants.sw.ElapsedMilliseconds} ms");
     }
-    public async void loadValues()
+    private async Task loadValues()
     {
-        try
+        if (GlobalConstants.MatchMaker.Connected)
         {
-            PlayerInfo dto = await GlobalConstants.MatchMaker.UserConnectedSetID();
-            C1.setValue(dto.GamesPlayed + "");
-            C2.setValue(dto.GamesWon + "");
-            C3.setValue(dto.GamesLost + "");
-            C4.setValue(ClientGlobalConstants.NormalizeCoins(dto.BestWin));
-            C5.setValue(ClientGlobalConstants.NormalizeCoins(dto.TotalWin));
-            C6.setValue(ClientGlobalConstants.NormalizeCoins(dto.TotalLost));
-            if (dto.PhoneNumber != null)
+            try
             {
-                Preferences.Set(nameof(UserInfo.Instance.player.PhoneNumber), dto.PhoneNumber);
-                Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
-                player.SetScore(dto.Score, true);
-                Number.Text = dto.PhoneNumber;
+                PlayerInfo dto = await GlobalConstants.MatchMaker.UserConnectedSetID();
+                C1.setValue(dto.GamesPlayed + "");
+                C2.setValue(dto.GamesWon + "");
+                C3.setValue(dto.GamesLost + "");
+                C4.setValue(ClientGlobalConstants.NormalizeCoins(dto.BestWin));
+                C5.setValue(ClientGlobalConstants.NormalizeCoins(dto.TotalWin));
+                C6.setValue(ClientGlobalConstants.NormalizeCoins(dto.TotalLost));
+                if (dto.PhoneNumber != null)
+                {
+                    Preferences.Set(nameof(UserInfo.Instance.player.PhoneNumber), dto.PhoneNumber);
+                    Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
+                    player.SetScore(dto.Score, true);
+                    Number.Text = dto.PhoneNumber;
+                }
+                else
+                {
+                    Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
+                    player.SetScore(dto.Score, false);
+                }
+                //Score.setValue(dto.Score + "");
             }
-            else
+            catch (Exception ex)
             {
-                Preferences.Set(nameof(UserInfo.Instance.player.Score), dto.Score);
-                player.SetScore(dto.Score, false);
+                Console.WriteLine(ex);
             }
-            //Score.setValue(dto.Score + "");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex);
+            string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                return;
+            }
+            if (result.Contains("Success"))
+            {
+                result = result.Replace(",Success", "");
+                string[] ids = result.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                Coins.Text = ids.Length + " NFTS";
+            }
         }
     }
     private void OnManageNftsTapped(object sender, EventArgs e)
     {
         if (!GlobalConstants.MatchMaker.Connected)
             return;
-        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ClientGlobalConstants.mintingPage = new MintingPage();
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");        
         ClientGlobalConstants.dashBoard.ShowPopup(ClientGlobalConstants.mintingPage, new PopupOptions { Shape = null });
     }
 }

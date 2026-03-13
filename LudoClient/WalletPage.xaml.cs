@@ -56,11 +56,11 @@ public partial class WalletPage : ContentPage
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        this.ShowPopup(new AddCash(), new PopupOptions { Shape = null });
+        this.ShowPopup(ClientGlobalConstants.addCash, new PopupOptions { Shape = null });
     }
     private void OnWithdrawButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        this.ShowPopup(new WithdrawPopup(), new PopupOptions { Shape = null });
+        this.ShowPopup(ClientGlobalConstants.withdrawPopup, new PopupOptions { Shape = null });
     }
 }
