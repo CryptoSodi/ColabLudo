@@ -114,6 +114,7 @@ public partial class DashboardPage : ContentPage
         try
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            ClientGlobalConstants.dailyBonus.DailyBonus_Loaded(null,null);
             await this.ShowPopupAsync(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
         }
         finally

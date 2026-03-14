@@ -7,10 +7,9 @@ public partial class DailyBonus : BasePopup
 {
     public DailyBonus()
     {
-        InitializeComponent();
-        Loaded += DailyBonus_Loaded;
+        InitializeComponent();        
     }
-    private void DailyBonus_Loaded(object sender, EventArgs e)
+    public void DailyBonus_Loaded(object sender, EventArgs e)
     {
         DailyBonusDto dto = LoadDailyBonus();
         if (dto != null)

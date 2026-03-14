@@ -14,20 +14,18 @@ public partial class BasePopup : Popup
         //double height = mainDisplayInfo.Height / mainDisplayInfo.Density;
         //// Set the popup size
         //this.Size = new Size(width, height);
-        CanBeDismissedByTappingOutsideOfPopup = true; // When handler is created, strip the border
+        CanBeDismissedByTappingOutsideOfPopup = true; 
+        // When handler is created, strip the border
         // Hook SizeChanged
         //ContentContainer.SizeChanged += OnCapsuleSized;
-        OnCapsuleSized(null, null);
+        //OnCapsuleSized(null, null);
     }
-
-    private async void OnCapsuleSized(object? sender, EventArgs e)
+    public async void OnCapsuleSized(object? sender, EventArgs e)
     {
+        Console.WriteLine("RESIZED");
         var parent = ContentContainer.Parent as Layout;
-
         if (parent != null)
-        {
-            parent.Opacity = 0;
-            parent.FadeTo(1, 250, Easing.CubicIn);
+        {   
             parent.Children.Remove(ContentContainer);
             await Task.Delay(50); // Let MAUI clear it out
             parent.Children.Add(ContentContainer); // Re-add

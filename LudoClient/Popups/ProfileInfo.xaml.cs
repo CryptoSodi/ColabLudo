@@ -11,6 +11,22 @@ public partial class ProfileInfo : BasePopup
     {
         InitializeComponent();
         //reload this if pictureblock is ""
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            player.playerImageItem.Source = UserInfo.Instance.ProfileImageSource;
+            player.PlayerName = UserInfo.Instance.player.Name;
+            Email.Text = UserInfo.Instance.player.Email;
+            Number.Text = UserInfo.Instance.player.PhoneNumber;
+            Location.Text = UserInfo.Instance.player.City;
+
+            C1.setValue(UserInfo.Instance.player.GamesPlayed + "");
+            C2.setValue(UserInfo.Instance.player.GamesWon + "");
+            C3.setValue(UserInfo.Instance.player.GamesLost + "");
+            C4.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.BestWin));
+            C5.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalWin));
+            C6.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalLost));
+            player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
+        });
         Loaded += OnAppearing;
     }
     private void OnAppearing(object sender, EventArgs e)
@@ -31,7 +47,7 @@ public partial class ProfileInfo : BasePopup
             C6.setValue(ClientGlobalConstants.NormalizeCoins(UserInfo.Instance.player.TotalLost));
             player.SetScore(UserInfo.Instance.player.Score, UserInfo.Instance.player.PhoneNumber != "###########");
         });
-        _=loadValues();
+        _ = loadValues();
         ClientGlobalConstants.sw.Stop();
         Console.WriteLine($"CashGame full load time: {ClientGlobalConstants.sw.ElapsedMilliseconds} ms");
     }
@@ -66,7 +82,7 @@ public partial class ProfileInfo : BasePopup
             {
                 Console.WriteLine(ex);
             }
-            string result = GlobalConstants.MatchMaker.MintNFT(0).GetAwaiter().GetResult();
+            string result = await GlobalConstants.MatchMaker.MintNFT(0);
             if (string.IsNullOrWhiteSpace(result))
             {
                 return;

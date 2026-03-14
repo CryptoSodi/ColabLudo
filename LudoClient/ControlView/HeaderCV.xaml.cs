@@ -54,7 +54,7 @@ public partial class HeaderCV : ContentView
         try
         {
             ClientGlobalConstants.sw = Stopwatch.StartNew();
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");            
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions { Shape = null });
         }
         finally
