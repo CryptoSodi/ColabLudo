@@ -4,7 +4,6 @@ using LudoClient.Constants;
 using SharedCode.Constants;
 
 namespace LudoClient.Popups;
-
 public partial class AddCash : BasePopup
 {
     String Address = "";
@@ -12,7 +11,7 @@ public partial class AddCash : BasePopup
     {
         InitializeComponent();
         Loaded += AddCash_Loaded;
-        Unloaded += AddCash_Unloaded;        
+        Unloaded += AddCash_Unloaded;
     }
     private void AddCash_Loaded(object sender, EventArgs e)
     {
@@ -28,7 +27,6 @@ public partial class AddCash : BasePopup
         }
         GenerateQRCodeAsync();
     }
-
     private void AddCash_Unloaded(object sender, EventArgs e)
     {
         if (UserInfo.Instance.player != null)
