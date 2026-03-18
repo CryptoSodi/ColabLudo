@@ -15,7 +15,7 @@
     {
         public string Address { get; set; } = "";
         public string SolBalance { get; set; } = "";
-    }
+    } 
 
     public class PlayerDto
     {
