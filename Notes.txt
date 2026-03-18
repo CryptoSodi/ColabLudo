@@ -1,3 +1,0 @@
-
-		<RunAOTCompilation>false</RunAOTCompilation>
-		<PublishTrimmed>false</PublishTrimmed>

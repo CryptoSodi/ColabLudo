@@ -52,7 +52,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\LudoServer\LudoServer.csproj" />
+    <ProjectReference Include="..\..\LudoServer\LudoServer.csproj" />
   </ItemGroup>
-
 </Project>

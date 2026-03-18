@@ -7,14 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LudoClient", "LudoClient\Lu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR.Server", "SignalR\SignalR.Server\SignalR.Server.csproj", "{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LudoServer", "..\LudoServer\LudoServer.csproj", "{3AF58467-96E5-44B4-BE16-BC87000DD51B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA0A23AB-A2D3-4881-8D0F-6B0747470C80}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCode", "SharedCode\SharedCode.csproj", "{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LudoServer", "LudoServer\LudoServer.csproj", "{763F5FA9-3A5D-2011-5526-3725B8DA4078}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,15 +32,15 @@ Global
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AF58467-96E5-44B4-BE16-BC87000DD51B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{763F5FA9-3A5D-2011-5526-3725B8DA4078}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{763F5FA9-3A5D-2011-5526-3725B8DA4078}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{763F5FA9-3A5D-2011-5526-3725B8DA4078}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{763F5FA9-3A5D-2011-5526-3725B8DA4078}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
