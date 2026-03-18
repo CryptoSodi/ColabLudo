@@ -1,94 +1,90 @@
-# Ludo Game with Crypto and NFTs
+# ColabLudo: Blockchain-Integrated Multiplayer Ludo
 
-Ludo Game with integrated cryptocurrency and NFTs allowing players to control regions (cities) within the game. Owners and managers of these regions earn from city profits, creating a unique blend of strategy and digital asset management.
+ColabLudo is a high-performance, real-time multiplayer Ludo gaming platform built on the .NET ecosystem and integrated with the Solana blockchain. It features a unique "Play-to-Earn" model where players can participate in tournaments using the **LUDC** (Ludo City) token and own in-game assets as NFTs.
 
-## 🌟 Features
+## 🏗️ Architecture
 
-* **Crypto Integration**: Seamless use of cryptocurrency for in-game transactions.
-* **NFT-Based City Ownership**: Players can purchase NFTs representing cities, earning revenue from activities within their regions.
-* **Local Payment System**: In-game coins can be bought using local payment methods for broader accessibility.
-* **Regional Control & Management**: City owners can assign managers, set policies, and grow their earnings.
-* **Tournament System**: Competitive tournaments where players can earn rewards and increase their influence.
-* **Team & VS Modes**: Multiple game modes including team battles and 1 vs all.
+The solution is organized as a monorepo with four primary layers:
+
+### 1. **LudoClient (.NET MAUI)**
+- **Platform:** Optimized for Android (with support for iOS/Windows).
+- **Tech:** SimpleShell for navigation, Community Toolkit for UI, and SoundPool for low-latency audio.
+- **Role:** Handles UI/UX, local game state synchronization, and real-time communication via SignalR.
+
+### 2. **SignalR.Server (Real-Time Hub)**
+- **Tech:** ASP.NET Core SignalR.
+- **Role:** The authoritative source of truth for active games. It manages lobbies, enforces game rules via a server-side `Engine`, and handles real-time player interactions (moves, dice rolls, chat).
+- **Payment Layer:** Orchestrates LUDC token transfers and tournament entry fee deductions.
+
+### 3. **LudoServer (Backend API)**
+- **Tech:** ASP.NET Core Web API, Entity Framework Core (SQL Server).
+- **Role:** Manages user persistence, authentication (Google/OTP), player statistics, and leaderboard data.
+
+### 4. **SharedCode (.NET Standard Library)**
+- **Core Engine:** Contains the `Engine.cs` logic shared between the Client (for smooth UI animations) and the SignalR Server (for authoritative validation).
+- **Models:** Shared DTOs and constants for cross-layer communication.
+
+---
+
+## 💎 Blockchain Integration (Solana)
+
+ColabLudo utilizes the Solana blockchain for its transparency and high throughput:
+
+- **Currency:** LUDC (Token-2022 Program).
+  - **DevNet Mint:** `8Abr4aSqHbqUNK1ubRVfcdnAhS3RjmYRPDf11dt7pcfW`
+  - **MainNet Mint:** `JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai`
+- **Wallet Support:** Integrated with `Solnet` for backend transaction verification. Mobile Wallet Adapter (MWA) integration is currently in progress for the client.
+- **Ledger System:** A hybrid model uses an off-chain ledger for instant game results, periodically reconciled with on-chain transactions to ensure security and speed.
+
+---
+
+## 🤖 AI & Training
+
+The repository includes specialized projects for AI development:
+- **AiEngine:** A NEAT (NeuroEvolution of Augmenting Topologies) based experiment for training Ludo agents.
+- **AiController:** A trainer/controller for running and evaluating AI performance against the core game engine.
 
 ---
 
 ## 🚀 Getting Started
 
-Follow these steps to set up the game locally:
+### Prerequisites
+- [Visual Studio 2022](https://visualstudio.microsoft.com/vs/) with the **.NET MAUI** workload.
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- SQL Server (LocalDB or Express) for the backend.
 
-1. **Clone the repository**:
-
+### Setup
+1. **Clone the Repo**
    ```bash
    git clone https://github.com/CryptoSodi/ColabLudo.git
-   cd ludo-game
    ```
-
-2. **Open the project in Visual Studio**:
-
-   ```
-   Open the .sln file with Visual Studio 2022 or later.
-   ```
-
-3. **Configure environment variables**:
-   
-   ```
-   json
-   {
-   "ConnectionStrings": {
-   "DefaultConnection": "your\_database\_connection\_string"
-   },
-
-   }
-   ```
-
-4. **Run the game**:
-
-   * Set the startup project to `LudoGame`
-   * Choose the target device (Windows, Android, iOS, MacCatalyst)
-   * Press `F5` to build and run the application
+2. **Configure Connection Strings**
+   Update `appsettings.json` in both `LudoServer` and `SignalR.Server` with your local SQL Server connection string.
+3. **Run the Servers**
+   - Start `LudoServer` to enable authentication and user services.
+   - Start `SignalR.Server` to enable matchmaking and gameplay.
+4. **Run the Client**
+   - Open `LudoClient.sln` in Visual Studio.
+   - Set `LudoClient` as the startup project.
+   - Deploy to an Android Emulator or physical device.
 
 ---
 
-## 📌 Game Logic
-
-* Uses blockchain for crypto and NFT transactions.
-* In-game regions are mapped to NFTs—owning an NFT gives control over a city's revenue.
-* Managers can be assigned to handle day-to-day operations and increase city profits.
-
----
-
-## 💡 Contributing
-
-We welcome contributions! To get started:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature/your-feature-name`).
-3. Commit your changes (`git commit -m 'Add some feature'`).
-4. Push to the branch (`git push origin feature/your-feature-name`).
-5. Create a pull request.
+## 🕹️ Game Modes
+- **Practice:** Local play against AI (no cost).
+- **Online VS:** Competitive play (2 or 4 players) with LUDC entry fees.
+- **Team Mode (2v2):** Red & Yellow vs. Green & Blue.
+- **Tournaments:** Large-scale competitions with tiered prize pools.
 
 ---
 
-## 🛡️ License
+## 🤝 Contributing & Support
+We welcome contributions! Please fork the repository and submit a pull request for any features or bug fixes.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🤝 Contact
-
-Feel free to reach out for collaboration or questions:
-
-* **Email**: [tassaduq009@gmail.com](mailto:tassaduq009@gmail.com)
-* **WhatsApp**: [Chat on WhatsApp](https://wa.me/447435745935)
+- **Developer:** Tassaduq Hussain
+- **Email:** [tassaduq009@gmail.com](mailto:tassaduq009@gmail.com)
+- **WhatsApp:** [+44 7435 745935](https://wa.me/447435745935)
+- **Website:** [www.ludocities.com](https://www.ludocities.com)
 
 ---
-
-## 🌐 Links
-
-* **Live Demo**: [Live Game Link](https://LudoNFT.online)
-* **WhitePaper**: [Game Documentation](https://LudoNFT.online/WhitePaper)
-* **Issues**: [Submit Issues](https://github.com/CryptoSodi/ColabLudo/issues)
-
-Happy gaming! 🎲
+*MIT License - Copyright (c) 2024 ColabLudo*
