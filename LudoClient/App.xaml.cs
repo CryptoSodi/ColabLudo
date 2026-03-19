@@ -118,6 +118,7 @@ namespace LudoClient
                                     {
                                         await MainThread.InvokeOnMainThreadAsync(async () =>
                                         {
+                                            while (game.engine.processing || game.isInputLocked) await Task.Delay(10);
                                             try
                                             {
                                                 switch (command.SendToClientFunctionName)
@@ -132,12 +133,12 @@ namespace LudoClient
                                                         // If SeatTurn returns a string, you can wait for it.
                                                         //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
                                                         if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
-                                                            game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                            await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
                                                         break;
                                                     case "PlayerLeft":
                                                         game.engine.EngineHelper.index++;
                                                         if (game != null && command.seatName != null)
-                                                            game.engine.PlayerLeft(command.seatName, false);
+                                                            await game.engine.PlayerLeft(command.seatName, false);
                                                         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
                                                         break;
                                                 }

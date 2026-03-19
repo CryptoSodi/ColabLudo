@@ -122,13 +122,13 @@ public partial class PlayerSeat : ContentView
         }
     }
     private async Task AnimateProgress(CancellationToken token)
-    {   
+    {
         double totalWidth = ProgressBoxParent.Width; // Get the width of the container
         double duration = 10000; // 10 seconds in milliseconds
         double interval = 20; // Update every 20 milliseconds
         double steps = duration / interval; // Number of steps for the animation
         double widthChange = totalWidth / steps; // Width increment per step
-        
+
         ProgressBox.WidthRequest = 0; // Start with 0 width
 
         try
@@ -141,7 +141,10 @@ public partial class PlayerSeat : ContentView
                 if (autoPlayFlag && i > 50 && !engineHelper.animationBlock)
                 {
                     if (engineHelper.gameMode == "Client")
-                        await ExecuteAutoPlayLogic();
+                    {
+                        if (!ClientGlobalConstants.game.engine.processing && !ClientGlobalConstants.game.isInputLocked)
+                            await ExecuteAutoPlayLogic();
+                    }
                     break;
                 }
                 ProgressBox.WidthRequest = i * widthChange;
@@ -151,7 +154,7 @@ public partial class PlayerSeat : ContentView
         catch (Exception)
         {
         }
-        if(engineHelper.gameMode != "Client")
+        if (engineHelper.gameMode != "Client")
         {
             await ExecuteAutoPlayLogic();
         }
@@ -162,16 +165,16 @@ public partial class PlayerSeat : ContentView
             if (engineHelper.checkTurn(engineHelper.currentPlayer.Color, "RollDice"))
             {
                 Console.WriteLine("Client AI Requesting Dice Roll");
-                
-                    ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
+
+                await ClientGlobalConstants.game.PlayerDiceClicked(seatColor, "", "", "", engineHelper.gameMode == "Client");
             }
             else
             {
                 string result1 = engineHelper.AIRequestPiece(engineHelper.currentPlayer.Color);
                 string piece1String = result1.Split(",")[0];
                 string piece2String = result1.Split(",")[1];
-                
-                    await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
+
+                await ClientGlobalConstants.game.MovePiece(piece1String, piece2String, engineHelper.gameMode == "Client");
             }
         await Task.Delay(500);
     }

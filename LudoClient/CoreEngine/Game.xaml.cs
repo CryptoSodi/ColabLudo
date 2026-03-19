@@ -11,15 +11,17 @@ namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
     //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
+    public bool isInputLocked { get; set; } = false;
     Piece tempPiece = null;
     public string playerColor = "";
     public Engine engine;
     Gui gui;
+    string gameMode;
     public PlayerSeat RedPlayerSeat;
     public PlayerSeat GreenPlayerSeat;
     public PlayerSeat YellowPlayerSeat;
-    public PlayerSeat BluePlayerSeat { get; set; }
-    string gameMode;
+    public PlayerSeat BluePlayerSeat;
+    List<PlayerDto>? seats = new List<PlayerDto>();    
     private readonly IGamepadInputService _input;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
@@ -32,7 +34,6 @@ public partial class Game : ContentPage
         else
             return gui.blue;
     }
-    List<PlayerDto>? seats = new List<PlayerDto>();
     public Game()
     {
         InitializeComponent();
@@ -466,7 +467,7 @@ public partial class Game : ContentPage
             else
             {
                 engine.EngineHelper.animationBlock = false;
-                ResizePieces();
+                await ResizePieces();
             }
         }
         if (pieceClone.Location == 57)
@@ -707,8 +708,10 @@ public partial class Game : ContentPage
                 allPieces.Add(piece);
         return allPieces;
     }
-    public async void PlayerPieceClicked(String piece1String, String piece2String, bool SendToServer = true)
+    public async Task PlayerPieceClicked(String piece1String, String piece2String, bool SendToServer = true)
     {
+        if (SendToServer && engine.processing)
+            return;
         TokenSelector.IsVisible = false;
         if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
             return;
@@ -780,8 +783,11 @@ public partial class Game : ContentPage
     }
     public async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
     {
+        if (isInputLocked || (SendToServer && engine.processing)) return;
         String result = "";
-
+        if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
+            return;
+        isInputLocked = true;
         if (engine.EngineHelper.gameMode == "Client" && SendToServer)
         {
             GameCommand command = new GameCommand
@@ -796,17 +802,16 @@ public partial class Game : ContentPage
             };
             ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
             GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
-            result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
-            ClientGlobalConstants.game.engine.EngineHelper.index++;
-            List<string> results = result.Split(",").ToList();
+            if (resultCommand != null)
+            {
+                result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                List<string> results = result.Split(",").ToList();
 
-            if (command.Index != resultCommand.Index)
-            {
-                Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
-            }
-            else
-            {
-                //ServerpieceName = "Error"; // Handle failure
+                if (command.Index != resultCommand.Index)
+                {
+                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                }
             }
         }
         else
@@ -814,6 +819,7 @@ public partial class Game : ContentPage
             result = await engine.MovePieceAsync(piece1String, piece2String);
             ClientGlobalConstants.game.engine.EngineHelper.index++;
         }
+        isInputLocked = false;
         Console.WriteLine(result);
     }
     private async void TokenSelected_Clicked(object sender, EventArgs e)
@@ -839,12 +845,14 @@ public partial class Game : ContentPage
             }
         }
     }
-    public async void PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
+    public async Task PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
     {
+        if (isInputLocked || (SendToServer && engine.processing)) return;
         TokenSelector.IsVisible = false;
-        
+
         if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
+            isInputLocked = true;
             gui.red.reset();
             gui.green.reset();
             gui.yellow.reset();
@@ -896,6 +904,7 @@ public partial class Game : ContentPage
                 Console.WriteLine($"Local : {result}");
                 ClientGlobalConstants.game.engine.EngineHelper.index++;
             }
+            isInputLocked = false;
         }
 
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
@@ -1160,6 +1169,5 @@ public partial class Game : ContentPage
     inputMethodManager?.HideSoftInputFromWindow(view.WindowToken, Android.Views.InputMethods.HideSoftInputFlags.None);
 #endif
     }
-
     //WEB ENGINE
 }
