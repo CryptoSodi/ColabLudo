@@ -21,7 +21,9 @@ public partial class Game : ContentPage
     public PlayerSeat GreenPlayerSeat;
     public PlayerSeat YellowPlayerSeat;
     public PlayerSeat BluePlayerSeat;
-    List<PlayerDto>? seats = new List<PlayerDto>();    
+    List<PlayerDto>? seats = new List<PlayerDto>();
+    // A simple persistent store for commands.        
+    public readonly List<GameCommand> _commandStore = new List<GameCommand>();
     private readonly IGamepadInputService _input;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
@@ -857,11 +859,12 @@ public partial class Game : ContentPage
             }
         }
     }
-    public async Task PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
+    public async Task<string> PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
     {
-        if (isInputLocked || (SendToServer && engine.processing)) return;
+        if (isInputLocked || (SendToServer && engine.processing)) 
+            return "-2"; // engine is busy retry in a while
         TokenSelector.IsVisible = false;
-
+        String result = "-1";
         if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             isInputLocked = true;
@@ -902,10 +905,17 @@ public partial class Game : ContentPage
                     GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
                     if (resultCommand != null)
                     {
-                        String result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
-                        List<string> results = result.Split(",").ToList();
+                        result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
                         Console.WriteLine($"Local : {result}");
-                        ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        if (result.Contains("-1") || result.Contains("-0"))
+                        {
+                            Console.WriteLine("Invalid move attempted.");
+                        }
+                        else
+                        {
+                            _commandStore.Add(resultCommand);
+                            ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        }
                         if (command.Index != resultCommand.Index)
                         {
                             Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
@@ -918,16 +928,23 @@ public partial class Game : ContentPage
                 }
                 else
                 {
-                    String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
+                    result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
                     Console.WriteLine($"Local : {result}");
-                    ClientGlobalConstants.game.engine.EngineHelper.index++;
+                    if(result.Contains("-1")|| result.Contains("-0"))
+                    {
+                        Console.WriteLine("Invalid move attempted.");
+                    }
+                    else
+                    {
+                        ClientGlobalConstants.game.engine.EngineHelper.index++;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Network error or exception during dice roll: {ex.Message}");
             }
-            isInputLocked = false;
+            isInputLocked = false;            
         }
 
         foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
@@ -937,8 +954,8 @@ public partial class Game : ContentPage
             Alayout.Add(gui.getPieceToken(piece));
         }
         Alayout.Remove(TokenSelector);
-        Alayout.Add(TokenSelector);
-        //Engine.PlayGame();
+        Alayout.Add(TokenSelector);        
+        return result;
     }
     public void StartProgressAnimation(string SeatName)
     {

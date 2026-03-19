@@ -132,8 +132,24 @@ namespace LudoClient
                                                         // For other command types, for example, SeatTurn:
                                                         // If SeatTurn returns a string, you can wait for it.
                                                         //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
-                                                        if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
-                                                            await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                        DiceRoll:
+                                                        if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null) { 
+                                                            string result = await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                        if(result == "-2")
+                                                            {
+                                                                await Task.Delay(100);
+                                                                goto DiceRoll;
+                                                            }
+                                                            else if(result.Contains("-1") || result.Contains("-0"))
+                                                            {
+                                                                //Command failed execution failed on the client
+                                                            }
+                                                            else
+                                                            {
+                                                                //Command executed successfully on the client
+                                                                game._commandStore.Add(command);
+                                                            }
+                                                        }
                                                         break;
                                                     case "PlayerLeft":
                                                         if (game != null && command.seatName != null)

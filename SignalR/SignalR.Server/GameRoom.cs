@@ -12,10 +12,9 @@ namespace SignalR.Server
     public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
         public List<ChatMessages> chatMessages = new List<ChatMessages>();
-        // A simple persistent store for commands.
-        // In production, this might be a database or distributed log.
+        // A simple persistent store for commands.        
         private readonly List<GameCommand> _commandStore = new List<GameCommand>();
-        
+
         public List<User> Users = new List<User>();
         public List<SharedCode.PlayerDto> _seats { get; set; }
         public Engine? engine { get; set; }  // The Engine instance for this room
@@ -149,34 +148,6 @@ namespace SignalR.Server
             }
             // Save changes to the database
             ctx.SaveChanges();
-        }
-        public User PlayerLeft(int playerId)
-        {
-            // Try to find the user in the game room's user list using the connection ID.
-            var user = Users.FirstOrDefault(u => u.player?.PlayerId == playerId);
-            if (user != null)
-            {
-                // Remove the user from the room.
-                Users.Remove(user);
-                if (engine != null)
-                {
-                    engine.PlayerLeft(user.PlayerColor);
-                    GameCommand command = new GameCommand
-                    {
-                        SendToClientFunctionName = "PlayerLeft",
-                        seatName = user.PlayerColor,
-                        Index = engine.EngineHelper.index++
-                    };
-                    lock (_commandStore)
-                        _commandStore.Add(command);
-                }
-                Console.WriteLine("User removed: " + user.PlayerColor);
-            }
-            else
-            {
-                Console.WriteLine("User not found for connection: " + playerId);
-            }
-            return user;
         }
         public async void StartProgressAnimation(string SeatName)
         {
@@ -313,23 +284,58 @@ namespace SignalR.Server
             if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
             {
                 String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
-                Console.WriteLine($"Local : {result}");
-
-                GameCommand command = new GameCommand
+                if (result.Contains("-1") || result.Contains("-0"))
                 {
-                    SendToClientFunctionName = "DiceRoll",
-                    seatName = commandValue.seatName,
-                    diceValue = result.Split(",")[0],
-                    piece1 = result.Split(",")[1],
-                    piece2 = result.Split(",")[2],
-                    Index = commandValue.Index,
-                    IndexServer = ++engine.EngineHelper.index
-                };
-                lock (_commandStore)
-                    _commandStore.Add(command);
-                return command;
+                    //FAILED, likely due to invalid move. Don't increment index or add to command store.
+                }
+                else
+                {
+                    Console.WriteLine($"Local : {result}");
+                    GameCommand command = new GameCommand
+                    {
+                        SendToClientFunctionName = "DiceRoll",
+                        seatName = commandValue.seatName,
+                        diceValue = result.Split(",")[0],
+                        piece1 = result.Split(",")[1],
+                        piece2 = result.Split(",")[2],
+                        Index = commandValue.Index,
+                        IndexServer = ++engine.EngineHelper.index,
+                        Result = "Success"
+                    };
+                    lock (_commandStore)
+                        _commandStore.Add(command);
+                    return command;
+                }
             }
             return null;
+        }
+        public User PlayerLeft(int playerId)
+        {
+            // Try to find the user in the game room's user list using the connection ID.
+            var user = Users.FirstOrDefault(u => u.player?.PlayerId == playerId);
+            if (user != null)
+            {
+                // Remove the user from the room.
+                Users.Remove(user);
+                if (engine != null)
+                {
+                    engine.PlayerLeft(user.PlayerColor);
+                    GameCommand command = new GameCommand
+                    {
+                        SendToClientFunctionName = "PlayerLeft",
+                        seatName = user.PlayerColor,
+                        Index = engine.EngineHelper.index++
+                    };
+                    lock (_commandStore)
+                        _commandStore.Add(command);
+                }
+                Console.WriteLine("User removed: " + user.PlayerColor);
+            }
+            else
+            {
+                Console.WriteLine("User not found for connection: " + playerId);
+            }
+            return user;
         }
     }
 }
