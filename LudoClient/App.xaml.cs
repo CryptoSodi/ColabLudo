@@ -124,14 +124,23 @@ namespace LudoClient
                                                 switch (command.SendToClientFunctionName)
                                                 {
                                                     case "MovePiece":
-                                                        //if (!ClientGlobalConstants.game.playerColor.ToLower().Contains(Piece1.Replace("1", "").Replace("2", "").Replace("3", "").Replace("4", "")))
+                                                    MovePiece:                                                        
                                                         if (command.piece1 != null && command.piece2 != null)
-                                                            await game.MovePiece(command.piece1, command.piece2, false);
+                                                        {
+                                                            string result = await game.MovePiece(command.piece1, command.piece2, false);
+                                                            if (result == "-2")
+                                                            {
+                                                                await Task.Delay(100);
+                                                                goto MovePiece;
+                                                            }
+                                                            else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                            {
+                                                                ClientGlobalConstants.game.engine.EngineHelper.indexServer = command.IndexServer;
+                                                                game._commandStore.Add(command);
+                                                            }
+                                                        }
                                                         break;
                                                     case "DiceRoll":
-                                                        // For other command types, for example, SeatTurn:
-                                                        // If SeatTurn returns a string, you can wait for it.
-                                                        //if (ClientGlobalConstants.game.playerColor.ToLower() != args.SeatColor)
                                                         DiceRoll:
                                                         if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null) { 
                                                             string result = await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
@@ -153,8 +162,25 @@ namespace LudoClient
                                                         break;
                                                     case "PlayerLeft":
                                                         if (game != null && command.seatName != null)
-                                                            await game.engine.PlayerLeft(command.seatName, false);
-                                                        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                        {
+                                                            PlayerLeft:
+                                                            string result = await game.PlayerLeft(command.seatName, false);
+                                                            if (result == "-2")
+                                                            {
+                                                                await Task.Delay(100);
+                                                                goto PlayerLeft;
+                                                            }
+                                                            else if (result.Contains("-1") || result.Contains("-0"))
+                                                            {
+                                                                //Command failed execution failed on the client
+                                                            }
+                                                            else
+                                                            {
+                                                                //Command executed successfully on the client
+                                                                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                                game._commandStore.Add(command);
+                                                            }
+                                                        }
                                                         break;
                                                 }
                                             }
@@ -164,7 +190,6 @@ namespace LudoClient
                                             }
                                         });
                                         // Wait a bit before polling again.
-                                        game.engine.EngineHelper.indexServer = command.IndexServer;
                                         await Task.Delay(200, cancellationToken);
                                     }
                                 }

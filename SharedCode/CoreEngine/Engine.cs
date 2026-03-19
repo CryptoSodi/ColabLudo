@@ -296,20 +296,12 @@
             processing = false;
             return $"{tempDice},{result}";
         }
-        double fitnessScore { get; set; }
-        public double fitness(double value = 0, bool returnfitness = false)
-        {
-            if (returnfitness)
-                return fitnessScore;
-            fitnessScore += value;
-            return fitnessScore;
-        }
         public async Task<string> MovePieceAsync(String piece1String, String piece2String)
         {
             fitnessScore = 0;
             bool SaveGameFlag = false;
             if (PlayState == "Stop")
-                return ",";
+                return "-0";
             Player player = EngineHelper.currentPlayer;
             Piece piece1 = null;
             Piece piece2 = null;
@@ -541,9 +533,10 @@
             }
             return piece1String + "," + piece2String;
         }
-        public async Task PlayerLeft(String playerColor, bool SendToServer = true)
+        public async Task PlayerLeft(String playerColor)
         {
             EngineHelper.index++;
+            EngineHelper.indexServer++;
             processing = true;
             try
             {
@@ -592,6 +585,14 @@
             EngineHelper.gameType = "";
             EngineHelper.gameMode = "";
             EngineHelper.gameState = "RollDice";
+        }
+        double fitnessScore { get; set; }
+        public double fitness(double value = 0, bool returnfitness = false)
+        {
+            if (returnfitness)
+                return fitnessScore;
+            fitnessScore += value;
+            return fitnessScore;
         }
     }
     public class EngineHelper

@@ -783,58 +783,82 @@ public partial class Game : ContentPage
         { }
         //stop animmation
     }
-    public async Task MovePiece(String piece1String, String piece2String, bool SendToServer = true)
+    public async Task<string> MovePiece(String piece1String, String piece2String, bool SendToServer = true)
     {
-        if (isInputLocked || (SendToServer && engine.processing)) return;
-        String result = "";
-        if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
-            return;
-
-        isInputLocked = true;
-        try
+        if (isInputLocked || (SendToServer && engine.processing)) 
+            return "-2";
+        String result = "-1";
+        if (engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
         {
-            if (engine.EngineHelper.gameMode == "Client" && SendToServer)
+            isInputLocked = true;
+            try
             {
-                GameCommand command = new GameCommand
+                if (engine.EngineHelper.gameMode == "Client" && SendToServer)
                 {
-                    SendToClientFunctionName = "MovePiece",
-                    seatName = ClientGlobalConstants.game.playerColor.ToLower(),
-                    diceValue = "",
-                    piece1 = piece1String,
-                    piece2 = piece2String,
-                    Index = engine.EngineHelper.index + 1,
-                    IndexServer = 0
-                };
-                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
-                if (resultCommand != null)
-                {
-                    result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
-                    ClientGlobalConstants.game.engine.EngineHelper.index++;
-                    List<string> results = result.Split(",").ToList();
-
-                    if (command.Index != resultCommand.Index)
+                    GameCommand command = new GameCommand
                     {
-                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                        SendToClientFunctionName = "MovePiece",
+                        seatName = ClientGlobalConstants.game.playerColor.ToLower(),
+                        diceValue = "",
+                        piece1 = piece1String,
+                        piece2 = piece2String,
+                        Index = ClientGlobalConstants.game.engine.EngineHelper.index + 1,
+                        IndexServer = ClientGlobalConstants.game.engine.EngineHelper.indexServer + 1,
+                    };
+                    
+                    GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
+                    if (resultCommand != null)
+                    {
+                        string result2 = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+                        Console.WriteLine($"Local : {result}");
+                        if (result2 == "," || result2.Contains("-0"))
+                        {
+                            result = "-1";
+                            Console.WriteLine("Invalid move attempted.");
+                        }
+                        else
+                        {
+                            result = result2;
+                            _commandStore.Add(resultCommand);
+                            ClientGlobalConstants.game.engine.EngineHelper.index++;
+                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                        }
+
+                        if (command.Index != resultCommand.Index)
+                        {
+                            Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Server rejected the move request.");
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Server rejected the move request.");
+                    string result2 = await engine.MovePieceAsync(piece1String, piece2String);
+                    Console.WriteLine($"Local : {result}");
+                    if (result2 == "," || result2.Contains("-0"))
+                    {
+                        result = "-1";
+                        Console.WriteLine("Invalid move attempted.");
+                    }
+                    else
+                    {
+                        result = result2;                        
+                        ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                    }
                 }
             }
-            else
+            catch (Exception ex)
             {
-                result = await engine.MovePieceAsync(piece1String, piece2String);
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                Console.WriteLine($"Error during MovePiece: {ex.Message}");
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error during MovePiece: {ex.Message}");
         }
         isInputLocked = false;
         Console.WriteLine(result);
+        return result;
     }
     private async void TokenSelected_Clicked(object sender, EventArgs e)
     {
@@ -898,10 +922,10 @@ public partial class Game : ContentPage
                         diceValue = DiceValue,
                         piece1 = Piece1,
                         piece2 = Piece2,
-                        Index = engine.EngineHelper.index + 1,
-                        IndexServer = 0
+                        Index = ClientGlobalConstants.game.engine.EngineHelper.index + 1,
+                        IndexServer = ClientGlobalConstants.game.engine.EngineHelper.indexServer + 1,
                     };
-                    ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                    
                     GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
                     if (resultCommand != null)
                     {
@@ -913,8 +937,9 @@ public partial class Game : ContentPage
                         }
                         else
                         {
-                            _commandStore.Add(resultCommand);
+                            _commandStore.Add(resultCommand); 
                             ClientGlobalConstants.game.engine.EngineHelper.index++;
+                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
                         }
                         if (command.Index != resultCommand.Index)
                         {
@@ -937,6 +962,7 @@ public partial class Game : ContentPage
                     else
                     {
                         ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
                     }
                 }
             }
@@ -956,6 +982,13 @@ public partial class Game : ContentPage
         Alayout.Remove(TokenSelector);
         Alayout.Add(TokenSelector);        
         return result;
+    }
+    public async Task<string> PlayerLeft(string seatName, bool SendToServer)
+    {
+        if (isInputLocked || (SendToServer && engine.processing))
+            return "-2"; // engine is busy retry in a while        
+            await engine.PlayerLeft(seatName);
+        return "left";
     }
     public void StartProgressAnimation(string SeatName)
     {
