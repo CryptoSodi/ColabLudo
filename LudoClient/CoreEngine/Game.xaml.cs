@@ -787,37 +787,49 @@ public partial class Game : ContentPage
         String result = "";
         if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
             return;
-        isInputLocked = true;
-        if (engine.EngineHelper.gameMode == "Client" && SendToServer)
-        {
-            GameCommand command = new GameCommand
-            {
-                SendToClientFunctionName = "MovePiece",
-                seatName = ClientGlobalConstants.game.playerColor.ToLower(),
-                diceValue = "",
-                piece1 = piece1String,
-                piece2 = piece2String,
-                Index = engine.EngineHelper.index + 1,
-                IndexServer = 0
-            };
-            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-            GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
-            if (resultCommand != null)
-            {
-                result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
-                List<string> results = result.Split(",").ToList();
 
-                if (command.Index != resultCommand.Index)
+        isInputLocked = true;
+        try
+        {
+            if (engine.EngineHelper.gameMode == "Client" && SendToServer)
+            {
+                GameCommand command = new GameCommand
                 {
-                    Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                    SendToClientFunctionName = "MovePiece",
+                    seatName = ClientGlobalConstants.game.playerColor.ToLower(),
+                    diceValue = "",
+                    piece1 = piece1String,
+                    piece2 = piece2String,
+                    Index = engine.EngineHelper.index + 1,
+                    IndexServer = 0
+                };
+                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
+                if (resultCommand != null)
+                {
+                    result = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+                    ClientGlobalConstants.game.engine.EngineHelper.index++;
+                    List<string> results = result.Split(",").ToList();
+
+                    if (command.Index != resultCommand.Index)
+                    {
+                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT PIECE");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Server rejected the move request.");
                 }
             }
+            else
+            {
+                result = await engine.MovePieceAsync(piece1String, piece2String);
+                ClientGlobalConstants.game.engine.EngineHelper.index++;
+            }
         }
-        else
+        catch (Exception ex)
         {
-            result = await engine.MovePieceAsync(piece1String, piece2String);
-            ClientGlobalConstants.game.engine.EngineHelper.index++;
+            Console.WriteLine($"Error during MovePiece: {ex.Message}");
         }
         isInputLocked = false;
         Console.WriteLine(result);
@@ -853,56 +865,67 @@ public partial class Game : ContentPage
         if (engine.EngineHelper.checkTurn(SeatColor, "RollDice"))
         {
             isInputLocked = true;
-            gui.red.reset();
-            gui.green.reset();
-            gui.yellow.reset();
-            gui.blue.reset();
-
-            // Handle the dice click for the green player
-            //check turn
-            var seat = gui.red;
-            if (SeatColor == "red")
-                seat = gui.red;
-            if (SeatColor == "green")
-                seat = gui.green;
-            if (SeatColor == "yellow")
-                seat = gui.yellow;
-            if (SeatColor == "blue")
-                seat = gui.blue;
-
-            seat.AnimateDice();
-
-            if (engine.EngineHelper.gameMode == "Client" && SendToServer)
+            try
             {
-                GameCommand command = new GameCommand
+                gui.red.reset();
+                gui.green.reset();
+                gui.yellow.reset();
+                gui.blue.reset();
+
+                // Handle the dice click for the green player
+                //check turn
+                var seat = gui.red;
+                if (SeatColor == "red")
+                    seat = gui.red;
+                if (SeatColor == "green")
+                    seat = gui.green;
+                if (SeatColor == "yellow")
+                    seat = gui.yellow;
+                if (SeatColor == "blue")
+                    seat = gui.blue;
+
+                seat.AnimateDice();
+
+                if (engine.EngineHelper.gameMode == "Client" && SendToServer)
                 {
-                    SendToClientFunctionName = "DiceRoll",
-                    seatName = SeatColor,
-                    diceValue = DiceValue,
-                    piece1 = Piece1,
-                    piece2 = Piece2,
-                    Index = engine.EngineHelper.index + 1,
-                    IndexServer = 0
-                };
-                ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
-                if (resultCommand != null)
-                {
-                    String result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
-                    List<string> results = result.Split(",").ToList();
-                    Console.WriteLine($"Local : {result}");
-                    ClientGlobalConstants.game.engine.EngineHelper.index++;
-                    if (command.Index != resultCommand.Index)
+                    GameCommand command = new GameCommand
                     {
-                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                        SendToClientFunctionName = "DiceRoll",
+                        seatName = SeatColor,
+                        diceValue = DiceValue,
+                        piece1 = Piece1,
+                        piece2 = Piece2,
+                        Index = engine.EngineHelper.index + 1,
+                        IndexServer = 0
+                    };
+                    ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                    GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
+                    if (resultCommand != null)
+                    {
+                        String result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
+                        List<string> results = result.Split(",").ToList();
+                        Console.WriteLine($"Local : {result}");
+                        ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        if (command.Index != resultCommand.Index)
+                        {
+                            Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Server rejected the roll request (resultCommand is null).");
                     }
                 }
+                else
+                {
+                    String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
+                    Console.WriteLine($"Local : {result}");
+                    ClientGlobalConstants.game.engine.EngineHelper.index++;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                String result = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
-                Console.WriteLine($"Local : {result}");
-                ClientGlobalConstants.game.engine.EngineHelper.index++;
+                Console.WriteLine($"Network error or exception during dice roll: {ex.Message}");
             }
             isInputLocked = false;
         }
