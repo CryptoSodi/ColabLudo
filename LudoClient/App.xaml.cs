@@ -136,7 +136,6 @@ namespace LudoClient
                                                             await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
                                                         break;
                                                     case "PlayerLeft":
-                                                        game.engine.EngineHelper.index++;
                                                         if (game != null && command.seatName != null)
                                                             await game.engine.PlayerLeft(command.seatName, false);
                                                         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");

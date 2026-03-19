@@ -543,6 +543,7 @@
         }
         public async Task PlayerLeft(String playerColor, bool SendToServer = true)
         {
+            EngineHelper.index++;
             processing = true;
             try
             {
