@@ -11,15 +11,12 @@ namespace SignalR.Server
 {
     public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
-        public List<ChatMessages> chatMessages = new List<ChatMessages>();
-        // A simple persistent store for commands.        
-        private readonly List<GameCommand> _commandStore = new List<GameCommand>();
-
-        public List<User> Users = new List<User>();
-        public List<SharedCode.PlayerDto> _seats { get; set; }
-        public Engine? engine { get; set; }  // The Engine instance for this room
-        
         private CancellationTokenSource? _animationCancellationTokenSource;
+        public Engine? engine { get; set; }  // The Engine instance for this room
+        public List<User> Users { get; set; } = new List<User>();
+        public List<SharedCode.PlayerDto> _seats { get; set; }
+        private List<GameCommand> _commandStore { get; set; } = new List<GameCommand>();
+        public List<ChatMessages> chatMessages { get; set; } = new List<ChatMessages>();        
         // You might include a method to initialize the Engine when the game is ready.
         public void InitializeEngine(List<SharedCode.PlayerDto> seats)
         {

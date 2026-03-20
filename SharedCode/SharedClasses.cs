@@ -16,7 +16,6 @@
         public string Address { get; set; } = "";
         public string SolBalance { get; set; } = "";
     }
-
     public class PlayerDto
     {
         public int PlayerId { get; set; }
@@ -56,7 +55,7 @@
     public class TournamentResultDTO
     {
         public int TournamentId { get; set; }
-        public List<SharedCode.PlayerDto> Seats { get; set; } = new List<SharedCode.PlayerDto>();
+        public List<PlayerDto> Seats { get; set; } = new List<PlayerDto>();
         public string GameType { get; set; } = "";
         public decimal Prize1 { get; set; } = 0;
         public decimal Prize2 { get; set; } = 0;
@@ -74,9 +73,7 @@
         public int Index { get; set; }
         public int IndexServer { get; set; }
         public String? Result { get; set; }
-        
     }
-
     public class PlayerCard
     {
         public int playerID { get; set; }
