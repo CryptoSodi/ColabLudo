@@ -100,64 +100,77 @@ public partial class PlayerSeat : ContentView
             CheckBox.Source = "checkbox_"+seatColor+ ".webp";
     }
     private CancellationTokenSource _animationCancellationTokenSource;
-    public async void StartProgressAnimation()
+    public void StartProgressAnimation()
     {
-        // Wait until the component has rendered
-        while (!IsRendered)
-            await Task.Delay(10); // Small delay to prevent blocking
         // Cancel any previous animation
         StopProgressAnimation();
-        _animationCancellationTokenSource = new CancellationTokenSource();
-        await AnimateProgress(_animationCancellationTokenSource.Token);
+        
+        ProgressBox.WidthRequest = 0;
 
+        // Animate from 0.0 (0%) to 1.0 (100%)
+        // This makes the logic independent of when the layout calculates the actual Width
+        var animation = new Animation(v => 
+        {
+            if (ProgressBoxParent.Width > 0)
+                ProgressBox.WidthRequest = v * ProgressBoxParent.Width;
+        }, 0, 1);
+        
+        animation.Commit(this, "ProgressAnimation", 16, 10000, Easing.Linear, (finalValue, wasCancelled) =>
+        {
+            // wasCancelled is false if the animation reached 10 seconds naturally
+            if (!wasCancelled)
+            {
+                MainThread.BeginInvokeOnMainThread(async () => {
+                    // Trigger the move logic (ExecuteAutoPlayLogic handles its own internal safety checks)
+                    await ExecuteAutoPlayLogic();
+                });
+            }
+        });
+
+        // Background monitor for proactive auto-play (User specifically clicked 'Auto')
+        _animationCancellationTokenSource = new CancellationTokenSource();
+        _ = Task.Run(async () =>
+        {
+            var token = _animationCancellationTokenSource.Token;
+            await Task.Delay(1000); 
+
+            while (!token.IsCancellationRequested)
+            {
+                if (autoPlayFlag && !engineHelper.animationBlock)
+                {
+                    bool canAct = engineHelper.gameMode != "Client" || 
+                                 (ClientGlobalConstants.game != null && !ClientGlobalConstants.game.engine.processing && !ClientGlobalConstants.game.isInputLocked);
+
+                    if (canAct)
+                    {
+                        MainThread.BeginInvokeOnMainThread(async () => {
+                            StopProgressAnimation();
+                            await ExecuteAutoPlayLogic();
+                        });
+                        break;
+                    }
+                }
+                await Task.Delay(100);
+            }
+        }, _animationCancellationTokenSource.Token);
     }
+
     public void StopProgressAnimation()
     {
+        this.AbortAnimation("ProgressAnimation");
         if (_animationCancellationTokenSource != null)
         {
-            ProgressBox.WidthRequest = 0; // Start with 0 width
             _animationCancellationTokenSource.Cancel();
             _animationCancellationTokenSource.Dispose();
             _animationCancellationTokenSource = null;
         }
+        ProgressBox.WidthRequest = 0;
     }
+
     private async Task AnimateProgress(CancellationToken token)
     {
-        double totalWidth = ProgressBoxParent.Width; // Get the width of the container
-        double duration = 10000; // 10 seconds in milliseconds
-        double interval = 20; // Update every 20 milliseconds
-        double steps = duration / interval; // Number of steps for the animation
-        double widthChange = totalWidth / steps; // Width increment per step
-
-        ProgressBox.WidthRequest = 0; // Start with 0 width
-
-        try
-        {
-            for (int i = 0; i <= steps; i++)
-            {
-                // Check if cancellation has been requested
-                if (token.IsCancellationRequested)
-                    return;
-                if (autoPlayFlag && i > 50 && !engineHelper.animationBlock)
-                {
-                    if (engineHelper.gameMode == "Client")
-                    {
-                        if (!ClientGlobalConstants.game.engine.processing && !ClientGlobalConstants.game.isInputLocked)
-                            await ExecuteAutoPlayLogic();
-                    }
-                    break;
-                }
-                ProgressBox.WidthRequest = i * widthChange;
-                await Task.Delay((int)interval);
-            }
-        }
-        catch (Exception)
-        {
-        }
-        if (engineHelper.gameMode != "Client")
-        {
-            await ExecuteAutoPlayLogic();
-        }
+        // Method body removed as logic moved to StartProgressAnimation for ScaleXTo implementation
+        await Task.CompletedTask;
     }
     private async Task ExecuteAutoPlayLogic()
     {
