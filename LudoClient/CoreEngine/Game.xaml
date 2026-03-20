@@ -11,12 +11,14 @@
     <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,.3*,.001*,Auto,.4*,Auto">
 
         <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
-            <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" ColumnDefinitions="*,*,*,*,*,*,*,*,*,*,*,*,*,*,*" Margin="5">
-                <Grid.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="CloseTokenSelector"/>
-                </Grid.GestureRecognizers>
-                <AbsoluteLayout x:Name="Alayout" Grid.ColumnSpan="15" Grid.RowSpan="15">
-                    <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
+            
+
+                <AbsoluteLayout x:Name="Alayout" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="15" Grid.RowSpan="15" Margin="5">
+                    
+                        <AbsoluteLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="CloseTokenSelector"/>
+                        </AbsoluteLayout.GestureRecognizers>
+                        <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red4" piece="{x:Static constants:Skins.RedToken}"/>
@@ -55,7 +57,7 @@
                         </StackLayout>
                     </acrylic:AcrylicView>
                 </AbsoluteLayout>
-            </Grid>
+
         </local:Capsule>
 
         <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HeightRequest="100" HorizontalOptions="Fill" VerticalOptions="End">

@@ -2,9 +2,20 @@ using LudoClient.Constants;
 using SharedCode.CoreEngine;
 
 namespace LudoClient.ControlView;
-public partial class PlayerSeat : ContentView
-{
-    public bool autoPlayFlag { get; set; }
+    public partial class PlayerSeat : ContentView
+    {
+        // Static cache to pre-load dice images and prevent disk lag during gameplay
+        private static readonly Dictionary<int, ImageSource> DiceCache = new()
+        {
+            { 1, ImageSource.FromFile("dice_1.webp") },
+            { 2, ImageSource.FromFile("dice_2.webp") },
+            { 3, ImageSource.FromFile("dice_3.webp") },
+            { 4, ImageSource.FromFile("dice_4.webp") },
+            { 5, ImageSource.FromFile("dice_5.webp") },
+            { 6, ImageSource.FromFile("dice_6.webp") }
+        };
+
+        public bool autoPlayFlag { get; set; }
     public bool isAutoPlayDisabled = false;//Set it to true to prevent Auto Play of other players on localclient
     public String seatColor { get; set; }
     public String PlayerName { get; set; }
@@ -214,7 +225,14 @@ public partial class PlayerSeat : ContentView
         MainThread.BeginInvokeOnMainThread(() =>
         {
             DiceLayer.IsAnimationPlaying = false;
-            DiceLayer.Source = $"dice_{DiceValue}.webp";
+            if (DiceCache.TryGetValue(DiceValue, out var cachedSource))
+            {
+                DiceLayer.Source = cachedSource;
+            }
+            else
+            {
+                DiceLayer.Source = $"dice_{DiceValue}.webp";
+            }
         });
     }
     internal void reset()

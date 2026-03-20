@@ -13,6 +13,8 @@ public partial class Game : ContentPage
     //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
     public bool isInputLocked { get; set; } = false;
     Piece tempPiece = null;
+    private double _unitX;
+    private double _unitY;
     public string playerColor = "";
     public Engine engine;
     Gui gui;
@@ -302,7 +304,11 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
         // Handle layout size changes
-        Alayout.SizeChanged += (sender, e) => { Pupulate(rotation); };
+        Alayout.SizeChanged += (sender, e) => { 
+            _unitX = Alayout.Width / 15.0;
+            _unitY = Alayout.Height / 15.0;
+            Pupulate(rotation);
+        };
 
         RedPlayerSeat.reset();
         GreenPlayerSeat.reset();
@@ -365,10 +371,10 @@ public partial class Game : ContentPage
             {
                 Alayout.Add(lockHome);
             }
-            AbsoluteLayout.SetLayoutBounds(lockHome, new Rect(0, 0, (Alayout.Width / 15) - 6, (Alayout.Height / 15) - 6));
+            AbsoluteLayout.SetLayoutBounds(lockHome, new Rect(0, 0, _unitX - 6, _unitY - 6));
             string PB = color.Substring(0, 1) + 51;
-            double x = engine.EngineHelper.originalPath[PB][1] * (Alayout.Width / 15);
-            double y = engine.EngineHelper.originalPath[PB][0] * (Alayout.Height / 15);
+            double x = engine.EngineHelper.originalPath[PB][1] * _unitX;
+            double y = engine.EngineHelper.originalPath[PB][0] * _unitY;
             _ = lockHome.TranslateTo(x + 3, y + 3, 10, Easing.CubicIn);
         }
         else
@@ -459,8 +465,8 @@ public partial class Game : ContentPage
                 pieceClone.Jump(engine, 1, true);
 
             string PBC = pieceClone.getPieceBox();
-            double x = engine.EngineHelper.originalPath[PBC][1] * (Alayout.Width / 15);
-            double y = engine.EngineHelper.originalPath[PBC][0] * (Alayout.Height / 15);
+            double x = engine.EngineHelper.originalPath[PBC][1] * _unitX;
+            double y = engine.EngineHelper.originalPath[PBC][0] * _unitY;
 
             await RunAnimationAsync(pieces, x, y, animTime, "Move");
             
@@ -582,8 +588,8 @@ public partial class Game : ContentPage
             {
                 continue;
             }
-            double centerX = boardCoords[1] * (Alayout.Width / 15.0);
-            double centerY = boardCoords[0] * (Alayout.Height / 15.0);
+            double centerX = boardCoords[1] * _unitX;
+            double centerY = boardCoords[0] * _unitY;
 
             // Group pieces by player (using first letter of piece.Name, case-insensitive).
             var playerGroups = piecesInBox
@@ -683,12 +689,7 @@ public partial class Game : ContentPage
         SetHomeBlock(gui.LockHome3, "yellow");
         SetHomeBlock(gui.LockHome4, "blue");
 
-        if(gameMode == "Client")
-        {
-            string score = $"Score : {engine.EngineHelper.getPlayer(playerColor.ToLower()).Score}";
-            if (score != ScoreText.Text)
-                ScoreText.Text = score;
-        }
+        UpdateUI();
     }
     // Helper method to return the default image file name for a given color.
     private string GetDefaultImage(string colorLetter, string suffics)
@@ -857,6 +858,7 @@ public partial class Game : ContentPage
             }
         }
         isInputLocked = false;
+        UpdateUI();
         Console.WriteLine(result);
         return result;
     }
@@ -973,16 +975,7 @@ public partial class Game : ContentPage
             isInputLocked = false;            
         }
 
-        foreach (var p in engine.EngineHelper.players)
-        {
-            foreach (var piece in p.Pieces)
-            {
-                var token = gui.getPieceToken(piece);
-                // Bring current player to the front (ZIndex 100), others to back (ZIndex 1)
-                token.ZIndex = (p.Color == engine.EngineHelper.currentPlayer.Color) ? 100 : 1;
-            }
-        }
-        TokenSelector.ZIndex = 200; // Always on top of pieces
+        UpdateUI();
         return result;
     }
     public async Task<string> PlayerLeft(string seatName, bool SendToServer)
@@ -992,6 +985,41 @@ public partial class Game : ContentPage
             await engine.PlayerLeft(seatName);
         return "left";
     }
+    public void UpdateUI()
+    {
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            // 1. Update Global Score
+            if (engine?.EngineHelper != null)
+            {
+                var player = engine.EngineHelper.getPlayer(playerColor.ToLower());
+                if (player != null)
+                {
+                    if (gameMode == "Client")
+                    {
+                        string score = $"Score : {player.Score}";
+                        if (score != ScoreText.Text)
+                            ScoreText.Text = score;
+                    }
+                    
+                }
+            }
+
+            // 2. Synchronize Z-Index for all pieces based on current turn
+            foreach (var p in engine.EngineHelper.players)
+            {
+                foreach (var piece in p.Pieces)
+                {
+                    var token = gui.getPieceToken(piece);
+                    token.ZIndex = (p.Color == engine.EngineHelper.currentPlayer.Color) ? 100 : 1;
+                }
+            }
+            TokenSelector.ZIndex = 200;
+
+            // 3. Refresh Seat UI (Lamps, Timers, etc. handled by seats themselves)
+        });
+    }
+
     public void StartProgressAnimation(string SeatName)
     {
         List<Piece> allPieces = GetAllPieces();
