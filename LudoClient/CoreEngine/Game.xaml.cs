@@ -973,14 +973,16 @@ public partial class Game : ContentPage
             isInputLocked = false;            
         }
 
-        foreach (var piece in engine.EngineHelper.currentPlayer.Pieces)
+        foreach (var p in engine.EngineHelper.players)
         {
-            // Safely update the UI
-            Alayout.Remove(gui.getPieceToken(piece));
-            Alayout.Add(gui.getPieceToken(piece));
+            foreach (var piece in p.Pieces)
+            {
+                var token = gui.getPieceToken(piece);
+                // Bring current player to the front (ZIndex 100), others to back (ZIndex 1)
+                token.ZIndex = (p.Color == engine.EngineHelper.currentPlayer.Color) ? 100 : 1;
+            }
         }
-        Alayout.Remove(TokenSelector);
-        Alayout.Add(TokenSelector);        
+        TokenSelector.ZIndex = 200; // Always on top of pieces
         return result;
     }
     public async Task<string> PlayerLeft(string seatName, bool SendToServer)

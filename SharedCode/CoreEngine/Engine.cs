@@ -400,7 +400,7 @@
                             board?[ownTrapped.getPieceBox()].Add(ownTrapped);
                             fitness(-0.5);// Own piece killed because it got trapped by moving one of the double pieces
                             relocatedPieces.Add(ownTrapped);
-                            await RelocateAsync(relocatedPieces, piece1Clone, "kill");
+                            RelocateAsync(relocatedPieces, piece1Clone, "kill");
                         }
                     }
                     relocatedPieces = new List<Piece>();
