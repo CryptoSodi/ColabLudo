@@ -11,6 +11,7 @@ namespace SignalR.Server
 {
     public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
+        private readonly SemaphoreSlim _roomLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource? _animationCancellationTokenSource;
         public Engine? engine { get; set; }  // The Engine instance for this room
         public List<User> Users { get; set; } = new List<User>();
@@ -228,111 +229,135 @@ namespace SignalR.Server
         }
         internal async Task<GameCommand> MovePieceAsync(string authToken, GameCommand commandValue)
         {
-            // Authenticate user
-            var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
-            if (user == null)
+            await _roomLock.WaitAsync();
+            try
             {
-                Console.WriteLine("Authentication failed: Invalid token.");
-                return null; // or throw an UnauthorizedAccessException
-            }
-            // Check if user's seat matches the command's seat and current player's turn
-            if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
-            {
-                Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
-                return null; // or throw an InvalidOperationException
-            }
-            if (engine.EngineHelper.checkTurn(commandValue.piece1, "MovePiece"))
-            {
-                String result = "FAILED";
-                result = await engine.MovePieceAsync(commandValue.piece1, commandValue.piece2);
-
-                GameCommand command = new GameCommand
+                // Authenticate user
+                var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
+                if (user == null)
                 {
-                    SendToClientFunctionName = "MovePiece",
-                    seatName = commandValue.seatName,
-                    diceValue = commandValue.diceValue,
-                    piece1 = result.Split(",")[0],
-                    piece2 = result.Split(",")[1],
-                    Index = commandValue.Index,
-                    IndexServer = ++engine.EngineHelper.index
-                };
+                    Console.WriteLine("Authentication failed: Invalid token.");
+                    return null; // or throw an UnauthorizedAccessException
+                }
+                // Check if user's seat matches the command's seat and current player's turn
+                if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
+                {
+                    Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
+                    return null; // or throw an InvalidOperationException
+                }
+                if (engine.EngineHelper.checkTurn(commandValue.piece1, "MovePiece"))
+                {
+                    String result = "FAILED";
+                    result = await engine.MovePieceAsync(commandValue.piece1, commandValue.piece2);
 
-                lock (_commandStore)
-                    _commandStore.Add(command);
+                    GameCommand command = new GameCommand
+                    {
+                        SendToClientFunctionName = "MovePiece",
+                        seatName = commandValue.seatName,
+                        diceValue = commandValue.diceValue,
+                        piece1 = result.Split(",")[0],
+                        piece2 = result.Split(",")[1],
+                        Index = commandValue.Index,
+                        IndexServer = ++engine.EngineHelper.index
+                    };
 
-                return command;
+                    lock (_commandStore)
+                        _commandStore.Add(command);
+
+                    return command;
+                }
+                return null;
             }
-            return null;
+            finally
+            {
+                _roomLock.Release();
+            }
         }
         internal async Task<GameCommand> SeatTurn(string authToken, GameCommand commandValue)
         {
-            var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
-            if (user == null)
+            await _roomLock.WaitAsync();
+            try
             {
-                Console.WriteLine("Authentication failed: Invalid token.");
-                return null; // or throw an UnauthorizedAccessException
-            }
-            // Check if user's seat matches the command's seat and current player's turn
-            if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
-            {
-                Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
-                return null; // or throw an InvalidOperationException
-            }
-            if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
-            {
-                String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
-                if (result.Contains("-1") || result.Contains("-0"))
+                var user = Users.FirstOrDefault(u => u.player.AuthToken == authToken);
+                if (user == null)
                 {
-                    //FAILED, likely due to invalid move. Don't increment index or add to command store.
+                    Console.WriteLine("Authentication failed: Invalid token.");
+                    return null; // or throw an UnauthorizedAccessException
+                }
+                // Check if user's seat matches the command's seat and current player's turn
+                if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
+                {
+                    Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
+                    return null; // or throw an InvalidOperationException
+                }
+                if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
+                {
+                    String result = await engine.SeatTurn(commandValue.seatName, commandValue.diceValue, commandValue.piece1, commandValue.piece2);
+                    if (result.Contains("-1") || result.Contains("-0"))
+                    {
+                        //FAILED, likely due to invalid move. Don't increment index or add to command store.
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Local : {result}");
+                        GameCommand command = new GameCommand
+                        {
+                            SendToClientFunctionName = "DiceRoll",
+                            seatName = commandValue.seatName,
+                            diceValue = result.Split(",")[0],
+                            piece1 = result.Split(",")[1],
+                            piece2 = result.Split(",")[2],
+                            Index = commandValue.Index,
+                            IndexServer = ++engine.EngineHelper.index,
+                            Result = "Success"
+                        };
+                        lock (_commandStore)
+                            _commandStore.Add(command);
+                        return command;
+                    }
+                }
+                return null;
+            }
+            finally
+            {
+                _roomLock.Release();
+            }
+        }
+        public async Task<User> PlayerLeft(int playerId)
+        {
+            await _roomLock.WaitAsync();
+            try
+            {
+                // Try to find the user in the game room's user list using the connection ID.
+                var user = Users.FirstOrDefault(u => u.player?.PlayerId == playerId);
+                if (user != null)
+                {
+                    // Remove the user from the room.
+                    Users.Remove(user);
+                    if (engine != null)
+                    {
+                        await engine.PlayerLeft(user.PlayerColor);
+                        GameCommand command = new GameCommand
+                        {
+                            SendToClientFunctionName = "PlayerLeft",
+                            seatName = user.PlayerColor,
+                            Index = engine.EngineHelper.index
+                        };
+                        lock (_commandStore)
+                            _commandStore.Add(command);
+                    }
+                    Console.WriteLine("User removed: " + user.PlayerColor);
                 }
                 else
                 {
-                    Console.WriteLine($"Local : {result}");
-                    GameCommand command = new GameCommand
-                    {
-                        SendToClientFunctionName = "DiceRoll",
-                        seatName = commandValue.seatName,
-                        diceValue = result.Split(",")[0],
-                        piece1 = result.Split(",")[1],
-                        piece2 = result.Split(",")[2],
-                        Index = commandValue.Index,
-                        IndexServer = ++engine.EngineHelper.index,
-                        Result = "Success"
-                    };
-                    lock (_commandStore)
-                        _commandStore.Add(command);
-                    return command;
+                    Console.WriteLine("User not found for connection: " + playerId);
                 }
+                return user;
             }
-            return null;
-        }
-        public User PlayerLeft(int playerId)
-        {
-            // Try to find the user in the game room's user list using the connection ID.
-            var user = Users.FirstOrDefault(u => u.player?.PlayerId == playerId);
-            if (user != null)
+            finally
             {
-                // Remove the user from the room.
-                Users.Remove(user);
-                if (engine != null)
-                {
-                    engine.PlayerLeft(user.PlayerColor);
-                    GameCommand command = new GameCommand
-                    {
-                        SendToClientFunctionName = "PlayerLeft",
-                        seatName = user.PlayerColor,
-                        Index = engine.EngineHelper.index++
-                    };
-                    lock (_commandStore)
-                        _commandStore.Add(command);
-                }
-                Console.WriteLine("User removed: " + user.PlayerColor);
+                _roomLock.Release();
             }
-            else
-            {
-                Console.WriteLine("User not found for connection: " + playerId);
-            }
-            return user;
         }
     }
 }

@@ -166,7 +166,7 @@ namespace SignalR.Server
                 User user = null;
 
                 if (_gameRooms.TryGetValue(existingGame.RoomCode, out GameRoom room))
-                    user = room.PlayerLeft(playerId);
+                    user = await room.PlayerLeft(playerId);
 
                 if (isEmpty)
                     _gameRooms.TryRemove(existingGame.RoomCode, out _);

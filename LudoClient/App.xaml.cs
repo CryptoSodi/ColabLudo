@@ -1,5 +1,6 @@
 ﻿using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -87,7 +88,7 @@ namespace LudoClient
             {
                 try
                 {
-                    var game = ClientGlobalConstants.game; 
+                    var game = ClientGlobalConstants.game;
                     if (game == null)
                         break;
                     if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
@@ -114,7 +115,8 @@ namespace LudoClient
                                     //  Console.WriteLine($"Room {GlobalConstants.RoomCode} LastSeenIndex {ClientGlobalConstants.game.engine.EngineHelper.index} Received Command Index: {command.Index}, Type: {command.SendToClientFunctionName}, Value1: {command.commandValue1},{command.commandValue2},{command.commandValue3}");
                                     // Process the command here (e.g., call a local method based on the command type).
                                     // Update _lastSeenIndex with the highest received index.
-                                    if (game != null && game.engine.EngineHelper.index <= command.Index)
+                                    bool alreadyHandled = game._commandStore.Any(c => c.IndexServer == command.IndexServer);
+                                    if (game != null && !alreadyHandled)
                                     {
                                         await MainThread.InvokeOnMainThreadAsync(async () =>
                                         {
@@ -135,7 +137,6 @@ namespace LudoClient
                                                             }
                                                             else if (!result.Contains("-1") && !result.Contains("-0"))
                                                             {
-                                                                ClientGlobalConstants.game.engine.EngineHelper.indexServer = command.IndexServer;
                                                                 game._commandStore.Add(command);
                                                             }
                                                         }
@@ -192,11 +193,14 @@ namespace LudoClient
                                         // Wait a bit before polling again.
                                         await Task.Delay(200, cancellationToken);
                                     }
+                                    Console.WriteLine($"Sync states Handled : {alreadyHandled} Index : {game.engine.EngineHelper.index} LoclServerIndex {game.engine.EngineHelper.indexServer} ServerIndex {command.IndexServer}");
                                 }
                             }
                             if (game != null)
                                 if (lastSeen != game.engine.EngineHelper.index)
-                                    Console.WriteLine("DESYNC WARNING!");
+                                {
+                                    Console.WriteLine($"Sync X 2 states Index : {game.engine.EngineHelper.index} LoclServerIndex {game.engine.EngineHelper.indexServer}");
+                                }
                         }
                     }
                 }
