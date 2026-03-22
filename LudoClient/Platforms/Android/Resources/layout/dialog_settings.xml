@@ -4,25 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- The root container centered on screen -->
+    <!-- The main layout centering the whole popup - Using Turn 15 wrap_content approach -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
-        <!-- This image defines the aspect ratio and boundaries -->
+        <!-- Background Image defining the popup size -->
         <ImageView
             android:id="@+id/popupBg"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:src="@drawable/dailybonus_popup_bg"
             android:adjustViewBounds="true"
-            android:scaleType="fitCenter"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <!-- Guidelines based on the 9.1 star Grid RowDefinitions -->
+        <!-- Proportion Guidelines based on total 9.1 stars from original MAUI Grid -->
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/guide_row_0"
             android:layout_width="wrap_content"
@@ -60,16 +60,16 @@
             android:orientation="horizontal"
             app:layout_constraintGuide_percent="0.9670" />
 
-        <!-- Title Bar: 2/3 width, centered, with negative margin -->
+        <!-- Title Bar - Fixed to 3/4 width, centered, with Turn 15 positioning -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/titleBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintWidth_percent="0.66"
+            android:translationY="-18dp"
+            app:layout_constraintWidth_percent="0.75"
             app:layout_constraintTop_toTopOf="@id/popupBg"
             app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg"
-            android:translationY="-18dp">
+            app:layout_constraintEnd_toEndOf="@id/popupBg">
             
             <ImageView
                 android:id="@+id/titleImage"
@@ -89,7 +89,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:gravity="center"
-                android:paddingBottom="10dp"
+                android:paddingBottom="8dp"
                 android:letterSpacing="0.1"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
@@ -119,8 +119,8 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingVertical="16dp"
-                android:paddingHorizontal="16dp">
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="8dp">
 
                 <ludoclient.platforms.android.SettingsSwitchView
                     android:id="@+id/soundSwitch"
@@ -147,15 +147,15 @@
         <ImageButton
             android:id="@+id/settingsBtnHelp"
             android:layout_width="48dp"
-            android:layout_height="0dp"
+            android:layout_height="48dp"
             android:src="@drawable/help"
             android:background="@null"
             android:scaleType="fitCenter"
             android:visibility="gone"
             app:layout_constraintTop_toTopOf="@id/guide_row_2"
             app:layout_constraintBottom_toBottomOf="@id/guide_row_3"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintStart_toStartOf="@id/popupBg"
+            app:layout_constraintEnd_toEndOf="@id/popupBg" />
 
         <!-- SIGN OUT Button -->
         <androidx.constraintlayout.widget.ConstraintLayout
