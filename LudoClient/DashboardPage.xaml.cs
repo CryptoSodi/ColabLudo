@@ -114,8 +114,17 @@ public partial class DashboardPage : ContentPage
         try
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            ClientGlobalConstants.dailyBonus.DailyBonus_Loaded(null,null);
+    #if ANDROID
+            var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+            if (activity != null)
+            {
+                var dialog = new LudoClient.Platforms.Android.DailyBonusDialogFragment();
+                dialog.Show(activity.SupportFragmentManager, "DailyBonusDialog");
+            }
+    #else
+            ClientGlobalConstants.dailyBonus.DailyBonus_Loaded(null, null);
             await this.ShowPopupAsync(ClientGlobalConstants.dailyBonus, new PopupOptions { Shape = null });
+    #endif
         }
         finally
         {
