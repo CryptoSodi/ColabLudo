@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+    
+    <ImageView
+        android:id="@+id/switchBgImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/line_bg"
+        android:adjustViewBounds="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+        
+    <TextView
+        android:id="@+id/switchSettingText"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:textColor="#000000"
+        android:text="SETTING"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        app:layout_constraintTop_toTopOf="@id/switchBgImage"
+        app:layout_constraintBottom_toBottomOf="@id/switchBgImage"
+        app:layout_constraintStart_toStartOf="@id/switchBgImage"
+        app:layout_constraintEnd_toStartOf="@id/switchToggleImage" />
+        
+    <ImageButton
+        android:id="@+id/switchToggleImage"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginVertical="8dp"
+        android:src="@drawable/switch_btn_on"
+        android:background="@null"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        app:layout_constraintTop_toTopOf="@id/switchBgImage"
+        app:layout_constraintBottom_toBottomOf="@id/switchBgImage"
+        app:layout_constraintEnd_toEndOf="@id/switchBgImage" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

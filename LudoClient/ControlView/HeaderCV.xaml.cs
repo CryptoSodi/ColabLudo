@@ -55,7 +55,16 @@ public partial class HeaderCV : ContentView
         {
             ClientGlobalConstants.sw = Stopwatch.StartNew();
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+#if ANDROID
+            var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+            if (activity != null)
+            {
+                var dialog = new LudoClient.Platforms.Android.SettingsDialogFragment();
+                dialog.Show(activity.SupportFragmentManager, "SettingsDialog");
+            }
+#else
             Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions { Shape = null });
+#endif
         }
         finally
         {
