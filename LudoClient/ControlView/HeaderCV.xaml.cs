@@ -55,6 +55,7 @@ public partial class HeaderCV : ContentView
         {
             ClientGlobalConstants.sw = Stopwatch.StartNew();
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.settings, new PopupOptions { Shape = null });
 #if ANDROID
             var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
             if (activity != null)
