@@ -1,73 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
 
-    <!-- BGColor equivalent (Frame) -->
-    <View
+	<!-- BGColor (Frame) -->
+	<View
         android:id="@+id/cardBgColor"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/daily_bonus_card_bg" />
 
-    <!-- BGCard equivalent (Image) -->
-    <ImageView
+	<!-- BGCard -->
+	<ImageView
         android:id="@+id/cardBgImage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_margin="2dp"
         android:src="@drawable/days_current_bg"
-        android:scaleType="fitXY"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:adjustViewBounds="true"
+                    android:scaleType="fitCenter" />
 
-    <!-- Content (DayText, solicon, BonusText) -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+	<!-- Content -->
+	<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="1dp"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="2dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+		app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" 
+        android:gravity="center_horizontal|center_vertical">
 
-        <TextView
+		<TextView
             android:id="@+id/dayText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Day 1"
             android:textColor="#FFFFFF"
-            android:textSize="10sp"
-            android:textStyle="bold"
-            android:gravity="center" />
+        android:gravity="top|center_horizontal" />
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+		<ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:src="@drawable/solicon"
-            android:adjustViewBounds="true"
-            android:layout_marginVertical="2dp" />
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp" />
 
-        <TextView
+		<TextView
             android:id="@+id/bonusText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="10"
             android:textColor="#000000"
             android:textSize="12sp"
-            android:textStyle="bold"
-            android:gravity="center"
-            android:layout_marginBottom="4dp" />
+        android:gravity="bottom|center_horizontal" />
 
-    </LinearLayout>
+	</LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

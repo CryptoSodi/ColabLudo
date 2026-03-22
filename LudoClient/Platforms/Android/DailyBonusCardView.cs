@@ -4,6 +4,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
+using Android.Graphics.Drawables;
 using System;
 
 namespace LudoClient.Platforms.Android
@@ -51,23 +52,26 @@ namespace LudoClient.Platforms.Android
             _dayText.Text = day;
             _bonusText.Text = bonus.ToString();
 
+            // Handle background color tinting for rounded corners
+            var bgDrawable = _cardBgColor.Background as GradientDrawable;
+            
             switch (state)
             {
                 case "Claimed":
                     _cardBgImage.SetImageResource(Resource.Drawable.days_current_bg);
-                    _cardBgColor.SetBackgroundColor(global::Android.Graphics.Color.Green);
+                    bgDrawable?.SetColor(global::Android.Graphics.Color.ParseColor("#008000")); // Green
                     break;
                 case "InActive":
                     _cardBgImage.SetImageResource(Resource.Drawable.days_current_bg);
-                    _cardBgColor.SetBackgroundColor(global::Android.Graphics.Color.White);
+                    bgDrawable?.SetColor(global::Android.Graphics.Color.ParseColor("#FFFFFF")); // White
                     break;
                 case "Active":
                     _cardBgImage.SetImageResource(Resource.Drawable.days_gold_bg);
-                    _cardBgColor.SetBackgroundColor(global::Android.Graphics.Color.Goldenrod);
+                    bgDrawable?.SetColor(global::Android.Graphics.Color.ParseColor("#DAA520")); // Goldenrod
                     break;
                 case "Missed":
                     _cardBgImage.SetImageResource(Resource.Drawable.days_gray_bg);
-                    _cardBgColor.SetBackgroundColor(global::Android.Graphics.Color.Gray);
+                    bgDrawable?.SetColor(global::Android.Graphics.Color.ParseColor("#808080")); // Gray
                     break;
             }
         }

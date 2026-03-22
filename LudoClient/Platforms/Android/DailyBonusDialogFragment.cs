@@ -1,9 +1,10 @@
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Fragment.App;
 using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -31,6 +32,26 @@ namespace LudoClient.Platforms.Android
 
             var view = inflater.Inflate(Resource.Layout.dialog_daily_bonus, container, false);
 
+
+            LinearLayout daysContainer = view.FindViewById<LinearLayout>(Resource.Id.daysContainer);
+            ImageView bgImage = view.FindViewById<ImageView>(Resource.Id.days_main_bg_container);
+
+            bgImage.Post(() =>
+            {
+                int width = bgImage.Width;
+                int height = bgImage.Height;
+
+                var layoutParams = (FrameLayout.LayoutParams)daysContainer.LayoutParameters;
+
+                layoutParams.Width = (int)(width * 0.96f);
+                layoutParams.Height = (int)(height * 0.80f);
+
+                // ✅ Center inside FrameLayout
+                layoutParams.Gravity = GravityFlags.Center;
+
+
+                daysContainer.LayoutParameters = layoutParams; // ✅ apply to SAME view
+            });
             _dayCards = new DailyBonusCardView[7];
             _dayCards[0] = view.FindViewById<DailyBonusCardView>(Resource.Id.D1);
             _dayCards[1] = view.FindViewById<DailyBonusCardView>(Resource.Id.D2);
