@@ -14,7 +14,6 @@
         <ImageView
             android:id="@+id/popupBg"
             android:layout_width="0dp"
-            android:translationY="17dp"
             android:layout_height="wrap_content"
             android:src="@drawable/dailybonus_popup_bg"
             android:adjustViewBounds="true"
@@ -22,8 +21,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginBottom="17dp"
-			/>
+            android:translationY="17dp"
+            android:layout_marginBottom="17dp"/>
 
         <!-- Proportion Guidelines based on total 9.1 stars from original MAUI Grid -->
         <androidx.constraintlayout.widget.Guideline
