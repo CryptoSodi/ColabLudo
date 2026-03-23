@@ -93,7 +93,7 @@
                 android:textSize="18sp"
                 android:gravity="center"
                 android:paddingBottom="8dp"
-                android:letterSpacing="0.1"
+                android:letterSpacing="0.1px"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
                 app:layout_constraintStart_toStartOf="@id/titleImage"

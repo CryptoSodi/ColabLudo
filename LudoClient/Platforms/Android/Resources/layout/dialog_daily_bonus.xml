@@ -87,7 +87,7 @@
                 android:textSize="18sp"
                 android:gravity="center"
                 android:paddingBottom="10dp"
-                android:letterSpacing="0.1"
+                android:letterSpacing="0.1px"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
                 app:layout_constraintStart_toStartOf="@id/titleImage"
@@ -110,7 +110,6 @@
 
         <!-- Days Container (Capsule equivalent) -->
 		<FrameLayout
-	   
 	   android:layout_width="0dp"
 	   android:layout_height="220dp"
 	   app:layout_constraintTop_toTopOf="@id/guide_row_2"
