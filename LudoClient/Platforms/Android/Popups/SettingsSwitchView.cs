@@ -6,7 +6,7 @@ using Android.Widget;
 using Microsoft.Maui.Storage;
 using System;
 
-namespace LudoClient.Platforms.Android
+namespace LudoClient.Platforms.Android.Popups
 {
     [Register("ludoclient.platforms.android.SettingsSwitchView")]
     public class SettingsSwitchView : FrameLayout

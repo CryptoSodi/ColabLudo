@@ -60,7 +60,7 @@ public partial class HeaderCV : ContentView
             var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
             if (activity != null)
             {
-                var dialog = new LudoClient.Platforms.Android.SettingsDialogFragment();
+                var dialog = new LudoClient.Platforms.Android.Popups.SettingsDialogFragment();
                 dialog.Show(activity.SupportFragmentManager, "SettingsDialog");
             }
 #else

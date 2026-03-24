@@ -11,7 +11,15 @@
 
     <Grid RowSpacing="20" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions=".8*,1*,1*,1*,1*,1*,.8*">
 
+
         <Image Grid.Row="1" Margin="40,20,40,20" Grid.RowSpan="2" Source="logo.webp" VerticalOptions="Center" HorizontalOptions="Center"/>
+
+        <Image Grid.Row="1" Source="ic_settings.webp" WidthRequest="40" HeightRequest="40" HorizontalOptions="Start" VerticalOptions="Start" Margin="10">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TestUi_Clicked" />
+            </Image.GestureRecognizers>
+        </Image>
+
 
         <Image x:Name="CashImage" Grid.Row="3" Source="{x:Static constants:Skins.Cash}" VerticalOptions="Center" HorizontalOptions="Center">
             <Image.GestureRecognizers>

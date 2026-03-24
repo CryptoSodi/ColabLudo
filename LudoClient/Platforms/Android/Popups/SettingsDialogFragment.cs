@@ -20,7 +20,7 @@ using SharedCode.Constants;
 using System;
 using System.Threading.Tasks;
 
-namespace LudoClient.Platforms.Android
+namespace LudoClient.Platforms.Android.Popups
 {
     public class SettingsDialogFragment : DialogFragment
     {

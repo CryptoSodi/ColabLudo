@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.Text.Json;
 
-namespace LudoClient.Platforms.Android
+namespace LudoClient.Platforms.Android.Popups
 {
     public class DailyBonusDialogFragment : DialogFragment
     {

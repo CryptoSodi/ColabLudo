@@ -7,7 +7,7 @@ using AndroidX.ConstraintLayout.Widget;
 using Android.Graphics.Drawables;
 using System;
 
-namespace LudoClient.Platforms.Android
+namespace LudoClient.Platforms.Android.Popups
 {
     [Register("ludoclient.platforms.android.DailyBonusCardView")]
     public class DailyBonusCardView : ConstraintLayout

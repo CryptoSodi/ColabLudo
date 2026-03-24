@@ -106,6 +106,18 @@ public partial class DashboardPage : ContentPage
             _NavigationCooldown = false;
         }
     }
+    private async void TestUi_Clicked(object sender, EventArgs e)
+    {
+#if ANDROID
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+        if (activity != null)
+        {
+            var dialog = new LudoClient.Platforms.Android.Popups.TestUiDialogFragment();
+            dialog.Show(activity.SupportFragmentManager, "TestUiDialog");
+        }
+#endif
+    }
+
     private async void Bonus_Clicked(object sender, EventArgs e)
     {
         if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
@@ -118,7 +130,7 @@ public partial class DashboardPage : ContentPage
             var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
             if (activity != null)
             {
-                var dialog = new LudoClient.Platforms.Android.DailyBonusDialogFragment();
+                var dialog = new LudoClient.Platforms.Android.Popups.DailyBonusDialogFragment();
                 dialog.Show(activity.SupportFragmentManager, "DailyBonusDialog");
             }
     #else
