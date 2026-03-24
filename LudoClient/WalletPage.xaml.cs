@@ -70,6 +70,15 @@ public partial class WalletPage : ContentPage
     private void OnWithdrawButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+#if ANDROID
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+        if (activity != null)
+        {
+            var dialog = new LudoClient.Platforms.Android.Popups.WithdrawDialogFragment();
+            dialog.Show(activity.SupportFragmentManager, "WithdrawDialog");
+        }
+#else
         this.ShowPopup(ClientGlobalConstants.withdrawPopup, new PopupOptions { Shape = null });
+#endif
     }
 }
