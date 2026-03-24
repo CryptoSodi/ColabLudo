@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+	<!-- Sandbox Container: 320dp Fixed Width (Gold Standard) -->
+	<androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+		<!-- Reference Background -->
+		<ImageView
+            android:id="@+id/PopupBg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/popup_bg"
+            android:adjustViewBounds="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:translationY="17dp"
+            android:layout_marginBottom="17dp"/>
+
+		<!-- Title Bar: 3/4 width (0.75) -->
+		<androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/addCashTitleBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:translationY="1dp"
+            app:layout_constraintWidth_percent="0.75"
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+
+			<ImageView
+                android:id="@+id/titleImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/popup_title"
+                android:adjustViewBounds="true" />
+
+			<TextView
+                android:translationY="-11dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:text="DEPOSIT"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:letterSpacing="0.1"
+                app:layout_constraintTop_toTopOf="@id/titleImage"
+                app:layout_constraintBottom_toBottomOf="@id/titleImage"
+                app:layout_constraintStart_toStartOf="@id/titleImage"
+                app:layout_constraintEnd_toEndOf="@id/titleImage" />
+
+		</androidx.constraintlayout.widget.ConstraintLayout>
+
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintWidth_percent="0.95"
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintBottom_toBottomOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg"
+            android:layout_gravity="center">
+
+			<FrameLayout
+		        android:layout_width="0dp"
+		        android:layout_height="match_parent"
+		        android:translationY="17dp"
+		        android:layout_marginHorizontal="10dp"
+		        app:layout_constraintTop_toTopOf="parent"
+		        app:layout_constraintBottom_toBottomOf="parent"
+		        app:layout_constraintStart_toStartOf="parent"
+		        app:layout_constraintEnd_toEndOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:spacing="10dp">
+
+                    <!-- Total Balance Section -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp">
+                        
+                        <ImageView
+                            android:id="@+id/balanceBg"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/bg_disable_field"
+                            android:adjustViewBounds="true"
+                            android:scaleType="fitXY"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TOTAL BALANCE AVAILABLE"
+                            android:textSize="10sp"
+                            android:textColor="#000000"
+                            android:layout_marginStart="10dp"
+                            app:layout_constraintStart_toStartOf="@id/balanceBg"
+                            app:layout_constraintTop_toTopOf="@id/balanceBg"
+                            app:layout_constraintBottom_toBottomOf="@id/balanceBg" />
+
+                        <FrameLayout
+                            android:layout_width="100dp"
+                            android:layout_height="24dp"
+                            android:layout_marginEnd="8dp"
+                            app:layout_constraintEnd_toEndOf="@id/balanceBg"
+                            app:layout_constraintTop_toTopOf="@id/balanceBg"
+                            app:layout_constraintBottom_toBottomOf="@id/balanceBg">
+                            
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="#60000000" />
+                                
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="start|center_vertical"
+                                android:layout_marginStart="4dp"
+                                android:src="@drawable/solicon" />
+                                
+                            <TextView
+                                android:id="@+id/coinsText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="0.0"
+                                android:textColor="#FFFFFF"
+                                android:textSize="12sp" />
+                        </FrameLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- QR Code Section -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:layout_marginHorizontal="2dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="#A92C40AA">
+
+                        <ImageView
+                            android:id="@+id/qrCodeImage"
+                            android:layout_width="180dp"
+                            android:layout_height="180dp"
+                            android:layout_marginTop="15dp"
+                            android:background="#4031af"
+                            android:scaleType="fitCenter"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/addressCapsule"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginHorizontal="-2dp"
+                            app:layout_constraintTop_toBottomOf="@id/qrCodeImage">
+
+                            <ImageView
+                                android:id="@+id/addressBg"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/after_add_cash_bg_hor"
+                                android:adjustViewBounds="true"
+                                android:scaleType="fitXY"
+                                app:layout_constraintTop_toTopOf="parent" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="DEPOSIT LUDC TOKEN"
+                                android:textColor="#FFFF00"
+                                android:textSize="9sp"
+                                android:gravity="center"
+                                android:layout_marginTop="5dp"
+                                app:layout_constraintTop_toTopOf="@id/addressBg" />
+
+                            <TextView
+                                android:id="@+id/addressText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="ADDRESS"
+                                android:textColor="#FFFFFF"
+                                android:textSize="9sp"
+                                android:gravity="center"
+                                android:layout_marginBottom="5dp"
+                                app:layout_constraintBottom_toBottomOf="@id/addressBg" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <!-- Copy Button Section -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="-20dp"
+                        android:layout_marginBottom="10dp"
+                        android:background="#24348A">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/copyBtn"
+                            android:layout_width="100dp"
+                            android:layout_height="40dp"
+                            android:layout_marginVertical="5dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent">
+
+                            <ImageView
+                                android:id="@+id/copyBtnBg"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:src="@drawable/btn_orange"
+                                android:scaleType="fitXY" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:text="COPY"
+                                android:textColor="#FFFFFF"
+                                android:gravity="center"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                android:paddingBottom="4dp" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+			</FrameLayout>
+		</androidx.constraintlayout.widget.ConstraintLayout>
+	</androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

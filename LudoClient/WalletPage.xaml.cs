@@ -56,7 +56,16 @@ public partial class WalletPage : ContentPage
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+#if ANDROID
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+        if (activity != null)
+        {
+            var dialog = new LudoClient.Platforms.Android.Popups.AddCashDialogFragment();
+            dialog.Show(activity.SupportFragmentManager, "AddCashDialog");
+        }
+#else
         this.ShowPopup(ClientGlobalConstants.addCash, new PopupOptions { Shape = null });
+#endif
     }
     private void OnWithdrawButtonClicked(object sender, TappedEventArgs e)
     {
