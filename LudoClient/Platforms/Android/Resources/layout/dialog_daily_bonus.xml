@@ -87,7 +87,7 @@
                 android:textSize="18sp"
                 android:gravity="center"
                 android:paddingBottom="10dp"
-                android:letterSpacing="0.1px"
+                android:letterSpacing="0.1"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
                 app:layout_constraintStart_toStartOf="@id/titleImage"

@@ -1,19 +1,12 @@
-﻿using Android.Content;
-using Android.Graphics;
-using Android.Graphics.Drawables;
+﻿using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Fragment.App;
 using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Storage;
 using SharedCode.Constants;
-using System;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace LudoClient.Platforms.Android
 {
