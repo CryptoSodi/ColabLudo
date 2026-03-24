@@ -13,7 +13,7 @@ namespace LudoClient.Platforms.Android
     public class DailyBonusDialogFragment : DialogFragment
     {
         private DailyBonusCardView[] _dayCards;
-        private global::Android.Widget.ImageButton _claimBtn;
+        private global::AndroidX.ConstraintLayout.Widget.ConstraintLayout _claimBtn;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -25,26 +25,6 @@ namespace LudoClient.Platforms.Android
 
             var view = inflater.Inflate(Resource.Layout.dialog_daily_bonus, container, false);
 
-
-            LinearLayout daysContainer = view.FindViewById<LinearLayout>(Resource.Id.daysContainer);
-            ImageView bgImage = view.FindViewById<ImageView>(Resource.Id.days_main_bg_container);
-
-            bgImage.Post(() =>
-            {
-                int width = bgImage.Width;
-                int height = bgImage.Height;
-
-                var layoutParams = (FrameLayout.LayoutParams)daysContainer.LayoutParameters;
-
-                layoutParams.Width = (int)(width * 0.96f);
-                layoutParams.Height = (int)(height * 0.80f);
-
-                // ✅ Center inside FrameLayout
-                layoutParams.Gravity = GravityFlags.Center;
-
-
-                daysContainer.LayoutParameters = layoutParams; // ✅ apply to SAME view
-            });
             _dayCards = new DailyBonusCardView[7];
             _dayCards[0] = view.FindViewById<DailyBonusCardView>(Resource.Id.D1);
             _dayCards[1] = view.FindViewById<DailyBonusCardView>(Resource.Id.D2);
@@ -54,7 +34,7 @@ namespace LudoClient.Platforms.Android
             _dayCards[5] = view.FindViewById<DailyBonusCardView>(Resource.Id.D6);
             _dayCards[6] = view.FindViewById<DailyBonusCardView>(Resource.Id.D7);
 
-            _claimBtn = view.FindViewById<global::Android.Widget.ImageButton>(Resource.Id.claimBtn);
+            _claimBtn = view.FindViewById<AndroidX.ConstraintLayout.Widget.ConstraintLayout>(Resource.Id.claimBtn);
             _claimBtn.Click += ClaimDaily_Clicked;
 
             LoadAndFetchData();

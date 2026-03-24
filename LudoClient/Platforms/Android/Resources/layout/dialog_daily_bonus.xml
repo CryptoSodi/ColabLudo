@@ -4,15 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Main Container centered on screen, mirroring Settings Gold Standard -->
+	<!-- Sandbox Container: 320dp Fixed Width (Gold Standard) -->
 	<androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
-        <!-- Background Image defining the popup size -->
-        <ImageView
-            android:id="@+id/popupBg"
+		<!-- Reference Background -->
+		<ImageView
+            android:id="@+id/PopupBg"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:src="@drawable/dailybonus_popup_bg"
@@ -20,225 +20,245 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" 
+            app:layout_constraintEnd_toEndOf="parent"
             android:translationY="17dp"
             android:layout_marginBottom="17dp"/>
 
-        <!-- Proportion Guidelines based on .8*, .2*, 2*, 3*, 1*, .6* (Total 7.6) -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.105" /> <!-- .8/7.6 -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.131" /> <!-- (.8+.2)/7.6 -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.394" /> <!-- (1+2)/7.6 -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.789" /> <!-- (3+3)/7.6 -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.921" /> <!-- (6+1)/7.6 -->
-
-        <!-- Title Bar - 3/4 width, centered, with negative translation -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/titleBar"
+		<!-- Title Bar: 3/4 width (0.75) -->
+		<androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/testTitleBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:translationY="1dp"
             app:layout_constraintWidth_percent="0.75"
-            app:layout_constraintTop_toTopOf="@id/popupBg"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg">
-            
-            <ImageView
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+
+			<ImageView
                 android:id="@+id/titleImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/popup_title"
-                android:adjustViewBounds="true"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-                
-            <TextView
-                android:id="@+id/titleText"
-                android:translationY="-8dp"
+                android:adjustViewBounds="true" />
+
+			<TextView
+                android:translationY="-11dp"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:text="Daily Bonus"
+                android:text="DAILY BONUS"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:gravity="center"
-                android:paddingBottom="10dp"
                 android:letterSpacing="0.1"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
                 app:layout_constraintStart_toStartOf="@id/titleImage"
                 app:layout_constraintEnd_toEndOf="@id/titleImage" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Daily Bonus Banner Image -->
-        <ImageView
-            android:id="@+id/bonusBanner"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="45dp"
-            android:layout_marginHorizontal="40dp"
-            android:src="@drawable/daily_bonus"
-            android:scaleType="fitCenter"
-            app:layout_constraintTop_toTopOf="@id/guide_row_1"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_2"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+		</androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Days Container (Capsule equivalent) -->
-		<FrameLayout
-	   android:layout_width="0dp"
-	   android:layout_height="220dp"
-	   app:layout_constraintTop_toTopOf="@id/guide_row_2"
-	   app:layout_constraintBottom_toBottomOf="@id/guide_row_3"
-	   app:layout_constraintStart_toStartOf="@id/popupBg"
-	   app:layout_constraintEnd_toEndOf="@id/popupBg">
+		<androidx.constraintlayout.widget.ConstraintLayout
+				android:layout_width="0dp"
+				android:layout_height="0dp"
+				android:layout_marginTop="50dp"
+				android:layout_marginBottom="10dp"
+				app:layout_constraintWidth_percent="0.95"
+				app:layout_constraintTop_toTopOf="@id/PopupBg"
+				app:layout_constraintBottom_toBottomOf="@id/PopupBg"
+				app:layout_constraintStart_toStartOf="@id/PopupBg"
+				app:layout_constraintEnd_toEndOf="@id/PopupBg"
+				android:layout_gravity="center">
 
-			<!-- Capsule background -->
-			<ImageView
-				android:id="@+id/days_main_bg_container"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				android:layout_marginHorizontal="20dp"
-				android:src="@drawable/days_main_bg"
-				android:adjustViewBounds="true"
-                android:scaleType="fitCenter"/>
+			<FrameLayout
+		        android:layout_width="0dp"
+		        android:layout_height="0dp"
+		        android:translationY="17dp"
+		        android:layout_marginHorizontal="20dp"
+		        app:layout_constraintTop_toTopOf="parent"
+		        app:layout_constraintBottom_toBottomOf="parent"
+		        app:layout_constraintStart_toStartOf="parent"
+		        app:layout_constraintEnd_toEndOf="parent">
 
-			<!-- Content -->
-			<LinearLayout
-	            android:id="@+id/daysContainer"
-				android:layout_width="match_parent"
-				android:layout_height="match_parent"
-				
-				android:orientation="vertical"
-				>
-
-				<!-- Row 1 (4 cards) -->
 				<LinearLayout
-					android:layout_width="match_parent"
-					android:layout_height="0dp"
-					android:layout_weight="1"
-					android:orientation="horizontal">
-
-					<ludoclient.platforms.android.DailyBonusCardView
-						android:id="@+id/D1"
-						android:layout_width="0dp"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:orientation="vertical"
+						android:translationY="0dp"
+                        android:layout_margin="0dp"
+						android:layout_gravity="top|center_horizontal">
+					<androidx.constraintlayout.widget.ConstraintLayout
+						android:layout_width="match_parent"
 						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:layout_margin="2dp"/>
-
-					<ludoclient.platforms.android.DailyBonusCardView
-						android:id="@+id/D2"
-						android:layout_width="0dp"
+						android:layout_margin="5dp"
+						android:clickable="true"
+						android:focusable="true">
+						<ImageView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:src="@drawable/daily_bonus"
+                    android:layout_gravity="top|center_horizontal"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitStart"/>
+					</androidx.constraintlayout.widget.ConstraintLayout>
+					<!-- SIGN OUT Button -->
+					<androidx.constraintlayout.widget.ConstraintLayout
+						android:layout_width="match_parent"
 						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:layout_margin="2dp"/>
+						android:layout_margin="5dp"
+						android:clickable="true"
+						android:focusable="true">
 
-					<ludoclient.platforms.android.DailyBonusCardView
-						android:id="@+id/D3"
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:layout_margin="2dp"/>
+						<ImageView
+							android:id="@+id/daysImg"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:src="@drawable/days_main_bg"
+							android:adjustViewBounds="true"
+							android:scaleType="fitCenter"
+							app:layout_constraintTop_toTopOf="parent"
+							app:layout_constraintBottom_toBottomOf="parent"
+							app:layout_constraintStart_toStartOf="parent"
+							app:layout_constraintEnd_toEndOf="parent" />
 
-					<ludoclient.platforms.android.DailyBonusCardView
-						android:id="@+id/D4"
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:layout_weight="1"
-						android:layout_margin="2dp"/>
+
+						<!-- Content -->
+						<LinearLayout
+							android:id="@+id/daysContainer"
+							android:layout_width="0dp"
+							android:layout_height="0dp"
+							android:layout_margin="5dp"
+							app:layout_constraintTop_toTopOf="@id/daysImg"
+							app:layout_constraintBottom_toBottomOf="@id/daysImg"
+							app:layout_constraintStart_toStartOf="@id/daysImg"
+							app:layout_constraintEnd_toEndOf="@id/daysImg"
+							android:orientation="vertical">
+
+							<!-- Row 1 (4 cards) -->
+							<LinearLayout
+								android:layout_width="match_parent"
+								android:layout_height="0dp"
+								android:layout_weight="1"
+								android:orientation="horizontal">
+
+								<ludoclient.platforms.android.DailyBonusCardView
+									android:id="@+id/D1"
+									android:layout_width="0dp"
+									android:layout_height="match_parent"
+									android:layout_weight="1"
+									android:layout_margin="2dp"/>
+
+								<ludoclient.platforms.android.DailyBonusCardView
+									android:id="@+id/D2"
+									android:layout_width="0dp"
+									android:layout_height="match_parent"
+									android:layout_weight="1"
+									android:layout_margin="2dp"/>
+
+								<ludoclient.platforms.android.DailyBonusCardView
+									android:id="@+id/D3"
+									android:layout_width="0dp"
+									android:layout_height="match_parent"
+									android:layout_weight="1"
+									android:layout_margin="2dp"/>
+
+								<ludoclient.platforms.android.DailyBonusCardView
+									android:id="@+id/D4"
+									android:layout_width="0dp"
+									android:layout_height="match_parent"
+									android:layout_weight="1"
+									android:layout_margin="2dp"/>
+							</LinearLayout>
+
+							<!-- spacing -->
+							<View
+								android:layout_width="match_parent"
+								android:layout_height="4dp"/>
+
+							<!-- Row 2 (3 cards centered) -->
+							<androidx.constraintlayout.widget.ConstraintLayout
+								android:layout_width="match_parent"
+								android:layout_height="0dp"
+								android:layout_weight="1">
+
+								<!-- Centered container with 75% width -->
+								<LinearLayout
+									android:id="@+id/row2Container"
+									android:layout_width="0dp"
+									android:layout_height="match_parent"
+									android:orientation="horizontal"
+									android:weightSum="3"
+									app:layout_constraintWidth_percent="0.75"
+									app:layout_constraintStart_toStartOf="parent"
+									app:layout_constraintEnd_toEndOf="parent"
+									app:layout_constraintTop_toTopOf="parent"
+									app:layout_constraintBottom_toBottomOf="parent">
+
+									<ludoclient.platforms.android.DailyBonusCardView
+										android:id="@+id/D5"
+										android:layout_width="0dp"
+										android:layout_height="match_parent"
+										android:layout_weight="1"
+										android:layout_margin="2dp"/>
+
+									<ludoclient.platforms.android.DailyBonusCardView
+										android:id="@+id/D6"
+										android:layout_width="0dp"
+										android:layout_height="match_parent"
+										android:layout_weight="1"
+										android:layout_margin="2dp"/>
+
+									<ludoclient.platforms.android.DailyBonusCardView
+										android:id="@+id/D7"
+										android:layout_width="0dp"
+										android:layout_height="match_parent"
+										android:layout_weight="1"
+										android:layout_margin="2dp"/>
+
+								</LinearLayout>
+
+							</androidx.constraintlayout.widget.ConstraintLayout>
+
+						</LinearLayout>
+					</androidx.constraintlayout.widget.ConstraintLayout>
+					<!-- Version Text -->
+					<androidx.constraintlayout.widget.ConstraintLayout
+						android:id="@+id/claimBtn"
+						android:layout_width="wrap_content"
+						android:layout_height="40dp"
+						android:layout_gravity="center"
+						android:layout_margin="5dp"
+						android:clickable="true"
+						android:focusable="true">
+
+						<ImageView
+							android:id="@+id/claimBtnImg"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:src="@drawable/btn_verify_account"
+							android:adjustViewBounds="true"
+							android:scaleType="fitCenter"
+							app:layout_constraintTop_toTopOf="parent"
+							app:layout_constraintBottom_toBottomOf="parent"
+							app:layout_constraintStart_toStartOf="parent"
+							app:layout_constraintEnd_toEndOf="parent" />
+
+						<TextView
+							android:layout_width="0dp"
+							android:layout_height="0dp"
+							android:text="CLAIM"
+							android:textColor="#FFFFFF"
+							android:gravity="center"
+							android:textStyle="bold"
+							android:textSize="14sp"
+							app:layout_constraintTop_toTopOf="@id/claimBtnImg"
+							app:layout_constraintBottom_toBottomOf="@id/claimBtnImg"
+							app:layout_constraintStart_toStartOf="@id/claimBtnImg"
+							app:layout_constraintEnd_toEndOf="@id/claimBtnImg" />
+					</androidx.constraintlayout.widget.ConstraintLayout>
 				</LinearLayout>
-
-				<!-- spacing -->
-				<View
-					android:layout_width="match_parent"
-					android:layout_height="4dp"/>
-
-				<!-- Row 2 (3 cards centered) -->
-				<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:layout_weight="1">
-
-					<!-- Centered container with 75% width -->
-					<LinearLayout
-						android:id="@+id/row2Container"
-						android:layout_width="0dp"
-						android:layout_height="match_parent"
-						android:orientation="horizontal"
-						android:weightSum="3"
-						app:layout_constraintWidth_percent="0.75"
-						app:layout_constraintStart_toStartOf="parent"
-						app:layout_constraintEnd_toEndOf="parent"
-						app:layout_constraintTop_toTopOf="parent"
-						app:layout_constraintBottom_toBottomOf="parent">
-
-						<ludoclient.platforms.android.DailyBonusCardView
-							android:id="@+id/D5"
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:layout_margin="2dp"/>
-
-						<ludoclient.platforms.android.DailyBonusCardView
-							android:id="@+id/D6"
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:layout_margin="2dp"/>
-
-						<ludoclient.platforms.android.DailyBonusCardView
-							android:id="@+id/D7"
-							android:layout_width="0dp"
-							android:layout_height="match_parent"
-							android:layout_weight="1"
-							android:layout_margin="2dp"/>
-
-					</LinearLayout>
-
-				</androidx.constraintlayout.widget.ConstraintLayout>
-
-			</LinearLayout>
-
-		</FrameLayout>
-        <!-- Claim Button -->
-        <ImageButton
-            android:id="@+id/claimBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-			android:layout_marginTop="-12dp"
-            android:layout_marginBottom="47dp"
-            android:src="@drawable/btn_claim"
-            android:background="@null"
-            android:scaleType="fitCenter"
-            android:adjustViewBounds="true"
-            app:layout_constraintTop_toTopOf="@id/guide_row_3"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_4"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+			</FrameLayout>
+		</androidx.constraintlayout.widget.ConstraintLayout>
+		<!-- Sandbox Content Area (Anchored to Grid) -->
+	</androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
