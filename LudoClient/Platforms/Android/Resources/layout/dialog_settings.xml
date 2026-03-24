@@ -4,15 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- The main layout centering the whole popup - Using Turn 15 wrap_content approach -->
-    <androidx.constraintlayout.widget.ConstraintLayout
+	<!-- Sandbox Container: 320dp Fixed Width (Gold Standard) -->
+	<androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="320dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center">
 
-        <!-- Background Image defining the popup size -->
-        <ImageView
-            android:id="@+id/popupBg"
+		<!-- Reference Background -->
+		<ImageView
+            android:id="@+id/PopupBg"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:src="@drawable/dailybonus_popup_bg"
@@ -24,195 +24,156 @@
             android:translationY="17dp"
             android:layout_marginBottom="17dp"/>
 
-        <!-- Proportion Guidelines based on total 9.1 stars from original MAUI Grid -->
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.0879" />
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.1098" />
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.6593" />
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.7912" />
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9011" />
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guide_row_5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9670" />
-
-        <!-- Title Bar - Fixed to 3/4 width, centered, with Turn 15 positioning -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/titleBar"
+		<!-- Title Bar: 3/4 width (0.75) -->
+		<androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/testTitleBar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:translationY="1dp"
             app:layout_constraintWidth_percent="0.75"
-            app:layout_constraintTop_toTopOf="@id/popupBg"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg">
-            
-            <ImageView
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+
+			<ImageView
                 android:id="@+id/titleImage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:src="@drawable/popup_title"
-                android:adjustViewBounds="true"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-                
-            <TextView
-                android:id="@+id/titleText"
-                android:translationY="-8dp"
+                android:adjustViewBounds="true" />
+
+			<TextView
+                android:translationY="-11dp"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:text="SETTINGS"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
                 android:gravity="center"
-                android:paddingBottom="8dp"
-                android:letterSpacing="0.1px"
+                android:letterSpacing="0.1"
                 app:layout_constraintTop_toTopOf="@id/titleImage"
                 app:layout_constraintBottom_toBottomOf="@id/titleImage"
                 app:layout_constraintStart_toStartOf="@id/titleImage"
                 app:layout_constraintEnd_toEndOf="@id/titleImage" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- Container for Settings Switches -->
-        <FrameLayout
-            android:id="@+id/settingsContainer"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:translationY="17dp"
-            android:layout_marginHorizontal="20dp"
-            app:layout_constraintTop_toTopOf="@id/guide_row_1"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_2"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg">
-            
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:src="@drawable/settings_forground"
-                android:scaleType="fitXY" />
+		</androidx.constraintlayout.widget.ConstraintLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:paddingVertical="12dp"
-                android:paddingHorizontal="8dp">
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:layout_width="0dp"
+			android:layout_height="0dp"
+            android:layout_marginTop="50dp"
+            android:layout_marginBottom="10dp"
+            app:layout_constraintWidth_percent="0.95"
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintBottom_toBottomOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg"
+            android:layout_gravity="center">
 
-                <ludoclient.platforms.android.SettingsSwitchView
-                    android:id="@+id/soundSwitch"
+			<FrameLayout
+		        android:layout_width="0dp"
+		        android:layout_height="0dp"
+		        android:translationY="17dp"
+		        android:layout_marginHorizontal="20dp"
+		        app:layout_constraintTop_toTopOf="parent"
+		        app:layout_constraintBottom_toBottomOf="parent"
+		        app:layout_constraintStart_toStartOf="parent"
+		        app:layout_constraintEnd_toEndOf="parent">
+
+				<ImageView
+					android:id="@+id/settingsforground"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:src="@drawable/settings_forground"
+                    android:layout_gravity="top|center_horizontal"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitStart"/>
+				<androidx.constraintlayout.widget.ConstraintLayout
+					android:id="@+id/settingsContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+                    android:layout_height="match_parent"
+                    android:layout_gravity="top|center_horizontal">
 
-                <ludoclient.platforms.android.SettingsSwitchView
-                    android:id="@+id/vibrationSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+					<LinearLayout
+						android:layout_width="match_parent"
+						android:layout_height="match_parent"
+						android:orientation="vertical"
+                        android:layout_margin="10dp">
 
-                <ludoclient.platforms.android.SettingsSwitchView
-                    android:id="@+id/notificationSwitch"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
+						<ludoclient.platforms.android.SettingsSwitchView
+							android:id="@+id/soundSwitch"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1" />
 
-            </LinearLayout>
-        </FrameLayout>
+						<ludoclient.platforms.android.SettingsSwitchView
+							android:id="@+id/vibrationSwitch"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1" />
 
-        <!-- Help Button -->
-        <ImageButton
-            android:id="@+id/settingsBtnHelp"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/help"
-            android:background="@null"
-            android:scaleType="fitCenter"
-            android:visibility="gone"
-            app:layout_constraintTop_toTopOf="@id/guide_row_2"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_3"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg" />
+						<ludoclient.platforms.android.SettingsSwitchView
+							android:id="@+id/notificationSwitch"
+							android:layout_width="match_parent"
+							android:layout_height="0dp"
+							android:layout_weight="1" />
 
-        <!-- SIGN OUT Button -->
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/btnSignOut"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_margin="5dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintTop_toTopOf="@id/guide_row_3"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_4"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg">
-            
-            <ImageView
-                android:id="@+id/signOutBg"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/btn_exit"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-                
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:text="SIGN OUT"
-                android:textColor="#FFFFFF"
-                android:gravity="center"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                app:layout_constraintTop_toTopOf="@id/signOutBg"
-                app:layout_constraintBottom_toBottomOf="@id/signOutBg"
-                app:layout_constraintStart_toStartOf="@id/signOutBg"
-                app:layout_constraintEnd_toEndOf="@id/signOutBg" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+					</LinearLayout>
+				</androidx.constraintlayout.widget.ConstraintLayout>
+				<LinearLayout
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:orientation="vertical"
+						android:translationY="-17dp"
+                        android:layout_margin="10dp"
+						android:layout_gravity="bottom|center_horizontal">
+					<!-- SIGN OUT Button -->
+					<androidx.constraintlayout.widget.ConstraintLayout
+						android:id="@+id/btnSignOut"
+						android:layout_width="wrap_content"
+						android:layout_height="40dp"
+						android:layout_margin="5dp"
+						android:clickable="true"
+						android:focusable="true">
 
-        <!-- Version Text -->
-        <TextView
-            android:id="@+id/versionText"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:textColor="#FFFFFF"
-            android:text="Version : "
-            android:gravity="center"
-            android:textSize="12sp"
-            app:layout_constraintTop_toTopOf="@id/guide_row_4"
-            app:layout_constraintBottom_toBottomOf="@id/guide_row_5"
-            app:layout_constraintStart_toStartOf="@id/popupBg"
-            app:layout_constraintEnd_toEndOf="@id/popupBg" />
+						<ImageView
+							android:id="@+id/signOutBg"
+							android:layout_width="wrap_content"
+							android:layout_height="match_parent"
+							android:src="@drawable/btn_exit"
+							android:adjustViewBounds="true"
+							android:scaleType="fitCenter"
+							app:layout_constraintTop_toTopOf="parent"
+							app:layout_constraintBottom_toBottomOf="parent"
+							app:layout_constraintStart_toStartOf="parent"
+							app:layout_constraintEnd_toEndOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+						<TextView
+							android:layout_width="0dp"
+							android:layout_height="0dp"
+							android:text="SIGN OUT"
+							android:textColor="#FFFFFF"
+							android:gravity="center"
+							android:textStyle="bold"
+							android:textSize="14sp"
+							app:layout_constraintTop_toTopOf="@id/signOutBg"
+							app:layout_constraintBottom_toBottomOf="@id/signOutBg"
+							app:layout_constraintStart_toStartOf="@id/signOutBg"
+							app:layout_constraintEnd_toEndOf="@id/signOutBg" />
+					</androidx.constraintlayout.widget.ConstraintLayout>
+					<!-- Version Text -->
+					<TextView
+						android:id="@+id/versionText"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:textColor="#FFFFFF"
+						android:text="Version : "
+						android:gravity="center"
+						android:layout_gravity="center"
+						android:textSize="12sp" />
+				</LinearLayout>
+			</FrameLayout>
+		</androidx.constraintlayout.widget.ConstraintLayout>
+		<!-- Sandbox Content Area (Anchored to Grid) -->
+	</androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

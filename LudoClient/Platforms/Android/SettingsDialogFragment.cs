@@ -1,23 +1,24 @@
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.ConstraintLayout.Widget;
 using AndroidX.Fragment.App;
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Extensions;
+using CommunityToolkit.Maui.Views;
+using LudoClient;
 using LudoClient.Constants;
+using LudoClient.Services;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Dispatching;
+using SharedCode.Constants;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Dispatching;
-using LudoClient.Services;
-using CommunityToolkit.Maui.Views;
-using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Extensions;
-using SharedCode.Constants;
-using LudoClient;
 
 namespace LudoClient.Platforms.Android
 {
@@ -48,8 +49,8 @@ namespace LudoClient.Platforms.Android
             var btnSignOut = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSignOut);
             btnSignOut.Click += SignOutTapped;
 
-            var btnHelp = view.FindViewById<global::Android.Widget.ImageButton>(Resource.Id.settingsBtnHelp);
-            btnHelp.Click += OnHelpTapped;
+        //    var btnHelp = view.FindViewById<global::Android.Widget.ImageButton>(Resource.Id.settingsBtnHelp);
+        //    btnHelp.Click += OnHelpTapped;
 
             // Stop the stopwatch, similar to Settings.xaml.cs OnAppearing
             if (ClientGlobalConstants.sw != null)
@@ -57,7 +58,25 @@ namespace LudoClient.Platforms.Android
                 ClientGlobalConstants.sw.Stop();
                 Console.WriteLine($"CashGame full load time: {ClientGlobalConstants.sw.ElapsedMilliseconds} ms");
             }
+            ConstraintLayout settingsContainer = view.FindViewById<ConstraintLayout>(Resource.Id.settingsContainer);
+            ImageView bgImage = view.FindViewById<ImageView>(Resource.Id.settingsforground);
 
+            bgImage.Post(() =>
+            {
+                int width = bgImage.Width;
+                int height = bgImage.Height;
+
+                var layoutParams = (FrameLayout.LayoutParams)settingsContainer.LayoutParameters;
+
+                layoutParams.Width = (int)(width);
+                layoutParams.Height = (int)(height);
+
+                // ✅ Center inside FrameLayout
+                layoutParams.Gravity = GravityFlags.Top;
+
+
+                settingsContainer.LayoutParameters = layoutParams; // ✅ apply to SAME view
+            });
             return view;
         }
 
