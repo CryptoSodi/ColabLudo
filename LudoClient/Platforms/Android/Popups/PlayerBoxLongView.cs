@@ -54,6 +54,9 @@ namespace LudoClient.Platforms.Android.Popups
             _orangeBar = view.FindViewById<global::Android.Views.View>(Resource.Id.orangeBar);
             _reminderScoreText = view.FindViewById<TextView>(Resource.Id.reminderScoreText);
             _scoreBarBg = view.FindViewById<global::Android.Views.View>(Resource.Id.scoreBarBg);
+
+            // Set default placeholder
+            _playerImage?.SetImageResource(Resource.Drawable.player);
         }
 
         public void SetPlayerName(string name)
@@ -62,16 +65,7 @@ namespace LudoClient.Platforms.Android.Popups
                 _playerNameText.Text = name;
         }
 
-        public void SetPlayerImage(string url)
-        {
-            // Note: In a real app, use an image loading library like Glide or Picasso.
-            // For now, we assume UserInfo.Instance.ProfileImageSource is handled or use native loading.
-            if (_playerImage != null && !string.IsNullOrEmpty(url))
-            {
-                // Simple placeholder logic or direct URI if supported
-                // _playerImage.SetImageURI(global::Android.Net.Uri.Parse(url));
-            }
-        }
+      
 
         public void SetPlayerImageBitmap(global::Android.Graphics.Bitmap bitmap)
         {

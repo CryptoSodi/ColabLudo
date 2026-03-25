@@ -1,21 +1,12 @@
-using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
-using LudoClient.Constants;
-using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Storage;
-using SharedCode.Constants;
-using System;
-using System.Threading.Tasks;
-using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
-using CommunityToolkit.Maui.Views;
 using CommunityToolkit.Maui.Extensions;
+using LudoClient.Constants;
+using SharedCode.Constants;
 
 namespace LudoClient.Platforms.Android.Popups
 {
@@ -86,10 +77,29 @@ namespace LudoClient.Platforms.Android.Popups
                 UpdateStats(p.GamesPlayed, p.GamesWon, p.GamesLost, p.BestWin, p.TotalWin, p.TotalLost);
                 _playerBox.SetScore(p.Score, p.PhoneNumber != "###########");
 
-                // Load profile image if available
-                if (UserInfo.Instance.ProfileImageSource is Microsoft.Maui.Controls.UriImageSource uriSource)
+                // Load profile image
+                if (!string.IsNullOrEmpty(p.PictureUrl))
                 {
-                    // In a real app, use an image loader. For now, we skip or use a basic Task.
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var httpClient = new System.Net.Http.HttpClient();
+                            var bytes = await httpClient.GetByteArrayAsync(p.PictureUrl);
+                            var bitmap = await BitmapFactory.DecodeByteArrayAsync(bytes, 0, bytes.Length);
+                            if (bitmap != null)
+                            {
+                                MainThread.BeginInvokeOnMainThread(() =>
+                                {
+                                    _playerBox.SetPlayerImageBitmap(bitmap);
+                                });
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error loading profile image: {ex.Message}");
+                        }
+                    });
                 }
             }
 
@@ -118,7 +128,7 @@ namespace LudoClient.Platforms.Android.Popups
                         MainThread.BeginInvokeOnMainThread(() =>
                         {
                             UpdateStats(dto.GamesPlayed, dto.GamesWon, dto.GamesLost, dto.BestWin, dto.TotalWin, dto.TotalLost);
-                            _playerBox.SetScore(dto.Score, true);
+                            _playerBox.SetScore(dto.Score, dto.PhoneNumber != "###########" && !string.IsNullOrEmpty(dto.PhoneNumber));
                             if (dto.PhoneNumber != null)
                             {
                                 _numberText.Text = dto.PhoneNumber;

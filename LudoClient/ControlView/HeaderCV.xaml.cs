@@ -1,7 +1,6 @@
 using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
-using LudoClient.Popups;
 using SharedCode.Constants;
 using System.Diagnostics;
 namespace LudoClient;
