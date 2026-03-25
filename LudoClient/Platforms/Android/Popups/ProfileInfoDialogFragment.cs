@@ -161,13 +161,13 @@ namespace LudoClient.Platforms.Android.Popups
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Dismiss();
             
-            // Re-use the existing MAUI dashboard logic to show the minting page popup
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var mainPage = Microsoft.Maui.Controls.Application.Current?.MainPage;
-                if (mainPage != null)
+                var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+                if (activity != null)
                 {
-                    mainPage.ShowPopup(ClientGlobalConstants.mintingPage);
+                    var dialog = new MintingDialogFragment();
+                    dialog.Show(activity.SupportFragmentManager, "MintingDialog");
                 }
             });
         }
