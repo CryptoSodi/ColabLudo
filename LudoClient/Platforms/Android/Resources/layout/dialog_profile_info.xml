@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Root Container: 320dp Fixed Width (Gold Standard) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center">
+
+        <!-- Main Popup Background -->
+        <ImageView
+            android:id="@+id/PopupBg"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:src="@drawable/popup_bg"
+            android:adjustViewBounds="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:translationY="17dp"
+            android:layout_marginBottom="17dp"/>
+
+        <!-- Title Bar: 3/4 width (0.75) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+                 android:id="@+id/testTitleBar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:translationY="1dp"
+            app:layout_constraintWidth_percent="0.75"
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+
+			<ImageView
+                android:id="@+id/titleImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:src="@drawable/popup_title"
+                android:adjustViewBounds="true" />
+
+			<TextView
+                android:translationY="-11dp"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:text="PROFILE"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:gravity="center"
+                android:letterSpacing="0.1"
+                app:layout_constraintTop_toTopOf="@id/titleImage"
+                app:layout_constraintBottom_toBottomOf="@id/titleImage"
+                app:layout_constraintStart_toStartOf="@id/titleImage"
+                app:layout_constraintEnd_toEndOf="@id/titleImage" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Content Area -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="17dp"
+            android:paddingTop="17dp"
+            android:translationY="20dp"
+            app:layout_constraintTop_toTopOf="@id/PopupBg"
+            app:layout_constraintBottom_toBottomOf="@id/PopupBg"
+            app:layout_constraintStart_toStartOf="@id/PopupBg"
+            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+
+            <!-- Profile Info Top Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:src="@drawable/profile_info_bg"
+                    android:scaleType="fitXY"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="4dp">
+
+                    <ludoclient.platforms.android.Popups.PlayerBoxLongView
+                        android:id="@+id/playerBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <!-- Contact Details -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="4dp">
+
+                        <!-- Email -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginVertical="2dp">
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_rounded_coins"
+                                android:alpha="0.5" />
+                            <ImageView
+                                android:id="@+id/icEmail"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/ic_email"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
+                            <TextView
+                                android:id="@+id/emailText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="email@example.com"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toEndOf="@id/icEmail"
+                                app:layout_constraintEnd_toEndOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <!-- Number -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginVertical="2dp">
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_rounded_coins"
+                                android:alpha="0.5" />
+                            <ImageView
+                                android:id="@+id/icCall"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/ic_call"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
+                            <TextView
+                                android:id="@+id/numberText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="+1234567890"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toEndOf="@id/icCall"
+                                app:layout_constraintEnd_toEndOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        <!-- Location -->
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginVertical="2dp">
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_rounded_coins"
+                                android:alpha="0.5" />
+                            <ImageView
+                                android:id="@+id/icLocation"
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/ic_address"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
+                            <TextView
+                                android:id="@+id/locationText"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="8dp"
+                                android:text="Location City"
+                                android:textColor="#FFFFFF"
+                                android:textSize="10sp"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintBottom_toBottomOf="parent"
+                                app:layout_constraintStart_toEndOf="@id/icLocation"
+                                app:layout_constraintEnd_toEndOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Manage NFTs Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/manageNftsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="4dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/friendlong"
+                    android:scaleType="fitXY" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="12dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/nft_icon" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="MANAGE NFTS"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="80dp"
+                        android:layout_height="24dp">
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/bg_rounded_coins" />
+                        <TextView
+                            android:id="@+id/nftCountText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0 NFTs"
+                            android:textColor="#FFFFFF"
+                            android:textSize="10sp"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Statistics Section -->
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="4dp"
+                android:src="@drawable/statistics_info"
+                android:adjustViewBounds="true" />
+
+            <!-- Stats Rows -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="3">
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statPlayed"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statWon"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statLost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp"
+                    android:weightSum="3">
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statBestWin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statTotalWin"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                    <ludoclient.platforms.android.Popups.StatisticCardView
+                        android:id="@+id/statTotalLost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</FrameLayout>

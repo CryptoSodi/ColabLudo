@@ -11,7 +11,7 @@
 
             <Grid Margin="0,0,-20,-35" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <Grid.GestureRecognizers VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
-                    <TapGestureRecognizer Tapped="OnPlayerTapped"/>
+                    <TapGestureRecognizer Tapped="Navigate_Profile"/>
                 </Grid.GestureRecognizers>
             </Grid>
 

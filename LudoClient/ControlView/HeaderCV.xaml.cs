@@ -74,7 +74,7 @@ public partial class HeaderCV : ContentView
         }
     }
     bool _NavigationCooldown = false;
-    private async void OnPlayerTapped(object sender, EventArgs e)
+    private async void Navigate_Profile(object sender, EventArgs e)
     {
         if (_NavigationCooldown)
             return;
@@ -83,7 +83,16 @@ public partial class HeaderCV : ContentView
         {
             ClientGlobalConstants.sw = Stopwatch.StartNew();
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+    #if ANDROID
+            var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+            if (activity != null)
+            {
+                var dialog = new LudoClient.Platforms.Android.Popups.ProfileInfoDialogFragment();
+                dialog.Show(activity.SupportFragmentManager, "ProfileDialog");
+            }
+    #else
             Application.Current?.MainPage?.ShowPopup(ClientGlobalConstants.profileInfo, new PopupOptions { Shape = null });
+    #endif
         }
         finally
         {
