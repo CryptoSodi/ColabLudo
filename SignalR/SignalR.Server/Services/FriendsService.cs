@@ -42,7 +42,8 @@ namespace SignalR.Server.Services
                             pictureUrl = p.PictureUrl,
                             rank = 31, // No rank info available, setting 0 or you can later compute
                             status = "",
-                            lastGame = true
+                            lastGame = true,
+                            gamesWon = p.GamesWon
                         })
                         .ToList();
 
@@ -79,7 +80,8 @@ namespace SignalR.Server.Services
                         pictureUrl = fr.OtherPlayer.PictureUrl,
                         rank = 31,
                         status = fr.Status.ToString(),
-                        lastGame = false
+                        lastGame = false,
+                        gamesWon = fr.OtherPlayer.GamesWon
                     });
                 }
             }

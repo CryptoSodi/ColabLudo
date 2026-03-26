@@ -22,6 +22,7 @@ namespace LudoClient.Platforms.Android.Popups
         private ImageView _playerImage;
         private ImageView _playerLocationImage;
         private TextView _playerName;
+        private TextView _gamesWonText;
         private global::Android.Views.View _blockAction;
         private TextView _blockActionText;
         private global::Android.Views.View _tappedAction;
@@ -63,6 +64,7 @@ namespace LudoClient.Platforms.Android.Popups
             _playerImage = view.FindViewById<ImageView>(Resource.Id.PlayerImage);
             _playerLocationImage = view.FindViewById<ImageView>(Resource.Id.PlayerLocationImage);
             _playerName = view.FindViewById<TextView>(Resource.Id.PlayerName);
+            _gamesWonText = view.FindViewById<TextView>(Resource.Id.GamesWonText);
             _blockAction = view.FindViewById<global::Android.Views.View>(Resource.Id.BlockAction);
             _blockActionText = view.FindViewById<TextView>(Resource.Id.BlockActionText);
             _tappedAction = view.FindViewById<global::Android.Views.View>(Resource.Id.TappedAction);
@@ -127,6 +129,7 @@ namespace LudoClient.Platforms.Android.Popups
             // Type specific logic
             _blockAction.Visibility = ViewStates.Visible;
             _tappedAction.Visibility = ViewStates.Visible;
+            _gamesWonText.Visibility = ViewStates.Gone;
 
             if (type == "Friend")
             {
@@ -140,6 +143,13 @@ namespace LudoClient.Platforms.Android.Popups
                     _tappedAction.Visibility = ViewStates.Gone;
                     _blockActionText.Text = "UN BLOCK";
                 }
+            }
+            else if (type == "Leaderboard")
+            {
+                _blockAction.Visibility = ViewStates.Gone;
+                _tappedAction.Visibility = ViewStates.Gone;
+                _gamesWonText.Visibility = ViewStates.Visible;
+                _gamesWonText.Text = pc.gamesWon.ToString(); 
             }
 
             _rankingText.Text = pc.rank > 99 ? "99+" : pc.rank.ToString();

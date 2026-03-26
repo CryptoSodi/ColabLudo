@@ -82,6 +82,7 @@
         public int rank { get; set; }
         public String? status { get; set; }
         public bool lastGame { get; set; }
+        public int gamesWon { get; set; }
     }
     public class ChatMessages
     {

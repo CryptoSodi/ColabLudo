@@ -3,6 +3,9 @@ using LudoClient.ControlView;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
+#if ANDROID
+using LudoClient.Platforms.Android;
+#endif
 
 namespace LudoClient;
 
@@ -18,44 +21,73 @@ public partial class LeaderboardPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        await Task.Delay(100);
         InitializeLeaderboardAsync();
     }
     public async Task InitializeLeaderboardAsync()
     {
         try
         {
-            List<PlayerCard> Friends = await GetPlayerCards(UserInfo.Instance.player.PlayerId);
-            var FriendsIds = Friends.Select(g => g.playerID).ToHashSet();
+            List<PlayerCard> playerCard = await GetPlayerCards(UserInfo.Instance.player.PlayerId);
+            
+            if (playerCard == null)
+            {
+                Console.WriteLine("GetPlayerCards returned null.");
+                return;
+            }
+
+            var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
 
             // Identify which items are currently displayed
-            var existingItems = LeaderboardListStack.Children.OfType<DetailList>().ToList();
-
-            var existingFriendsIds = existingItems.Select(i => i.playerCard.playerID).ToHashSet();
+            var existingItems = LeaderboardListStack.Children.ToList();
 
             // Remove items that are no longer present in the new data
-            var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
+            var itemsToRemove = existingItems.Where(item => {
+                if (item is DetailList dl) return !FriendsIds.Contains(dl.playerCard.playerID);
+#if ANDROID
+                if (item is NativeFriendCard nfc) return !FriendsIds.Contains(nfc.Player.playerID);
+#endif
+                return true;
+            }).ToList();
 
             foreach (var item in itemsToRemove)
             {
                 LeaderboardListStack.Children.Remove(item);
             }
 
-            // Add new items that weren't previously displayed
-            foreach (var friend in Friends)
+            // Add or update items
+            foreach (var PI in playerCard)
             {
-                if (!existingFriendsIds.Contains(friend.playerID))
+                var existingItem = existingItems.FirstOrDefault(item => {
+                    if (item is DetailList dl) return dl.playerCard.playerID == PI.playerID;
+#if ANDROID
+                    if (item is NativeFriendCard nfc) return nfc.Player.playerID == PI.playerID;
+#endif
+                    return false;
+                });
+
+                if (existingItem == null)
                 {
-                    var friendDetail = new DetailList(friend, "Leaderboard");
+#if ANDROID
+                    var nativeCard = new NativeFriendCard(PI, "Leaderboard");
+                    LeaderboardListStack.Children.Add(nativeCard);
+#else
+                    var friendDetail = new DetailList(PI, "Leaderboard");
                     LeaderboardListStack.Children.Add(friendDetail);
+#endif
                 }
                 else
                 {
-                    // Optionally, update existing items if details have changed
-                    var existingItem = existingItems.FirstOrDefault(i => i.playerCard.playerID == friend.playerID);
-                    if (existingItem != null)
+                    if (existingItem is DetailList dl)
                     {
-                        existingItem.SetDetails(friend, "Leaderboard");
+                        dl.SetDetails(PI, "Leaderboard");
                     }
+#if ANDROID
+                    else if (existingItem is NativeFriendCard nfc)
+                    {
+                        nfc.Player = PI;
+                    }
+#endif
                 }
             }
         }
