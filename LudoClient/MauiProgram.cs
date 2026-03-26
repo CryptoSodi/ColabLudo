@@ -56,6 +56,7 @@ builder.Services.AddSingleton<ISoundService, MauiAudioService>();
             {
 #if ANDROID
                 handlers.AddHandler(typeof(CameraWebView), typeof(LudoClient.Platforms.Android.CameraWebViewHandler));
+                handlers.AddHandler(typeof(NativeFriendCard), typeof(NativeFriendCardHandler));
 #endif
             });
 

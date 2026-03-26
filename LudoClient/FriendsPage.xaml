@@ -6,7 +6,7 @@
              BackgroundImageSource="background_waitingroom.webp"
              x:Class="LudoClient.FriendsPage">
 
-    <Grid IgnoreSafeArea="True" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
+    <Grid x:Name="RootGrid" IgnoreSafeArea="True" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
         <controlview:Capsule ImageSource="wallet_bg.webp" Grid.Row="1" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
             <Grid Margin="0,20,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".4*,.6*" ColumnDefinitions="1*,2*,1*">

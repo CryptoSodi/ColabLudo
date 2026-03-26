@@ -3,6 +3,10 @@ using LudoClient.ControlView;
 using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
+#if ANDROID
+using Android.Views;
+using LudoClient.Platforms.Android;
+#endif
 
 namespace LudoClient;
 
@@ -29,34 +33,57 @@ public partial class FriendsPage : ContentPage
         var FriendsIds = playerCard.Select(g => g.playerID).ToHashSet();
 
         // Identify which items are currently displayed
-        var existingItems = FriendsListStack.Children.OfType<DetailList>().ToList();
-
-        var existingFriendsIds = existingItems.Select(i => i.playerCard.playerID).ToHashSet();
+        var existingItems = FriendsListStack.Children.ToList();
 
         // Remove items that are no longer present in the new data
-        var itemsToRemove = existingItems.Where(item => !FriendsIds.Contains(item.playerCard.playerID)).ToList();
+        var itemsToRemove = existingItems.Where(item => {
+            if (item is DetailList dl) return !FriendsIds.Contains(dl.playerCard.playerID);
+#if ANDROID
+            if (item is NativeFriendCard nfc) return !FriendsIds.Contains(nfc.Player.playerID);
+#endif
+            return true;
+        }).ToList();
         
         foreach (var item in itemsToRemove)
         {
             FriendsListStack.Children.Remove(item);
         }
 
-        // Add new items that weren't previously displayed
+        // Add or update items
         foreach (var PI in playerCard)
         {
-            if (!existingFriendsIds.Contains(PI.playerID))
+            var existingItem = existingItems.FirstOrDefault(item => {
+                if (item is DetailList dl) return dl.playerCard.playerID == PI.playerID;
+#if ANDROID
+                if (item is NativeFriendCard nfc) return nfc.Player.playerID == PI.playerID;
+#endif
+                return false;
+            });
+
+            if (existingItem == null)
             {
+#if ANDROID
+                var nativeCard = new NativeFriendCard(PI, "Friend");
+                FriendsListStack.Children.Add(nativeCard);
+#else
                 var friendDetail = new DetailList(PI, "Friend");                
                 FriendsListStack.Children.Add(friendDetail);
+#endif
             }
             else
             {
-                // Optionally, update existing items if details have changed
-                var existingItem = existingItems.FirstOrDefault(i => i.playerCard.playerID == PI.playerID);
-                if (existingItem != null)
+                if (existingItem is DetailList dl)
                 {
-                    existingItem.SetDetails(PI, "Friend");
+                    dl.SetDetails(PI, "Friend");
                 }
+#if ANDROID
+                else if (existingItem is NativeFriendCard nfc)
+                {
+                    nfc.Player = PI;
+                    // Trigger a re-map by setting the property (optional if same instance)
+                    // nfc.OnPropertyChanged(nameof(nfc.Player)); 
+                }
+#endif
             }
         }
     }

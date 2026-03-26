@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="2dp">
+
+    <!-- Rank-based Background -->
+    <ImageView
+        android:id="@+id/BackgroundLayerImage"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:src="@drawable/friendlong"
+        android:scaleType="fitXY"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Ranking Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/rankingSection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/PlayerMadel"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/number_1"
+            android:scaleType="fitCenter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/RankingText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="@id/PlayerMadel"
+            app:layout_constraintBottom_toBottomOf="@id/PlayerMadel"
+            app:layout_constraintStart_toStartOf="@id/PlayerMadel"
+            app:layout_constraintEnd_toEndOf="@id/PlayerMadel"
+            android:paddingBottom="2dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Avatar Section -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/avatarSection"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="4dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/rankingSection">
+
+        <ImageView
+            android:id="@+id/PlayerImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="4dp"
+            android:src="@drawable/player"
+            android:scaleType="centerCrop" />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/profile_user"
+            android:scaleType="fitXY" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Info Section -->
+    <LinearLayout
+        android:id="@+id/infoSection"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/avatarSection"
+        app:layout_constraintEnd_toStartOf="@id/actionSection">
+
+        <ImageView
+            android:id="@+id/PlayerLocationImage"
+            android:layout_width="16dp"
+            android:layout_height="12dp"
+            android:src="@drawable/pakistan"
+            android:scaleType="fitXY" />
+
+        <TextView
+            android:id="@+id/PlayerName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Player Name"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:ellipsize="end"
+            android:singleLine="true" />
+    </LinearLayout>
+
+    <!-- Action Section -->
+    <LinearLayout
+        android:id="@+id/actionSection"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/BlockAction"
+            android:layout_width="80dp"
+            android:layout_height="24dp"
+            android:layout_marginVertical="1dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/btn_red"
+                android:scaleType="fitXY" />
+            <TextView
+                android:id="@+id/BlockActionText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="BLOCK"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:gravity="center"
+                android:paddingBottom="2dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/TappedAction"
+            android:layout_width="80dp"
+            android:layout_height="24dp"
+            android:layout_marginVertical="1dp"
+            android:clickable="true"
+            android:focusable="true">
+            <ImageView
+                android:id="@+id/TappedActionImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/btn_verify_account"
+                android:scaleType="fitXY" />
+            <TextView
+                android:id="@+id/TappedActionText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="MESSAGE"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp"
+                android:gravity="center"
+                android:paddingBottom="2dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
