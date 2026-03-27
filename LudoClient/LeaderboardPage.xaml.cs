@@ -121,7 +121,6 @@ public partial class LeaderboardPage : ContentPage
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
         Tab3.SwitchSource = Tab3 == activeTab ? Tab3.SwitchOn : Tab3.SwitchOff;
         Tab4.SwitchSource = Tab4 == activeTab ? Tab4.SwitchOn : Tab4.SwitchOff;
-        Tab5.SwitchSource = Tab5 == activeTab ? Tab5.SwitchOn : Tab5.SwitchOff;
 
         // Set Filter based on active tab text
         Filter = activeTab.SwitchText;

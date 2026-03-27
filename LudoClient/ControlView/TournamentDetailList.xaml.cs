@@ -68,10 +68,17 @@ namespace LudoClient.ControlView
                 }
                 else if (ServerDateTime > tournament.StartDate)
                 {
-                    EntryPriceLabel.Text = $"JOINED";
-                    ButtonText.Text = "PLAY";
+                    if (tournament.IsJoined)
+                    {
+                        EntryPriceLabel.Text = $"JOINED";
+                        ButtonText.Text = "PLAY";
+                    }
+                    else
+                    {
+                        ButtonText.Text = "JOIN";
+                    }
                     status = "Ending in :";
-                    timeRemaining = ServerDateTime - tournament.EndDate;
+                    timeRemaining = tournament.EndDate - ServerDateTime;
                 }
                 else
                 {
@@ -86,7 +93,7 @@ namespace LudoClient.ControlView
                     }
 
                     status = "Starting in :";
-                    timeRemaining = ServerDateTime - tournament.StartDate;
+                    timeRemaining = tournament.StartDate - ServerDateTime;
                 }
                 // Calculate the fixed time difference
 

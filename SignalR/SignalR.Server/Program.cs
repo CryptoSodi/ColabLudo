@@ -29,7 +29,7 @@ builder.Services.AddSignalR(o => o.StatefulReconnectBufferSize = 100_000);
 builder.Services.AddDbContextFactory<LudoDbContext>(options => options.UseSqlServer(dbstring).EnableSensitiveDataLogging(false));// Turn off verbose logging
 
 builder.Services.AddScoped<FriendsService>();
-builder.Services.AddScoped<TournamentService>();
+builder.Services.AddTransient<TournamentService>();
 builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<UtilService>();
@@ -49,6 +49,7 @@ builder.Services.AddSingleton<PaymentProviderFactory>();
 
 builder.Services.AddHostedService<DepositScannerService>();
 builder.Services.AddHostedService<PlayerCleanupService>();
+builder.Services.AddHostedService<TournamentBackgroundWorker>();
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(@"C:\repos\LudoKeyRing")).SetApplicationName("LudoServer");

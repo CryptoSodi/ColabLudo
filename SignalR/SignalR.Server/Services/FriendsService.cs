@@ -53,12 +53,15 @@ namespace SignalR.Server.Services
             // Now, get friends (all statuses) with Role "Player"
             var friends = ctx.FriendsRequests
                 .Where(fr => fr.SenderId == player.PlayerId || fr.ReceiverId == player.PlayerId)
+                .Include(fr => fr.Sender)
+                .Include(fr => fr.Receiver)
+                .AsEnumerable() // Switch to client-side evaluation for the complex ternary projection
                 .Select(fr => new
                 {
                     OtherPlayer = fr.SenderId == player.PlayerId ? fr.Receiver : fr.Sender,
                     Status = fr.Status
                 })
-                .Where(x => x.OtherPlayer.Role == "Player")
+                .Where(x => x.OtherPlayer != null && x.OtherPlayer.Role == "Player")
                 .ToList();
 
 

@@ -118,8 +118,9 @@ namespace SignalR.Server
         }
         private void UpdatePlayerStats(List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds, decimal BetAmount)
         {
-            //check this code for correctness
             using var ctx = _contextFactory.CreateDbContext();
+            var existingGame = ctx.Games.FirstOrDefault(g => g.RoomCode == gameDTO.RoomCode);
+
             foreach (var seat in orderedSeats)
             {
                 var player = ctx.Players.FirstOrDefault(p => p.PlayerId == seat.PlayerId);
@@ -127,24 +128,33 @@ namespace SignalR.Server
 
                 if (isWinner)
                 {
-                    // Winner: increment win counters and update scores
                     player.GamesWon++;
                     player.TotalWin += BetAmount;
                     player.BestWin = Math.Max(player.BestWin, BetAmount);
+
+                    // If this is a tournament game, increment the winner's tournament score (wins count)
+                    if (existingGame != null && existingGame.TournamentId.HasValue)
+                    {
+                        var challenger = ctx.TournamentChallengers.FirstOrDefault(tc => 
+                            tc.TournamentId == existingGame.TournamentId && tc.PlayerId == player.PlayerId);
+                        
+                        if (challenger != null)
+                        {
+                            challenger.Score++; // Score acts as the "Games Won" count for tournaments
+                            ctx.TournamentChallengers.Update(challenger);
+                        }
+                    }
                 }
                 else
                 {
-                    // Loser: increment loss counters and track total losses
                     player.TotalLost += BetAmount;
                     player.GamesLost++;
                 }
 
-                // Common updates for both winners and losers
                 player.Score += engine.EngineHelper.getPlayer(seat.PlayerColor.ToLower()).Score;
                 player.GamesPlayed++;
                 ctx.Players.Update(player);
             }
-            // Save changes to the database
             ctx.SaveChanges();
         }
         public async void StartProgressAnimation(string SeatName)
