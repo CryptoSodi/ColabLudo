@@ -107,21 +107,25 @@ namespace LudoClient.Platforms.Android.Popups
                 case 1:
                     _playerMadel.SetImageResource(Resource.Drawable.number_1);
                     _playerName.SetTextColor(global::Android.Graphics.Color.Black);
+                    _gamesWonText.SetTextColor(global::Android.Graphics.Color.Black);
                     _backgroundLayerImage.SetImageResource(Resource.Drawable.detailgold);
                     break;
                 case 2:
                     _playerMadel.SetImageResource(Resource.Drawable.number_2);
                     _playerName.SetTextColor(global::Android.Graphics.Color.Black);
+                    _gamesWonText.SetTextColor(global::Android.Graphics.Color.Black);
                     _backgroundLayerImage.SetImageResource(Resource.Drawable.detailwhite);
                     break;
                 case 3:
                     _playerMadel.SetImageResource(Resource.Drawable.number_3);
                     _playerName.SetTextColor(global::Android.Graphics.Color.Black);
+                    _gamesWonText.SetTextColor(global::Android.Graphics.Color.Black);
                     _backgroundLayerImage.SetImageResource(Resource.Drawable.detailwhite);
                     break;
                 default:
                     _playerMadel.SetImageResource(Resource.Drawable.number_0);
                     _playerName.SetTextColor(global::Android.Graphics.Color.White);
+                    _gamesWonText.SetTextColor(global::Android.Graphics.Color.White);
                     _backgroundLayerImage.SetImageResource(Resource.Drawable.friendlong);
                     break;
             }

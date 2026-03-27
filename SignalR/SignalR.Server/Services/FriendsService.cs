@@ -34,13 +34,13 @@ namespace SignalR.Server.Services
                 if (playerIds.Any())
                 {
                     var lastGamePlayers = ctx.Players
-                        .Where(p => playerIds.Contains(p.PlayerId))
+                        .Where(p => playerIds.Contains(p.PlayerId) && p.Role == "Player")
                         .Select(p => new PlayerCard
                         {
                             playerID = p.PlayerId,
                             name = p.Name,
                             pictureUrl = p.PictureUrl,
-                            rank = 31, // No rank info available, setting 0 or you can later compute
+                            rank = ctx.Players.Count(other => other.GamesWon > p.GamesWon) + 1,
                             status = "",
                             lastGame = true,
                             gamesWon = p.GamesWon
@@ -50,14 +50,16 @@ namespace SignalR.Server.Services
                     result.AddRange(lastGamePlayers);
                 }
             }
-            // Now, get friends (all statuses)
+            // Now, get friends (all statuses) with Role "Player"
             var friends = ctx.FriendsRequests
                 .Where(fr => fr.SenderId == player.PlayerId || fr.ReceiverId == player.PlayerId)
                 .Select(fr => new
                 {
                     OtherPlayer = fr.SenderId == player.PlayerId ? fr.Receiver : fr.Sender,
                     Status = fr.Status
-                }).ToList();
+                })
+                .Where(x => x.OtherPlayer.Role == "Player")
+                .ToList();
 
 
             foreach (var fr in friends)
@@ -78,7 +80,7 @@ namespace SignalR.Server.Services
                         playerID = fr.OtherPlayer.PlayerId,
                         name = fr.OtherPlayer.Name,
                         pictureUrl = fr.OtherPlayer.PictureUrl,
-                        rank = 31,
+                        rank = ctx.Players.Count(other => other.GamesWon > fr.OtherPlayer.GamesWon) + 1,
                         status = fr.Status.ToString(),
                         lastGame = false,
                         gamesWon = fr.OtherPlayer.GamesWon

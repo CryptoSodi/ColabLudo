@@ -419,6 +419,88 @@ namespace SignalR.Server
             }
         }
         /* END FRIENDS API */
+        public async Task<List<PlayerCard>> GetLeaderboard()
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                // Fetch ALL players with Role "Player" by wins
+                var topPlayers = await ctx.Players
+                    .Where(p => p.Role == "Player")
+                    .OrderByDescending(p => p.GamesWon)
+                    .Select(p => new PlayerCard
+                    {
+                        playerID = p.PlayerId,
+                        name = p.Name,
+                        pictureUrl = p.PictureUrl,
+                        rank = 0,
+                        status = "",
+                        lastGame = false,
+                        gamesWon = p.GamesWon
+                    })
+                    .ToListAsync();
+
+                // Assign absolute rank based on list position
+                for (int i = 0; i < topPlayers.Count; i++)
+                {
+                    topPlayers[i].rank = i + 1;
+                }
+
+                return topPlayers;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetLeaderboard: {ex.Message}");
+                return new List<PlayerCard>();
+            }
+        }
+
+        public async Task<List<PlayerCard>> GetTournamentLeaderboard(string tournamentType)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var now = DateTime.UtcNow;
+
+                // Find the current active tournament of this type (Daily, Weekly, etc.)
+                var tournament = await ctx.Tournaments
+                    .Where(t => t.Name.Contains(tournamentType) && t.TournamentState == State.Active)
+                    .OrderByDescending(t => t.TournamentId)
+                    .FirstOrDefaultAsync();
+
+                if (tournament == null)
+                    return new List<PlayerCard>();
+
+                // Get all challengers for this tournament, ranked by Score
+                var challengers = await ctx.TournamentChallengers
+                    .Where(tc => tc.TournamentId == tournament.TournamentId)
+                    .Include(tc => tc.Player)
+                    .OrderByDescending(tc => tc.Score)
+                    .Select(tc => new PlayerCard
+                    {
+                        playerID = tc.PlayerId,
+                        name = tc.Player.Name,
+                        pictureUrl = tc.Player.PictureUrl,
+                        rank = 0, // Assigned below
+                        status = "",
+                        lastGame = false,
+                        gamesWon = tc.Score // For tournaments, we show Score in the games won column
+                    })
+                    .ToListAsync();
+
+                for (int i = 0; i < challengers.Count; i++)
+                {
+                    challengers[i].rank = i + 1;
+                }
+
+                return challengers;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetTournamentLeaderboard: {ex.Message}");
+                return new List<PlayerCard>();
+            }
+        }
         public async Task<string> CreateJoinLobby(SharedCode.GameDto gameDTO)
         {
             try

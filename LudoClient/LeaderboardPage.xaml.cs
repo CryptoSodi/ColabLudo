@@ -98,12 +98,16 @@ public partial class LeaderboardPage : ContentPage
     }
     private async Task<List<PlayerCard>> GetPlayerCards(int playerId)
     {
-        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends", "All").ConfigureAwait(false);
-        if (Filter == "ADD FRIEND")
+        if (Filter == "" || Filter == "Global")
         {
-            Friends = Friends.Where(f => f.status == "ADD FRIEND").ToList();
+            // Global Tab: Get the real full leaderboard (ranked from 1)
+            return await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetLeaderboard").ConfigureAwait(false);
         }
-        return Friends;
+        else
+        {
+            // Tournament Tabs: Get leaderboard for specific category (Daily, Weekly, Monthly, Yearly)
+            return await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetTournamentLeaderboard", Filter).ConfigureAwait(false);
+        }
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {
@@ -112,13 +116,16 @@ public partial class LeaderboardPage : ContentPage
     private void ActivateTab(ImageSwitch activeTab)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        
         Tab1.SwitchSource = Tab1 == activeTab ? Tab1.SwitchOn : Tab1.SwitchOff;
         Tab2.SwitchSource = Tab2 == activeTab ? Tab2.SwitchOn : Tab2.SwitchOff;
-        // Add logic here to change the content based on the active tab
-        if (Tab2 == activeTab)
-            Filter = "ADD FRIEND";
-        else
-            Filter = "";
+        Tab3.SwitchSource = Tab3 == activeTab ? Tab3.SwitchOn : Tab3.SwitchOff;
+        Tab4.SwitchSource = Tab4 == activeTab ? Tab4.SwitchOn : Tab4.SwitchOff;
+        Tab5.SwitchSource = Tab5 == activeTab ? Tab5.SwitchOn : Tab5.SwitchOff;
+
+        // Set Filter based on active tab text
+        Filter = activeTab.SwitchText;
+        
         InitializeLeaderboardAsync();
     }
 }
