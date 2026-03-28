@@ -1149,10 +1149,7 @@ public partial class Game : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (ChatScrollView.IsVisible)
         {
-            ChatScrollView.IsVisible = false;
-            ChatScrollView.InputTransparent = true;
-            ChatScrollView.IsEnabled = false;
-            HideKeyboard();
+            HideChat();
         }
         else
         {
@@ -1193,6 +1190,10 @@ public partial class Game : ContentPage
         MessageEntry.Focus();
     }
     private void HideChat_Tapped(object sender, TappedEventArgs e)
+    {
+        HideChat();
+    }
+    private void HideChat()
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         ChatScrollView.IsVisible = false;
@@ -1265,6 +1266,15 @@ public partial class Game : ContentPage
                 if (added)
                 {
                     // Force layout to update ContentSize
+                  
+
+                    // Auto-open chat if it was hidden
+                    if (!ChatScrollView.IsVisible)
+                    {
+                        ChatScrollView.IsVisible = true;
+                        ChatScrollView.InputTransparent = false;
+                        ChatScrollView.IsEnabled = true;
+                    } 
                     await Task.Delay(100);
                     await ChatScrollView.ScrollToAsync(0, 40000, true);
                 }
