@@ -1211,6 +1211,7 @@ public partial class Game : ContentPage
             cm.SenderId = UserInfo.Instance.player.PlayerId;
             cm.SenderName = UserInfo.Instance.player.Name;
             cm.SenderPicture = UserInfo.Instance.player.PictureUrl;
+            cm.SenderColor = this.playerColor; // Use the actual seat color (Red, Blue, etc.)
             //cm.ReceiverId = playerCard.playerID;
             //cm.ReceiverName = playerCard.playerName;
             //cm.ReceiverPicture = playerCard.playerPicture;

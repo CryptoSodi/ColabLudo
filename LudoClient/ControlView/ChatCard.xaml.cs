@@ -13,46 +13,55 @@ namespace LudoClient.ControlView
         public void SetDetails(ChatMessages Message, String direction, String color)
         {
             this.Message = Message;
-            //PlayerImage.Source = Message.SenderPicture;
             MessageText.Text = Message.Message;
-            TimeText.Text = Message.CreatedDate.ToShortTimeString();
-            //detailgold.png
+            TimeText.Text = Message.CreatedDate.ToLocalTime().ToShortTimeString();
+            
+            // Set Color based on seat or preference
+            color = color?.ToLower() ?? "white";
             switch (color)
             {
                 case "red":
-                    LayerFrame.BackgroundColor = Color.FromArgb("#B11A1B"); // 20% transparent red
+                    BubbleBorder.BackgroundColor = Color.FromArgb("#B11A1B");
                     break;
                 case "green":
-                    LayerFrame.BackgroundColor = Color.FromArgb("#017034"); // 20% transparent green
+                    BubbleBorder.BackgroundColor = Color.FromArgb("#017034");
                     break;
                 case "yellow":
-                    LayerFrame.BackgroundColor = Color.FromArgb("#BFA611");
-                    // 20% transparent yellow
+                    BubbleBorder.BackgroundColor = Color.FromArgb("#BFA611");
+                    MessageText.TextColor = Colors.Black;
+                    TimeText.TextColor = Colors.DarkSlateGray;
                     break;
                 case "blue":
-                    LayerFrame.BackgroundColor = Color.FromArgb("#3166A6"); // 20% transparent blue
+                    BubbleBorder.BackgroundColor = Color.FromArgb("#3166A6");
                     break;
-                case "white":
-                    LayerFrame.BackgroundColor = Color.FromArgb("#E6FFFFFF"); // 20% transparent white
+                default: // white/gray
+                    BubbleBorder.BackgroundColor = Color.FromArgb("#E6FFFFFF");
+                    MessageText.TextColor = Colors.Black;
+                    TimeText.TextColor = Colors.DarkSlateGray;
                     break;
             }
 
             if (direction == "Right")
             {
-               // Layer.ColumnDefinitions.Clear();
-               // Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-               // Layer.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-                // Swap columns
-                //Grid.SetColumn(PlayerGrid, 1);
-                //Grid.SetColumn(MessageText, 0);
-                LayerFrame.HorizontalOptions = LayoutOptions.End;
-                TimeText.HorizontalOptions = LayoutOptions.End;
+                BubbleBorder.HorizontalOptions = LayoutOptions.End;
+                BubbleShape.CornerRadius = new CornerRadius(12, 12, 2, 12);
+                
+                RightAvatarBorder.IsVisible = true;
+                RightAvatarImage.Source = Message.SenderPicture ?? "player.webp";
+                LeftAvatarBorder.IsVisible = false;
             }
             else
             {
-                TimeText.HorizontalOptions = LayoutOptions.End;
+                BubbleBorder.HorizontalOptions = LayoutOptions.Start;
+                BubbleShape.CornerRadius = new CornerRadius(12, 12, 12, 2);
+                
+                LeftAvatarBorder.IsVisible = true;
+                LeftAvatarImage.Source = Message.SenderPicture ?? "player.webp";
+                RightAvatarBorder.IsVisible = false;
+                
+                // Name label is now hidden as requested
+                SenderNameLabel.IsVisible = false;
             }
-            //Message.
         }
     }
 }

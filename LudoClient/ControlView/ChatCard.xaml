@@ -2,23 +2,48 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="LudoClient.ControlView.ChatCard"
-             xmlns:local="clr-namespace:LudoClient.ControlView" Padding="5">
-    <Grid>
-        <Frame x:Name="LayerFrame" Padding="5" CornerRadius="8" HasShadow="True" BackgroundColor="LightGray" HorizontalOptions="Start" MaximumWidthRequest="250">
-            <!-- limit bubble width -->
-            <StackLayout Spacing="2">
+             xmlns:local="clr-namespace:LudoClient.ControlView" Padding="2,2">
+    <Grid x:Name="MainGrid" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="5" HorizontalOptions="Fill">
+        
+        <!-- Left Avatar -->
+        <Border x:Name="LeftAvatarBorder" Grid.Column="0" WidthRequest="32" HeightRequest="32" VerticalOptions="End" StrokeThickness="1" Stroke="White" IsVisible="False">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="16"/>
+            </Border.StrokeShape>
+            <Image x:Name="LeftAvatarImage" Source="player.webp" Aspect="AspectFill"/>
+        </Border>
+
+        <!-- Chat Bubble -->
+        <Border x:Name="BubbleBorder" Grid.Column="1" Padding="10,6" StrokeThickness="0" MaximumWidthRequest="260" HorizontalOptions="Start">
+            <Border.StrokeShape>
+                <RoundRectangle x:Name="BubbleShape" CornerRadius="12,12,12,2"/>
+            </Border.StrokeShape>
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="1,1" Radius="2" Opacity="0.3"/>
+            </Border.Shadow>
+            
+            <VerticalStackLayout Spacing="1">
+                <Label x:Name="SenderNameLabel" FontSize="10" TextColor="#CCCCCC" FontAttributes="Bold" IsVisible="False" Margin="0,0,0,2"/>
                 <Label x:Name="MessageText"
-                       Text="This is a sample chat bubble message."
+                       Text="Message content goes here."
                        LineBreakMode="WordWrap"
-                       HorizontalTextAlignment="Justify"
                        FontSize="14"
                        TextColor="White"/>
                 <Label x:Name="TimeText"
                        Text="12:14 AM"
-                       FontSize="10"
-                       TextColor="LightGray"
-                       HorizontalOptions="End"/>
-            </StackLayout>
-        </Frame>
+                       FontSize="9"
+                       TextColor="#E0E0E0"
+                       HorizontalOptions="End"
+                       Opacity="0.8"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Right Avatar -->
+        <Border x:Name="RightAvatarBorder" Grid.Column="2" WidthRequest="32" HeightRequest="32" VerticalOptions="End" StrokeThickness="1" Stroke="White" IsVisible="False">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="16"/>
+            </Border.StrokeShape>
+            <Image x:Name="RightAvatarImage" Source="player.webp" Aspect="AspectFill"/>
+        </Border>
     </Grid>
 </ContentView>
