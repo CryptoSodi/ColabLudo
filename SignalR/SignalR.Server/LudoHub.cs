@@ -424,9 +424,9 @@ namespace SignalR.Server
             try
             {
                 using var ctx = _contextFactory.CreateDbContext();
-                // Fetch ALL players with Role "Player" by wins
+                // Fetch ALL players with Role \"Player\" and at least 1 win, ordered by wins
                 var topPlayers = await ctx.Players
-                    .Where(p => p.Role == "Player")
+                    .Where(p => p.Role == "Player" && p.GamesWon > 0)
                     .OrderByDescending(p => p.GamesWon)
                     .Select(p => new PlayerCard
                     {
@@ -471,9 +471,9 @@ namespace SignalR.Server
                 if (tournament == null)
                     return new List<PlayerCard>();
 
-                // Get all challengers for this tournament, ranked by Score
+                // Get all challengers for this tournament with Score > 0, ranked by Score
                 var challengers = await ctx.TournamentChallengers
-                    .Where(tc => tc.TournamentId == tournament.TournamentId)
+                    .Where(tc => tc.TournamentId == tournament.TournamentId && tc.Score > 0)
                     .Include(tc => tc.Player)
                     .OrderByDescending(tc => tc.Score)
                     .Select(tc => new PlayerCard
@@ -488,12 +488,18 @@ namespace SignalR.Server
                     })
                     .ToListAsync();
 
-                for (int i = 0; i < challengers.Count; i++)
+                // Group by PlayerId to ensure uniqueness if data is inconsistent
+                var uniqueChallengers = challengers
+                    .GroupBy(c => c.playerID)
+                    .Select(g => g.First())
+                    .ToList();
+
+                for (int i = 0; i < uniqueChallengers.Count; i++)
                 {
-                    challengers[i].rank = i + 1;
+                    uniqueChallengers[i].rank = i + 1;
                 }
 
-                return challengers;
+                return uniqueChallengers;
             }
             catch (Exception ex)
             {
