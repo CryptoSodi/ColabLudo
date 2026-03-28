@@ -291,9 +291,15 @@ namespace SignalR.Server
                     ctx.SaveChanges();
                 }
 
-                List<ChatMessage> chatHistory = ctx.ChatMessages.Where(cm =>
-                (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
-                (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId)).OrderBy(cm => cm.Index).Take(30).ToList();
+                List<ChatMessage> chatHistory = ctx.ChatMessages
+                    .Where(cm => (cm.SenderId == CM.SenderId && cm.ReceiverId == CM.ReceiverId) ||
+                                 (cm.SenderId == CM.ReceiverId && cm.ReceiverId == CM.SenderId))
+                    .OrderByDescending(cm => cm.Index)
+                    .Take(30)
+                    .ToList();
+                
+                // Sort ascending for the client
+                chatHistory = chatHistory.OrderBy(cm => cm.Index).ToList();
 
                 // 3️⃣ Convert to the response model
                 List<ChatMessages> chatMessagesList = chatHistory.Select(cm => new ChatMessages
@@ -311,30 +317,38 @@ namespace SignalR.Server
 
                 try
                 {
+                    var receiverConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.ReceiverId).Select(kv => kv.Key).ToList();
+                    var senderConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.SenderId).Select(kv => kv.Key).ToList();
+
                     if (savedMessage != null)
                     {
-                        // Find the specifically created message to get its auto-incremented Index
                         var persistedMsg = chatMessagesList.FirstOrDefault(m => m.Index == savedMessage.Index);
                         if (persistedMsg != null)
                         {
-                            // Send to ALL connections of BOTH sender and receiver
-                            var receiverConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.ReceiverId).Select(kv => kv.Key).ToList();
-                            var senderConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.SenderId).Select(kv => kv.Key).ToList();
+                            // Broadcast the new message to the receiver's sessions
+                            foreach (var connId in receiverConnections)
+                            {
+                                await Clients.Client(connId).SendAsync("ReceiveChatMessage", new List<ChatMessages> { persistedMsg });
+                            }
                             
-                            var allConnections = receiverConnections.Union(senderConnections).ToList();
-
-                            foreach (var connId in allConnections)
+                            // Broadcast to OTHER sessions of the sender (not the caller, they get the return list)
+                            foreach (var connId in senderConnections.Where(c => c != Context.ConnectionId))
                             {
                                 await Clients.Client(connId).SendAsync("ReceiveChatMessage", new List<ChatMessages> { persistedMsg });
                             }
                         }
                     }
+                    else if (CM.Message == "")
+                    {
+                        // Send the whole history back to the caller's session
+                        await Clients.Caller.SendAsync("ReceiveChatMessage", chatMessagesList);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error broadcasting private chat: {ex.Message}");
+                    Console.WriteLine($"Error broadcasting chat: {ex.Message}");
                 }
-                return chatMessagesList.Take(30).ToList();
+                return chatMessagesList;
             }
         }
         /* END CHAT AND FRIENDS MANAGEMENT */
