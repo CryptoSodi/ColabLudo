@@ -16,6 +16,7 @@ namespace SharedCode.Network
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
+        public event EventHandler<NotificationDTO> ReceiveNotification;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -95,6 +96,10 @@ namespace SharedCode.Network
             _hubConnection.On<List<ChatMessages>>("ReceiveChatMessage", msgs =>
             {
                 ReceiveChatMessage?.Invoke(this, msgs);
+            });
+            _hubConnection.On<NotificationDTO>("ReceiveNotification", notification =>
+            {
+                ReceiveNotification?.Invoke(this, notification);
             });
             _hubConnection.On<PlayerInfo>("PlayerInfoUpdate", playerInfo =>
             {
@@ -251,6 +256,10 @@ namespace SharedCode.Network
                 Console.WriteLine($"Error sending message: {ex.Message}");
                 return null;
             }
+        }
+        public async Task<PlayerCard> GetPlayerById(int playerId)
+        {
+            return await _hubConnection.InvokeAsync<PlayerCard>("GetPlayerById", playerId).ConfigureAwait(false);
         }
         public async Task<PlayerInfo> UserConnectedSetID()
         {

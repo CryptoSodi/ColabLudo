@@ -10,6 +10,7 @@ namespace LudoClient
 {
     public partial class App : Application
     {
+        private List<NotificationDTO> _pendingNotifications { get; set; } = new();
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
@@ -38,11 +39,17 @@ namespace LudoClient
             UserInfo.LoadState();
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                GlobalConstants.MatchMaker = new Client();
+                if (GlobalConstants.MatchMaker == null)
+                    GlobalConstants.MatchMaker = new Client();
+
                 GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
                 GlobalConstants.MatchMaker.ShowResults += OnShowResults;
                 GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
+                GlobalConstants.MatchMaker.ReceiveNotification += OnReceiveNotification;
+                GlobalConstants.MatchMaker.ReceiveChatMessage += OnReceiveChatMessage;
+                
                 _ = Task.Run(() => SetOnline(_onlineCts.Token));
+                _ = Task.Run(() => CheckForResumeNotifications(_onlineCts.Token));
             });
             if (isUserLoggedIn)
             {
@@ -52,6 +59,162 @@ namespace LudoClient
             {
                 MainPage = new LoginPage();
             }
+        }
+
+        private void OnReceiveChatMessage(object? sender, List<ChatMessages> messages)
+        {
+            if (messages == null || messages.Count == 0) return;
+
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                var latestMsg = messages.Last();
+                
+                // Only notify for PRIVATE messages (no room code)
+                if (!string.IsNullOrEmpty(latestMsg.RoomCode)) return;
+
+                // SUPPRESSION: Queue if in a game or already on ChatPage
+                if (!string.IsNullOrEmpty(GlobalConstants.RoomCode) || IsOnChatPage())
+                {
+                    lock (_pendingNotifications)
+                    {
+                        var note = new NotificationDTO
+                        {
+                            Title = latestMsg.SenderName ?? "New Message",
+                            Message = latestMsg.Message ?? "",
+                            Type = "Message",
+                            Payload = latestMsg.SenderId.ToString()
+                        };
+                        
+                        // Prevent spamming the queue with the same message
+                        if (!_pendingNotifications.Any(n => n.Payload == note.Payload && n.Message == note.Message))
+                        {
+                            _pendingNotifications.Add(note);
+                        }
+                    }
+                    return;
+                }
+
+                // Show immediately if in lobby
+                var notification = new NotificationDTO
+                {
+                    Title = latestMsg.SenderName ?? "New Message",
+                    Message = latestMsg.Message ?? "",
+                    Type = "Message",
+                    Payload = latestMsg.SenderId.ToString()
+                };
+                ShowNotification(notification);
+            });
+        }
+
+        private async Task CheckForResumeNotifications(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                if (string.IsNullOrEmpty(GlobalConstants.RoomCode) && !IsOnChatPage() && _pendingNotifications.Count > 0)
+                {
+                    await ProcessPendingNotifications();
+                }
+                await Task.Delay(2000, token); // Check every 2 seconds
+            }
+        }
+
+        private bool IsOnChatPage()
+        {
+            try
+            {
+                if (MainPage is AppShell shell)
+                {
+                    var stack = shell.Navigation.NavigationStack;
+                    if (stack.Count > 0 && stack.Last() is ChatPage)
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch { }
+            return false;
+        }
+
+        private async Task ProcessPendingNotifications()
+        {
+            List<NotificationDTO> toProcess;
+            lock (_pendingNotifications)
+            {
+                toProcess = new List<NotificationDTO>(_pendingNotifications);
+                _pendingNotifications.Clear();
+            }
+
+            foreach (var note in toProcess)
+            {
+                ShowNotification(note);
+                await Task.Delay(1500); // Small gap between multiple notifications
+            }
+        }
+
+        private void OnReceiveNotification(object? sender, NotificationDTO notification)
+        {
+            // SUPPRESSION LOGIC: Don't show notifications if in a game, waiting room, or already on ChatPage
+            if (!string.IsNullOrEmpty(GlobalConstants.RoomCode) || IsOnChatPage())
+            {
+                lock (_pendingNotifications)
+                {
+                    // Basic duplicate check for queue
+                    if (!_pendingNotifications.Any(n => n.Payload == notification.Payload && n.Message == notification.Message))
+                    {
+                        _pendingNotifications.Add(notification);
+                    }
+                }
+                return;
+            }
+
+            ShowNotification(notification);
+        }
+
+        private void ShowNotification(NotificationDTO notification)
+        {
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                var snackbarOptions = new CommunityToolkit.Maui.Core.SnackbarOptions
+                {
+                    BackgroundColor = Color.FromArgb("#BFA611"), // Game theme gold
+                    TextColor = Colors.Black,
+                    ActionButtonTextColor = Colors.DarkSlateBlue,
+                    CornerRadius = new CornerRadius(10),
+                    Font = Microsoft.Maui.Font.SystemFontOfSize(14),
+                    ActionButtonFont = Microsoft.Maui.Font.SystemFontOfSize(14, Microsoft.Maui.FontWeight.Bold)
+                };
+
+                var snackbar = CommunityToolkit.Maui.Alerts.Snackbar.Make(
+                    $"{notification.Title}\n{notification.Message}",
+                    async () => {
+                        try 
+                        {
+                            if (notification.Type == "Message")
+                            {
+                                int senderId = int.Parse(notification.Payload);
+                                var playerCard = await GlobalConstants.MatchMaker.GetPlayerById(senderId);
+                                if (playerCard != null)
+                                {
+                                    // Navigate to ChatPage
+                                    await ClientGlobalConstants.dashBoard.Navigation.PushAsync(new ChatPage(playerCard));
+                                }
+                            }
+                            else if (notification.Type == "TournamentResults")
+                            {
+                                await Shell.Current.GoToAsync("//LeaderboardPage");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error navigating from notification: {ex.Message}");
+                        }
+                    },
+                    "OPEN",
+                    TimeSpan.FromSeconds(5),
+                    snackbarOptions);
+
+                await snackbar.Show();
+            });
         }
         private void OnPlayerInfoUpdate(object? sender, PlayerInfo newPlayer)
         {   

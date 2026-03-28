@@ -97,4 +97,12 @@
         public string? RoomCode { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
+
+    public class NotificationDTO
+    {
+        public string Title { get; set; } = "";
+        public string Message { get; set; } = "";
+        public string Type { get; set; } = ""; // "Message", "Tournament", etc.
+        public string Payload { get; set; } = ""; // Extra data like SenderId or TournamentId
+    }
 }
