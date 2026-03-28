@@ -53,19 +53,15 @@ public partial class ChatPage : ContentPage
         await ChatScrollView.ScrollToAsync(0, 40000, true);
     }
 
+    protected override void OnDisappearing()
+    {
+        base.OnDisappearing();
+        GlobalConstants.MatchMaker.ReceiveChatMessage -= UpdateMessages;
+    }
+
     public void SetDetails(PlayerCard playerCard, List<ChatMessages> messages)
     {
-        foreach(ChatMessages cm in messages)
-        {
-            ChatCard cc = new();
-            
-            if (UserInfo.Instance.player.PlayerId == cm.SenderId)
-                cc.SetDetails(cm, "Right", "blue");
-            else
-                cc.SetDetails(cm, "Left", "white");
-
-            MessagesListStack.Children.Add(cc);
-        }
+        UpdateMessages(this, messages);
         Header.SetDetails(playerCard, "Header");
     }
     private void MessageEntry_Completed(object sender, EventArgs e)
@@ -111,48 +107,43 @@ public partial class ChatPage : ContentPage
     }
     public void UpdateMessages(object sender, List<ChatMessages> messages)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
             try
             {
-                // Get the existing ChatMessages directly from ChatCard
-                var existingMessages = MessagesListStack.Children.OfType<ChatCard>()
-                    .Select(cc => cc.Message)
-                    .Where(cm => cm != null)
+                // Get the existing ChatMessages indices to prevent duplicates
+                var existingIndices = MessagesListStack.Children.OfType<ChatCard>()
+                    .Select(cc => cc.Message?.Index)
+                    .Where(idx => idx.HasValue)
                     .ToHashSet();
 
+                bool added = false;
                 foreach (ChatMessages cm in messages)
-                { // Check if the message is already present based on SenderId, ReceiverId, Message, and Time
-                    bool isAlreadyPresent = existingMessages.Any(existing => existing.Index == cm.Index);
-
-                    if (!isAlreadyPresent)
+                { 
+                    if (!existingIndices.Contains(cm.Index))
                     {
                         ChatCard cc = new();
-                        MessagesListStack.Children.Add(cc);
-
                         if (UserInfo.Instance.player.PlayerId == cm.SenderId)
                             cc.SetDetails(cm, "Right", "yellow");
                         else
                             cc.SetDetails(cm, "Left", "white");
-                        // Optional: scroll to bottom
 
+                        MessagesListStack.Children.Add(cc);
+                        added = true;
                     }
                 }
 
+                if (added)
+                {
+                    // Force layout to update ContentSize
+                    await Task.Delay(100);
+                    await ChatScrollView.ScrollToAsync(0, 40000, true);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
+                Console.WriteLine($"Error updating chat messages: {ex.Message}");
             }
-            // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                // Force layout to update ContentSize
-                await Task.Delay(100);
-                // Scroll to the bottom-most Y coordinate
-                //double bottomY = ChatScrollView.ContentSize.Height;
-                await ChatScrollView.ScrollToAsync(0, 40000, true);
-            });
         });
     }
 }

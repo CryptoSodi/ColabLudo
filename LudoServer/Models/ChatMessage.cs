@@ -18,6 +18,7 @@ namespace LudoServer.Models
         public string? ReceiverName { get; set; }
 
         public string? Message { get; set; }
+        public string? RoomCode { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
     }
 

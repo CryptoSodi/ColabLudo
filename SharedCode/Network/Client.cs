@@ -92,10 +92,9 @@ namespace SharedCode.Network
                 }
             };
             // Player ReceiveMessage event
-            _hubConnection.On<ChatMessages>("ReceiveChatHistory", msg =>
+            _hubConnection.On<List<ChatMessages>>("ReceiveChatMessage", msgs =>
             {
-                var lcm = new List<ChatMessages> { msg };
-                ReceiveChatMessage?.Invoke(this, (lcm));
+                ReceiveChatMessage?.Invoke(this, msgs);
             });
             _hubConnection.On<PlayerInfo>("PlayerInfoUpdate", playerInfo =>
             {

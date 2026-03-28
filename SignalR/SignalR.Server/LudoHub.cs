@@ -224,7 +224,7 @@ namespace SignalR.Server
             return Result;
         }
         /* CHAT AND FRIENDS MANAGEMENT */
-        public List<ChatMessages> SendChatMessage(ChatMessages CM, string roomCode)
+        public async Task<List<ChatMessages>> SendChatMessage(ChatMessages CM, string roomCode)
         {
             if (roomCode != null && roomCode != "")
             {
@@ -238,6 +238,7 @@ namespace SignalR.Server
                 if (CM.Message != "")
                 {
                     CM.Index = gameRoom.chatMessages.Count;
+                    CM.RoomCode = roomCode;
                     gameRoom.chatMessages.Add(CM);
                 }
                 List<User> otherUsers = gameRoom.Users.Where(p => p.player.PlayerId != CM.SenderId).ToList();
@@ -249,7 +250,18 @@ namespace SignalR.Server
                     try
                     {
                         if (CM.Message != "")
-                            Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == u.player.PlayerId).Key).SendAsync("ReceiveChatHistory", CM);
+                        {
+                            var receiverConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == u.player.PlayerId).Select(kv => kv.Key).ToList();
+                            // Also include sender connections to keep all sessions in sync
+                            var senderConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.SenderId).Select(kv => kv.Key).ToList();
+                            
+                            var allConnections = receiverConnections.Union(senderConnections).ToList();
+
+                            foreach (var connId in allConnections)
+                            {
+                                await Clients.Client(connId).SendAsync("ReceiveChatMessage", new List<ChatMessages> { CM });
+                            }
+                        }
                     }
                     catch (Exception)
                     {
@@ -260,10 +272,11 @@ namespace SignalR.Server
             else
             {
                 using var ctx = _contextFactory.CreateDbContext();
+                ChatMessage? savedMessage = null;
                 if (CM.Message != "")
                 {
                     // 1️⃣ Save the new message to the database                    
-                    ChatMessage newMessage = new ChatMessage
+                    savedMessage = new ChatMessage
                     {
                         SenderId = CM.SenderId,
                         SenderName = CM.SenderName,
@@ -274,7 +287,7 @@ namespace SignalR.Server
                         Message = CM.Message,
                         CreatedDate = DateTime.UtcNow  // Set the timestamp here
                     };
-                    ctx.ChatMessages.Add(newMessage);
+                    ctx.ChatMessages.Add(savedMessage);
                     ctx.SaveChanges();
                 }
 
@@ -296,16 +309,30 @@ namespace SignalR.Server
                     CreatedDate = cm.CreatedDate
                 }).ToList();
 
-                //chatMessagesList.Add(CM);
-                // Optionally, also send back the last 50 messages to the sender
-                // send only to the receiver
                 try
                 {
-                    if (CM.Message != "")
-                        Clients.Client(ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == CM.ReceiverId).Key).SendAsync("ReceiveChatHistory", CM);
+                    if (savedMessage != null)
+                    {
+                        // Find the specifically created message to get its auto-incremented Index
+                        var persistedMsg = chatMessagesList.FirstOrDefault(m => m.Index == savedMessage.Index);
+                        if (persistedMsg != null)
+                        {
+                            // Send to ALL connections of BOTH sender and receiver
+                            var receiverConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.ReceiverId).Select(kv => kv.Key).ToList();
+                            var senderConnections = ConnectionToPlayer.Where(kv => kv.Value.PlayerId == CM.SenderId).Select(kv => kv.Key).ToList();
+                            
+                            var allConnections = receiverConnections.Union(senderConnections).ToList();
+
+                            foreach (var connId in allConnections)
+                            {
+                                await Clients.Client(connId).SendAsync("ReceiveChatMessage", new List<ChatMessages> { persistedMsg });
+                            }
+                        }
+                    }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Console.WriteLine($"Error broadcasting private chat: {ex.Message}");
                 }
                 return chatMessagesList.Take(30).ToList();
             }

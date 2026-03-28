@@ -89,6 +89,7 @@ public partial class Game : ContentPage
             _input.ButtonChanged -= OnButtonChanged;
             _input.AxisChanged -= OnAxisChanged;
         }
+        GlobalConstants.MatchMaker.ReceiveChatMessage -= UpdateMessages;
     }
     void OnButtonChanged(string device, string button, bool isDown)
     {
@@ -1229,34 +1230,47 @@ public partial class Game : ContentPage
     }
     public void UpdateMessages(object sender, List<ChatMessages> messages)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        if (messages == null || string.IsNullOrEmpty(GlobalConstants.RoomCode)) return;
+
+        MainThread.BeginInvokeOnMainThread(async () =>
         {
-            if(messages!=null)
-            foreach (ChatMessages cm in messages)
+            try
             {
-                    // Check if the message is already in the stack
-                    bool messageExists = MessagesListStack.Children
-                        .OfType<ChatCard>()
-                        .Any(cc => cc.Message.Index == cm.Index);
+                // Only process messages for the CURRENT room
+                var roomMessages = messages.Where(m => m.RoomCode == GlobalConstants.RoomCode).ToList();
+                if (!roomMessages.Any()) return;
 
-                    if (!messageExists)
+                var existingIndices = MessagesListStack.Children.OfType<ChatCard>()
+                    .Select(cc => cc.Message?.Index)
+                    .Where(idx => idx.HasValue)
+                    .ToHashSet();
+
+                bool added = false;
+                foreach (ChatMessages cm in roomMessages)
+                {
+                    if (!existingIndices.Contains(cm.Index))
                     {
-                        // Create a new chat card only if message doesn't exist
-                        ChatCard cc = new();                        
-
-                        MessagesListStack.Children.Add(cc);
-
+                        ChatCard cc = new();
                         if (UserInfo.Instance.player.PlayerId == cm.SenderId)
                             cc.SetDetails(cm, "Right", cm.SenderColor);
                         else
                             cc.SetDetails(cm, "Left", cm.SenderColor);
+
+                        MessagesListStack.Children.Add(cc);
+                        added = true;
                     }
-                    // After adding your chat cards inside MainThread.BeginInvokeOnMainThread:
-                    MainThread.BeginInvokeOnMainThread(async () =>
+                }
+
+                if (added)
                 {
+                    // Force layout to update ContentSize
                     await Task.Delay(100);
                     await ChatScrollView.ScrollToAsync(0, 40000, true);
-                });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating in-game chat: {ex.Message}");
             }
         });
     }
