@@ -51,6 +51,10 @@ namespace LudoClient.ControlView
             switch (type)
             {
                 case "Header":
+                    // Force normal background and text color for chat header
+                    BackgroundLayerImage.ImageSource = "friendlong.webp";
+                    PlayerName.TextColor = Color.Parse("White");
+
                     switch (playerCard.status)
                     {
                         case "ADD FRIEND":

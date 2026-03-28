@@ -135,7 +135,16 @@ namespace LudoClient.Platforms.Android.Popups
             _tappedAction.Visibility = ViewStates.Visible;
             _gamesWonText.Visibility = ViewStates.Gone;
 
-            if (type == "Friend")
+            if (type == "Header")
+            {
+                _playerMadel.Visibility = ViewStates.Gone;
+                _rankingText.Visibility = ViewStates.Gone;
+                _playerName.SetTextColor(global::Android.Graphics.Color.White);
+                _backgroundLayerImage.SetImageResource(Resource.Drawable.friendlong);
+                _blockAction.Visibility = ViewStates.Gone;
+                _tappedAction.Visibility = ViewStates.Gone;
+            }
+            else if (type == "Friend")
             {
                 if (pc.status == "UN FRIEND" || pc.status == "UN BLOCK" || pc.status == "ADD FRIEND")
                 {
