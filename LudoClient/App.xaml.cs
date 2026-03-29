@@ -176,7 +176,7 @@ namespace LudoClient
             {
                 var snackbarOptions = new CommunityToolkit.Maui.Core.SnackbarOptions
                 {
-                    BackgroundColor = Color.FromArgb("#CC3166A6"), // Semi-transparent Ludo Blue
+                    BackgroundColor = Color.FromArgb("#CC143450"), // Semi-transparent Ludo Blue
                     TextColor = Colors.White,
                     ActionButtonTextColor = Colors.Yellow,
                     CornerRadius = new CornerRadius(10),

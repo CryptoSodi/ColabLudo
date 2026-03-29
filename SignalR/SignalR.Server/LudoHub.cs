@@ -459,6 +459,32 @@ namespace SignalR.Server
                 return "Error: " + ex.Message;
             }
         }
+
+        public async Task<PlayerCard> GetPlayerById(int playerId)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var p = await ctx.Players.FirstOrDefaultAsync(x => x.PlayerId == playerId);
+                if (p == null) return null;
+
+                return new PlayerCard
+                {
+                    playerID = p.PlayerId,
+                    name = p.Name,
+                    pictureUrl = p.PictureUrl,
+                    rank = ctx.Players.Count(other => other.GamesWon > p.GamesWon) + 1,
+                    status = "",
+                    lastGame = false,
+                    gamesWon = p.GamesWon
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetPlayerById: {ex.Message}");
+                return null;
+            }
+        }
         /* END FRIENDS API */
         public async Task<List<PlayerCard>> GetLeaderboard()
         {
