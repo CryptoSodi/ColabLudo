@@ -1111,6 +1111,27 @@ public partial class Game : ContentPage
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try { PopoverButton.HideAttachedPopover(); } catch (Exception) { }
 
+#if ANDROID
+        var activity = Microsoft.Maui.ApplicationModel.Platform.CurrentActivity as AndroidX.AppCompat.App.AppCompatActivity;
+        if (activity != null)
+        {
+            var dialog = new LudoClient.Platforms.Android.Popups.ExitDialogFragment(() =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (engine.EngineHelper.gameMode == "Client")
+                        GlobalConstants.MatchMaker.LeaveCloseLobby();
+                    else
+                    {
+                        try { PopoverButton.HideAttachedPopover(); } catch { }
+                        engine.cleanGame();
+                        ClientGlobalConstants.GoBack();
+                    }
+                });
+            });
+            dialog.Show(activity.SupportFragmentManager, "ExitDialog");
+        }
+#else
         if (mb != null)
             return;
         if (engine.EngineHelper.gameMode == "Client")
@@ -1143,6 +1164,7 @@ public partial class Game : ContentPage
                 ClientGlobalConstants.GoBack();
             }
         }
+#endif
     }
     protected override bool OnBackButtonPressed()
     {
