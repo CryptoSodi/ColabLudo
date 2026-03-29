@@ -81,6 +81,11 @@ namespace LudoClient.Platforms.Android.Popups
 
             _playerName.Text = pc.name;
             
+            // RESET FIRST: Hide all action elements
+            _blockAction.Visibility = ViewStates.Gone;
+            _tappedAction.Visibility = ViewStates.Gone;
+            _gamesWonText.Visibility = ViewStates.Gone;
+
             // Placeholder logic
             _playerImage.SetImageResource(Resource.Drawable.player);
             if (!string.IsNullOrEmpty(pc.pictureUrl))
@@ -155,6 +160,11 @@ namespace LudoClient.Platforms.Android.Popups
                 {
                     _tappedAction.Visibility = ViewStates.Gone;
                     _blockActionText.Text = "UN BLOCK";
+                }
+                if (pc.status == "BLOCKED_BY_OTHER")
+                {
+                    _tappedAction.Visibility = ViewStates.Gone;
+                    _blockAction.Visibility = ViewStates.Gone;
                 }
             }
             else if (type == "Leaderboard")

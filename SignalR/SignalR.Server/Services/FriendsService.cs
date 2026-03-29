@@ -55,11 +55,14 @@ namespace SignalR.Server.Services
                 .Where(fr => fr.SenderId == player.PlayerId || fr.ReceiverId == player.PlayerId)
                 .Include(fr => fr.Sender)
                 .Include(fr => fr.Receiver)
-                .AsEnumerable() // Switch to client-side evaluation for the complex ternary projection
+                .AsEnumerable()
                 .Select(fr => new
                 {
                     OtherPlayer = fr.SenderId == player.PlayerId ? fr.Receiver : fr.Sender,
-                    Status = fr.Status
+                    // If status is BLOCK, check if I am the one who sent it
+                    Status = fr.Status == "BLOCK" ? 
+                             (fr.SenderId == player.PlayerId ? "BLOCK" : "BLOCKED_BY_OTHER") : 
+                             fr.Status
                 })
                 .Where(x => x.OtherPlayer != null && x.OtherPlayer.Role == "Player")
                 .ToList();
@@ -106,45 +109,49 @@ namespace SignalR.Server.Services
             if (player.PlayerId == ReceiverId)
                 return "Cannot send friend request to yourself.";
 
-            var receiver = ctx.Players.Find(ReceiverId);
+            // 1. Check if a relationship already exists in either direction
+            var existingRequest = await ctx.FriendsRequests
+                .FirstOrDefaultAsync(fr => (fr.SenderId == player.PlayerId && fr.ReceiverId == ReceiverId) ||
+                                           (fr.SenderId == ReceiverId && fr.ReceiverId == player.PlayerId));
 
-            if (player == null || receiver == null)
-                return "Sender or Receiver not found.";
+            if (existingRequest != null)
+            {
+                // AUTHORITY CHECK: If the current status is BLOCK
+                if (existingRequest.Status == "BLOCK")
+                {
+                    // Only the person who performed the block (SenderId) can UN BLOCK
+                    if (status == "UN BLOCK" || status == "ADD FRIEND" || status == "FRIEND")
+                    {
+                        if (existingRequest.SenderId != player.PlayerId)
+                        {
+                            return "Unauthorized: Only the blocker can unblock.";
+                        }
+                    }
+                }
 
-            //var existingRequest = _context.FriendsRequests
-            //    .FirstOrDefault(fr =>
-            //        (fr.SenderId == SenderId && fr.ReceiverId == ReceiverId) ||
-            //        (fr.SenderId == ReceiverId && fr.ReceiverId == SenderId));
+                // 2. Update existing record
+                existingRequest.Status = status == "UN BLOCK" ? "ADD FRIEND" : status;
+                existingRequest.SenderId = player.PlayerId; 
+                existingRequest.ReceiverId = ReceiverId;
+                existingRequest.CreatedDate = DateTime.UtcNow;
+                
+                ctx.FriendsRequests.Update(existingRequest);
+            }
+            else
+            {
+                // 3. Create new record
+                FriendRequest request = new FriendRequest
+                {
+                    Status = status == "UN BLOCK" ? "ADD FRIEND" : status,
+                    CreatedDate = DateTime.UtcNow,
+                    SenderId = player.PlayerId,
+                    ReceiverId = ReceiverId
+                };
+                ctx.FriendsRequests.Add(request);
+            }
 
-            //if (existingRequest != null)
-            //    return Conflict(new { Message = "Friend request already exists or is pending." });
-
-            FriendRequest request = new FriendRequest();
-            request.Status = status;
-            request.CreatedDate = DateTime.UtcNow;
-
-            // Make sure navigation properties are not set by client
-            request.SenderId = player.PlayerId;
-            request.ReceiverId = ReceiverId;
-
-            ctx.FriendsRequests.Add(request);
-            ctx.SaveChanges();
+            await ctx.SaveChangesAsync();
             return status;
-            //switch (status)
-            //{
-            //    case "UN BLOCK":
-            //        return Ok(new { Message = "UN BLOCK" });
-            //        break;
-            //    case "BLOCK":
-            //        return Ok(new { Message = "BLOCK" });
-            //        break;
-            //    case "FIREND":
-            //        return Ok(new { Message = "PENDING" });
-            //        break;
-            //    case "UN FRIEND":
-            //        return Ok(new { Message = "UN FRIEND" });
-            //        break;
-            //}
         }
     }
 }

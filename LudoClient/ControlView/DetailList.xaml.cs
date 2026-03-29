@@ -25,6 +25,10 @@ namespace LudoClient.ControlView
             PlayerImage.Source = playerCard.pictureUrl;
             PlayerName.Text = playerCard.name;
 
+            // RESET FIRST: Hide buttons by default
+            TappedAction.IsVisible = false;
+            BlockAction.IsVisible = false;
+
             switch (playerCard.rank)
             {
                 case 1:
@@ -60,16 +64,24 @@ namespace LudoClient.ControlView
                         case "ADD FRIEND":
                             TappedActionText.Text = "UN FRIEND";
                             BlockActionText.Text = "BLOCK";
+                            TappedAction.IsVisible = true;
+                            BlockAction.IsVisible = true;
                             break;
                         case "UN FRIEND":
                         case "UN BLOCK":
                             TappedActionText.Text = "ADD FRIEND";
                             BlockActionText.Text = "BLOCK";
                             TappedAction.IsVisible = true;
+                            BlockAction.IsVisible = true;
                             break;
                         case "BLOCK":
                             TappedAction.IsVisible = false;
+                            BlockAction.IsVisible = true;
                             BlockActionText.Text = "UN BLOCK";
+                            break;
+                        default:
+                            TappedAction.IsVisible = false;
+                            BlockAction.IsVisible = false;
                             break;
                     }
                     PlayerMadel.IsVisible = false;
@@ -78,19 +90,22 @@ namespace LudoClient.ControlView
                     PlayerName.Margin = new Thickness(4, 0, 0, 0);
                     break;
                 case "Friend":
-
                     if (playerCard.status == "UN FRIEND" || playerCard.status == "UN BLOCK" || playerCard.status == "ADD FRIEND")
                     {
-                        //TappedActionImage.Source = "btn_red.png";
                         TappedAction.IsVisible = true;
                         TappedActionText.Text = "MESSAGE";
                         BlockAction.IsVisible = false;
                     }
-                    if (playerCard.status == "BLOCK")
+                    else if (playerCard.status == "BLOCK")
                     {
                         BlockAction.IsVisible = true;
                         TappedAction.IsVisible = false;
                         BlockActionText.Text = "UN BLOCK";
+                    }
+                    else if (playerCard.status == "BLOCKED_BY_OTHER")
+                    {
+                        BlockAction.IsVisible = false;
+                        TappedAction.IsVisible = false;
                     }
                     break;
                 case "Leaderboard":
@@ -154,6 +169,10 @@ namespace LudoClient.ControlView
                     case "BLOCK":
                         TappedAction.IsVisible = false;
                         BlockActionText.Text = "UN BLOCK";
+                        break;
+                    case "BLOCKED_BY_OTHER":
+                        TappedAction.IsVisible = false;
+                        BlockAction.IsVisible = false;
                         break;
                 }
             }
