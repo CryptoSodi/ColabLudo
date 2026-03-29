@@ -1,6 +1,5 @@
-﻿using LudoClient.Constants;
+using LudoClient.Constants;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.Controls;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -42,11 +41,7 @@ namespace LudoClient
                 if (GlobalConstants.MatchMaker == null)
                     GlobalConstants.MatchMaker = new Client();
 
-                GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
-                GlobalConstants.MatchMaker.ShowResults += OnShowResults;
-                GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
-                GlobalConstants.MatchMaker.ReceiveNotification += OnReceiveNotification;
-                GlobalConstants.MatchMaker.ReceiveChatMessage += OnReceiveChatMessage;
+                RegisterHubEvents();
                 
                 _ = Task.Run(() => SetOnline(_onlineCts.Token));
                 _ = Task.Run(() => CheckForResumeNotifications(_onlineCts.Token));
@@ -60,7 +55,22 @@ namespace LudoClient
                 MainPage = new LoginPage();
             }
         }
+        private void RegisterHubEvents()
+        {
+            // Unsubscribe first to prevent double-registration if App is re-initialized
+            GlobalConstants.MatchMaker.GameStarted -= OnGameStarted;
+            GlobalConstants.MatchMaker.ShowResults -= OnShowResults;
+            GlobalConstants.MatchMaker.PlayerInfoUpdate -= OnPlayerInfoUpdate;
+            GlobalConstants.MatchMaker.ReceiveNotification -= OnReceiveNotification;
+            GlobalConstants.MatchMaker.ReceiveChatMessage -= OnReceiveChatMessage;
 
+            // Subscribe
+            GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
+            GlobalConstants.MatchMaker.ShowResults += OnShowResults;
+            GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
+            GlobalConstants.MatchMaker.ReceiveNotification += OnReceiveNotification;
+            GlobalConstants.MatchMaker.ReceiveChatMessage += OnReceiveChatMessage;
+        }
         private void OnReceiveChatMessage(object? sender, List<ChatMessages> messages)
         {
             // HISTORY CHECK: If multiple messages arrive at once, it's a history fetch.
@@ -113,7 +123,6 @@ namespace LudoClient
                 ShowNotification(notification);
             });
         }
-
         private async Task CheckForResumeNotifications(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -138,7 +147,6 @@ namespace LudoClient
                 await Task.Delay(2000, token); // Check every 2 seconds
             }
         }
-
         private int GetActiveChatPlayerId()
         {
             try
@@ -155,7 +163,6 @@ namespace LudoClient
             catch { }
             return -1;
         }
-
         private async Task ProcessPendingNotifications()
         {
             List<NotificationDTO> toProcess;
@@ -176,7 +183,6 @@ namespace LudoClient
                 await Task.Delay(1500);
             }
         }
-
         private void OnReceiveNotification(object? sender, NotificationDTO notification)
         {
             // SUPPRESSION LOGIC: Don't show notifications if in a game or waiting room
@@ -194,7 +200,6 @@ namespace LudoClient
 
             ShowNotification(notification);
         }
-
         private void ShowNotification(NotificationDTO notification)
         {
             MainThread.BeginInvokeOnMainThread(async () =>
@@ -212,31 +217,31 @@ namespace LudoClient
                 var snackbar = CommunityToolkit.Maui.Alerts.Snackbar.Make(
                     $"{notification.Title}\n{notification.Message}",
                     async () => {
-                        try 
+                    try 
+                    {
+                        if (notification.Type == "Message")
                         {
-                            if (notification.Type == "Message")
+                            int senderId = int.Parse(notification.Payload);
+                            var playerCard = await GlobalConstants.MatchMaker.GetPlayerById(senderId);
+                            if (playerCard != null)
                             {
-                                int senderId = int.Parse(notification.Payload);
-                                var playerCard = await GlobalConstants.MatchMaker.GetPlayerById(senderId);
-                                if (playerCard != null)
-                                {
-                                    // Robust navigation using Shell
-                                    await MainThread.InvokeOnMainThreadAsync(async () => {
-                                        await Shell.Current.Navigation.PushAsync(new ChatPage(playerCard));
-                                    });
-                                }
-                            }
-                            else if (notification.Type == "TournamentResults")
-                            {
+                                // Robust navigation using Shell
                                 await MainThread.InvokeOnMainThreadAsync(async () => {
-                                    await Shell.Current.GoToAsync("//LeaderboardPage");
+                                    await Shell.Current.Navigation.PushAsync(new ChatPage(playerCard));
                                 });
                             }
                         }
-                        catch (Exception ex)
+                        else if (notification.Type == "TournamentResults")
                         {
-                            Console.WriteLine($"Error navigating from notification: {ex.Message}");
+                            await MainThread.InvokeOnMainThreadAsync(async () => {
+                                await Shell.Current.GoToAsync("//LeaderboardPage");
+                            });
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error navigating from notification: {ex.Message}");
+                    }
                     },
                     "OPEN",
                     TimeSpan.FromSeconds(5),
