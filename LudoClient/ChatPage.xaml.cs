@@ -7,7 +7,7 @@ namespace LudoClient;
 
 public partial class ChatPage : ContentPage
 {
-    PlayerCard playerCard;
+    public PlayerCard playerCard;
     string roomCode;
     private int _messagesToLoad = 10;
     private List<ChatMessages> _allMessages = new();

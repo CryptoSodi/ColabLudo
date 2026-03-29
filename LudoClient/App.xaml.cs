@@ -72,8 +72,14 @@ namespace LudoClient
                 // Only notify for PRIVATE messages (no room code)
                 if (!string.IsNullOrEmpty(latestMsg.RoomCode)) return;
 
-                // SUPPRESSION: Queue if in a game or already on ChatPage
-                if (!string.IsNullOrEmpty(GlobalConstants.RoomCode) || IsOnChatPage())
+                int activeChatId = GetActiveChatPlayerId();
+
+                // RULE: If we are ALREADY chatting with this person, ignore notification entirely
+                if (activeChatId == latestMsg.SenderId)
+                    return;
+
+                // SUPPRESSION: Queue if in a game or on a chat page
+                if (!string.IsNullOrEmpty(GlobalConstants.RoomCode) || activeChatId != -1)
                 {
                     lock (_pendingNotifications)
                     {
@@ -110,29 +116,42 @@ namespace LudoClient
         {
             while (!token.IsCancellationRequested)
             {
-                if (string.IsNullOrEmpty(GlobalConstants.RoomCode) && !IsOnChatPage() && _pendingNotifications.Count > 0)
+                if (string.IsNullOrEmpty(GlobalConstants.RoomCode))
                 {
-                    await ProcessPendingNotifications();
+                    int activeChatId = GetActiveChatPlayerId();
+                    if (activeChatId != -1)
+                    {
+                        lock (_pendingNotifications)
+                        {
+                            // Clear queue for the person we are currently talking to
+                            _pendingNotifications.RemoveAll(n => n.Type == "Message" && n.Payload == activeChatId.ToString());
+                        }
+                    }
+
+                    if (_pendingNotifications.Count > 0)
+                    {
+                        await ProcessPendingNotifications();
+                    }
                 }
                 await Task.Delay(2000, token); // Check every 2 seconds
             }
         }
 
-        private bool IsOnChatPage()
+        private int GetActiveChatPlayerId()
         {
             try
             {
                 if (MainPage is AppShell shell)
                 {
                     var stack = shell.Navigation.NavigationStack;
-                    if (stack.Count > 0 && stack.Last() is ChatPage)
+                    if (stack.Count > 0 && stack.Last() is ChatPage cp)
                     {
-                        return true;
+                        return cp.playerCard.playerID;
                     }
                 }
             }
             catch { }
-            return false;
+            return -1;
         }
 
         private async Task ProcessPendingNotifications()
@@ -140,25 +159,29 @@ namespace LudoClient
             List<NotificationDTO> toProcess;
             lock (_pendingNotifications)
             {
-                toProcess = new List<NotificationDTO>(_pendingNotifications);
+                int activeChatId = GetActiveChatPlayerId();
+                // Last second check: don't show notifications for the open chat
+                toProcess = _pendingNotifications.Where(n => 
+                    !(n.Type == "Message" && n.Payload == activeChatId.ToString())
+                ).ToList();
+                
                 _pendingNotifications.Clear();
             }
 
             foreach (var note in toProcess)
             {
                 ShowNotification(note);
-                await Task.Delay(1500); // Small gap between multiple notifications
+                await Task.Delay(1500);
             }
         }
 
         private void OnReceiveNotification(object? sender, NotificationDTO notification)
         {
-            // SUPPRESSION LOGIC: Don't show notifications if in a game, waiting room, or already on ChatPage
-            if (!string.IsNullOrEmpty(GlobalConstants.RoomCode) || IsOnChatPage())
+            // SUPPRESSION LOGIC: Don't show notifications if in a game or waiting room
+            if (!string.IsNullOrEmpty(GlobalConstants.RoomCode))
             {
                 lock (_pendingNotifications)
                 {
-                    // Basic duplicate check for queue
                     if (!_pendingNotifications.Any(n => n.Payload == notification.Payload && n.Message == notification.Message))
                     {
                         _pendingNotifications.Add(notification);
