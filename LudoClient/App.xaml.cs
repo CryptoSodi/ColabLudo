@@ -176,9 +176,9 @@ namespace LudoClient
             {
                 var snackbarOptions = new CommunityToolkit.Maui.Core.SnackbarOptions
                 {
-                    BackgroundColor = Color.FromArgb("#BFA611"), // Game theme gold
-                    TextColor = Colors.Black,
-                    ActionButtonTextColor = Colors.DarkSlateBlue,
+                    BackgroundColor = Color.FromArgb("#CC3166A6"), // Semi-transparent Ludo Blue
+                    TextColor = Colors.White,
+                    ActionButtonTextColor = Colors.Yellow,
                     CornerRadius = new CornerRadius(10),
                     Font = Microsoft.Maui.Font.SystemFontOfSize(14),
                     ActionButtonFont = Microsoft.Maui.Font.SystemFontOfSize(14, Microsoft.Maui.FontWeight.Bold)
@@ -195,13 +195,17 @@ namespace LudoClient
                                 var playerCard = await GlobalConstants.MatchMaker.GetPlayerById(senderId);
                                 if (playerCard != null)
                                 {
-                                    // Navigate to ChatPage
-                                    await ClientGlobalConstants.dashBoard.Navigation.PushAsync(new ChatPage(playerCard));
+                                    // Robust navigation using Shell
+                                    await MainThread.InvokeOnMainThreadAsync(async () => {
+                                        await Shell.Current.Navigation.PushAsync(new ChatPage(playerCard));
+                                    });
                                 }
                             }
                             else if (notification.Type == "TournamentResults")
                             {
-                                await Shell.Current.GoToAsync("//LeaderboardPage");
+                                await MainThread.InvokeOnMainThreadAsync(async () => {
+                                    await Shell.Current.GoToAsync("//LeaderboardPage");
+                                });
                             }
                         }
                         catch (Exception ex)
