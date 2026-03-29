@@ -272,6 +272,19 @@ namespace SignalR.Server
             else
             {
                 using var ctx = _contextFactory.CreateDbContext();
+
+                // Check for BLOCK status before proceeding
+                var isBlocked = await ctx.FriendsRequests.AnyAsync(fr => 
+                    ((fr.SenderId == CM.SenderId && fr.ReceiverId == CM.ReceiverId) ||
+                     (fr.SenderId == CM.ReceiverId && fr.ReceiverId == CM.SenderId)) &&
+                    fr.Status == "BLOCK");
+
+                if (isBlocked)
+                {
+                    // SILENT BLOCK: The message is not saved and not broadcast
+                    return new List<ChatMessages>();
+                }
+
                 ChatMessage? savedMessage = null;
                 if (CM.Message != "")
                 {
