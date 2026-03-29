@@ -63,11 +63,13 @@ namespace LudoClient
 
         private void OnReceiveChatMessage(object? sender, List<ChatMessages> messages)
         {
-            if (messages == null || messages.Count == 0) return;
+            // HISTORY CHECK: If multiple messages arrive at once, it's a history fetch.
+            // We should NOT trigger a notification for history.
+            if (messages == null || messages.Count != 1) return;
 
             MainThread.BeginInvokeOnMainThread(() =>
             {
-                var latestMsg = messages.Last();
+                var latestMsg = messages.First();
                 
                 // Only notify for PRIVATE messages (no room code)
                 if (!string.IsNullOrEmpty(latestMsg.RoomCode)) return;
