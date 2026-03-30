@@ -10,6 +10,7 @@ namespace SignalR.Server.Services
     {
         private readonly string _expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
         private readonly string _expectedAudienceWeb = "973406093603-dlm3o6jrkuf6b1m1lc7m8hir9qc4cul5.apps.googleusercontent.com";
+        private readonly string _expectedAudienceWebNew = "973406093603-t7b4fbs99ouvg6u4hud80s3b64eek5qt.apps.googleusercontent.com";
         public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             try
@@ -36,11 +37,13 @@ namespace SignalR.Server.Services
                 }
                 else
                 {
-                    var payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+                    var validationSettings = new GoogleJsonWebSignature.ValidationSettings
+                    {
+                        Audience = new[] { _expectedAudience, _expectedAudienceWeb, _expectedAudienceWebNew }
+                    };
+                    var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, validationSettings);
 
-                    // ✅ Validate issuer and audience (REPLACE with your real Google OAuth client ID)
-
-                    //973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com
+                    // ✅ Validate issuer
                     if ((payload.Issuer != "accounts.google.com" && payload.Issuer != "https://accounts.google.com"))
                     {
                         throw new Exception($"Google Authentication failed : : 001");

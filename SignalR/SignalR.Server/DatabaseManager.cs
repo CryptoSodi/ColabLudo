@@ -1,4 +1,4 @@
-﻿using LudoServer.Data;
+using LudoServer.Data;
 using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -8,10 +8,15 @@ using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {
-    public class DatabaseManager(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService)
+    public class DatabaseManager(IHubContext<LudoHub> _hubContext, IHubContext<DashboardHub> _dashboardHub, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService)
     {
         public ConcurrentDictionary<string, GameRoom> _gameRooms { get; set; } = new();
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _roomLocks = new();
+
+        private async Task BroadcastMatchUpdate()
+        {
+            await _dashboardHub.Clients.All.SendAsync("RefreshMatchCenter");
+        }
 
         public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO)
         {
@@ -48,10 +53,11 @@ namespace SignalR.Server
                     roomCode = Random.Shared.Next(10000000, 99999999).ToString();
                 }
                 while (await ctx.Games.AnyAsync(g => g.RoomCode == roomCode));
-                // Deduct game fee
+                
                 gameDTO.RoomCode = roomCode;
 
-                if (!gameDTO.IsPracticeGame)
+                // Deduct game fee
+                if (!gameDTO.IsPracticeGame && !gameDTO.IsTournamentGame) // 🛑 FIX: Skip deduction for tournaments
                 {
                     bool deducted = await _crypto.deductGameFee(player.PlayerId, ParsedId, gameDTO.RoomCode, gameDTO.IsTournamentGame, gameDTO.BetAmount);
                     if (!deducted)
@@ -60,7 +66,6 @@ namespace SignalR.Server
                         return null;
                     }
                 }
-                _gameRooms.TryAdd(gameDTO.RoomCode, new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDTO));
 
                 MultiPlayer multiPlayer = GetGamePlayers(player.PlayerId, null, ctx);
                 multiPlayer.RoomCode = int.Parse(roomCode);
@@ -84,27 +89,33 @@ namespace SignalR.Server
             }
             else
             {
-                if (!existingGame.IsPractice)
-                    if (! await _crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
+                if (!existingGame.IsPractice && !gameDTO.IsTournamentGame) // 🛑 FIX: Skip deduction for tournaments
+                {
+                    if (!await _crypto.deductGameFee(player.PlayerId, existingGame.TournamentId, existingGame.RoomCode, gameDTO.IsTournamentGame, existingGame.BetAmount))
                     {
-                        Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {gameDTO.RoomCode}.");
+                        Console.WriteLine($"Game fee FAILED TO deduct for player {player.PlayerId} in room {existingGame.RoomCode}.");
                         return null;
                     }
+                }
                 // Join existing game
                 GetGamePlayers(player.PlayerId, existingGame.MultiPlayer, ctx);
                 await ctx.SaveChangesAsync();
             }
 
-            // Add to GameRoom
+            // Add to GameRoom memory list
             GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDTO));
-            // Add user to active users
-
-            lock (gameRoom.Users) // Lock GameRoom users list
+            
+            lock (gameRoom.Users) 
             {
                 gameRoom.Users.Add(new User(player, "Color"));
             }
+
+            // 🛑 FIX: Broadcast AFTER the user has been added to memory
+            await BroadcastMatchUpdate(); 
+
             return existingGame;
         }
+
         public async Task<(Game game, User user)> LeaveGameLobby(int playerId)
         {
             using var ctx = _contextFactory.CreateDbContext();
@@ -158,7 +169,6 @@ namespace SignalR.Server
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Refund failed for player {playerId} in game {existingGame.RoomCode}: {ex.Message}");
-                            // Optionally: Re-add the player to the game or log for manual investigation
                         }
                     }
                 }
@@ -169,7 +179,10 @@ namespace SignalR.Server
                     user = await room.PlayerLeft(playerId);
 
                 if (isEmpty)
+                {
                     _gameRooms.TryRemove(existingGame.RoomCode, out _);
+                    await BroadcastMatchUpdate(); // Notify Admin Dashboard
+                }
                 return (existingGame, user);
             }
             finally
@@ -248,18 +261,14 @@ namespace SignalR.Server
         }
         private async Task<(List<SharedCode.PlayerDto> seats, List<Player> playerList)> BuildSeats(Game existingGame, LudoDbContext ctx)
         {
-            // Build playerId-to-color mapping
             var playerSlots = new (int? PlayerId, string Color)[]{
                 (existingGame.MultiPlayer.P1, "Red"),
                 (existingGame.MultiPlayer.P2, existingGame.GameType == "2" ? "Yellow" : "Green"),
                 (existingGame.MultiPlayer.P3, "Yellow"),
                 (existingGame.MultiPlayer.P4, "Blue")};
-            // Get all player IDs that are not null
             var playerIds = playerSlots.Where(slot => slot.PlayerId.HasValue).Select(slot => slot.PlayerId.Value).ToList();
-            // Fetch all players in a single query
             var players = await ctx.Players.Where(p => playerIds.Contains(p.PlayerId)).ToListAsync();
 
-            // Build PlayerDto and Player lists
             List<SharedCode.PlayerDto> seats = new();
             List<Player> playerList = new();
             foreach (var (playerId, color) in playerSlots.Where(s => s.PlayerId.HasValue))
@@ -284,11 +293,16 @@ namespace SignalR.Server
             if (multiPlayer == null)
             {
                 multiPlayer = new MultiPlayer { P1 = playerId };
-                // Add the MultiPlayer and save changes to get the MultiPlayerId
-                ctx.MultiPlayers.Add(multiPlayer);//_context.MultiPlayers
-                //await _context.SaveChangesAsync(); // This will save the newly added MultiPlayer and assign it an Id
+                ctx.MultiPlayers.Add(multiPlayer);
                 return multiPlayer;
             }
+
+            if (multiPlayer.P1 == playerId || multiPlayer.P2 == playerId || 
+                multiPlayer.P3 == playerId || multiPlayer.P4 == playerId)
+            {
+                return multiPlayer; 
+            }
+
             if (multiPlayer.P1 == null) { multiPlayer.P1 = playerId; }
             else if (multiPlayer.P2 == null) { multiPlayer.P2 = playerId; }
             else if (multiPlayer.P3 == null) { multiPlayer.P3 = playerId; }
@@ -299,14 +313,11 @@ namespace SignalR.Server
         }
         internal async Task<Game> GetActiveGameAsync(String State, int playerId, LudoDbContext ctx)
         {
-            //State == Active mostly but we can get Playing games too
             Game game = await ctx.Games.Include(g => g.MultiPlayer).FirstOrDefaultAsync(g => g.State == State &&
                 (g.MultiPlayer.P1 == playerId ||
                  g.MultiPlayer.P2 == playerId ||
                  g.MultiPlayer.P3 == playerId ||
                  g.MultiPlayer.P4 == playerId));
-            if (game == null)
-                Console.WriteLine($"No {State} game found.");
             return game;
         }
     }

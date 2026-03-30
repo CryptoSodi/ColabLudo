@@ -11,6 +11,7 @@ namespace SignalR.Server
 {
     public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
+        public SharedCode.GameDto gameDTO { get; } = gameDTO;
         private readonly SemaphoreSlim _roomLock = new SemaphoreSlim(1, 1);
         private CancellationTokenSource? _animationCancellationTokenSource;
         public Engine? engine { get; set; }  // The Engine instance for this room

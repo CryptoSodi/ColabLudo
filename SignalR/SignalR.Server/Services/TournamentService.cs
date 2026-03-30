@@ -225,35 +225,49 @@ namespace SignalR.Server.Services
                 using var ctx = _contextFactory.CreateDbContext();
                 var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
                 
-                if (tournament == null)
-                    return null;
+                if (tournament == null) return null;
 
-                // Check if already joined
-                var existingChallenger = await ctx.TournamentChallengers
+                // 1. Check current status
+                var challenger = await ctx.TournamentChallengers
                     .FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == player.PlayerId);
                 
-                if (existingChallenger != null)
+                // Condition: Active player
+                if (challenger != null && challenger.Status == "JOINED")
                     return await BuildTournamentDto(ctx, tournament, player.PlayerId, "ALREADY_JOINED");
 
-                // Deduct Fee
-                if (!await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, $"Tournament Join: {tournament.Name}", true, tournament.EntryFee))
+                // Condition: Loser re-joining or New player joining
+                int currentRetry = challenger?.RetryCount ?? 0;
+
+                // 2. 💰 Accounting: Deduct Fee (Always deduct for new join OR re-entry after failure)
+                if (!await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, tournament.Name, true, tournament.EntryFee, currentRetry))
                 {
                     return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
                 }
 
-                // Create Challenger Record
-                var challenger = new TournamentChallenger
+                // 3. 📝 State Management
+                if (challenger == null)
                 {
-                    TournamentId = tournamentId,
-                    PlayerId = player.PlayerId,
-                    Status = "JOINED",
-                    Score = 0,
-                    CreatedDate = DateTime.UtcNow
-                };
+                    // New entry
+                    challenger = new TournamentChallenger
+                    {
+                        TournamentId = tournamentId,
+                        PlayerId = player.PlayerId,
+                        Status = "JOINED",
+                        Score = 0,
+                        CreatedDate = DateTime.UtcNow
+                    };
+                    ctx.TournamentChallengers.Add(challenger);
+                }
+                else
+                {
+                    // Re-entry after failure
+                    challenger.Status = "JOINED";
+                    challenger.RetryCount++;
+                    challenger.Score = 0; // Optional: Reset score on re-entry?
+                    ctx.TournamentChallengers.Update(challenger);
+                }
 
-                ctx.TournamentChallengers.Add(challenger);
                 await ctx.SaveChangesAsync();
-
                 return await BuildTournamentDto(ctx, tournament, player.PlayerId, "SUCCESS");
             }
             finally 

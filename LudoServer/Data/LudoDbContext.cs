@@ -17,6 +17,7 @@ namespace LudoServer.Data
         public DbSet<FriendRequest> FriendsRequests { get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<PlayerWalletKey> PlayerWalletKey { get; set; }
+        public DbSet<CashDeposit> CashDeposits { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

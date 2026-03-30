@@ -18,8 +18,12 @@ string purpose = builder.Configuration.GetConnectionString("purpose");
 
 //Add CORS policy
 builder.Services.AddCors(o =>
-{// Allow ANY origin (localhost, IP, external)
-    o.AddPolicy("AllowAnyOrigin", p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+{
+    o.AddPolicy("AllowAnyOrigin", p => p
+        .WithOrigins("http://localhost", "http://127.0.0.1", "http://192.168.1.13")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .AllowCredentials()); // Required for SignalR JS client
 });
 // Load secrets (local dev) and environment variables (for production)
 
@@ -51,15 +55,24 @@ builder.Services.AddHostedService<DepositScannerService>();
 builder.Services.AddHostedService<PlayerCleanupService>();
 builder.Services.AddHostedService<TournamentBackgroundWorker>();
 
+builder.Services.AddScoped<DashboardHub>(sp => {
+    var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
+    var googleAuth = sp.GetRequiredService<GoogleAuthService>();
+    var util = sp.GetRequiredService<UtilService>();
+    var dbManager = sp.GetRequiredService<DatabaseManager>();
+    return new DashboardHub(contextFactory, googleAuth, util, dbManager);
+});
+
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
 builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(@"C:\repos\LudoKeyRing")).SetApplicationName("LudoServer");
 
 builder.Services.AddSingleton<DatabaseManager>(sp => {
     var hubContext = sp.GetRequiredService<IHubContext<LudoHub>>();
+    var dashboardHubContext = sp.GetRequiredService<IHubContext<DashboardHub>>();
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var crypto = sp.GetRequiredService<CryptoHelper>();
     var utilService = sp.GetRequiredService<UtilService>();
-    var dm = new DatabaseManager(hubContext, contextFactory, crypto, utilService);
+    var dm = new DatabaseManager(hubContext, dashboardHubContext, contextFactory, crypto, utilService);
     return dm;
 });
 // Replace your existing CryptoHelper registration with this:
@@ -80,6 +93,7 @@ app.UseCors("AllowAnyOrigin");
 app.MapHub<LudoHub>("/LudoHub", options => { options.AllowStatefulReconnects = true; }); // Enable stateful reconnect
 // Map SignalR hubs
 app.MapHub<AdminHub>("/AdminHub");
+app.MapHub<DashboardHub>("/DashboardHub");
 // Run the app
 try {
     app.Run();

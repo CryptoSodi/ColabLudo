@@ -21,6 +21,14 @@ namespace SignalR.Server
             try
             {
                 var player = await _googleAuthService.GoogleAuthentication(idToken, city, countryCode);
+                if (player == null) return null;
+
+                // 🛑 Access Block Check
+                if (player.IsBlocked)
+                {
+                    throw new HubException("ACCOUNT_BLOCKED");
+                }
+
                 ConnectionToPlayer[Context.ConnectionId]  = await _utilService.GetPlayerByID(player.PlayerId);
                 await _utilService.SetPlayerOnlineState(player.PlayerId, true);
                 
@@ -41,7 +49,15 @@ namespace SignalR.Server
             // 1) Store SignalR connection
             try
             {
-                ConnectionToPlayer[Context.ConnectionId] = await _utilService.GetPlayerByID(int.Parse(_utilService.Decrypt(AuthToken)));
+                var player = await _utilService.GetPlayerByID(int.Parse(_utilService.Decrypt(AuthToken)));
+                
+                // 🛑 Access Block Check
+                if (player != null && player.IsBlocked)
+                {
+                    throw new HubException("ACCOUNT_BLOCKED");
+                }
+
+                ConnectionToPlayer[Context.ConnectionId] = player;
                 return await _utilService.CastPlayerToInfoAsync(ConnectionToPlayer[Context.ConnectionId]);
             }
             catch (Exception ex)
@@ -82,13 +98,22 @@ namespace SignalR.Server
             await base.OnDisconnectedAsync(exception);
         }
         /// Helper to fetch the current caller's player ID from the connection map.
-        private Task<Player> GetCallerPlayer()
+        private async Task<Player> GetCallerPlayer()
         {
             if (ConnectionToPlayer.TryGetValue(Context.ConnectionId, out var player))
             {
                 if (player == null)
                     throw new HubException("Player not recognized.");
-                return Task.FromResult(player);
+
+                // 🛑 Access Block Check
+                using var ctx = _contextFactory.CreateDbContext();
+                var dbPlayer = await ctx.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PlayerId == player.PlayerId);
+                if (dbPlayer != null && dbPlayer.IsBlocked)
+                {
+                    throw new HubException("ACCOUNT_BLOCKED");
+                }
+
+                return player;
             }
             throw new HubException("Player not recognized.");
         }
