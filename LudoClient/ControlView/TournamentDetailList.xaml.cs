@@ -146,8 +146,6 @@ namespace LudoClient.ControlView
                 gameDto.IsPracticeGame = true; // Set the practice game flag
                 gameDto.GameType = "4";
                 gameDto.PlayerCount = 4;
-                gameDto.IsPracticeGame = false;
-                gameDto.IsPrivateGame = true;
                 gameDto.RoomCode = tournament.TournamentId.ToString();
               
                 MainThread.BeginInvokeOnMainThread(() =>
@@ -180,19 +178,33 @@ namespace LudoClient.ControlView
 
             }
             tournament = await GlobalConstants.MatchMaker.JoinTournament(int.Parse(TournamentId.Text));
-            Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
+            
             if (tournament == null)
-                //No tournament running with this ID
+            {
+                MainThread.BeginInvokeOnMainThread(() => { _NavigationCooldown = false; });
                 return;
-            if (tournament.StatusCode == "FAILED")
+            }
+
+            if (tournament.StatusCode == "SUCCESS" || tournament.StatusCode == "ALREADY_JOINED")
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    SetTournamentDetails(tournament); // Refreshes labels and button text
+                    _NavigationCooldown = false;
+                });
+            }
+            else
             {
                 Console.WriteLine($"Failed to join the tournament. Error: {tournament.StatusCode}");
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (tournament.StatusCode == "INSUFFICIENT_BALANCE")
+                    {
+                        Application.Current?.MainPage?.DisplayAlert("Ludo Cities", "Insufficient balance to join this tournament.", "OK");
+                    }
+                    _NavigationCooldown = false;
+                });
             }
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                Task.Delay(500); // half-second cooldown
-                _NavigationCooldown = false;
-            });
         }
     }
 }
