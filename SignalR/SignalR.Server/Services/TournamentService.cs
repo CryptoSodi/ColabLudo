@@ -10,6 +10,8 @@ namespace SignalR.Server.Services
     {
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly CryptoHelper _crypto;
+        private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, SemaphoreSlim> _playerLocks = new();
+
         public TournamentService(IDbContextFactory<LudoDbContext> contextFactory, CryptoHelper crypto)
         {
             _contextFactory = contextFactory;
@@ -29,15 +31,28 @@ namespace SignalR.Server.Services
 
             foreach (var tournament in completedTournaments)
             {
-                // 2. Assign Winners
+                // 2. Assign Winners (Must have at least 1 win)
                 var top3 = tournament.TournamentChallengers
+                    .Where(tc => tc.Score > 0)
                     .OrderByDescending(tc => tc.Score)
                     .Take(3)
                     .ToList();
 
-                if (top3.Count > 0) tournament.Winner1 = top3[0].Player.Name;
-                if (top3.Count > 1) tournament.Winner2 = top3[1].Player.Name;
-                if (top3.Count > 2) tournament.Winner3 = top3[2].Player.Name;
+                if (top3.Count > 0) 
+                {
+                    tournament.Winner1 = top3[0].Player.Name;
+                    await PayoutWinner(ctx, top3[0].PlayerId, tournament.Prize1, $"Tournament Win (1st Place): {tournament.Name}");
+                }
+                if (top3.Count > 1)
+                {
+                    tournament.Winner2 = top3[1].Player.Name;
+                    await PayoutWinner(ctx, top3[1].PlayerId, tournament.Prize2, $"Tournament Win (2nd Place): {tournament.Name}");
+                }
+                if (top3.Count > 2)
+                {
+                    tournament.Winner3 = top3[2].Player.Name;
+                    await PayoutWinner(ctx, top3[2].PlayerId, tournament.Prize3, $"Tournament Win (3rd Place): {tournament.Name}");
+                }
 
                 // 3. Close the tournament
                 tournament.TournamentState = State.Completed;
@@ -83,6 +98,33 @@ namespace SignalR.Server.Services
             }
             
             return baseDate.AddDays(2);
+        }
+
+        private async Task PayoutWinner(LudoDbContext ctx, int playerId, decimal amount, string description)
+        {
+            if (amount <= 0) return;
+
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId);
+            if (wallet == null) return;
+
+            // 1. Credit Wallet
+            wallet.AvailableBalance += amount;
+
+            // 2. Log Transaction
+            var transaction = new WalletTransaction
+            {
+                PlayerId = playerId,
+                Amount = amount,
+                Type = TransactionType.Deposit,
+                Status = WalletTransactionStatus.Completed,
+                Description = description,
+                OperationId = Guid.NewGuid(),
+                BalanceAfter = wallet.AvailableBalance,
+                CreatedDate = DateTime.UtcNow
+            };
+
+            ctx.WalletTransaction.Add(transaction);
+            ctx.PlayerWallet.Update(wallet);
         }
 
         public async Task<TournamentResultDTO> GetResultsTournament(int tournamentId)
@@ -175,39 +217,49 @@ namespace SignalR.Server.Services
 
         internal async Task<TournamentDTO> JoinTournament(Player player, int tournamentId)
         {
-            using var ctx = _contextFactory.CreateDbContext();
-            var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
-            
-            if (tournament == null)
-                return null;
+            var semaphore = _playerLocks.GetOrAdd(player.PlayerId, _ => new SemaphoreSlim(1, 1));
+            await semaphore.WaitAsync();
 
-            // Check if already joined
-            var existingChallenger = await ctx.TournamentChallengers
-                .FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == player.PlayerId);
-            
-            if (existingChallenger != null)
-                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "ALREADY_JOINED");
-
-            // Deduct Fee
-            if (!await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, "Tournament Entry", true, tournament.EntryFee))
+            try 
             {
-                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
+                using var ctx = _contextFactory.CreateDbContext();
+                var tournament = await ctx.Tournaments.FirstOrDefaultAsync(x => x.TournamentId == tournamentId);
+                
+                if (tournament == null)
+                    return null;
+
+                // Check if already joined
+                var existingChallenger = await ctx.TournamentChallengers
+                    .FirstOrDefaultAsync(tc => tc.TournamentId == tournamentId && tc.PlayerId == player.PlayerId);
+                
+                if (existingChallenger != null)
+                    return await BuildTournamentDto(ctx, tournament, player.PlayerId, "ALREADY_JOINED");
+
+                // Deduct Fee
+                if (!await _crypto.deductGameFee(player.PlayerId, tournament.TournamentId, $"Tournament Join: {tournament.Name}", true, tournament.EntryFee))
+                {
+                    return await BuildTournamentDto(ctx, tournament, player.PlayerId, "INSUFFICIENT_BALANCE");
+                }
+
+                // Create Challenger Record
+                var challenger = new TournamentChallenger
+                {
+                    TournamentId = tournamentId,
+                    PlayerId = player.PlayerId,
+                    Status = "JOINED",
+                    Score = 0,
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                ctx.TournamentChallengers.Add(challenger);
+                await ctx.SaveChangesAsync();
+
+                return await BuildTournamentDto(ctx, tournament, player.PlayerId, "SUCCESS");
             }
-
-            // Create Challenger Record
-            var challenger = new TournamentChallenger
+            finally 
             {
-                TournamentId = tournamentId,
-                PlayerId = player.PlayerId,
-                Status = "JOINED",
-                Score = 0,
-                CreatedDate = DateTime.UtcNow
-            };
-
-            ctx.TournamentChallengers.Add(challenger);
-            await ctx.SaveChangesAsync();
-
-            return await BuildTournamentDto(ctx, tournament, player.PlayerId, "SUCCESS");
+                semaphore.Release();
+            }
         }
         private async Task<TournamentDTO> BuildTournamentDto(LudoDbContext ctx, Tournament tournament, int playerId, String StatusCode = "SUCCESS")
         {

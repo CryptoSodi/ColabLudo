@@ -29,6 +29,7 @@ namespace LudoServer.Models
         public decimal TotalWin { get; set; }
         public int Score { get; set; }
         public string? Role { get; set; } = "Player";// e.g., "Player", "Admin", etc.
+        public bool IsBlocked { get; set; } = false;
         public DateTime CreatedDate { get; set; }
         [JsonIgnore] // Prevents circular reference during serialization
         public ICollection<PlayerWallet> Wallets { get; set; }

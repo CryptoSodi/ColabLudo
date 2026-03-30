@@ -10,7 +10,7 @@ namespace SignalR.Server.Payments
         {
             return await _factory.Get(currencyType).EnsurePlayerWalletExists(playerId, currencyType.ToString());
         }
-        public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount)
+        public async Task<bool> deductGameFee(int playerId, int? tournamentId, string roomCode, bool isTournamentGame, decimal betAmount, int retryCount = 0)
         {
             var provider = _factory.Get(CurrencyType.LUDC);
             if (betAmount <= 0)
@@ -20,7 +20,7 @@ namespace SignalR.Server.Payments
             using var tx = await ctx.Database.BeginTransactionAsync();
 
             var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(p => p.PlayerId == playerId);
-            if (wallet == null)
+            if (wallet == null || wallet.IsWithdrawalLocked || wallet.AvailableBalance < betAmount)
                 return false;
 
             // ❗ Block game actions during withdrawal
@@ -51,6 +51,9 @@ namespace SignalR.Server.Payments
                     challenger.RetryCount++;
                     challenger.Status = "JOINED";
                     ctx.TournamentChallengers.Update(challenger);
+                    // 💰 Deduct tournament fee (OFF-CHAIN, ATOMIC)
+                    await ApplyOffChainLedger(ctx, wallet, -betAmount, $"Tournament Fee {challenger.RetryCount}", tournamentId?.ToString() ?? "", false, roomCode);
+
                 }
                 else
                 {
@@ -58,9 +61,6 @@ namespace SignalR.Server.Payments
                     await tx.CommitAsync();
                     return true;
                 }
-
-                // 💰 Deduct tournament fee (OFF-CHAIN, ATOMIC)
-               await ApplyOffChainLedger(ctx, wallet, -betAmount, "Tournament Fee", tournamentId?.ToString() ?? "", false, roomCode);
             }
             else
             {

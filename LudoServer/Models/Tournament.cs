@@ -21,6 +21,7 @@ namespace LudoServer.Models
         public decimal Prize2 { get; set; }
         [Column(TypeName = "decimal(18,8)")]
         public decimal Prize3 { get; set; }
+        public bool IsRepeatable { get; set; } = false;
         public State TournamentState { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         [JsonIgnore] // Prevents circular reference during serialization
