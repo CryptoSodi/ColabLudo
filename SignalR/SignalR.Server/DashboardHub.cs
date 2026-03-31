@@ -25,6 +25,38 @@ namespace SignalR.Server
             _databaseManager = databaseManager;
         }
 
+        public async Task<bool> ValidateSession(string authToken, string requiredRole)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(authToken)) return false;
+
+                // 1. Decrypt and find player
+                var playerIdStr = _utilService.Decrypt(authToken);
+                if (!int.TryParse(playerIdStr, out int playerId)) return false;
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var player = await ctx.Players.AsNoTracking().FirstOrDefaultAsync(p => p.PlayerId == playerId);
+
+                if (player == null || player.IsBlocked || !player.IsActive) return false;
+
+                // 2. Role Check
+                if (requiredRole == "Admin")
+                {
+                    // Admin area requires Admin or Manager
+                    if (player.Role != "Admin" && player.Role != "Manager") return false;
+                }
+                else if (requiredRole == "Player")
+                {
+                    // User area requires Player role
+                    if (player.Role != "Player") return false;
+                }
+
+                return true;
+            }
+            catch { return false; }
+        }
+
         public async Task<List<object>> GetActiveMatches()
         {
             // Fetch live data directly from the server's memory (DatabaseManager)
@@ -226,6 +258,7 @@ namespace SignalR.Server
                         t.Type,
                         Status = t.Status.ToString(),
                         t.Description,
+                        t.RoomCode, // Added this field
                         Date = t.CreatedDate
                     })
                     .ToListAsync();
@@ -302,6 +335,44 @@ namespace SignalR.Server
                 var g = await ctx.Games
                     .Include(g => g.MultiPlayer)
                     .FirstOrDefaultAsync(x => x.GameId == gameId);
+                
+                if (g == null) return null;
+
+                string category = "Normal";
+                if (g.TournamentId.HasValue) category = "Tournament";
+                else if (g.IsPrivate) category = "Private";
+
+                var pIds = new List<int?> { g.MultiPlayer.P1, g.MultiPlayer.P2, g.MultiPlayer.P3, g.MultiPlayer.P4 }
+                    .Where(id => id.HasValue).ToList();
+                
+                var players = await ctx.Players
+                    .Where(p => pIds.Contains(p.PlayerId))
+                    .ToListAsync();
+
+                return new
+                {
+                    Id = g.GameId,
+                    RoomCode = g.RoomCode,
+                    Category = category,
+                    Type = g.GameType,
+                    Bet = g.BetAmount,
+                    Winner1 = players.FirstOrDefault(p => p.PlayerId == g.Winner1)?.Name ?? "N/A",
+                    Winner2 = players.FirstOrDefault(p => p.PlayerId == g.Winner2)?.Name ?? "N/A",
+                    Participants = players.Select(p => new { p.PlayerId, p.Name }).ToList(),
+                    Date = g.CreatedDate
+                };
+            }
+            catch (Exception ex) { return null; }
+        }
+
+        public async Task<object> GetGameAuditByRoom(string roomCode)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var g = await ctx.Games
+                    .Include(g => g.MultiPlayer)
+                    .FirstOrDefaultAsync(x => x.RoomCode == roomCode);
                 
                 if (g == null) return null;
 

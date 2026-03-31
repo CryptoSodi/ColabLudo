@@ -72,7 +72,7 @@ namespace SignalR.Server.Payments
             await tx.CommitAsync();
             return true;
         }
-        public async Task<bool> OffChainTransaction(int playerId, decimal amount, string description, string txId = "", bool isOnChain = false, string roomCode = "")
+        public async Task<bool> OffChainTransaction(int playerId, decimal amount, string description, string txId = "", bool isOnChain = false, string roomCode = "", TransactionType type = TransactionType.Deposit)
         {
             using var ctx = _contextFactory.CreateDbContext();
             using var tx = await ctx.Database.BeginTransactionAsync();
@@ -81,7 +81,7 @@ namespace SignalR.Server.Payments
             if (wallet.IsWithdrawalLocked)
                 return false;
 
-            await ApplyOffChainLedger(ctx, wallet, amount, description, roomCode, isOnChain, txId);
+            await ApplyOffChainLedger(ctx, wallet, amount, description, txId, isOnChain, roomCode, type);
 
             await ctx.SaveChangesAsync();
             await tx.CommitAsync(); // ✅ Now this works
@@ -90,9 +90,11 @@ namespace SignalR.Server.Payments
         // =========================
         // OFF-CHAIN LEDGER
         // =========================
-        public async Task<bool> ApplyOffChainLedger(LudoDbContext ctx, PlayerWallet wallet, decimal amount, string description, string txId = "", bool isOnChain = false, string roomCode = "")
+        public async Task<bool> ApplyOffChainLedger(LudoDbContext ctx, PlayerWallet wallet, decimal amount, string description, string txId = "", bool isOnChain = false, string roomCode = "", TransactionType? type = null)
         {
             wallet.AvailableBalance += amount;
+
+            var finalType = type ?? (amount >= 0 ? TransactionType.Deposit : TransactionType.Sweep);
 
             ctx.WalletTransaction.Add(new WalletTransaction
             {
@@ -100,7 +102,7 @@ namespace SignalR.Server.Payments
                 OperationId = Guid.NewGuid(),
                 Amount = amount,
                 BalanceAfter = wallet.AvailableBalance,
-                Type = amount >= 0 ? TransactionType.Deposit : TransactionType.Sweep,
+                Type = finalType,
                 Status = WalletTransactionStatus.Completed,
                 Description = description,
                 RoomCode = roomCode,

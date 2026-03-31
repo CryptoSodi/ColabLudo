@@ -1,4 +1,5 @@
 ﻿using LudoServer.Data;
+using LudoServer.Models;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -86,7 +87,8 @@ namespace SignalR.Server
                 var winnerId = winnerSeat.PlayerId;
                 try
                 {
-                    bool credited = await _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.GameId.ToString());
+                    // 💰 FIX: Pass existingGame.RoomCode and TransactionType.GameWin
+                    bool credited = await _crypto.OffChainTransaction(winnerId, winningsPerWinner, "Game Won", "", false, existingGame.RoomCode, TransactionType.GameWin);
                     if (!credited)
                     {
                         Console.WriteLine($"Failed to credit {winnerId}.");

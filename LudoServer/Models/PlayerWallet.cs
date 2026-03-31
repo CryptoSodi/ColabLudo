@@ -71,6 +71,7 @@ namespace LudoServer.Models
         Withdrawal = 2,
         GameWin = 3,
         GameLoss = 4,
-        Sweep = 5
+        Sweep = 5,
+        DailyBonus = 6
     }
 }

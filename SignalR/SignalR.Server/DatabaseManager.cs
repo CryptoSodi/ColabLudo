@@ -163,7 +163,8 @@ namespace SignalR.Server
                     {
                         try
                         {
-                            await _crypto.OffChainTransaction(playerId, existingGame.BetAmount, "Game Refund", "", false, existingGame.RoomCode);
+                            // 🛑 FIX: Passing roomCode as the 6th parameter
+                            await _crypto.OffChainTransaction(playerId, existingGame.BetAmount, "Game Refund", "", false, existingGame.RoomCode, TransactionType.Deposit);
                             Console.WriteLine($"Refunded {existingGame.BetAmount} to player {playerId} for game {existingGame.RoomCode}.");
                         }
                         catch (Exception ex)
