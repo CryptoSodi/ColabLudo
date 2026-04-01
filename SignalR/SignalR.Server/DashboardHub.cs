@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SharedCode;
 using SignalR.Server.Services;
+using SignalR.Server.Payments;
 
 namespace SignalR.Server
 {
@@ -13,16 +14,19 @@ namespace SignalR.Server
         private readonly GoogleAuthService _googleAuthService;
         private readonly UtilService _utilService;
         private readonly DatabaseManager _databaseManager;
+        private readonly CryptoHelper _crypto;
 
         public DashboardHub(IDbContextFactory<LudoDbContext> contextFactory, 
                             GoogleAuthService googleAuthService, 
                             UtilService utilService,
-                            DatabaseManager databaseManager)
+                            DatabaseManager databaseManager,
+                            CryptoHelper crypto)
         {
             _contextFactory = contextFactory;
             _googleAuthService = googleAuthService;
             _utilService = utilService;
             _databaseManager = databaseManager;
+            _crypto = crypto;
         }
 
         public async Task<bool> ValidateSession(string authToken, string requiredRole)
@@ -217,10 +221,12 @@ namespace SignalR.Server
                         Id = p.PlayerId,
                         Name = p.Name,
                         Email = p.Email,
+                        PhoneNumber = p.PhoneNumber,
                         City = p.City,
                         Role = p.Role,
                         Wins = p.GamesWon,
                         Played = p.GamesPlayed,
+                        Rank = ctx.Players.Count(other => other.GamesWon > p.GamesWon) + 1,
                         CreatedDate = p.CreatedDate
                     })
                     .ToListAsync<object>();
@@ -258,7 +264,7 @@ namespace SignalR.Server
                         t.Type,
                         Status = t.Status.ToString(),
                         t.Description,
-                        t.RoomCode, // Added this field
+                        t.RoomCode, 
                         Date = t.CreatedDate
                     })
                     .ToListAsync();
@@ -302,16 +308,25 @@ namespace SignalR.Server
                     });
                 }
 
+                // 🛑 NEW: Ensure Wallet exists so WalletAddress is populated
+                var wallet = await _crypto.EnsurePlayerWalletExists(playerId, SignalR.Server.Payments.CurrencyType.LUDC);
+
                 return new
                 {
                     Id = player.PlayerId,
                     Name = player.Name,
                     Picture = player.PictureUrl,
                     Email = player.Email,
-                    Wins = player.GamesWon,
+                    PhoneNumber = player.PhoneNumber, // Added
                     Played = player.GamesPlayed,
+                    Wins = player.GamesWon,
+                    Lost = player.GamesLost,
+                    BestWin = player.BestWin,
+                    TotalWin = player.TotalWin,
+                    TotalLost = player.TotalLost,
                     Rank = rank,
-                    LUDC = player.Wallets?.FirstOrDefault()?.AvailableBalance ?? 0,
+                    LUDC = wallet?.AvailableBalance ?? 0,
+                    WalletAddress = wallet?.WalletAddress ?? "",
                     City = player.City,
                     IsBlocked = player.IsBlocked,
                     Role = player.Role,
@@ -325,6 +340,63 @@ namespace SignalR.Server
                 Console.WriteLine($"Error getting player dashboard: {ex.Message}");
                 return null;
             }
+        }
+
+        public async Task<List<object>> GetTransactionsFiltered(int playerId, string type, DateTime? startDate)
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var query = ctx.WalletTransaction
+                    .Where(t => t.PlayerId == playerId);
+
+                if (type != "All")
+                {
+                    if (int.TryParse(type, out int typeInt))
+                        query = query.Where(t => t.Type == (TransactionType)typeInt);
+                }
+
+                if (startDate.HasValue)
+                {
+                    query = query.Where(t => t.CreatedDate >= startDate.Value);
+                }
+
+                var results = await query
+                    .OrderByDescending(t => t.CreatedDate)
+                    .Select(t => new {
+                        t.Amount,
+                        t.Type,
+                        Status = t.Status.ToString(),
+                        t.Description,
+                        t.RoomCode,
+                        Date = t.CreatedDate
+                    })
+                    .ToListAsync();
+
+                return results.Cast<object>().ToList();
+            }
+            catch (Exception ex) { return new List<object>(); }
+        }
+
+        public async Task<string> InitiateWithdrawal(string authToken, string destinationAddress, decimal amount)
+        {
+            try
+            {
+                if (amount <= 0) return "Invalid amount.";
+                
+                var playerIdStr = _utilService.Decrypt(authToken);
+                if (!int.TryParse(playerIdStr, out int playerId)) return "Unauthorized.";
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+                if (player == null || player.IsBlocked) return "Account blocked or not found.";
+
+                // Use injected CryptoHelper
+                var result = _crypto.Withdraw(player, destinationAddress, amount);
+                
+                return result;
+            }
+            catch (Exception ex) { return "Error: " + ex.Message; }
         }
 
         public async Task<object> GetGameAudit(int gameId)

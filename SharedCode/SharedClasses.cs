@@ -79,6 +79,7 @@
         public int playerID { get; set; }
         public String? name { get; set; }
         public String? pictureUrl { get; set; }
+        public String? city { get; set; }
         public int rank { get; set; }
         public String? status { get; set; }
         public bool lastGame { get; set; }

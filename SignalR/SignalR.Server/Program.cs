@@ -8,8 +8,15 @@ using SignalR.Server.Payments;
 using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(8085); // HTTP
+    serverOptions.ListenAnyIP(8443, listenOptions => listenOptions.UseHttps()); // HTTPS
+});
+
 const int masterUserId = 1;
-const bool debug = true;
+const bool debug = false; // 🚀 SWITCHED TO FALSE FOR PRODUCTION/MAINNET
 const string LUDC_MINT_ADDRESS = debug ? "8Abr4aSqHbqUNK1ubRVfcdnAhS3RjmYRPDf11dt7pcfW" : "JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai" ;
 builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddUserSecrets<Program>().AddEnvironmentVariables();
 
@@ -20,10 +27,10 @@ string purpose = builder.Configuration.GetConnectionString("purpose");
 builder.Services.AddCors(o =>
 {
     o.AddPolicy("AllowAnyOrigin", p => p
-        .WithOrigins("http://localhost", "http://127.0.0.1", "http://192.168.1.13")
-        .AllowAnyHeader()
+        .SetIsOriginAllowed(origin => true) // 🚀 Allows Web, Mobile, and Local instantly
         .AllowAnyMethod()
-        .AllowCredentials()); // Required for SignalR JS client
+        .AllowAnyHeader()
+        .AllowCredentials()); // Required for SignalR sessions
 });
 // Load secrets (local dev) and environment variables (for production)
 
@@ -60,7 +67,8 @@ builder.Services.AddScoped<DashboardHub>(sp => {
     var googleAuth = sp.GetRequiredService<GoogleAuthService>();
     var util = sp.GetRequiredService<UtilService>();
     var dbManager = sp.GetRequiredService<DatabaseManager>();
-    return new DashboardHub(contextFactory, googleAuth, util, dbManager);
+    var crypto = sp.GetRequiredService<CryptoHelper>();
+    return new DashboardHub(contextFactory, googleAuth, util, dbManager, crypto);
 });
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:
