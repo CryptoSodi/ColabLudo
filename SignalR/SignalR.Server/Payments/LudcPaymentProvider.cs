@@ -15,6 +15,7 @@ namespace SignalR.Server.Payments
     public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS) : IPaymentProvider
     {
         public CurrencyType Currency => CurrencyType.LUDC;
+        public string MintAddress => LUDC_MINT.Key;
         private readonly IRpcClient _rpc = ClientFactory.GetClient(debug ? Cluster.DevNet : Cluster.MainNet);                 // Solana RPC client
         private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(purpose);                         // Data protector for encrypt/decrypt        
 

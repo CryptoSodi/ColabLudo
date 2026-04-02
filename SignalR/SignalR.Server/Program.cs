@@ -45,6 +45,7 @@ builder.Services.AddTransient<TournamentService>();
 builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<UtilService>();
+builder.Services.AddHttpClient<JupiterSwapService>();
 
 builder.Services.AddSingleton<SolPaymentProvider>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
@@ -70,7 +71,8 @@ builder.Services.AddScoped<DashboardHub>(sp => {
     var dbManager = sp.GetRequiredService<DatabaseManager>();
     var crypto = sp.GetRequiredService<CryptoHelper>();
     var ludc = sp.GetRequiredService<LudcPaymentProvider>();
-    return new DashboardHub(contextFactory, googleAuth, util, dbManager, crypto, ludc, clientRpcUrl);
+    var jupiter = sp.GetRequiredService<JupiterSwapService>();
+    return new DashboardHub(contextFactory, googleAuth, util, dbManager, crypto, ludc, jupiter, clientRpcUrl);
 });
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:

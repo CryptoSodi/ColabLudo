@@ -5,18 +5,82 @@ using Microsoft.EntityFrameworkCore;
 using SharedCode;
 using SignalR.Server.Services;
 using SignalR.Server.Payments;
+using System.Text.Json;
+using Solnet.Programs;
+using Solnet.Rpc;
+using Solnet.Rpc.Types;
+using Solnet.Wallet;
 
 namespace SignalR.Server
 {
     public class DashboardHub : Hub
     {
+        private static string GetJsonString(JsonElement parent, string propertyName, string fallback = "")
+        {
+            if (!parent.TryGetProperty(propertyName, out var value))
+                return fallback;
+
+            return value.ValueKind switch
+            {
+                JsonValueKind.String => value.GetString() ?? fallback,
+                JsonValueKind.Number => value.GetRawText(),
+                JsonValueKind.True => bool.TrueString,
+                JsonValueKind.False => bool.FalseString,
+                _ => fallback
+            };
+        }
+
+        private static (string Mint, int Decimals)? GetSupportedAsset(string assetCode, string ludcMintAddress)
+        {
+            return (assetCode ?? string.Empty).Trim().ToUpperInvariant() switch
+            {
+                "SOL" => (SolMint, SolDecimals),
+                "USDC" => (UsdcMint, UsdcDecimals),
+                "LUDC" => (ludcMintAddress, LudcDecimals),
+                _ => null
+            };
+        }
+
+        private static string DeriveAssociatedTokenAddress(string ownerAddress, string mintAddress, string tokenProgramAddress)
+        {
+            var owner = new PublicKey(ownerAddress);
+            var mint = new PublicKey(mintAddress);
+            var tokenProgram = new PublicKey(tokenProgramAddress);
+            PublicKey.TryFindProgramAddress(
+                new[] { owner.KeyBytes, tokenProgram.KeyBytes, mint.KeyBytes },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var ata,
+                out _);
+            return ata.Key;
+        }
+
+        private async Task<decimal> GetTokenBalanceAsync(string ownerAddress, string mintAddress, string tokenProgramAddress)
+        {
+            var ata = DeriveAssociatedTokenAddress(ownerAddress, mintAddress, tokenProgramAddress);
+            var balance = await _solanaRpc.GetTokenAccountBalanceAsync(ata, Commitment.Confirmed);
+            if (!balance.WasSuccessful || balance.Result?.Value == null)
+                return 0m;
+
+            return decimal.TryParse(balance.Result.Value.UiAmountString, out var parsed) ? parsed : 0m;
+        }
+
         private readonly IDbContextFactory<LudoDbContext> _contextFactory;
         private readonly GoogleAuthService _googleAuthService;
         private readonly UtilService _utilService;
         private readonly DatabaseManager _databaseManager;
         private readonly CryptoHelper _crypto;
         private readonly LudcPaymentProvider _ludcPaymentProvider;
+        private readonly JupiterSwapService _jupiterSwapService;
         private readonly string _clientRpcUrl;
+        private readonly IRpcClient _solanaRpc = ClientFactory.GetClient(Cluster.MainNet);
+        private const string SolMint = "So11111111111111111111111111111111111111112";
+        private const string UsdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+        private const string StandardTokenProgram = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        private const string Token2022Program = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+        private const int SolDecimals = 9;
+        private const int UsdcDecimals = 6;
+        private const int MaxSwapSlippageBps = 150;
+        private const int LudcDecimals = 9;
 
         public DashboardHub(IDbContextFactory<LudoDbContext> contextFactory, 
                             GoogleAuthService googleAuthService, 
@@ -24,6 +88,7 @@ namespace SignalR.Server
                             DatabaseManager databaseManager,
                             CryptoHelper crypto,
                             LudcPaymentProvider ludcPaymentProvider,
+                            JupiterSwapService jupiterSwapService,
                             string clientRpcUrl)
         {
             _contextFactory = contextFactory;
@@ -32,6 +97,7 @@ namespace SignalR.Server
             _databaseManager = databaseManager;
             _crypto = crypto;
             _ludcPaymentProvider = ludcPaymentProvider;
+            _jupiterSwapService = jupiterSwapService;
             _clientRpcUrl = clientRpcUrl ?? string.Empty;
         }
 
@@ -118,6 +184,190 @@ namespace SignalR.Server
                 return false;
 
             return await _ludcPaymentProvider.ConfirmSignatureAsync(signature);
+        }
+        public async Task<object> PrepareAssetSwap(string authToken, string senderWalletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps = 100)
+        {
+            try
+            {
+                var isValid = await ValidateSession(authToken, "Player");
+                if (!isValid)
+                    return new { Success = false, Error = "Unauthorized." };
+
+                if (string.IsNullOrWhiteSpace(senderWalletAddress) || amount <= 0)
+                    return new { Success = false, Error = "Invalid swap request." };
+
+                var playerIdStr = _utilService.Decrypt(authToken);
+                if (!int.TryParse(playerIdStr, out int playerId))
+                    return new { Success = false, Error = "Invalid session." };
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId && w.AddressType == "LUDC");
+                if (wallet == null || string.IsNullOrWhiteSpace(wallet.WalletAddress))
+                    return new { Success = false, Error = "Internal LUDC wallet not ready." };
+
+                var normalizedInput = (inputAsset ?? string.Empty).Trim().ToUpperInvariant();
+                var normalizedOutput = (outputAsset ?? string.Empty).Trim().ToUpperInvariant();
+
+                if (normalizedInput == normalizedOutput)
+                    return new { Success = false, Error = "Choose two different assets." };
+
+                if (normalizedInput != "LUDC" && normalizedOutput != "LUDC")
+                    return new { Success = false, Error = "One side of the swap must be LUDC." };
+
+                var inputConfig = GetSupportedAsset(normalizedInput, _ludcPaymentProvider.MintAddress);
+                var outputConfig = GetSupportedAsset(normalizedOutput, _ludcPaymentProvider.MintAddress);
+                if (inputConfig == null || outputConfig == null)
+                    return new { Success = false, Error = "Unsupported asset." };
+
+                if (slippageBps <= 0 || slippageBps > MaxSwapSlippageBps)
+                    slippageBps = 100;
+
+                decimal scale = (decimal)Math.Pow(10, inputConfig.Value.Decimals);
+                ulong amountRaw = Convert.ToUInt64(decimal.Round(amount * scale, 0, MidpointRounding.AwayFromZero));
+                if (amountRaw == 0)
+                    return new { Success = false, Error = "Swap amount is too small." };
+
+                var receiver = normalizedOutput == "LUDC" ? wallet.WalletAddress : senderWalletAddress;
+
+                using var order = await _jupiterSwapService.GetOrderAsync(
+                    inputConfig.Value.Mint,
+                    outputConfig.Value.Mint,
+                    amountRaw.ToString(),
+                    senderWalletAddress,
+                    receiver,
+                    slippageBps);
+
+                var root = order.RootElement;
+                var requestId = GetJsonString(root, "requestId");
+                var transaction = GetJsonString(root, "transaction");
+                var inAmount = GetJsonString(root, "inAmount", amountRaw.ToString());
+                var outAmount = GetJsonString(root, "outAmount", "0");
+                var outUsdValue = GetJsonString(root, "outUsdValue");
+                var priceImpactPct = GetJsonString(root, "priceImpactPct");
+                var router = GetJsonString(root, "router");
+                var error = GetJsonString(root, "error");
+                var errorMessage = GetJsonString(root, "errorMessage");
+
+                if (!string.IsNullOrWhiteSpace(error) || !string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    var swapError = string.IsNullOrWhiteSpace(errorMessage) ? error : errorMessage;
+                    if (string.Equals(swapError, "Insufficient funds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        swapError = normalizedInput == "USDC"
+                            ? "Insufficient funds in Phantom wallet. You need enough USDC and a small SOL balance for fees."
+                            : $"Insufficient {normalizedInput} in Phantom wallet.";
+                    }
+                    else if (string.Equals(swapError, "Failed to get quotes", StringComparison.OrdinalIgnoreCase))
+                    {
+                        swapError = "No swap route is available for this amount right now. Try a smaller amount.";
+                    }
+                    return new { Success = false, Error = swapError };
+                }
+
+                if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(transaction))
+                    return new { Success = false, Error = "Jupiter did not return a signable swap transaction." };
+
+                return new
+                {
+                    Success = true,
+                    InputAsset = normalizedInput,
+                    InputMint = inputConfig.Value.Mint,
+                    InputAmount = amount,
+                    InputAmountRaw = inAmount,
+                    OutputAsset = normalizedOutput,
+                    OutputMint = outputConfig.Value.Mint,
+                    OutputAmountRaw = outAmount,
+                    Receiver = receiver,
+                    RequestId = requestId,
+                    Transaction = transaction,
+                    SlippageBps = slippageBps,
+                    Router = router,
+                    PriceImpactPct = priceImpactPct,
+                    OutUsdValue = outUsdValue
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+        public async Task<object> ExecutePreparedSwap(string authToken, string requestId, string signedTransactionBase64)
+        {
+            try
+            {
+                var isValid = await ValidateSession(authToken, "Player");
+                if (!isValid)
+                    return new { Success = false, Error = "Unauthorized." };
+
+                if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(signedTransactionBase64))
+                    return new { Success = false, Error = "Invalid signed transaction." };
+
+                using var result = await _jupiterSwapService.ExecuteOrderAsync(requestId, signedTransactionBase64);
+                var root = result.RootElement;
+                var signature = GetJsonString(root, "signature");
+                var status = GetJsonString(root, "status");
+                var slot = GetJsonString(root, "slot");
+                var code = GetJsonString(root, "code");
+                var error = GetJsonString(root, "error");
+                var message = GetJsonString(root, "message");
+
+                if (!string.IsNullOrWhiteSpace(error) || !string.IsNullOrWhiteSpace(message))
+                    return new { Success = false, Error = string.IsNullOrWhiteSpace(message) ? error : message };
+
+                return new
+                {
+                    Success = true,
+                    Signature = signature,
+                    Status = status,
+                    Slot = slot,
+                    Code = code
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+        public async Task<object> GetSwapBalances(string authToken, string senderWalletAddress)
+        {
+            try
+            {
+                var isValid = await ValidateSession(authToken, "Player");
+                if (!isValid)
+                    return new { Success = false, Error = "Unauthorized." };
+
+                if (string.IsNullOrWhiteSpace(senderWalletAddress))
+                    return new { Success = false, Error = "Connect Phantom first." };
+
+                var playerIdStr = _utilService.Decrypt(authToken);
+                if (!int.TryParse(playerIdStr, out int playerId))
+                    return new { Success = false, Error = "Invalid session." };
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var internalWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId && w.AddressType == "LUDC");
+                var internalLudc = internalWallet?.AvailableBalance ?? 0m;
+
+                var phantomSol = await _solanaRpc.GetBalanceAsync(senderWalletAddress, Commitment.Confirmed);
+                var phantomSolAmount = phantomSol.WasSuccessful && phantomSol.Result != null
+                    ? phantomSol.Result.Value / 1_000_000_000m
+                    : 0m;
+
+                var phantomUsdc = await GetTokenBalanceAsync(senderWalletAddress, UsdcMint, StandardTokenProgram);
+                var phantomLudc = await GetTokenBalanceAsync(senderWalletAddress, _ludcPaymentProvider.MintAddress, Token2022Program);
+
+                return new
+                {
+                    Success = true,
+                    PhantomSol = phantomSolAmount,
+                    PhantomUsdc = phantomUsdc,
+                    PhantomLudc = phantomLudc,
+                    InternalLudc = internalLudc
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
         }
 
         public async Task<List<object>> GetActiveMatches()
