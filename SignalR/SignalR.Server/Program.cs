@@ -22,6 +22,7 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: true, reloadOnCh
 
 string dbstring = builder.Configuration.GetConnectionString("DefaultConnection");
 string purpose = builder.Configuration.GetConnectionString("purpose");
+string clientRpcUrl = builder.Configuration["Solana:ClientRpcUrl"] ?? string.Empty;
 
 //Add CORS policy
 builder.Services.AddCors(o =>
@@ -68,7 +69,8 @@ builder.Services.AddScoped<DashboardHub>(sp => {
     var util = sp.GetRequiredService<UtilService>();
     var dbManager = sp.GetRequiredService<DatabaseManager>();
     var crypto = sp.GetRequiredService<CryptoHelper>();
-    return new DashboardHub(contextFactory, googleAuth, util, dbManager, crypto);
+    var ludc = sp.GetRequiredService<LudcPaymentProvider>();
+    return new DashboardHub(contextFactory, googleAuth, util, dbManager, crypto, ludc, clientRpcUrl);
 });
 
 // 1) Register Data Protection so IDataProtectionProvider can be injected:

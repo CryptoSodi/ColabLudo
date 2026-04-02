@@ -69,6 +69,50 @@ namespace SignalR.Server.Payments
                 return 0m;
             return decimal.Parse(balance.Result.Value.UiAmountString);
         }
+        public async Task<object> PrepareDepositFromExternalWalletAsync(string senderWalletAddress, string destinationOwnerAddress, decimal amount)
+        {
+            var senderPub = new PublicKey(senderWalletAddress);
+            var receiverPub = new PublicKey(destinationOwnerAddress);
+
+            PublicKey.TryFindProgramAddress(
+                new[] { senderPub.KeyBytes, TOKEN_2022_PROGRAM.KeyBytes, LUDC_MINT.KeyBytes },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var senderAta,
+                out _);
+
+            PublicKey.TryFindProgramAddress(
+                new[] { receiverPub.KeyBytes, TOKEN_2022_PROGRAM.KeyBytes, LUDC_MINT.KeyBytes },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var receiverAta,
+                out _);
+
+            var senderAtaInfo = await _rpc.GetAccountInfoAsync(senderAta);
+            var receiverAtaInfo = await _rpc.GetAccountInfoAsync(receiverAta);
+            var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
+            ulong tokenAmount = Convert.ToUInt64(decimal.Round(amount * 1_000_000_000m, 0, MidpointRounding.AwayFromZero));
+
+            return new
+            {
+                SenderOwner = senderWalletAddress,
+                DestinationOwner = destinationOwnerAddress,
+                SenderAta = senderAta.Key,
+                DestinationAta = receiverAta.Key,
+                SenderAtaExists = senderAtaInfo.WasSuccessful && senderAtaInfo.Result?.Value != null,
+                DestinationAtaExists = receiverAtaInfo.WasSuccessful && receiverAtaInfo.Result?.Value != null,
+                Blockhash = blockhash,
+                Mint = LUDC_MINT.Key,
+                TokenProgram = TOKEN_2022_PROGRAM.Key,
+                AssociatedTokenProgram = AssociatedTokenAccountProgram.ProgramIdKey.Key,
+                SystemProgram = SystemProgram.ProgramIdKey.Key,
+                Decimals = LUDC_DECIMALS,
+                AmountRaw = tokenAmount.ToString()
+            };
+        }
+        public async Task<bool> ConfirmSignatureAsync(string signature)
+        {
+            var tx = await _rpc.GetTransactionAsync(signature, Commitment.Confirmed);
+            return tx.WasSuccessful && tx.Result != null;
+        }
         // ================= INTERNAL SEND =================
         private async Task<string> SendLudcAsync(PlayerWalletKey senderKey, string destination, decimal amount)
         {

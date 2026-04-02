@@ -15,18 +15,24 @@ namespace SignalR.Server
         private readonly UtilService _utilService;
         private readonly DatabaseManager _databaseManager;
         private readonly CryptoHelper _crypto;
+        private readonly LudcPaymentProvider _ludcPaymentProvider;
+        private readonly string _clientRpcUrl;
 
         public DashboardHub(IDbContextFactory<LudoDbContext> contextFactory, 
                             GoogleAuthService googleAuthService, 
                             UtilService utilService,
                             DatabaseManager databaseManager,
-                            CryptoHelper crypto)
+                            CryptoHelper crypto,
+                            LudcPaymentProvider ludcPaymentProvider,
+                            string clientRpcUrl)
         {
             _contextFactory = contextFactory;
             _googleAuthService = googleAuthService;
             _utilService = utilService;
             _databaseManager = databaseManager;
             _crypto = crypto;
+            _ludcPaymentProvider = ludcPaymentProvider;
+            _clientRpcUrl = clientRpcUrl ?? string.Empty;
         }
 
         public async Task<bool> ValidateSession(string authToken, string requiredRole)
@@ -59,6 +65,59 @@ namespace SignalR.Server
                 return true;
             }
             catch { return false; }
+        }
+
+        public async Task<object> GetClientRpcConfig(string authToken, string requiredRole)
+        {
+            var isValid = await ValidateSession(authToken, requiredRole);
+            if (!isValid)
+            {
+                return new
+                {
+                    HasRpc = false,
+                    RpcUrl = string.Empty,
+                    Provider = "Unauthorized"
+                };
+            }
+
+            var provider = _clientRpcUrl.Contains("fluxrpc", StringComparison.OrdinalIgnoreCase)
+                ? "FluxRPC"
+                : "Custom";
+
+            return new
+            {
+                HasRpc = !string.IsNullOrWhiteSpace(_clientRpcUrl),
+                RpcUrl = string.Empty,
+                DisplayLabel = provider == "FluxRPC" ? "FluxRPC Mainnet" : "Configured Solana RPC",
+                Provider = provider
+            };
+        }
+        public async Task<object> PrepareLudcDeposit(string authToken, string senderWalletAddress, decimal amount)
+        {
+            var isValid = await ValidateSession(authToken, "Player");
+            if (!isValid) return null;
+
+            if (string.IsNullOrWhiteSpace(senderWalletAddress) || amount <= 0)
+                return null;
+
+            var playerIdStr = _utilService.Decrypt(authToken);
+            if (!int.TryParse(playerIdStr, out int playerId))
+                return null;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == playerId && w.AddressType == "LUDC");
+            if (wallet == null || string.IsNullOrWhiteSpace(wallet.WalletAddress))
+                return null;
+
+            return await _ludcPaymentProvider.PrepareDepositFromExternalWalletAsync(senderWalletAddress, wallet.WalletAddress, amount);
+        }
+        public async Task<bool> ConfirmSolanaTransaction(string authToken, string requiredRole, string signature)
+        {
+            var isValid = await ValidateSession(authToken, requiredRole);
+            if (!isValid || string.IsNullOrWhiteSpace(signature))
+                return false;
+
+            return await _ludcPaymentProvider.ConfirmSignatureAsync(signature);
         }
 
         public async Task<List<object>> GetActiveMatches()
