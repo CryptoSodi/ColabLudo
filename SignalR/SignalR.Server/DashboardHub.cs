@@ -30,13 +30,13 @@ namespace SignalR.Server
             };
         }
 
-        private static (string Mint, int Decimals)? GetSupportedAsset(string assetCode, string ludcMintAddress)
+        private static (string Mint, int Decimals, string? TokenProgram)? GetSupportedAsset(string assetCode, string ludcMintAddress)
         {
             return (assetCode ?? string.Empty).Trim().ToUpperInvariant() switch
             {
-                "SOL" => (SolMint, SolDecimals),
-                "USDC" => (UsdcMint, UsdcDecimals),
-                "LUDC" => (ludcMintAddress, LudcDecimals),
+                "SOL" => (SolMint, SolDecimals, null),
+                "USDC" => (UsdcMint, UsdcDecimals, StandardTokenProgram),
+                "LUDC" => (ludcMintAddress, LudcDecimals, Token2022Program),
                 _ => null
             };
         }
@@ -227,7 +227,19 @@ namespace SignalR.Server
                 if (amountRaw == 0)
                     return new { Success = false, Error = "Swap amount is too small." };
 
-                var receiver = normalizedOutput == "LUDC" ? wallet.WalletAddress : senderWalletAddress;
+                string receiver;
+                if (normalizedOutput == "LUDC")
+                {
+                    receiver = wallet.WalletAddress;
+                }
+                else if (!string.IsNullOrEmpty(outputConfig.Value.TokenProgram))
+                {
+                    receiver = DeriveAssociatedTokenAddress(senderWalletAddress, outputConfig.Value.Mint, outputConfig.Value.TokenProgram);
+                }
+                else
+                {
+                    receiver = senderWalletAddress;
+                }
 
                 using var order = await _jupiterSwapService.GetOrderAsync(
                     inputConfig.Value.Mint,
