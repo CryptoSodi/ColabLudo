@@ -13,6 +13,7 @@
             <StackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Start" HorizontalOptions="Fill">
                 <Image Margin="0,100,0,0"  Source="ttl_results.webp" VerticalOptions="End" HorizontalOptions="Fill"/>
                 <StackLayout Margin="0,-80,0,0" Spacing="6" VerticalOptions="Start" HorizontalOptions="Fill">
+                    <Label x:Name="NoWinnerLabel" Text="NO WINNER FOUND" IsVisible="False" HorizontalTextAlignment="Center" FontAttributes="Bold" FontSize="20" TextColor="White" Margin="0,50,0,0" />
                     <local:ResultCardLong x:Name="player1" Margin="0,2,0,0" />
                     <local:ResultCardLong x:Name="player2" />
                     <local:ResultCardLong x:Name="player3" />

@@ -8,7 +8,7 @@
              xmlns:controlview="clr-namespace:LudoClient.ControlView">
 
     <Grid x:Name="RootGrid" IgnoreSafeArea="True" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".2*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
-        <controlview:Capsule ImageSource="wallet_bg.webp" Grid.Row="1" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+        <controlview:Capsule ImageSource="tournament_bg_container.webp" Grid.Row="1" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
             <Grid Margin="0,20,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".23*,1*" >
                 <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".4*,.6*" ColumnDefinitions=".1*,12*,.1*">
                     <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions="*,*,*,*">
@@ -26,7 +26,7 @@
                         </Grid>
                     </controlview:Capsule>
                 </Grid>
-                <ScrollView Margin="10,5,10,-60" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
+                <ScrollView Margin="10,0,10,0" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
                     <VerticalStackLayout x:Name="LeaderboardListStack" Spacing="5" HorizontalOptions="Fill" VerticalOptions="Fill">
                     </VerticalStackLayout>
                 </ScrollView>

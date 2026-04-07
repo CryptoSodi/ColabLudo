@@ -522,6 +522,7 @@
 		<None Remove="Resources\Images\Tournament\team_teamwork.webp" />
 		<None Remove="Resources\Images\Tournament\time_gyro.webp" />
 		<None Remove="Resources\Images\Tournament\tournament_bg.webp" />
+		<None Remove="Resources\Images\Tournament\tournament_bg_container.webp" />
 		<None Remove="Resources\Images\user_sharedassets2.assets.png" />
 		<None Remove="Resources\Images\Verification\ic_right_arr.webp" />
 		<None Remove="Resources\Images\Verification\ic_verify_account.webp" />
@@ -720,6 +721,7 @@
 		<MauiImage Include="Resources\Images\Tournament\team_teamwork.webp" />
 		<MauiImage Include="Resources\Images\Tournament\time_gyro.webp" />
 		<MauiImage Include="Resources\Images\Tournament\tournament_bg.webp" />
+		<MauiImage Include="Resources\Images\Tournament\tournament_bg_container.webp" />
 		<MauiImage Include="Resources\Images\Verification\ic_right_arr.webp" />
 		<MauiImage Include="Resources\Images\Verification\ic_verify_account.webp" />
 		<MauiImage Include="Resources\Images\Verification\ic_verify_bank.webp" />
