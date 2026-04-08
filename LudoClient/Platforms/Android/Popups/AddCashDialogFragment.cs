@@ -13,14 +13,12 @@ using SharedCode.Constants;
 using System;
 using System.IO;
 
-
 namespace LudoClient.Platforms.Android.Popups
 {
     public class AddCashDialogFragment : DialogFragment
     {
         private TextView _coinsText;
         private ImageView _qrCodeImage;
-        private TextView _addressText;
         private global::Android.Views.View _copyBtn;
         private string _walletAddress = "";
 
@@ -31,6 +29,12 @@ namespace LudoClient.Platforms.Android.Popups
 
         // Content
         private global::Android.Views.View _contentQR, _contentWallet, _contentBank, _footerSection;
+
+        // Wallet Hub Elements
+        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap;
+        private TextView _infoAddressTitle, _infoAddressText, _phantomBtnText;
+        private EditText _walletTransferAmount;
+        private string _externalWalletAddress = "";
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -44,29 +48,35 @@ namespace LudoClient.Platforms.Android.Popups
 
             _coinsText = view.FindViewById<TextView>(Resource.Id.coinsText);
             _qrCodeImage = view.FindViewById<ImageView>(Resource.Id.qrCodeImage);
-            _addressText = view.FindViewById<TextView>(Resource.Id.addressText);
             _copyBtn = view.FindViewById<global::Android.Views.View>(Resource.Id.copyBtn);
 
-            // Find Tabs
+            // Tabs
             _tabQR = view.FindViewById<global::Android.Views.View>(Resource.Id.tabQR);
             _tabWallet = view.FindViewById<global::Android.Views.View>(Resource.Id.tabWallet);
             _tabBank = view.FindViewById<global::Android.Views.View>(Resource.Id.tabBank);
-
             _tabQRImg = view.FindViewById<ImageView>(Resource.Id.tabQRImg);
             _tabWalletImg = view.FindViewById<ImageView>(Resource.Id.tabWalletImg);
             _tabBankImg = view.FindViewById<ImageView>(Resource.Id.tabBankImg);
-
-            // Get the TextViews inside FrameLayouts (they don't have IDs, so we get them by position or we could have added IDs)
-            // For safety, let's just find them by searching children
+            
+            // Get TextViews safely
             _tabQRText = (TextView)((ViewGroup)_tabQR).GetChildAt(1);
             _tabWalletText = (TextView)((ViewGroup)_tabWallet).GetChildAt(1);
             _tabBankText = (TextView)((ViewGroup)_tabBank).GetChildAt(1);
 
-            // Find Content
+            // Content
             _contentQR = view.FindViewById<global::Android.Views.View>(Resource.Id.contentQR);
             _contentWallet = view.FindViewById<global::Android.Views.View>(Resource.Id.contentWallet);
             _contentBank = view.FindViewById<global::Android.Views.View>(Resource.Id.contentBank);
             _footerSection = view.FindViewById<global::Android.Views.View>(Resource.Id.footerSection);
+
+            // Wallet Tab Elements
+            _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
+            _btnWalletTransfer = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletTransfer);
+            _btnWalletSwap = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwap);
+            _infoAddressTitle = view.FindViewById<TextView>(Resource.Id.infoAddressTitle);
+            _infoAddressText = view.FindViewById<TextView>(Resource.Id.infoAddressText);
+            _phantomBtnText = view.FindViewById<TextView>(Resource.Id.phantomBtnText);
+            _walletTransferAmount = view.FindViewById<EditText>(Resource.Id.walletTransferAmount);
 
             // Click Handlers
             _copyBtn.Click += OnCopyButtonClicked;
@@ -74,8 +84,12 @@ namespace LudoClient.Platforms.Android.Popups
             _tabWallet.Click += (s, e) => SwitchTab(2);
             _tabBank.Click += (s, e) => SwitchTab(3);
 
-            InitializeData();
+            _btnPhantomConnect.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Initializing Web3 Connection...", ToastLength.Short).Show();
+            };
 
+            InitializeData();
             return view;
         }
 
@@ -97,7 +111,28 @@ namespace LudoClient.Platforms.Android.Popups
             _contentQR.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
             _contentWallet.Visibility = tabIndex == 2 ? ViewStates.Visible : ViewStates.Gone;
             _contentBank.Visibility = tabIndex == 3 ? ViewStates.Visible : ViewStates.Gone;
-            _footerSection.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
+
+            // Footer Switch Logic
+            if (tabIndex == 1) // QR Tab
+            {
+                _footerSection.Visibility = ViewStates.Visible;
+                _copyBtn.Visibility = ViewStates.Visible;
+                _btnPhantomConnect.Visibility = ViewStates.Gone;
+                _infoAddressTitle.Text = "DEPOSIT LUDC TOKEN";
+                _infoAddressText.Text = _walletAddress;
+            }
+            else if (tabIndex == 2) // Wallet Tab
+            {
+                _footerSection.Visibility = ViewStates.Visible;
+                _copyBtn.Visibility = ViewStates.Gone;
+                _btnPhantomConnect.Visibility = ViewStates.Visible;
+                _infoAddressTitle.Text = "CONNECTED WALLET";
+                _infoAddressText.Text = string.IsNullOrEmpty(_externalWalletAddress) ? "NOT CONNECTED" : _externalWalletAddress;
+            }
+            else // Bank or other
+            {
+                _footerSection.Visibility = ViewStates.Gone;
+            }
         }
 
         private void InitializeData()
@@ -109,23 +144,18 @@ namespace LudoClient.Platforms.Android.Popups
                 {
                     _walletAddress = wallet.WalletAddress;
                     _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
-                    _addressText.Text = wallet.WalletAddress;
+                    _infoAddressText.Text = wallet.WalletAddress; // Initial footer text
 
                     wallet.BalanceChanged += OnBalanceChanged;
                 }
-
                 GenerateQRCode();
             }
         }
 
         private void OnBalanceChanged(decimal balance)
         {
-            MainThread.BeginInvokeOnMainThread(() =>
-            {
-                if (_coinsText != null)
-                {
-                    _coinsText.Text = ClientGlobalConstants.NormalizeCoins(balance);
-                }
+            MainThread.BeginInvokeOnMainThread(() => {
+                if (_coinsText != null) _coinsText.Text = ClientGlobalConstants.NormalizeCoins(balance);
             });
         }
 
@@ -139,24 +169,17 @@ namespace LudoClient.Platforms.Android.Popups
                     Bitmap bitmap = BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
                     _qrCodeImage.SetImageBitmap(bitmap);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error generating QR Code: {ex.Message}");
-                }
+                catch (Exception) { }
             }
         }
 
         private void OnCopyButtonClicked(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            
             if (!string.IsNullOrEmpty(_walletAddress))
             {
                 Clipboard.Default.SetTextAsync(_walletAddress);
-                
-                // Show native Toast or MAUI Toast
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
+                MainThread.BeginInvokeOnMainThread(() => {
                     CommunityToolkit.Maui.Alerts.Toast.Make("Copied to Clipboard", ToastDuration.Short, 22).Show();
                 });
             }
@@ -165,9 +188,7 @@ namespace LudoClient.Platforms.Android.Popups
         public override void OnDestroyView()
         {
             if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
-            {
                 UserInfo.Instance.player.Wallet.BalanceChanged -= OnBalanceChanged;
-            }
             base.OnDestroyView();
         }
     }
