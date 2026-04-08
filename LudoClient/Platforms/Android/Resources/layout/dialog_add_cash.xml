@@ -85,7 +85,7 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <!-- Total Balance HUD -->
+                    <!-- Total Balance Section -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content">
@@ -391,7 +391,7 @@
                         </androidx.constraintlayout.widget.ConstraintLayout>
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/btnPhantomConnect"
-                            android:layout_width="160dp"
+                            android:layout_width="100dp"
                             android:layout_height="35dp"
                             android:layout_marginTop="5dp"
                             android:layout_marginBottom="10dp"
@@ -400,8 +400,8 @@
                             app:layout_constraintTop_toBottomOf="@id/infoAddressCapsule"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintEnd_toEndOf="parent">
-                            <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_big" android:scaleType="fitXY" />
-                            <TextView android:id="@+id/phantomBtnText" android:layout_width="match_parent" android:layout_height="match_parent" android:text="CONNECT PHANTOM" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="11sp" android:paddingBottom="4dp" />
+                            <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_verify_account" android:scaleType="fitXY" />
+                            <TextView android:id="@+id/phantomBtnText" android:layout_width="match_parent" android:layout_height="match_parent" android:text="CONNECT" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="11sp" android:paddingBottom="4dp" />
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
