@@ -44,8 +44,8 @@
 
 			<TextView
                 android:translationY="-11dp"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:text="DEPOSIT"
                 android:textColor="#FFFFFF"
                 android:textSize="18sp"
@@ -73,7 +73,7 @@
 			<FrameLayout
 		        android:layout_width="0dp"
 		        android:layout_height="match_parent"
-		        android:translationY="17dp"
+		        android:translationY="5dp"
 		        android:layout_marginHorizontal="10dp"
 		        app:layout_constraintTop_toTopOf="parent"
 		        app:layout_constraintBottom_toBottomOf="parent"
@@ -88,8 +88,7 @@
                     <!-- Total Balance Section -->
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="5dp">
+                        android:layout_height="wrap_content">
                         
                         <ImageView
                             android:id="@+id/balanceBg"
@@ -153,7 +152,8 @@
                             android:layout_height="match_parent"
                             android:orientation="horizontal"
                             android:weightSum="3"
-                            android:paddingHorizontal="10dp">
+                            android:paddingLeft="10dp"
+                            android:paddingRight="10dp">
 
                             <FrameLayout
                                 android:id="@+id/tabQR"
