@@ -21,7 +21,11 @@ public partial class ImageSwitch : ContentView
             control.DisplayPlayersText.IsVisible = true;
         if(v == "2v2")
             control.DisplayPlayersText.Text = "TEAM UP";
-        control.DisplayText.Text = v;
+        else
+        {
+            control.DisplayText.FontSize = 10;
+        }
+            control.DisplayText.Text = v;
     });
     public static readonly BindableProperty IsActiveProperty = BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(ImageSwitch), defaultValue: false);
     public string SwitchText

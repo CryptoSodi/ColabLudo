@@ -66,4 +66,29 @@ public partial class AddCash : BasePopup
         // Show toast message
         Toast.Make("Copied to Clipboard", ToastDuration.Short, 22).Show();
     }
+
+    private void TabRequestedActivate(object sender, EventArgs e)
+    {
+        if (sender is ControlView.ImageSwitch activeTab)
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            
+            // Set active states
+            Tab1.SwitchSource = (Tab1 == activeTab) ? Tab1.SwitchOn : Tab1.SwitchOff;
+            Tab2.SwitchSource = (Tab2 == activeTab) ? Tab2.SwitchOn : Tab2.SwitchOff;
+
+            if (activeTab == Tab1)
+            {
+                ContentOnChain.IsVisible = true;
+                ContentLocal.IsVisible = false;
+                SharedFooter.IsVisible = true;
+            }
+            else
+            {
+                ContentOnChain.IsVisible = false;
+                ContentLocal.IsVisible = true;
+                SharedFooter.IsVisible = false;
+            }
+        }
+    }
 }
