@@ -73,22 +73,23 @@ public partial class AddCash : BasePopup
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             
-            // Set active states
-            Tab1.SwitchSource = (Tab1 == activeTab) ? Tab1.SwitchOn : Tab1.SwitchOff;
-            Tab2.SwitchSource = (Tab2 == activeTab) ? Tab2.SwitchOn : Tab2.SwitchOff;
+            // Set active states for all 3 tabs using SwitchState
+            Tab1.SwitchState = (Tab1 != activeTab);
+            Tab2.SwitchState = (Tab2 != activeTab);
+            Tab3.SwitchState = (Tab3 != activeTab);
 
-            if (activeTab == Tab1)
-            {
-                ContentOnChain.IsVisible = true;
-                ContentLocal.IsVisible = false;
-                SharedFooter.IsVisible = true;
-            }
-            else
-            {
-                ContentOnChain.IsVisible = false;
-                ContentLocal.IsVisible = true;
-                SharedFooter.IsVisible = false;
-            }
+            // Force visual update
+            Tab1.UpdateSwitchSource();
+            Tab2.UpdateSwitchSource();
+            Tab3.UpdateSwitchSource();
+
+            // Toggle Content Visibility
+            ContentOnChain.IsVisible = (activeTab == Tab1);
+            ContentLocal.IsVisible = (activeTab == Tab2);
+            ContentBank.IsVisible = (activeTab == Tab3);
+
+            // Toggle Footer (Only show COPY button for On-Chain)
+            SharedFooter.IsVisible = (activeTab == Tab1);
         }
     }
 }

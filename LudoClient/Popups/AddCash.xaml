@@ -23,9 +23,9 @@
                 <!-- TABS SECTION (FriendsPage Style) -->
                 <Grid HorizontalOptions="Fill" Margin="0,0,0,-5"  VerticalOptions="Start" RowDefinitions="Auto,Auto" ColumnDefinitions="1*,5*,1*">
                     <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".1*,.1*,.1*">
-                        <local:ImageSwitch x:Name="Tab1" SwitchText="QR-CODE" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab2" Grid.Column="1" SwitchText="WALLET" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
-                        <local:ImageSwitch x:Name="Tab3" Grid.Column="3" SwitchText="BANK" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="QR-CODE" SwitchState="False" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" Grid.Column="1" SwitchText="WALLET" SwitchState="True" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" Grid.Column="3" SwitchText="BANK" SwitchState="True" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
                     </Grid>
                 </Grid>
 
@@ -49,6 +49,15 @@
                     <StackLayout Spacing="15" Margin="10,30,10,30" VerticalOptions="Center" HorizontalOptions="Fill">
                         <Label Text="LOCAL WALLET MODULE" TextColor="White" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
                         <Label Text="Placeholder for local payment info..." TextColor="Silver" FontSize="12" HorizontalTextAlignment="Center"/>
+                    </StackLayout>
+                </Grid>
+
+                <!-- BANK CONTENT (HIDDEN BY DEFAULT) -->
+                <Grid x:Name="ContentBank" IsVisible="False" Margin="2,0,2,10" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                    <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    <StackLayout Spacing="15" Margin="10,30,10,30" VerticalOptions="Center" HorizontalOptions="Fill">
+                        <Label Text="BANK TRANSFER MODULE" TextColor="White" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                        <Label Text="Placeholder for bank details..." TextColor="Silver" FontSize="12" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                 </Grid>
 
