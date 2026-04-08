@@ -30,16 +30,10 @@
                 </Grid>
 
                 <!-- ON-CHAIN CONTENT (DEFAULT) -->
-                <Grid x:Name="ContentOnChain" Margin="2,0,2,10" VerticalOptions="Start" HorizontalOptions="Fill">
+                <Grid x:Name="ContentOnChain" Margin="2,0,2,10" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
                     <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <StackLayout Spacing="10" Margin="2,15,2,20" VerticalOptions="Fill" HorizontalOptions="Fill">
-                        <Image x:Name="QRCodeImage" WidthRequest="140" HeightRequest="140" Aspect="AspectFit" BackgroundColor="#4031af"/>
-                        <local:Capsule ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
-                            <Grid Margin="5" HorizontalOptions="Fill" VerticalOptions="Fill">
-                                <Label Text="DEPOSIT LUDC TOKEN" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
-                                <Label x:Name="AddressText" Text="ADDRESS" TextColor="White" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
-                            </Grid>
-                        </local:Capsule>
+                    <StackLayout Spacing="10" Margin="2,15,2,20" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                        <Image x:Name="QRCodeImage" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Aspect="AspectFit" BackgroundColor="#4031af"/>
                     </StackLayout>
                 </Grid>
 
@@ -62,9 +56,17 @@
                 </Grid>
 
                 <!-- SHARED FOOTER (COPY BUTTON) -->
-                <Grid x:Name="SharedFooter" Margin="2,-20,2,10" ColumnSpacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions="1*,1*,1*">
-                    <BoxView Grid.ColumnSpan="3" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <local:Capsule Grid.Column="1" HeightRequest="40" ImageSource="btn_orange.webp" HorizontalOptions="Fill" VerticalOptions="End">
+                <Grid x:Name="SharedFooter" Margin="2,-20,2,10" ColumnSpacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="Auto,Auto" ColumnDefinitions="1*,1*,1*">
+                    <BoxView Grid.RowSpan="2" Grid.ColumnSpan="3" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    
+                    <local:Capsule Grid.Row="0" Grid.ColumnSpan="3" ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
+                        <Grid Margin="5" HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Label Text="DEPOSIT LUDC TOKEN" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
+                            <Label x:Name="AddressText" Text="ADDRESS" TextColor="White" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
+                        </Grid>
+                    </local:Capsule>
+
+                    <local:Capsule Grid.Row="1" Grid.Column="1" HeightRequest="40" ImageSource="btn_orange.webp" HorizontalOptions="Fill" VerticalOptions="End">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
                             <Grid.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnCopyButtonClicked" />
