@@ -280,7 +280,13 @@
                                             android:layout_marginTop="5dp"
                                             android:orientation="horizontal"
                                             app:layout_constraintTop_toBottomOf="@id/swapTitle">
-                                            <Spinner android:id="@+id/swapInputAsset" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext" />
+                                            <Spinner 
+                                                android:id="@+id/swapInputAsset" 
+                                                android:layout_width="0dp" 
+                                                android:layout_height="match_parent" 
+                                                android:layout_weight="1" 
+                                                android:background="@drawable/bg_rounded_edittext"
+                                                android:popupBackground="#1A237E" />
                                             <TextView android:layout_width="wrap_content" android:layout_height="match_parent" android:text="➔" android:textColor="#FFFFFF" android:gravity="center" android:paddingHorizontal="5dp" />
                                             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext"><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="LUDC" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="11sp"/></FrameLayout>
                                             <androidx.constraintlayout.widget.ConstraintLayout

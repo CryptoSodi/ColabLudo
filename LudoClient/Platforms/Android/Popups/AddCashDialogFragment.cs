@@ -125,8 +125,11 @@ namespace LudoClient.Platforms.Android.Popups
         private void InitializeSpinners()
         {
             var assets = new List<string> { "SOL", "USDC" };
-            var adapter = new ArrayAdapter<string>(Context, global::Android.Resource.Layout.SimpleSpinnerItem, assets);
-            adapter.SetDropDownViewResource(global::Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            // Use primary HUD layout for the collapsed selection box (consistent with EditText)
+            var adapter = new ArrayAdapter<string>(Context, Resource.Layout.spinner_item_hud, assets);
+            // Use dropdown-specific layout for the expanded list view
+            adapter.SetDropDownViewResource(Resource.Layout.spinner_dropdown_item_hud);
+            
             _swapInputAsset.Adapter = adapter;
             _swapInputAsset.SetSelection(0);
         }
