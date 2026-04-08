@@ -23,7 +23,7 @@ public partial class ImageSwitch : ContentView
             control.DisplayPlayersText.Text = "TEAM UP";
         else
         {
-            control.DisplayText.FontSize = 10;
+            control.DisplayText.FontSize = 12;
         }
             control.DisplayText.Text = v;
     });

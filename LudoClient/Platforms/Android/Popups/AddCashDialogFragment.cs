@@ -13,6 +13,7 @@ using SharedCode.Constants;
 using System;
 using System.IO;
 
+
 namespace LudoClient.Platforms.Android.Popups
 {
     public class AddCashDialogFragment : DialogFragment
@@ -22,6 +23,14 @@ namespace LudoClient.Platforms.Android.Popups
         private TextView _addressText;
         private global::Android.Views.View _copyBtn;
         private string _walletAddress = "";
+
+        // Tabs
+        private global::Android.Views.View _tabQR, _tabWallet, _tabBank;
+        private ImageView _tabQRImg, _tabWalletImg, _tabBankImg;
+        private TextView _tabQRText, _tabWalletText, _tabBankText;
+
+        // Content
+        private global::Android.Views.View _contentQR, _contentWallet, _contentBank, _footerSection;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -38,11 +47,57 @@ namespace LudoClient.Platforms.Android.Popups
             _addressText = view.FindViewById<TextView>(Resource.Id.addressText);
             _copyBtn = view.FindViewById<global::Android.Views.View>(Resource.Id.copyBtn);
 
+            // Find Tabs
+            _tabQR = view.FindViewById<global::Android.Views.View>(Resource.Id.tabQR);
+            _tabWallet = view.FindViewById<global::Android.Views.View>(Resource.Id.tabWallet);
+            _tabBank = view.FindViewById<global::Android.Views.View>(Resource.Id.tabBank);
+
+            _tabQRImg = view.FindViewById<ImageView>(Resource.Id.tabQRImg);
+            _tabWalletImg = view.FindViewById<ImageView>(Resource.Id.tabWalletImg);
+            _tabBankImg = view.FindViewById<ImageView>(Resource.Id.tabBankImg);
+
+            // Get the TextViews inside FrameLayouts (they don't have IDs, so we get them by position or we could have added IDs)
+            // For safety, let's just find them by searching children
+            _tabQRText = (TextView)((ViewGroup)_tabQR).GetChildAt(1);
+            _tabWalletText = (TextView)((ViewGroup)_tabWallet).GetChildAt(1);
+            _tabBankText = (TextView)((ViewGroup)_tabBank).GetChildAt(1);
+
+            // Find Content
+            _contentQR = view.FindViewById<global::Android.Views.View>(Resource.Id.contentQR);
+            _contentWallet = view.FindViewById<global::Android.Views.View>(Resource.Id.contentWallet);
+            _contentBank = view.FindViewById<global::Android.Views.View>(Resource.Id.contentBank);
+            _footerSection = view.FindViewById<global::Android.Views.View>(Resource.Id.footerSection);
+
+            // Click Handlers
             _copyBtn.Click += OnCopyButtonClicked;
+            _tabQR.Click += (s, e) => SwitchTab(1);
+            _tabWallet.Click += (s, e) => SwitchTab(2);
+            _tabBank.Click += (s, e) => SwitchTab(3);
 
             InitializeData();
 
             return view;
+        }
+
+        private void SwitchTab(int tabIndex)
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+
+            // Update Images
+            _tabQRImg.SetImageResource(tabIndex == 1 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
+            _tabWalletImg.SetImageResource(tabIndex == 2 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
+            _tabBankImg.SetImageResource(tabIndex == 3 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
+
+            // Update Text Colors
+            _tabQRText.SetTextColor(tabIndex == 1 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
+            _tabWalletText.SetTextColor(tabIndex == 2 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
+            _tabBankText.SetTextColor(tabIndex == 3 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
+
+            // Toggle Visibility
+            _contentQR.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
+            _contentWallet.Visibility = tabIndex == 2 ? ViewStates.Visible : ViewStates.Gone;
+            _contentBank.Visibility = tabIndex == 3 ? ViewStates.Visible : ViewStates.Gone;
+            _footerSection.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
         }
 
         private void InitializeData()
