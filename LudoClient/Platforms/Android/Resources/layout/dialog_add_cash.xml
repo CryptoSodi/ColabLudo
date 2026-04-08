@@ -165,7 +165,7 @@
                                 android:layout_width="0dp"
                                 android:layout_height="0dp"
                                 android:layout_margin="20dp"
-                                android:background="#4031af"
+                                android:background="@drawable/bg_rounded_qr_purple"
                                 android:scaleType="fitCenter"
                                 app:layout_constraintTop_toTopOf="parent"
                                 app:layout_constraintBottom_toBottomOf="parent"
