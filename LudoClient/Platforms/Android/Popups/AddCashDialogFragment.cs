@@ -11,6 +11,7 @@ using LudoClient.Constants;
 using Microsoft.Maui.ApplicationModel;
 using SharedCode.Constants;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace LudoClient.Platforms.Android.Popups
@@ -31,9 +32,10 @@ namespace LudoClient.Platforms.Android.Popups
         private global::Android.Views.View _contentQR, _contentWallet, _contentBank, _footerSection;
 
         // Wallet Hub Elements
-        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap;
-        private TextView _infoAddressTitle, _infoAddressText, _phantomBtnText;
-        private EditText _walletTransferAmount;
+        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap, _btnSwapPreview;
+        private TextView _infoAddressTitle, _infoAddressText, _phantomBtnText, _btnDepositMax, _btnSwapMax;
+        private EditText _walletTransferAmount, _swapInputAmount;
+        private Spinner _swapInputAsset;
         private string _externalWalletAddress = "";
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -57,8 +59,6 @@ namespace LudoClient.Platforms.Android.Popups
             _tabQRImg = view.FindViewById<ImageView>(Resource.Id.tabQRImg);
             _tabWalletImg = view.FindViewById<ImageView>(Resource.Id.tabWalletImg);
             _tabBankImg = view.FindViewById<ImageView>(Resource.Id.tabBankImg);
-            
-            // Get TextViews safely
             _tabQRText = (TextView)((ViewGroup)_tabQR).GetChildAt(1);
             _tabWalletText = (TextView)((ViewGroup)_tabWallet).GetChildAt(1);
             _tabBankText = (TextView)((ViewGroup)_tabBank).GetChildAt(1);
@@ -73,10 +73,15 @@ namespace LudoClient.Platforms.Android.Popups
             _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
             _btnWalletTransfer = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletTransfer);
             _btnWalletSwap = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwap);
+            _btnSwapPreview = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSwapPreview);
             _infoAddressTitle = view.FindViewById<TextView>(Resource.Id.infoAddressTitle);
             _infoAddressText = view.FindViewById<TextView>(Resource.Id.infoAddressText);
             _phantomBtnText = view.FindViewById<TextView>(Resource.Id.phantomBtnText);
+            _btnDepositMax = view.FindViewById<TextView>(Resource.Id.btnDepositMax);
+            _btnSwapMax = view.FindViewById<TextView>(Resource.Id.btnSwapMax);
             _walletTransferAmount = view.FindViewById<EditText>(Resource.Id.walletTransferAmount);
+            _swapInputAmount = view.FindViewById<EditText>(Resource.Id.swapInputAmount);
+            _swapInputAsset = view.FindViewById<Spinner>(Resource.Id.swapInputAsset);
 
             // Click Handlers
             _copyBtn.Click += OnCopyButtonClicked;
@@ -86,34 +91,63 @@ namespace LudoClient.Platforms.Android.Popups
 
             _btnPhantomConnect.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                global::Android.Widget.Toast.MakeText(Context, "Initializing Web3 Connection...", ToastLength.Short).Show();
+                global::Android.Widget.Toast.MakeText(Context, "Initializing Web3 Connection...", global::Android.Widget.ToastLength.Short).Show();
+            };
+
+            _btnDepositMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                // TODO: Fetch Phantom LUDC balance and set here
+                global::Android.Widget.Toast.MakeText(Context, "Fetching wallet balance...", global::Android.Widget.ToastLength.Short).Show();
+            };
+
+            _btnSwapMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                // TODO: Fetch selected asset balance and set here
+                global::Android.Widget.Toast.MakeText(Context, "Fetching asset balance...", global::Android.Widget.ToastLength.Short).Show();
+            };
+
+            _btnSwapPreview.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Fetching Swap Preview...", global::Android.Widget.ToastLength.Short).Show();
+            };
+
+            _btnWalletSwap.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Confirming Swap Transaction...", global::Android.Widget.ToastLength.Short).Show();
             };
 
             InitializeData();
+            InitializeSpinners();
+
             return view;
+        }
+
+        private void InitializeSpinners()
+        {
+            var assets = new List<string> { "SOL", "USDC" };
+            var adapter = new ArrayAdapter<string>(Context, global::Android.Resource.Layout.SimpleSpinnerItem, assets);
+            adapter.SetDropDownViewResource(global::Android.Resource.Layout.SimpleSpinnerDropDownItem);
+            _swapInputAsset.Adapter = adapter;
+            _swapInputAsset.SetSelection(0);
         }
 
         private void SwitchTab(int tabIndex)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 
-            // Update Images
             _tabQRImg.SetImageResource(tabIndex == 1 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabWalletImg.SetImageResource(tabIndex == 2 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabBankImg.SetImageResource(tabIndex == 3 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
 
-            // Update Text Colors (Always White)
             _tabQRText.SetTextColor(global::Android.Graphics.Color.White);
             _tabWalletText.SetTextColor(global::Android.Graphics.Color.White);
             _tabBankText.SetTextColor(global::Android.Graphics.Color.White);
 
-            // Toggle Visibility
             _contentQR.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
             _contentWallet.Visibility = tabIndex == 2 ? ViewStates.Visible : ViewStates.Gone;
             _contentBank.Visibility = tabIndex == 3 ? ViewStates.Visible : ViewStates.Gone;
 
-            // Footer Switch Logic
-            if (tabIndex == 1) // QR Tab
+            if (tabIndex == 1)
             {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Visible;
@@ -121,7 +155,7 @@ namespace LudoClient.Platforms.Android.Popups
                 _infoAddressTitle.Text = "DEPOSIT LUDC TOKEN";
                 _infoAddressText.Text = _walletAddress;
             }
-            else if (tabIndex == 2) // Wallet Tab
+            else if (tabIndex == 2)
             {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Gone;
@@ -129,7 +163,7 @@ namespace LudoClient.Platforms.Android.Popups
                 _infoAddressTitle.Text = "CONNECTED WALLET";
                 _infoAddressText.Text = string.IsNullOrEmpty(_externalWalletAddress) ? "NOT CONNECTED" : _externalWalletAddress;
             }
-            else // Bank or other
+            else
             {
                 _footerSection.Visibility = ViewStates.Gone;
             }
@@ -144,8 +178,7 @@ namespace LudoClient.Platforms.Android.Popups
                 {
                     _walletAddress = wallet.WalletAddress;
                     _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
-                    _infoAddressText.Text = wallet.WalletAddress; // Initial footer text
-
+                    _infoAddressText.Text = wallet.WalletAddress;
                     wallet.BalanceChanged += OnBalanceChanged;
                 }
                 GenerateQRCode();
