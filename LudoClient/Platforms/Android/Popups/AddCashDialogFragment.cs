@@ -88,10 +88,10 @@ namespace LudoClient.Platforms.Android.Popups
             _tabWalletImg.SetImageResource(tabIndex == 2 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabBankImg.SetImageResource(tabIndex == 3 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
 
-            // Update Text Colors
-            _tabQRText.SetTextColor(tabIndex == 1 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
-            _tabWalletText.SetTextColor(tabIndex == 2 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
-            _tabBankText.SetTextColor(tabIndex == 3 ? global::Android.Graphics.Color.White : global::Android.Graphics.Color.Black);
+            // Update Text Colors (Always White)
+            _tabQRText.SetTextColor(global::Android.Graphics.Color.White);
+            _tabWalletText.SetTextColor(global::Android.Graphics.Color.White);
+            _tabBankText.SetTextColor(global::Android.Graphics.Color.White);
 
             // Toggle Visibility
             _contentQR.Visibility = tabIndex == 1 ? ViewStates.Visible : ViewStates.Gone;
