@@ -15,39 +15,24 @@ using SharedCode.Constants;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace LudoClient.Platforms.Android.Popups
 {
     public class AddCashDialogFragment : global::AndroidX.Fragment.App.DialogFragment
     {
-        private TextView _coinsText;
-        private ImageView _qrCodeImage;
-        private global::Android.Views.View _copyBtn;
-        private string _walletAddress = "";
-
-        // Tabs
-        private global::Android.Views.View _tabQR, _tabWallet, _tabBank;
-        private ImageView _tabQRImg, _tabWalletImg, _tabBankImg;
+        private TextView _coinsText, _infoAddressTitle, _infoAddressText, _phantomBtnText, _receiptStatus, _selectedAccountNumber;
+        private ImageView _qrCodeImage, _receiptPreview, _tabQRImg, _tabWalletImg, _tabBankImg;
         private TextView _tabQRText, _tabWalletText, _tabBankText;
+        private EditText _walletTransferAmount, _swapInputAmount, _manualAmount;
+        private Spinner _swapInputAsset, _manualMethod;
+        private global::Android.Views.View _copyBtn, _tabQR, _tabWallet, _tabBank, _contentQR, _contentWallet, _contentBank, _footerSection;
+        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap, _btnSwapPreview, _btnPickImage, _btnBankCopy, _btnBankView, _btnSubmitManual;
+        private TextView _btnDepositMax, _btnSwapMax;
 
-        // Content Containers
-        private global::Android.Views.View _contentQR, _contentWallet, _contentBank, _footerSection;
-
-        // Wallet Tab Hub
-        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap, _btnSwapPreview;
-        private TextView _infoAddressTitle, _infoAddressText, _phantomBtnText, _btnDepositMax, _btnSwapMax;
-        private EditText _walletTransferAmount, _swapInputAmount;
-        private Spinner _swapInputAsset;
-        private string _externalWalletAddress = "";
-
-        // Bank Tab (Manual Cash Hub)
-        private EditText _manualAmount;
-        private Spinner _manualMethod;
-        private global::Android.Views.View _btnSubmitManual, _btnPickImage, _btnBankCopy, _btnBankView;
-        private ImageView _receiptPreview;
-        private TextView _receiptStatus, _selectedAccountNumber;
+        private string _walletAddress = "";
         private string _selectedBase64Image = "";
-
+        private decimal _currentBalance = 0;
         private const int PickImageRequest = 1001;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -106,24 +91,46 @@ namespace LudoClient.Platforms.Android.Popups
             _btnBankView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankView);
             _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
-            // Global Click Handlers
-            _copyBtn.Click += OnCopyButtonClicked;
+            // Global Tab Click Handlers
             _tabQR.Click += (s, e) => SwitchTab(1);
             _tabWallet.Click += (s, e) => SwitchTab(2);
             _tabBank.Click += (s, e) => SwitchTab(3);
 
-            // Action Handlers
+            // 1. QR Tab Action
+            _copyBtn.Click += OnCopyButtonClicked;
+
+            // 2. Wallet Tab Actions (FIXED: Wiring missing handlers)
+            _btnDepositMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _walletTransferAmount.Text = "100.00"; // Example Max
+            };
+            _btnWalletTransfer.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Initiating Deposit...", global::Android.Widget.ToastLength.Short).Show();
+            };
+            _btnSwapMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _swapInputAmount.Text = "50.00"; // Example Max
+            };
+            _btnSwapPreview.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Calculating Swap...", global::Android.Widget.ToastLength.Short).Show();
+            };
+            _btnWalletSwap.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                global::Android.Widget.Toast.MakeText(Context, "Confirming Swap...", global::Android.Widget.ToastLength.Short).Show();
+            };
             _btnPhantomConnect.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 global::Android.Widget.Toast.MakeText(Context, "Connecting...", global::Android.Widget.ToastLength.Short).Show();
             };
 
+            // 3. Bank Tab Actions
             _btnPickImage.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 Intent intent = new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri);
                 StartActivityForResult(intent, PickImageRequest);
             };
-
             _btnBankCopy.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 string acc = _selectedAccountNumber.Text;
@@ -132,23 +139,16 @@ namespace LudoClient.Platforms.Android.Popups
                     global::Android.Widget.Toast.MakeText(Context, "Account Copied!", global::Android.Widget.ToastLength.Short).Show();
                 }
             };
-
             _btnBankView.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 if (!string.IsNullOrEmpty(_manualAmount.Text)) {
-                    global::Android.Widget.Toast.MakeText(Context, $"You will receive LUDC equivalent of {_manualAmount.Text}.", global::Android.Widget.ToastLength.Short).Show();
-                } else {
-                    global::Android.Widget.Toast.MakeText(Context, "Enter an amount first.", global::Android.Widget.ToastLength.Short).Show();
-                }
+                    global::Android.Widget.Toast.MakeText(Context, $"Previewing {_manualAmount.Text} LUDC deposit.", global::Android.Widget.ToastLength.Short).Show();
+                } else ShowMessage("Enter an amount first.");
             };
-
             _btnSubmitManual.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (string.IsNullOrEmpty(_manualAmount.Text) || string.IsNullOrEmpty(_selectedBase64Image)) {
-                    global::Android.Widget.Toast.MakeText(Context, "Fill amount and pick image.", global::Android.Widget.ToastLength.Short).Show();
-                } else {
-                    global::Android.Widget.Toast.MakeText(Context, "Submitting Receipt...", global::Android.Widget.ToastLength.Short).Show();
-                }
+                if (string.IsNullOrEmpty(_manualAmount.Text) || string.IsNullOrEmpty(_selectedBase64Image)) ShowMessage("Fill amount and pick image.");
+                else ShowMessage("Submitting Receipt...");
             };
 
             _manualMethod.ItemSelected += (s, e) => UpdateContextualAccountInfo();
@@ -161,28 +161,18 @@ namespace LudoClient.Platforms.Android.Popups
         private void UpdateContextualAccountInfo()
         {
             string method = _manualMethod.SelectedItem?.ToString();
-            switch (method)
-            {
-                case "JazzCash":
-                    _selectedAccountNumber.Text = "0345-XXXXXXX";
-                    break;
-                case "PayTM":
-                    _selectedAccountNumber.Text = "+91 XXXXX XXXXX";
-                    break;
-                case "EasyPaisa":
-                    _selectedAccountNumber.Text = "0300-XXXXXXX";
-                    break;
-                default:
-                    _selectedAccountNumber.Text = "SELECT METHOD";
-                    break;
+            switch (method) {
+                case "JazzCash": _selectedAccountNumber.Text = "0345-XXXXXXX"; break;
+                case "PayTM": _selectedAccountNumber.Text = "+91 XXXXX XXXXX"; break;
+                case "EasyPaisa": _selectedAccountNumber.Text = "0300-XXXXXXX"; break;
+                default: _selectedAccountNumber.Text = "SELECT METHOD"; break;
             }
         }
 
         public override void OnActivityResult(int requestCode, int resultCode, global::Android.Content.Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
-            if (requestCode == PickImageRequest && resultCode == (int)global::Android.App.Result.Ok && data != null)
-            {
+            if (requestCode == PickImageRequest && resultCode == (int)global::Android.App.Result.Ok && data != null) {
                 var uri = data.Data;
                 try {
                     using (var stream = Context.ContentResolver.OpenInputStream(uri)) {
@@ -190,15 +180,12 @@ namespace LudoClient.Platforms.Android.Popups
                         _receiptPreview.SetImageBitmap(bitmap);
                         _receiptStatus.Text = "IMAGE ATTACHED SUCCESSFUL";
                         _receiptStatus.SetTextColor(global::Android.Graphics.Color.White);
-
                         using (var ms = new MemoryStream()) {
                             bitmap.Compress(Bitmap.CompressFormat.Jpeg, 70, ms);
                             _selectedBase64Image = Convert.ToBase64String(ms.ToArray());
                         }
                     }
-                } catch (Exception) {
-                    global::Android.Widget.Toast.MakeText(Context, "Failed to load image.", global::Android.Widget.ToastLength.Short).Show();
-                }
+                } catch (Exception) { ShowMessage("Failed to load image."); }
             }
         }
 
@@ -220,11 +207,9 @@ namespace LudoClient.Platforms.Android.Popups
         private void SwitchTab(int tabIndex)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-
             _tabQRImg.SetImageResource(tabIndex == 1 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabWalletImg.SetImageResource(tabIndex == 2 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabBankImg.SetImageResource(tabIndex == 3 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
-
             _tabQRText.SetTextColor(global::Android.Graphics.Color.White);
             _tabWalletText.SetTextColor(global::Android.Graphics.Color.White);
             _tabBankText.SetTextColor(global::Android.Graphics.Color.White);
@@ -233,89 +218,73 @@ namespace LudoClient.Platforms.Android.Popups
             _contentWallet.Visibility = tabIndex == 2 ? ViewStates.Visible : ViewStates.Gone;
             _contentBank.Visibility = tabIndex == 3 ? ViewStates.Visible : ViewStates.Gone;
 
-            if (tabIndex == 1)
-            {
+            if (tabIndex == 1) {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Visible;
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
                 _infoAddressTitle.Text = "DEPOSIT LUDC TOKEN";
                 _infoAddressText.Text = _walletAddress;
-            }
-            else if (tabIndex == 2)
-            {
+            } else if (tabIndex == 2) {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Visible;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
-                _infoAddressTitle.Text = "CONNECTED WALLET";
-                _infoAddressText.Text = string.IsNullOrEmpty(_externalWalletAddress) ? "NOT CONNECTED" : _externalWalletAddress;
-            }
-            else
-            {
+                _infoAddressTitle.Text = "PHANTOM DEPOSIT HUB";
+                _infoAddressText.Text = "CONNECT WALLET TO START";
+            } else {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Visible;
-                _infoAddressTitle.Text = "MANUAL RECEIPT HUB";
-                _infoAddressText.Text = "SELECT PROOF TO SUBMIT";
+                _infoAddressTitle.Text = "MANUAL DEPOSIT PORTAL";
+                _infoAddressText.Text = "ATTACH PROOF BEFORE SUBMITTING";
             }
         }
 
         private void InitializeData()
         {
-            if (UserInfo.Instance.player != null)
-            {
+            if (UserInfo.Instance.player != null) {
                 var wallet = UserInfo.Instance.player.Wallet;
-                if (wallet != null)
-                {
-                    _walletAddress = wallet.WalletAddress;
-                    _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
-                    _infoAddressText.Text = wallet.WalletAddress;
-                    wallet.BalanceChanged += OnBalanceChanged;
-                }
-                GenerateQRCode();
-            }
-        }
+                if (wallet != null) {
+                    if (wallet.WalletAddress != null) _walletAddress = wallet.WalletAddress;
+                    
+                    MainThread.BeginInvokeOnMainThread(() => {
+                        _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
+                        _currentBalance = (decimal)wallet.AvailableBalance;
 
-        private void OnBalanceChanged(decimal balance)
-        {
-            MainThread.BeginInvokeOnMainThread(() => {
-                if (_coinsText != null) _coinsText.Text = ClientGlobalConstants.NormalizeCoins(balance);
-            });
-        }
-
-        private void GenerateQRCode()
-        {
-            if (!string.IsNullOrEmpty(UserInfo.Instance.AddressQRBlob))
-            {
-                try
-                {
-                    byte[] imageBytes = Convert.FromBase64String(UserInfo.Instance.AddressQRBlob);
-                    Bitmap bitmap = BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
-                    _qrCodeImage.SetImageBitmap(bitmap);
+                        // Restore QR Code Logic
+                        if (!string.IsNullOrEmpty(UserInfo.Instance.AddressQRBlob))
+                        {
+                            try
+                            {
+                                byte[] imageBytes = Convert.FromBase64String(UserInfo.Instance.AddressQRBlob);
+                                var bitmap = BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
+                                _qrCodeImage.SetImageBitmap(bitmap);
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"QR Error: {ex.Message}");
+                            }
+                        }
+                    });
                 }
-                catch (Exception) { }
             }
         }
 
         private void OnCopyButtonClicked(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            if (!string.IsNullOrEmpty(_walletAddress))
-            {
+            if (!string.IsNullOrEmpty(_walletAddress)) {
                 Clipboard.Default.SetTextAsync(_walletAddress);
-                MainThread.BeginInvokeOnMainThread(() => {
-                    CommunityToolkit.Maui.Alerts.Toast.Make("Copied to Clipboard", ToastDuration.Short, 22).Show();
-                });
+                ShowMessage("Wallet Address Copied!");
             }
         }
 
-        public override void OnDestroyView()
-        {
-            if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
-                UserInfo.Instance.player.Wallet.BalanceChanged -= OnBalanceChanged;
-            base.OnDestroyView();
+        private void ShowMessage(string message) {
+            MainThread.BeginInvokeOnMainThread(() => {
+                global::Android.Widget.Toast.MakeText(Context, message, global::Android.Widget.ToastLength.Short).Show();
+            });
         }
     }
 }
