@@ -61,7 +61,8 @@
             app:layout_constraintTop_toTopOf="@id/PopupBg"
             app:layout_constraintBottom_toBottomOf="@id/PopupBg"
             app:layout_constraintStart_toStartOf="@id/PopupBg"
-            app:layout_constraintEnd_toEndOf="@id/PopupBg">
+            app:layout_constraintEnd_toEndOf="@id/PopupBg"
+            android:layout_gravity="center">
 
             <FrameLayout
                 android:layout_width="match_parent"
@@ -141,7 +142,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="1">
 
-                        <!-- CONTENT: SOLANA (FIXED CONSISTENCY) -->
+                        <!-- TAB 1: SOLANA (STANDARDIZED CONTAINER) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentSOL"
                             android:layout_width="match_parent"
@@ -150,30 +151,34 @@
                             android:layout_marginBottom="10dp"
                             android:padding="8dp"
                             android:background="@drawable/bg_rounded_purple_top">
-                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                                <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="10dp" android:background="@drawable/bg_rounded_dark_blue_bottom">
-                                    <TextView android:id="@+id/solTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="EXTERNAL PAYOUT PORTAL" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-                                    <LinearLayout android:id="@+id/solAddressRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/solTitle">
-                                        <EditText android:id="@+id/addressEntry" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext" android:textColor="#FFFFFF" android:textSize="10sp" android:paddingLeft="10dp" android:singleLine="true" android:hint="Paste Address" android:textColorHint="#80FFFFFF"/>
-                                        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnPaste" android:layout_width="60dp" android:layout_height="match_parent" android:layout_marginLeft="5dp" android:clickable="true" android:focusable="true"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="PASTE" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout>
-                                    </LinearLayout>
-                                    <LinearLayout android:id="@+id/solAmountRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/solAddressRow">
-                                        <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
-                                            <EditText android:id="@+id/amountEntry" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_rounded_edittext" android:textColor="#FFFFFF" android:textSize="11sp" android:paddingLeft="10dp" android:paddingRight="40dp" android:inputType="numberDecimal" android:singleLine="true" android:hint="0.00"/>
-                                            <TextView android:id="@+id/btnWithdrawMax" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end|center_vertical" android:layout_marginEnd="8dp" android:text="MAX" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" android:clickable="true" android:focusable="true" android:padding="5dp"/>
-                                        </FrameLayout>
-                                    </LinearLayout>
-                                </androidx.constraintlayout.widget.ConstraintLayout>
-                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DIRECT ON-CHAIN LUDC WITHDRAWAL" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="15dp"/>
-                            </LinearLayout>
+                            <androidx.constraintlayout.widget.ConstraintLayout 
+                                android:layout_width="match_parent" 
+                                android:layout_height="130dp" 
+                                android:padding="10dp" 
+                                android:background="@drawable/bg_rounded_dark_blue_bottom"
+                                app:layout_constraintTop_toTopOf="parent">
+                                <TextView android:id="@+id/solTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="EXTERNAL PAYOUT PORTAL" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
+                                <LinearLayout android:id="@+id/solAddressRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/solTitle">
+                                    <EditText android:id="@+id/addressEntry" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext" android:textColor="#FFFFFF" android:textSize="10sp" android:paddingLeft="10dp" android:singleLine="true" android:hint="Paste Address" android:textColorHint="#80FFFFFF"/>
+                                    <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnPaste" android:layout_width="60dp" android:layout_height="match_parent" android:layout_marginLeft="5dp" android:clickable="true" android:focusable="true"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="PASTE" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout>
+                                </LinearLayout>
+                                <LinearLayout android:id="@+id/solAmountRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/solAddressRow">
+                                    <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                                        <EditText android:id="@+id/amountEntry" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/bg_rounded_edittext" android:textColor="#FFFFFF" android:textSize="11sp" android:paddingLeft="10dp" android:paddingRight="40dp" android:inputType="numberDecimal" android:singleLine="true" android:hint="0.00"/>
+                                        <TextView android:id="@+id/btnWithdrawMax" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="end|center_vertical" android:layout_marginEnd="8dp" android:text="MAX" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" android:clickable="true" android:focusable="true" android:padding="5dp"/>
+                                    </FrameLayout>
+                                </LinearLayout>
+                            </androidx.constraintlayout.widget.ConstraintLayout>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <!-- CONTENT: WALLET (NON-SCROLLABLE) -->
+                        <!-- TAB 2: WALLET (STANDARDIZED CONTAINER) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentWallet"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:visibility="gone"
+                            android:layout_marginHorizontal="2dp"
+                            android:layout_marginBottom="10dp"
                             android:padding="8dp"
                             android:background="@drawable/bg_rounded_purple_top">
                             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
@@ -207,12 +212,14 @@
                             </LinearLayout>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <!-- CONTENT: BANK -->
+                        <!-- TAB 3: BANK (STANDARDIZED CONTAINER) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentBank"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:visibility="gone"
+                            android:layout_marginHorizontal="2dp"
+                            android:layout_marginBottom="10dp"
                             android:padding="8dp"
                             android:background="@drawable/bg_rounded_purple_top">
                             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
