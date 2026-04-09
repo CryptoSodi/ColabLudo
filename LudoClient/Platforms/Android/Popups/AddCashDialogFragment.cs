@@ -43,7 +43,7 @@ namespace LudoClient.Platforms.Android.Popups
         // Bank Tab (Manual Cash Hub)
         private EditText _manualAmount;
         private Spinner _manualMethod;
-        private global::Android.Views.View _btnSubmitManual, _btnPickImage, _btnBankCopy;
+        private global::Android.Views.View _btnSubmitManual, _btnPickImage, _btnBankCopy, _btnBankView;
         private ImageView _receiptPreview;
         private TextView _receiptStatus, _selectedAccountNumber;
         private string _selectedBase64Image = "";
@@ -103,6 +103,7 @@ namespace LudoClient.Platforms.Android.Popups
             _receiptStatus = view.FindViewById<TextView>(Resource.Id.receiptStatus);
             _selectedAccountNumber = view.FindViewById<TextView>(Resource.Id.selectedAccountNumber);
             _btnBankCopy = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankCopy);
+            _btnBankView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankView);
             _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
             // Global Click Handlers
@@ -129,6 +130,15 @@ namespace LudoClient.Platforms.Android.Popups
                 if (!string.IsNullOrEmpty(acc) && acc != "SELECT METHOD") {
                     Clipboard.Default.SetTextAsync(acc);
                     global::Android.Widget.Toast.MakeText(Context, "Account Copied!", global::Android.Widget.ToastLength.Short).Show();
+                }
+            };
+
+            _btnBankView.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                if (!string.IsNullOrEmpty(_manualAmount.Text)) {
+                    global::Android.Widget.Toast.MakeText(Context, $"You will receive LUDC equivalent of {_manualAmount.Text}.", global::Android.Widget.ToastLength.Short).Show();
+                } else {
+                    global::Android.Widget.Toast.MakeText(Context, "Enter an amount first.", global::Android.Widget.ToastLength.Short).Show();
                 }
             };
 

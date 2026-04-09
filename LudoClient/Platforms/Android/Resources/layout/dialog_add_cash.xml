@@ -221,7 +221,7 @@
                             </ScrollView>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <!-- CONTENT: BANK (FINAL OPTIMIZED HUD) -->
+                        <!-- CONTENT: BANK (OPTIMIZED FLOW) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentBank"
                             android:layout_width="match_parent"
@@ -232,69 +232,22 @@
                             <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp">
                                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
 
-                                    <!-- MODULE 1: SETUP (ACCOUNT + TYPE) -->
+                                    <!-- Row 1: Setup Row (Account Info + Spinner) -->
                                     <androidx.constraintlayout.widget.ConstraintLayout
                                         android:id="@+id/bankModuleSetup"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:padding="8dp"
                                         android:background="@drawable/bg_rounded_dark_blue_bottom">
-                                        
-                                        <LinearLayout
-                                            android:layout_width="match_parent"
-                                            android:layout_height="40dp"
-                                            android:orientation="horizontal"
-                                            app:layout_constraintTop_toTopOf="parent">
-                                            
-                                            <!-- Account Info (Left) -->
-                                            <androidx.constraintlayout.widget.ConstraintLayout 
-                                                android:id="@+id/selectedAccountBox"
-                                                android:layout_width="0dp" 
-                                                android:layout_height="match_parent" 
-                                                android:layout_weight="1.3"
-                                                android:background="@drawable/bg_rounded_edittext" 
-                                                android:padding="4dp">
-                                                <TextView 
-                                                    android:id="@+id/selectedAccountNumber" 
-                                                    android:layout_width="0dp" 
-                                                    android:layout_height="match_parent" 
-                                                    android:text="SELECT METHOD" 
-                                                    android:textColor="#FFFFFF" 
-                                                    android:textSize="9.5sp" 
-                                                    android:textStyle="bold" 
-                                                    android:gravity="center_vertical"
-                                                    android:paddingLeft="10dp"
-                                                    app:layout_constraintStart_toStartOf="parent"
-                                                    app:layout_constraintEnd_toStartOf="@id/btnBankCopy"/>
-                                                <androidx.constraintlayout.widget.ConstraintLayout
-                                                    android:id="@+id/btnBankCopy"
-                                                    android:layout_width="45dp"
-                                                    android:layout_height="24dp"
-                                                    android:layout_marginRight="4dp"
-                                                    android:clickable="true"
-                                                    app:layout_constraintTop_toTopOf="parent"
-                                                    app:layout_constraintBottom_toBottomOf="parent"
-                                                    app:layout_constraintEnd_toEndOf="parent">
-                                                    <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/>
-                                                    <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="COPY" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="8sp" android:paddingBottom="2dp"/>
-                                                </androidx.constraintlayout.widget.ConstraintLayout>
-                                            </androidx.constraintlayout.widget.ConstraintLayout>
-
-                                            <!-- Payment Type Spinner (Right) -->
-                                            <Spinner 
-                                                android:id="@+id/manualMethod" 
-                                                android:layout_width="0dp" 
-                                                android:layout_height="match_parent" 
-                                                android:layout_weight="0.7" 
-                                                android:layout_marginLeft="5dp"
-                                                android:background="@drawable/bg_rounded_edittext" 
-                                                android:popupBackground="@drawable/bg_rounded_spinner_popup" />
+                                        <LinearLayout android:layout_width="match_parent" android:layout_height="40dp" android:orientation="horizontal" app:layout_constraintTop_toTopOf="parent">
+                                            <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/selectedAccountBox" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1.3" android:background="@drawable/bg_rounded_edittext" android:padding="4dp"><TextView android:id="@+id/selectedAccountNumber" android:layout_width="0dp" android:layout_height="match_parent" android:text="SELECT METHOD" android:textColor="#FFFFFF" android:textSize="9.5sp" android:textStyle="bold" android:gravity="center_vertical" android:paddingLeft="10dp" app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toStartOf="@id/btnBankCopy"/><androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnBankCopy" android:layout_width="45dp" android:layout_height="24dp" android:layout_marginRight="4dp" android:clickable="true" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintEnd_toEndOf="parent"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="COPY" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="8sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout></androidx.constraintlayout.widget.ConstraintLayout>
+                                            <Spinner android:id="@+id/manualMethod" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.7" android:layout_marginLeft="5dp" android:background="@drawable/bg_rounded_edittext" android:popupBackground="@drawable/bg_rounded_spinner_popup" />
                                         </LinearLayout>
                                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                                    <!-- MODULE 2: PROOF (AMOUNT + IMAGE) -->
+                                    <!-- Row 2: Portal Row (Amount with VIEW button + Image Picker) -->
                                     <androidx.constraintlayout.widget.ConstraintLayout
-                                        android:id="@+id/bankModuleForm"
+                                        android:id="@+id/bankModulePortal"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="8dp"
@@ -303,20 +256,38 @@
                                         
                                         <TextView android:id="@+id/manualTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MANUAL DEPOSIT PORTAL" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
 
-                                        <EditText
-                                            android:id="@+id/manualAmount"
+                                        <LinearLayout
+                                            android:id="@+id/amountRow"
                                             android:layout_width="match_parent"
                                             android:layout_height="35dp"
                                             android:layout_marginTop="5dp"
-                                            android:background="@drawable/bg_rounded_edittext"
-                                            android:hint="Deposit Amount"
-                                            android:textColorHint="#80FFFFFF"
-                                            android:textColor="#FFFFFF"
-                                            android:textSize="11sp"
-                                            android:paddingLeft="10dp"
-                                            android:inputType="numberDecimal"
-                                            android:singleLine="true"
-                                            app:layout_constraintTop_toBottomOf="@id/manualTitle" />
+                                            android:orientation="horizontal"
+                                            app:layout_constraintTop_toBottomOf="@id/manualTitle">
+                                            
+                                            <EditText
+                                                android:id="@+id/manualAmount"
+                                                android:layout_width="0dp"
+                                                android:layout_height="match_parent"
+                                                android:layout_weight="1"
+                                                android:background="@drawable/bg_rounded_edittext"
+                                                android:hint="Amount"
+                                                android:textColorHint="#80FFFFFF"
+                                                android:textColor="#FFFFFF"
+                                                android:textSize="11sp"
+                                                android:paddingLeft="10dp"
+                                                android:inputType="numberDecimal"
+                                                android:singleLine="true" />
+
+                                            <androidx.constraintlayout.widget.ConstraintLayout
+                                                android:id="@+id/btnBankView"
+                                                android:layout_width="60dp"
+                                                android:layout_height="match_parent"
+                                                android:layout_marginLeft="5dp"
+                                                android:clickable="true">
+                                                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/>
+                                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="VIEW" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/>
+                                            </androidx.constraintlayout.widget.ConstraintLayout>
+                                        </LinearLayout>
 
                                         <androidx.constraintlayout.widget.ConstraintLayout
                                             android:id="@+id/btnPickImage"
@@ -325,7 +296,7 @@
                                             android:layout_marginTop="8dp"
                                             android:background="@drawable/bg_rounded_edittext"
                                             android:clickable="true"
-                                            app:layout_constraintTop_toBottomOf="@id/manualAmount">
+                                            app:layout_constraintTop_toBottomOf="@id/amountRow">
                                             <ImageView android:id="@+id/receiptPreview" android:layout_width="25dp" android:layout_height="25dp" android:layout_marginLeft="5dp" android:src="@android:drawable/ic_menu_camera" android:scaleType="centerInside" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"/>
                                             <TextView android:id="@+id/receiptStatus" android:layout_width="0dp" android:layout_height="match_parent" android:text="ATTACH RECEIPT PROOF" android:textColor="#80FFFFFF" android:textSize="9sp" android:gravity="center_vertical" android:layout_marginLeft="8dp" app:layout_constraintStart_toEndOf="@id/receiptPreview" app:layout_constraintEnd_toEndOf="parent"/>
                                         </androidx.constraintlayout.widget.ConstraintLayout>
