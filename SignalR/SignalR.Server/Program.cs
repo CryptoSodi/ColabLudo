@@ -53,7 +53,7 @@ builder.Services.AddSingleton<SolPaymentProvider>(sp => {
 });
 builder.Services.AddSingleton<LudcPaymentProvider>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
-    return new LudcPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), sp.GetRequiredService<SolPaymentProvider>(), masterUserId, debug, purpose, LUDC_MINT_ADDRESS);
+    return new LudcPaymentProvider(contextFactory, sp.GetDataProtectionProvider(), sp.GetRequiredService<SolPaymentProvider>(), masterUserId, debug, purpose, LUDC_MINT_ADDRESS, clientRpcUrl);
 });
 
 builder.Services.AddSingleton<IPaymentProvider>(sp => sp.GetRequiredService<SolPaymentProvider>());

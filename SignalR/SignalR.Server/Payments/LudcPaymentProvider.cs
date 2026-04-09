@@ -12,11 +12,13 @@ using Solnet.Wallet;
 using System.Text.Json;
 namespace SignalR.Server.Payments
 {
-    public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS) : IPaymentProvider
+    public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS, string rpcUrl) : IPaymentProvider
     {
         public CurrencyType Currency => CurrencyType.LUDC;
         public string MintAddress => LUDC_MINT.Key;
-        private readonly IRpcClient _rpc = ClientFactory.GetClient(debug ? Cluster.DevNet : Cluster.MainNet);                 // Solana RPC client
+        private readonly IRpcClient _rpc = string.IsNullOrEmpty(rpcUrl) 
+            ? ClientFactory.GetClient(debug ? Cluster.DevNet : Cluster.MainNet) 
+            : ClientFactory.GetClient(rpcUrl); 
         private readonly IDataProtector _protector = dataProtectionProvider.CreateProtector(purpose);                         // Data protector for encrypt/decrypt        
 
         private const int LUDC_DECIMALS = 9;
@@ -281,7 +283,7 @@ namespace SignalR.Server.Payments
             };
 
             var response = await _http.PostAsJsonAsync(
-                "https://api.mainnet-beta.solana.com",
+                string.IsNullOrEmpty(rpcUrl) ? "https://api.mainnet-beta.solana.com" : rpcUrl,
                 request);
 
             var json = await response.Content.ReadAsStringAsync();
