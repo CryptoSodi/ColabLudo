@@ -1,7 +1,9 @@
+using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
+using Android.Provider;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
@@ -12,6 +14,7 @@ using Microsoft.Maui.ApplicationModel;
 using SharedCode.Constants;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace LudoClient.Platforms.Android.Popups
@@ -19,11 +22,11 @@ namespace LudoClient.Platforms.Android.Popups
     public class WithdrawDialogFragment : global::AndroidX.Fragment.App.DialogFragment
     {
         private TextView _coinsText;
-        private EditText _addressEntry;
-        private EditText _amountEntry;
-        private TextView _footerTitle, _footerText, _btnActionText;
-        private ImageView _btnActionBg;
-        private global::Android.Views.View _btnMainAction;
+        private EditText _addressEntry, _amountEntry, _walletAmountEntry, _walletSwapAmount;
+        private TextView _footerTitle, _footerText;
+        
+        // Dynamic Footer Buttons
+        private global::Android.Views.View _copyBtn, _btnPhantomConnect, _btnSubmitManual;
 
         // Tabs
         private global::Android.Views.View _tabSOL, _tabWallet, _tabBank;
@@ -33,12 +36,14 @@ namespace LudoClient.Platforms.Android.Popups
         // Content
         private global::Android.Views.View _contentSOL, _contentWallet, _contentBank;
 
-        // Solana Tab Helpers
-        private global::Android.Views.View _btnPaste;
-        private TextView _btnWithdrawMax;
+        // Tab Helpers
+        private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm;
+        private TextView _btnWithdrawMax, _btnWalletMax, _btnSwapMax;
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
+
+        private const int PickImageRequest = 1001;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -71,27 +76,67 @@ namespace LudoClient.Platforms.Android.Popups
             _contentWallet = view.FindViewById<global::Android.Views.View>(Resource.Id.contentWallet);
             _contentBank = view.FindViewById<global::Android.Views.View>(Resource.Id.contentBank);
 
-            // Solana Tab Elements
+            // Tab Helper Elements
             _btnPaste = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPaste);
             _btnWithdrawMax = view.FindViewById<TextView>(Resource.Id.btnWithdrawMax);
+            
+            // Wallet Tab Hub
+            _walletAmountEntry = view.FindViewById<EditText>(Resource.Id.walletAmountEntry);
+            _btnWalletMax = view.FindViewById<TextView>(Resource.Id.btnWalletMax);
+            _btnWalletSign = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSign);
+            _walletSwapAmount = view.FindViewById<EditText>(Resource.Id.walletSwapAmount);
+            _btnSwapMax = view.FindViewById<TextView>(Resource.Id.btnSwapMax);
+            _btnWalletSwapView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapView);
+            _btnWalletSwapConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapConfirm);
 
-            // Find Footer
+            // Find Footer Buttons
             _footerTitle = view.FindViewById<TextView>(Resource.Id.footerTitle);
             _footerText = view.FindViewById<TextView>(Resource.Id.footerText);
-            _btnActionText = view.FindViewById<TextView>(Resource.Id.btnActionText);
-            _btnActionBg = view.FindViewById<ImageView>(Resource.Id.btnActionBg);
-            _btnMainAction = view.FindViewById<global::Android.Views.View>(Resource.Id.btnMainAction);
+            _copyBtn = view.FindViewById<global::Android.Views.View>(Resource.Id.copyBtn);
+            _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
+            _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
-            // Click Handlers
-            _btnMainAction.Click += OnMainActionButtonClicked;
+            // Global Click Handlers
             _tabSOL.Click += (s, e) => SwitchTab(1);
             _tabWallet.Click += (s, e) => SwitchTab(2);
             _tabBank.Click += (s, e) => SwitchTab(3);
 
+            // Solana Tab Logic
             _btnPaste.Click += OnPasteButtonClicked;
             _btnWithdrawMax.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _amountEntry.Text = _solBalance.ToString("F2");
+            };
+            _copyBtn.Click += async (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                await ProcessSolanaWithdraw();
+            };
+
+            // Wallet Tab Logic
+            _btnWalletMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _walletAmountEntry.Text = _solBalance.ToString("F2");
+            };
+            _btnSwapMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _walletSwapAmount.Text = _solBalance.ToString("F2");
+            };
+            _btnWalletSign.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                if (!string.IsNullOrEmpty(_walletAmountEntry.Text)) ShowMessage($"Requesting Payout Signature...");
+                else ShowMessage("Enter an amount first.");
+            };
+            _btnWalletSwapView.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                ShowMessage("Fetching Swap Preview...");
+            };
+            _btnWalletSwapConfirm.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                ShowMessage("Confirming Swap Transaction...");
+            };
+            _btnPhantomConnect.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                ShowMessage("Connecting to Phantom...");
             };
 
             InitializeData();
@@ -118,22 +163,25 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _footerTitle.Text = "WITHDRAW LUDC TOKEN";
                 _footerText.Text = "EXTERNAL SOLANA ADDRESS";
-                _btnActionText.Text = "SEND";
-                _btnActionBg.SetImageResource(Resource.Drawable.btn_orange);
+                _copyBtn.Visibility = ViewStates.Visible;
+                _btnPhantomConnect.Visibility = ViewStates.Gone;
+                _btnSubmitManual.Visibility = ViewStates.Gone;
             }
             else if (tabIndex == 2)
             {
                 _footerTitle.Text = "PHANTOM WITHDRAWAL";
                 _footerText.Text = "INTERNAL TO EXTERNAL HUB";
-                _btnActionText.Text = "CONNECT";
-                _btnActionBg.SetImageResource(Resource.Drawable.btn_verify_account);
+                _copyBtn.Visibility = ViewStates.Gone;
+                _btnPhantomConnect.Visibility = ViewStates.Visible;
+                _btnSubmitManual.Visibility = ViewStates.Gone;
             }
             else
             {
                 _footerTitle.Text = "BANK PAYOUT HUB";
                 _footerText.Text = "REQUEST MANUAL TRANSFER";
-                _btnActionText.Text = "SUBMIT";
-                _btnActionBg.SetImageResource(Resource.Drawable.btn_big);
+                _copyBtn.Visibility = ViewStates.Gone;
+                _btnPhantomConnect.Visibility = ViewStates.Gone;
+                _btnSubmitManual.Visibility = ViewStates.Visible;
             }
         }
 
@@ -150,6 +198,8 @@ namespace LudoClient.Platforms.Android.Popups
                     MainThread.BeginInvokeOnMainThread(() =>
                     {
                         _amountEntry.Text = "";
+                        _walletAmountEntry.Text = "";
+                        _walletSwapAmount.Text = "";
                         _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
                         _solBalance = (decimal)wallet.AvailableBalance;
                     });
@@ -169,13 +219,6 @@ namespace LudoClient.Platforms.Android.Popups
                     _solBalance = balance;
                 }
             });
-        }
-
-        private async void OnMainActionButtonClicked(object sender, EventArgs e)
-        {
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            if (_contentSOL.Visibility == ViewStates.Visible) await ProcessSolanaWithdraw();
-            else global::Android.Widget.Toast.MakeText(Context, "Action coming soon...", global::Android.Widget.ToastLength.Short).Show();
         }
 
         private async Task ProcessSolanaWithdraw()
