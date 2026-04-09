@@ -197,9 +197,7 @@ namespace SignalR.Server.Payments
 
             foreach (var sig in sigs.Result)
             {
-                var tx = await _rpc.GetTransactionAsync(
-                    sig.Signature,
-                    Commitment.Confirmed);
+                var tx = await _rpc.GetTransactionAsync(sig.Signature,Commitment.Confirmed);
 
                 if (tx == null)
                     continue;
