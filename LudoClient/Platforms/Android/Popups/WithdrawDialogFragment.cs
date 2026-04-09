@@ -22,7 +22,7 @@ namespace LudoClient.Platforms.Android.Popups
     public class WithdrawDialogFragment : global::AndroidX.Fragment.App.DialogFragment
     {
         private TextView _coinsText;
-        private EditText _addressEntry, _amountEntry, _walletAmountEntry, _walletSwapAmount;
+        private EditText _addressEntry, _amountEntry, _walletAmountEntry, _walletSwapAmount, _bankWithdrawAmount, _bankAccountEntry;
         private TextView _footerTitle, _footerText;
         
         // Dynamic Footer Buttons
@@ -37,13 +37,12 @@ namespace LudoClient.Platforms.Android.Popups
         private global::Android.Views.View _contentSOL, _contentWallet, _contentBank;
 
         // Tab Helpers
-        private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm;
-        private TextView _btnWithdrawMax, _btnWalletMax, _btnSwapMax;
+        private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm, _btnBankWithdrawView, _btnBankPaste;
+        private TextView _btnWithdrawMax, _btnWalletMax, _btnSwapMax, _btnBankWithdrawMax;
+        private Spinner _manualWithdrawMethod;
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
-
-        private const int PickImageRequest = 1001;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -89,6 +88,14 @@ namespace LudoClient.Platforms.Android.Popups
             _btnWalletSwapView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapView);
             _btnWalletSwapConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapConfirm);
 
+            // Bank Tab Hub
+            _manualWithdrawMethod = view.FindViewById<Spinner>(Resource.Id.manualWithdrawMethod);
+            _bankWithdrawAmount = view.FindViewById<EditText>(Resource.Id.bankWithdrawAmount);
+            _btnBankWithdrawMax = view.FindViewById<TextView>(Resource.Id.btnBankWithdrawMax);
+            _btnBankWithdrawView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankWithdrawView);
+            _bankAccountEntry = view.FindViewById<EditText>(Resource.Id.bankAccountEntry);
+            _btnBankPaste = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankPaste);
+
             // Find Footer Buttons
             _footerTitle = view.FindViewById<TextView>(Resource.Id.footerTitle);
             _footerText = view.FindViewById<TextView>(Resource.Id.footerText);
@@ -123,8 +130,7 @@ namespace LudoClient.Platforms.Android.Popups
             };
             _btnWalletSign.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (!string.IsNullOrEmpty(_walletAmountEntry.Text)) ShowMessage($"Requesting Payout Signature...");
-                else ShowMessage("Enter an amount first.");
+                ShowMessage("Requesting Payout Signature...");
             };
             _btnWalletSwapView.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -139,8 +145,37 @@ namespace LudoClient.Platforms.Android.Popups
                 ShowMessage("Connecting to Phantom...");
             };
 
+            // Bank Tab Logic
+            _btnBankWithdrawMax.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _bankWithdrawAmount.Text = _solBalance.ToString("F2");
+            };
+            _btnBankWithdrawView.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                if (!string.IsNullOrEmpty(_bankWithdrawAmount.Text)) ShowMessage($"Previewing {_bankWithdrawAmount.Text} LUDC payout...");
+                else ShowMessage("Enter an amount first.");
+            };
+            _btnBankPaste.Click += OnBankPasteButtonClicked;
+            _btnSubmitManual.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                if (string.IsNullOrEmpty(_bankWithdrawAmount.Text) || string.IsNullOrEmpty(_bankAccountEntry.Text)) {
+                    ShowMessage("Fill all bank details.");
+                } else {
+                    ShowMessage("Submitting Manual Payout Request...");
+                }
+            };
+
             InitializeData();
+            InitializeSpinners();
             return view;
+        }
+
+        private void InitializeSpinners()
+        {
+            var payoutMethods = new List<string> { "Select Payout Method", "JazzCash", "PayTM", "EasyPaisa", "Bank Account", "Binance Pay" };
+            var adapter = new ArrayAdapter<string>(Context, Resource.Layout.spinner_item_hud, payoutMethods);
+            adapter.SetDropDownViewResource(Resource.Layout.spinner_dropdown_item_hud);
+            _manualWithdrawMethod.Adapter = adapter;
         }
 
         private void SwitchTab(int tabIndex)
@@ -200,6 +235,8 @@ namespace LudoClient.Platforms.Android.Popups
                         _amountEntry.Text = "";
                         _walletAmountEntry.Text = "";
                         _walletSwapAmount.Text = "";
+                        _bankWithdrawAmount.Text = "";
+                        _bankAccountEntry.Text = "";
                         _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
                         _solBalance = (decimal)wallet.AvailableBalance;
                     });
@@ -260,6 +297,23 @@ namespace LudoClient.Platforms.Android.Popups
                 if (!string.IsNullOrEmpty(clipboardText))
                 {
                     _addressEntry.Text = clipboardText.Trim();
+                }
+            }
+            else
+            {
+                ShowMessage("Empty Clipboard!");
+            }
+        }
+
+        private async void OnBankPasteButtonClicked(object sender, EventArgs e)
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            if (Clipboard.Default.HasText)
+            {
+                string clipboardText = await Clipboard.Default.GetTextAsync();
+                if (!string.IsNullOrEmpty(clipboardText))
+                {
+                    _bankAccountEntry.Text = clipboardText.Trim();
                 }
             }
             else

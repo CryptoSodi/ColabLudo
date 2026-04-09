@@ -177,7 +177,14 @@
                             android:background="@drawable/bg_rounded_purple_top">
                             <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp">
                                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                                    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp" android:background="@drawable/bg_rounded_dark_blue_bottom">
+                                    
+                                    <!-- 1. Payout Module -->
+                                    <androidx.constraintlayout.widget.ConstraintLayout
+                                        android:id="@+id/payoutModule"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:padding="8dp"
+                                        android:background="@drawable/bg_rounded_dark_blue_bottom">
                                         <TextView android:id="@+id/walletWithdrawTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PHANTOM PAYOUT HUB" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
                                         <LinearLayout android:id="@+id/walletWithdrawRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/walletWithdrawTitle">
                                             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1">
@@ -187,7 +194,15 @@
                                             <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnWalletSign" android:layout_width="60dp" android:layout_height="match_parent" android:layout_marginLeft="5dp" android:clickable="true"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="SIGN" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout>
                                         </LinearLayout>
                                     </androidx.constraintlayout.widget.ConstraintLayout>
-                                    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:padding="8dp" android:background="@drawable/bg_rounded_dark_blue_bottom">
+
+                                    <!-- 2. Swap Module (TIGHTENED GAP: 5dp) -->
+                                    <androidx.constraintlayout.widget.ConstraintLayout
+                                        android:id="@+id/swapModule"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="5dp"
+                                        android:padding="8dp"
+                                        android:background="@drawable/bg_rounded_dark_blue_bottom">
                                         <TextView android:id="@+id/walletSwapTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LUDC TO USDC SWAP" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
                                         <LinearLayout android:id="@+id/walletSwapRow1" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/walletSwapTitle">
                                             <FrameLayout android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext"><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="LUDC" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="11sp"/></FrameLayout>
@@ -217,20 +232,146 @@
                             android:background="@drawable/bg_rounded_purple_top">
                             <ScrollView android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp">
                                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                                    <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/bankModuleSetup" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="8dp" android:background="@drawable/bg_rounded_dark_blue_bottom">
-                                        <TextView android:id="@+id/setupTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SELECT PAYMENT DESTINATION" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-                                        <LinearLayout android:id="@+id/setupRow" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/setupTitle">
-                                            <Spinner android:id="@+id/manualMethod" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="0.7" android:background="@drawable/bg_rounded_edittext" android:popupBackground="@drawable/bg_rounded_spinner_popup" />
-                                            <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/selectedAccountBox" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1.3" android:layout_marginLeft="5dp" android:background="@drawable/bg_rounded_edittext" android:padding="4dp"><TextView android:id="@+id/selectedAccountNumber" android:layout_width="match_parent" android:layout_height="match_parent" android:text="SELECT METHOD" android:textColor="#FFFFFF" android:textSize="9.5sp" android:textStyle="bold" android:gravity="center" /></androidx.constraintlayout.widget.ConstraintLayout>
-                                            <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnBankCopy" android:layout_width="60dp" android:layout_height="match_parent" android:layout_marginLeft="5dp" android:clickable="true"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="COPY" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout>
+                                    
+                                    <!-- 1. Method Selector -->
+                                    <androidx.constraintlayout.widget.ConstraintLayout 
+                                        android:id="@+id/bankMethodModule" 
+                                        android:layout_width="match_parent" 
+                                        android:layout_height="wrap_content" 
+                                        android:padding="8dp" 
+                                        android:background="@drawable/bg_rounded_dark_blue_bottom">
+                                        <TextView 
+                                            android:id="@+id/bankMethodTitle" 
+                                            android:layout_width="wrap_content" 
+                                            android:layout_height="wrap_content" 
+                                            android:text="SELECT PAYOUT METHOD" 
+                                            android:textColor="#FFFF00" 
+                                            android:textSize="9sp" 
+                                            android:textStyle="bold" 
+                                            app:layout_constraintTop_toTopOf="parent" 
+                                            app:layout_constraintStart_toStartOf="parent"/>
+                                        <LinearLayout 
+                                            android:layout_width="match_parent" 
+                                            android:layout_height="35dp" 
+                                            android:layout_marginTop="5dp" 
+                                            android:orientation="horizontal" 
+                                            app:layout_constraintTop_toBottomOf="@id/bankMethodTitle">
+                                            <Spinner 
+                                                android:id="@+id/manualWithdrawMethod" 
+                                                android:layout_width="match_parent" 
+                                                android:layout_height="match_parent" 
+                                                android:background="@drawable/bg_rounded_edittext" 
+                                                android:popupBackground="@drawable/bg_rounded_spinner_popup" />
                                         </LinearLayout>
                                     </androidx.constraintlayout.widget.ConstraintLayout>
-                                    <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/bankModuleForm" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:padding="8dp" android:background="@drawable/bg_rounded_dark_blue_bottom">
-                                        <TextView android:id="@+id/manualTitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="MANUAL PAYOUT PORTAL" android:textColor="#FFFF00" android:textSize="9sp" android:textStyle="bold" app:layout_constraintTop_toTopOf="parent" app:layout_constraintStart_toStartOf="parent"/>
-                                        <LinearLayout android:id="@+id/manualRow1" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:orientation="horizontal" app:layout_constraintTop_toBottomOf="@id/manualTitle"><EditText android:id="@+id/manualAmount" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="@drawable/bg_rounded_edittext" android:hint="Amount" android:textColorHint="#80FFFFFF" android:textColor="#FFFFFF" android:textSize="11sp" android:paddingLeft="10dp" android:inputType="numberDecimal" android:singleLine="true" /><androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnBankView" android:layout_width="60dp" android:layout_height="match_parent" android:layout_marginLeft="5dp" android:clickable="true"><ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/><TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="VIEW" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/></androidx.constraintlayout.widget.ConstraintLayout></LinearLayout>
-                                        <androidx.constraintlayout.widget.ConstraintLayout android:id="@+id/btnPickImage" android:layout_width="match_parent" android:layout_height="35dp" android:layout_marginTop="5dp" android:background="@drawable/bg_rounded_edittext" android:clickable="true" app:layout_constraintTop_toBottomOf="@id/manualRow1"><ImageView android:id="@+id/receiptPreview" android:layout_width="25dp" android:layout_height="25dp" android:layout_marginLeft="5dp" android:src="@android:drawable/ic_menu_camera" android:scaleType="centerInside" app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintStart_toStartOf="parent"/><TextView android:id="@+id/receiptStatus" android:layout_width="0dp" android:layout_height="match_parent" android:text="ATTACH RECEIPT PROOF" android:textColor="#80FFFFFF" android:textSize="9sp" android:gravity="center_vertical" android:layout_marginLeft="8dp" app:layout_constraintStart_toEndOf="@id/receiptPreview" app:layout_constraintEnd_toEndOf="parent"/></androidx.constraintlayout.widget.ConstraintLayout>
+
+                                    <!-- 2. Payout Details (TIGHTENED GAP: 5dp) -->
+                                    <androidx.constraintlayout.widget.ConstraintLayout 
+                                        android:id="@+id/bankPayoutModule" 
+                                        android:layout_width="match_parent" 
+                                        android:layout_height="wrap_content" 
+                                        android:layout_marginTop="5dp" 
+                                        android:padding="8dp" 
+                                        android:background="@drawable/bg_rounded_dark_blue_bottom">
+                                        <TextView 
+                                            android:id="@+id/bankPayoutTitle" 
+                                            android:layout_width="wrap_content" 
+                                            android:layout_height="wrap_content" 
+                                            android:text="MANUAL PAYOUT PORTAL" 
+                                            android:textColor="#FFFF00" 
+                                            android:textSize="9sp" 
+                                            android:textStyle="bold" 
+                                            app:layout_constraintTop_toTopOf="parent" 
+                                            app:layout_constraintStart_toStartOf="parent"/>
+                                        
+                                        <!-- Row 1: Amount + MAX + VIEW -->
+                                        <LinearLayout 
+                                            android:id="@+id/bankPayoutRow1" 
+                                            android:layout_width="match_parent" 
+                                            android:layout_height="35dp" 
+                                            android:layout_marginTop="5dp" 
+                                            android:orientation="horizontal" 
+                                            app:layout_constraintTop_toBottomOf="@id/bankPayoutTitle">
+                                            <FrameLayout 
+                                                android:layout_width="0dp" 
+                                                android:layout_height="match_parent" 
+                                                android:layout_weight="1">
+                                                <EditText 
+                                                    android:id="@+id/bankWithdrawAmount" 
+                                                    android:layout_width="match_parent" 
+                                                    android:layout_height="match_parent" 
+                                                    android:background="@drawable/bg_rounded_edittext" 
+                                                    android:hint="LUDC Amount" 
+                                                    android:textColorHint="#80FFFFFF" 
+                                                    android:textColor="#FFFFFF" 
+                                                    android:textSize="11sp" 
+                                                    android:paddingLeft="10dp" 
+                                                    android:paddingRight="40dp"
+                                                    android:inputType="numberDecimal" 
+                                                    android:singleLine="true" />
+                                                <TextView 
+                                                    android:id="@+id/btnBankWithdrawMax" 
+                                                    android:layout_width="wrap_content" 
+                                                    android:layout_height="wrap_content" 
+                                                    android:layout_gravity="end|center_vertical" 
+                                                    android:layout_marginEnd="8dp" 
+                                                    android:text="MAX" 
+                                                    android:textColor="#FFFF00" 
+                                                    android:textSize="9sp" 
+                                                    android:textStyle="bold" 
+                                                    android:clickable="true" 
+                                                    android:padding="5dp"/>
+                                            </FrameLayout>
+                                            <androidx.constraintlayout.widget.ConstraintLayout 
+                                                android:id="@+id/btnBankWithdrawView" 
+                                                android:layout_width="60dp" 
+                                                android:layout_height="match_parent" 
+                                                android:layout_marginLeft="5dp" 
+                                                android:clickable="true">
+                                                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/>
+                                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="VIEW" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/>
+                                            </androidx.constraintlayout.widget.ConstraintLayout>
+                                        </LinearLayout>
+
+                                        <!-- Row 2: Account Entry + PASTE (TIGHTENED GAP: 5dp) -->
+                                        <LinearLayout
+                                            android:id="@+id/bankPayoutRow2"
+                                            android:layout_width="match_parent" 
+                                            android:layout_height="35dp" 
+                                            android:layout_marginTop="5dp"
+                                            android:orientation="horizontal"
+                                            app:layout_constraintTop_toBottomOf="@id/bankPayoutRow1">
+                                            <androidx.constraintlayout.widget.ConstraintLayout
+                                                android:layout_width="0dp"
+                                                android:layout_height="match_parent"
+                                                android:layout_weight="1"
+                                                android:background="@drawable/bg_rounded_edittext">
+                                                <EditText 
+                                                    android:id="@+id/bankAccountEntry" 
+                                                    android:layout_width="match_parent" 
+                                                    android:layout_height="match_parent" 
+                                                    android:background="@android:color/transparent" 
+                                                    android:hint="Enter Account Details" 
+                                                    android:textColorHint="#80FFFFFF" 
+                                                    android:textColor="#FFFFFF" 
+                                                    android:textSize="10sp" 
+                                                    android:paddingLeft="10dp" 
+                                                    android:singleLine="true"/>
+                                            </androidx.constraintlayout.widget.ConstraintLayout>
+                                            <androidx.constraintlayout.widget.ConstraintLayout 
+                                                android:id="@+id/btnBankPaste" 
+                                                android:layout_width="60dp" 
+                                                android:layout_height="match_parent" 
+                                                android:layout_marginLeft="5dp" 
+                                                android:clickable="true">
+                                                <ImageView android:layout_width="match_parent" android:layout_height="match_parent" android:src="@drawable/btn_orange" android:scaleType="fitXY"/>
+                                                <TextView android:layout_width="match_parent" android:layout_height="match_parent" android:text="PASTE" android:textColor="#FFFFFF" android:gravity="center" android:textStyle="bold" android:textSize="9sp" android:paddingBottom="2dp"/>
+                                            </androidx.constraintlayout.widget.ConstraintLayout>
+                                        </LinearLayout>
+
                                     </androidx.constraintlayout.widget.ConstraintLayout>
-                                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="PLEASE VERIFY DETAILS BEFORE SUBMITTING" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="10dp"/>
+
+                                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="FUNDS WILL BE TRANSFERRED MANUALLY BY ADMIN" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="15dp"/>
                                 </LinearLayout>
                             </ScrollView>
                         </androidx.constraintlayout.widget.ConstraintLayout>
