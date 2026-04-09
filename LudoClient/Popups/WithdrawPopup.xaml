@@ -9,10 +9,13 @@
     <popup:BasePopup.PopupContent>
         <Grid RowSpacing="20" VerticalOptions="Fill" HorizontalOptions="Fill" RowDefinitions=".5*,8*,.5*" ColumnDefinitions=".4*,8*,.4*">
             <local:TitleBar Grid.Row="1" Grid.Column="1" Title="WITHDRAW" Margin="20,-58,20,0" HorizontalOptions="Fill" VerticalOptions="Start"/>
+            
             <StackLayout Spacing="10" Grid.Row="1" Grid.Column="1" Margin="10,0,10,-28" VerticalOptions="Fill" HorizontalOptions="Fill">
-                <local:Capsule ImageSource="bg_disable_field.webp" Margin="0,5,0,0" VerticalOptions="Start" HorizontalOptions="Fill">
+                
+                <!-- BALANCE HUD -->
+                <local:Capsule ImageSource="bg_disable_field.webp" Margin="0,15,0,0" VerticalOptions="Start" HorizontalOptions="Fill">
                     <Grid Margin="0,5,8,8.5" ColumnDefinitions="Auto,1*">
-                        <Label Text="TOTAL BALANCE AVAILABLE" FontSize="12" Margin="10,0,4,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" VerticalOptions="Center"/>
+                        <Label Text="TOTAL BALANCE AVAILABLE" FontSize="12" Margin="10,0,5,0" TextColor="Black" HorizontalTextAlignment="Start" VerticalTextAlignment="Center" VerticalOptions="Center"/>
                         <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
                             <Frame BackgroundColor="#60000000" CornerRadius="4" Padding="30,-5,30,-5" HorizontalOptions="Fill" VerticalOptions="Fill"/>
                             <Image Source="solicon.webp" Margin="4" VerticalOptions="Center" HorizontalOptions="Start"/>
@@ -21,39 +24,86 @@
                     </Grid>
                 </local:Capsule>
 
-                <Grid Margin="2,0,2,10" VerticalOptions="Start" HorizontalOptions="Fill">
-                    <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <StackLayout Spacing="5" Margin="2,15,2,20" VerticalOptions="Fill" HorizontalOptions="Fill">
-                        <local:EditField Margin="5" x:Name="AddressEntry" IsVisible="True" Title="ADDRESS" HorizontalOptions="Fill" VerticalOptions="Center"/>
-                        <local:EditField Margin="5" x:Name="AmmountEntry" IsVisible="True" Title="LUDC AMMOUNT" HorizontalOptions="Fill" VerticalOptions="Center"/>
-                    </StackLayout>
+                <!-- TABS SECTION -->
+                <Grid HorizontalOptions="Fill" Margin="0,0,0,-5" HeightRequest="30" VerticalOptions="Start" RowDefinitions="Auto,Auto" ColumnDefinitions="1*,5*,1*">
+                    <Grid Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="End" ColumnDefinitions=".1*,.1*,.1*">
+                        <local:ImageSwitch x:Name="Tab1" SwitchText="SOLANA" SwitchState="False" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab2" Grid.Column="1" SwitchText="WALLET" SwitchState="True" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <local:ImageSwitch x:Name="Tab3" Grid.Column="2" SwitchText="BANK" SwitchState="True" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
                 </Grid>
 
-                <Grid Margin="2,-20,2,10" ColumnSpacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".1*,2*,.1*">
-                    <BoxView Grid.ColumnSpan="3" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="Fill" VerticalOptions="Fill"/>
-                    <local:Capsule Grid.ColumnSpan="3" ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
+                <!-- TAB CONTENT AREA -->
+                <Grid VerticalOptions="FillAndExpand">
+                    
+                    <!-- TAB 1: SOLANA -->
+                    <Grid x:Name="ContentOnChain" Margin="2,0,2,10" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                        <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="8" Margin="10,20,10,20" VerticalOptions="Start" HorizontalOptions="Fill">
+                            
+                            <!-- Address Input with PASTE -->
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5">
+                                <local:EditField x:Name="AddressEntry" Title="DESTINATION ADDRESS" HorizontalOptions="Fill"/>
+                                <local:Capsule Grid.Column="1" HeightRequest="35" WidthRequest="60" ImageSource="btn_orange.webp" VerticalOptions="End" Margin="0,0,0,5">
+                                    <Grid>
+                                        <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnPasteButtonClicked" /></Grid.GestureRecognizers>
+                                        <Label Text="PASTE" TextColor="White" FontSize="10" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,0,4"/>
+                                    </Grid>
+                                </local:Capsule>
+                            </Grid>
+
+                            <!-- Amount Input with MAX -->
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="5" Margin="0,10,0,0">
+                                <local:EditField x:Name="AmountEntry" Title="LUDC AMOUNT" HorizontalOptions="Fill"/>
+                                <local:Capsule Grid.Column="1" HeightRequest="35" WidthRequest="60" ImageSource="btn_orange.webp" VerticalOptions="End" Margin="0,0,0,5">
+                                    <Grid>
+                                        <Grid.GestureRecognizers><TapGestureRecognizer Tapped="OnMaxButtonClicked" /></Grid.GestureRecognizers>
+                                        <Label Text="MAX" TextColor="White" FontSize="10" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0,0,0,4"/>
+                                    </Grid>
+                                </local:Capsule>
+                            </Grid>
+
+                        </StackLayout>
+                    </Grid>
+
+                    <!-- TAB 2: WALLET (PHANTOM HUB) -->
+                    <Grid x:Name="ContentWallet" IsVisible="False" Margin="2,0,2,10" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                        <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="15" Margin="10,30,10,30" VerticalOptions="Center" HorizontalOptions="Fill">
+                            <Label Text="PHANTOM WITHDRAWAL" TextColor="White" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                            <Label Text="Withdraw directly to your connected Phantom wallet." TextColor="Silver" FontSize="12" HorizontalTextAlignment="Center"/>
+                        </StackLayout>
+                    </Grid>
+
+                    <!-- TAB 3: BANK (MANUAL PAYOUT) -->
+                    <Grid x:Name="ContentBank" IsVisible="False" Margin="2,0,2,10" VerticalOptions="FillAndExpand" HorizontalOptions="Fill">
+                        <BoxView CornerRadius="10,10,0,0" BackgroundColor="#A92C40AA" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                        <StackLayout Spacing="15" Margin="10,30,10,30" VerticalOptions="Center" HorizontalOptions="Fill">
+                            <Label Text="MANUAL PAYOUT HUB" TextColor="White" FontSize="16" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                            <Label Text="Request payouts to JazzCash, PayTM, or Bank Account." TextColor="Silver" FontSize="12" HorizontalTextAlignment="Center"/>
+                        </StackLayout>
+                    </Grid>
+                </Grid>
+
+                <!-- DYNAMIC FOOTER -->
+                <Grid x:Name="SharedFooter" Margin="2,-20,2,10" ColumnSpacing="15" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" RowDefinitions="Auto,Auto" ColumnDefinitions="1*,1*,1*">
+                    <BoxView Grid.RowSpan="2" Grid.ColumnSpan="3" CornerRadius="0,0,10,10" BackgroundColor="#24348A" HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                    
+                    <local:Capsule Grid.Row="0" Grid.ColumnSpan="3" ImageSource="after_add_cash_bg_hor.webp" Margin="-2,0,-2,0" HorizontalOptions="Fill" VerticalOptions="Fill">
                         <Grid Margin="5" HorizontalOptions="Fill" VerticalOptions="Fill">
-                            <Label Text="WITHDRAW TO SOLANA ADDRESS" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
+                            <Label x:Name="FooterTitle" Text="WITHDRAW LUDC TOKEN" TextColor="Yellow" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="Start"/>
+                            <Label x:Name="FooterText" Text="ADDRESS" TextColor="White" FontSize="9" HorizontalTextAlignment="Center" VerticalTextAlignment="End"/>
                         </Grid>
                     </local:Capsule>
-                    <Grid Grid.Column="1" Margin="0,0,0,5" HeightRequest="40" HorizontalOptions="Fill" VerticalOptions="End">
-                        <local:Capsule HeightRequest="40" ImageSource="btn_pink.webp" HorizontalOptions="Start" VerticalOptions="End">
-                            <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnPasteButtonClicked" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="PASTE" FontSize="12" TextColor="White" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-                            </Grid>
-                        </local:Capsule>
-                        <local:Capsule HeightRequest="40" ImageSource="btn_orange.webp" HorizontalOptions="End" VerticalOptions="End">
-                            <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
-                                <Grid.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnSendButtonClicked" />
-                                </Grid.GestureRecognizers>
-                                <Label Text="SEND" FontSize="12" TextColor="White" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
-                            </Grid>
-                        </local:Capsule>
-                    </Grid>
+
+                    <local:Capsule x:Name="BtnMainAction" Grid.Row="1" Grid.Column="1" HeightRequest="40" ImageSource="btn_orange.webp" HorizontalOptions="Fill" VerticalOptions="End">
+                        <Grid HorizontalOptions="Fill" VerticalOptions="Fill">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnSendButtonClicked" />
+                            </Grid.GestureRecognizers>
+                            <Label x:Name="BtnActionText" Text="SEND" TextColor="White" FontSize="12" Margin="0,0,0,4" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" />
+                        </Grid>
+                    </local:Capsule>
                 </Grid>
             </StackLayout>
         </Grid>
