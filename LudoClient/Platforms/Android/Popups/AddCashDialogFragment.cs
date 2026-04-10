@@ -126,9 +126,15 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 ShowMessage("Confirming Swap...");
             };
-            _btnPhantomConnect.Click += (s, e) => {
+            _btnPhantomConnect.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                ToggleWalletConnection();
+                await ToggleWalletConnection();
+            };
+
+            _btnWalletTransfer.Click += async (s, e) => {
+                if (!_isWalletConnected) return;
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                await ProcessWalletDeposit();
             };
 
             // 3. Bank Tab Actions
@@ -165,21 +171,78 @@ namespace LudoClient.Platforms.Android.Popups
             return view;
         }
 
-        private void ToggleWalletConnection()
+        private async Task ToggleWalletConnection()
         {
-            _isWalletConnected = !_isWalletConnected;
-            
-            if (_isWalletConnected) {
-                _phantomBtnText.Text = "DISCONNECT";
-                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
-                ShowMessage("Wallet Connected Successfully!");
-            } else {
+            if (!_isWalletConnected)
+            {
+                ShowMessage("Connecting to Wallet...");
+                bool success = await ClientGlobalConstants.WalletConnection.Connect();
+                if (success && ClientGlobalConstants.WalletConnection.Client != null)
+                {
+                    try
+                    {
+                        var auth = await ClientGlobalConstants.WalletConnection.Client.Authorize(
+                            new Uri("https://ludocities.com"),
+                            new Uri("favicon.ico", UriKind.Relative),
+                            "Ludo Cities",
+                            "mainnet-beta"
+                        );
+
+                        if (auth != null && auth.Accounts.Count > 0)
+                        {
+                            _isWalletConnected = true;
+                            _walletAddress = auth.Accounts[0].Address;
+                            _phantomBtnText.Text = "DISCONNECT";
+                            _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
+                            ShowMessage("Wallet Connected Successfully!");
+                        }
+                        else
+                        {
+                            ShowMessage("Authorization failed.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowMessage("Auth Error: " + ex.Message);
+                    }
+                }
+                else
+                {
+                    ShowMessage("Failed to connect wallet.");
+                }
+            }
+            else
+            {
+                _isWalletConnected = false;
                 _phantomBtnText.Text = "CONNECT";
                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account); // GREEN State
                 ShowMessage("Wallet Disconnected.");
             }
 
             UpdateWalletUIState();
+        }
+
+        private async Task ProcessWalletDeposit()
+        {
+            try
+            {
+                string amountText = _walletTransferAmount.Text?.Trim();
+                if (string.IsNullOrEmpty(amountText) || !decimal.TryParse(amountText, out decimal amount))
+                {
+                    ShowMessage("Invalid amount.");
+                    return;
+                }
+
+                ShowMessage("Preparing Deposit...");
+                // Note: The DashboardClient was removed. 
+                // We should integrate with LudoHub if there are deposit methods there.
+                
+                ShowMessage("Deposit Successful (Mocked)");
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Deposit failed: {ex.Message}");
+            }
         }
 
         private void UpdateWalletUIState()

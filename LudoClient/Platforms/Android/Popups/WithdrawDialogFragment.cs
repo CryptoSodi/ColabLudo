@@ -149,9 +149,9 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 ShowMessage("Confirming Swap Transaction...");
             };
-            _btnPhantomConnect.Click += (s, e) => {
+            _btnPhantomConnect.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                ToggleWalletConnection();
+                await ToggleWalletConnection();
             };
 
             // Bank Tab Logic
@@ -181,17 +181,52 @@ namespace LudoClient.Platforms.Android.Popups
             return view;
         }
 
-        private void ToggleWalletConnection()
+        private async Task ToggleWalletConnection()
         {
-            _isWalletConnected = !_isWalletConnected;
-            
-            if (_isWalletConnected) {
-                _phantomBtnText.Text = "DISCONNECT";
-                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); 
-                ShowMessage("Wallet Connected Successfully!");
-            } else {
+            if (!_isWalletConnected)
+            {
+                ShowMessage("Connecting to Wallet...");
+                bool success = await ClientGlobalConstants.WalletConnection.Connect();
+                if (success && ClientGlobalConstants.WalletConnection.Client != null)
+                {
+                    try
+                    {
+                        var auth = await ClientGlobalConstants.WalletConnection.Client.Authorize(
+                            new Uri("https://ludocities.com"),
+                            new Uri("favicon.ico", UriKind.Relative),
+                            "Ludo Cities",
+                            "mainnet-beta"
+                        );
+
+                        if (auth != null && auth.Accounts.Count > 0)
+                        {
+                            _isWalletConnected = true;
+                            _userWalletAddress = auth.Accounts[0].Address;
+                            _phantomBtnText.Text = "DISCONNECT";
+                            _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
+                            ShowMessage("Wallet Connected Successfully!");
+                        }
+                        else
+                        {
+                            ShowMessage("Authorization failed.");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ShowMessage("Auth Error: " + ex.Message);
+                    }
+                }
+                else
+                {
+                    ShowMessage("Failed to connect wallet.");
+                }
+            }
+            else
+            {
+                _isWalletConnected = false;
+                _userWalletAddress = "";
                 _phantomBtnText.Text = "CONNECT";
-                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account); 
+                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
                 ShowMessage("Wallet Disconnected.");
             }
 
@@ -326,12 +361,13 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 if (GlobalConstants.MatchMaker != null)
                 {
+                    // Using LudoHub (MatchMaker) for Withdraw
                     string result = await GlobalConstants.MatchMaker.Withdraw(recAddress, amount);
                     if (result == "ERROR") ShowMessage("Error sending transaction!");
                     else ShowMessage("Transaction Successful!");
                 }
             }
-            catch (Exception) { ShowMessage("Unexpected error occurred."); }
+            catch (Exception ex) { ShowMessage("Error: " + ex.Message); }
         }
 
         private async void OnPasteButtonClicked(object sender, EventArgs e)

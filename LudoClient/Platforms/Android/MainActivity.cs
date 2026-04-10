@@ -33,6 +33,9 @@ namespace LudoClient
             {
                 GoogleAuthService.Instance.OnActivityResult(data);
             }
+
+            // No more MwaService, but maybe we'll need this for WalletConnection if it uses StartActivityForResult
+            // For now, WalletConnection seems to use a background loop, but we might need to handle activity results for intents.
         }
 
         [Obsolete]
