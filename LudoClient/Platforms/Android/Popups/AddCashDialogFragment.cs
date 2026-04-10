@@ -8,13 +8,17 @@ using Android.Views;
 using Android.Widget;
 using LudoClient.Constants;
 using SharedCode.Constants;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using Microsoft.Maui.ApplicationModel;
 
 namespace LudoClient.Platforms.Android.Popups
 {
     public class AddCashDialogFragment : global::AndroidX.Fragment.App.DialogFragment
     {
         private TextView _coinsText, _infoAddressTitle, _infoAddressText, _phantomBtnText, _receiptStatus, _selectedAccountNumber;
-        private ImageView _qrCodeImage, _receiptPreview, _tabQRImg, _tabWalletImg, _tabBankImg;
+        private ImageView _qrCodeImage, _receiptPreview, _tabQRImg, _tabWalletImg, _tabBankImg, _phantomBtnBg;
         private TextView _tabQRText, _tabWalletText, _tabBankText;
         private EditText _walletTransferAmount, _swapInputAmount, _manualAmount;
         private Spinner _swapInputAsset, _manualMethod;
@@ -25,6 +29,7 @@ namespace LudoClient.Platforms.Android.Popups
         private string _walletAddress = "";
         private string _selectedBase64Image = "";
         private decimal _currentBalance = 0;
+        private bool _isWalletConnected = false;
         private const int PickImageRequest = 1001;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -60,6 +65,10 @@ namespace LudoClient.Platforms.Android.Popups
 
             // Wallet Tab Elements
             _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
+            _phantomBtnBg = view.FindViewById<ImageView>(Resource.Id.infoAddressBg); // Defaulting to this, but we'll use btn_verify_account and btn_pink
+            // Actually, we need to find the ImageView INSIDE btnPhantomConnect
+            _phantomBtnBg = (ImageView)((ViewGroup)_btnPhantomConnect).GetChildAt(0);
+            
             _btnWalletTransfer = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletTransfer);
             _btnWalletSwap = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwap);
             _btnSwapPreview = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSwapPreview);
@@ -91,30 +100,35 @@ namespace LudoClient.Platforms.Android.Popups
             // 1. QR Tab Action
             _copyBtn.Click += OnCopyButtonClicked;
 
-            // 2. Wallet Tab Actions (FIXED: Wiring missing handlers)
+            // 2. Wallet Tab Actions
             _btnDepositMax.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                _walletTransferAmount.Text = "100.00"; // Example Max
+                _walletTransferAmount.Text = "100.00"; 
             };
             _btnWalletTransfer.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                global::Android.Widget.Toast.MakeText(Context, "Initiating Deposit...", global::Android.Widget.ToastLength.Short).Show();
+                ShowMessage("Initiating Deposit...");
             };
             _btnSwapMax.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                _swapInputAmount.Text = "50.00"; // Example Max
+                _swapInputAmount.Text = "50.00"; 
             };
             _btnSwapPreview.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                global::Android.Widget.Toast.MakeText(Context, "Calculating Swap...", global::Android.Widget.ToastLength.Short).Show();
+                ShowMessage("Calculating Swap...");
             };
             _btnWalletSwap.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                global::Android.Widget.Toast.MakeText(Context, "Confirming Swap...", global::Android.Widget.ToastLength.Short).Show();
+                ShowMessage("Confirming Swap...");
             };
             _btnPhantomConnect.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                global::Android.Widget.Toast.MakeText(Context, "Connecting...", global::Android.Widget.ToastLength.Short).Show();
+                ToggleWalletConnection();
             };
 
             // 3. Bank Tab Actions
@@ -128,14 +142,13 @@ namespace LudoClient.Platforms.Android.Popups
                 string acc = _selectedAccountNumber.Text;
                 if (!string.IsNullOrEmpty(acc) && acc != "SELECT METHOD") {
                     Clipboard.Default.SetTextAsync(acc);
-                    global::Android.Widget.Toast.MakeText(Context, "Account Copied!", global::Android.Widget.ToastLength.Short).Show();
+                    ShowMessage("Account Copied!");
                 }
             };
             _btnBankView.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (!string.IsNullOrEmpty(_manualAmount.Text)) {
-                    global::Android.Widget.Toast.MakeText(Context, $"Previewing {_manualAmount.Text} LUDC deposit.", global::Android.Widget.ToastLength.Short).Show();
-                } else ShowMessage("Enter an amount first.");
+                if (!string.IsNullOrEmpty(_manualAmount.Text)) ShowMessage($"Previewing {_manualAmount.Text} LUDC deposit.");
+                else ShowMessage("Enter an amount first.");
             };
             _btnSubmitManual.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -147,8 +160,46 @@ namespace LudoClient.Platforms.Android.Popups
 
             InitializeData();
             InitializeSpinners();
-            SwitchTab(1); // Force immediate hydration of footer and QR state
+            UpdateWalletUIState(); 
+            SwitchTab(1); 
             return view;
+        }
+
+        private void ToggleWalletConnection()
+        {
+            _isWalletConnected = !_isWalletConnected;
+            
+            if (_isWalletConnected) {
+                _phantomBtnText.Text = "DISCONNECT";
+                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
+                ShowMessage("Wallet Connected Successfully!");
+            } else {
+                _phantomBtnText.Text = "CONNECT";
+                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account); // GREEN State
+                ShowMessage("Wallet Disconnected.");
+            }
+
+            UpdateWalletUIState();
+        }
+
+        private void UpdateWalletUIState()
+        {
+            float alpha = _isWalletConnected ? 1.0f : 0.4f;
+            bool enabled = _isWalletConnected;
+
+            _btnWalletTransfer.Enabled = enabled; _btnWalletTransfer.Alpha = alpha;
+            _btnWalletSwap.Enabled = enabled; _btnWalletSwap.Alpha = alpha;
+            _btnSwapPreview.Enabled = enabled; _btnSwapPreview.Alpha = alpha;
+            _btnDepositMax.Enabled = enabled; _btnDepositMax.Alpha = alpha;
+            _btnSwapMax.Enabled = enabled; _btnSwapMax.Alpha = alpha;
+            _walletTransferAmount.Enabled = enabled;
+            _swapInputAmount.Enabled = enabled;
+            _swapInputAsset.Enabled = enabled;
+
+            // Update footer info if we are on the WALLET tab
+            if (_contentWallet.Visibility == ViewStates.Visible) {
+                _infoAddressText.Text = _isWalletConnected ? "WALLET READY FOR TRANSACTIONS" : "CONNECT WALLET TO START";
+            }
         }
 
         private void UpdateContextualAccountInfo()
@@ -224,7 +275,7 @@ namespace LudoClient.Platforms.Android.Popups
                 _btnPhantomConnect.Visibility = ViewStates.Visible;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
                 _infoAddressTitle.Text = "PHANTOM DEPOSIT HUB";
-                _infoAddressText.Text = "CONNECT WALLET TO START";
+                _infoAddressText.Text = _isWalletConnected ? "WALLET READY FOR TRANSACTIONS" : "CONNECT WALLET TO START";
             } else {
                 _footerSection.Visibility = ViewStates.Visible;
                 _copyBtn.Visibility = ViewStates.Gone;
@@ -246,19 +297,12 @@ namespace LudoClient.Platforms.Android.Popups
                         _coinsText.Text = ClientGlobalConstants.NormalizeCoins(wallet.AvailableBalance);
                         _currentBalance = (decimal)wallet.AvailableBalance;
 
-                        // Restore QR Code Logic
-                        if (!string.IsNullOrEmpty(UserInfo.Instance.AddressQRBlob))
-                        {
-                            try
-                            {
+                        if (!string.IsNullOrEmpty(UserInfo.Instance.AddressQRBlob)) {
+                            try {
                                 byte[] imageBytes = Convert.FromBase64String(UserInfo.Instance.AddressQRBlob);
                                 var bitmap = BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
                                 _qrCodeImage.SetImageBitmap(bitmap);
-                            }
-                            catch (Exception ex)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"QR Error: {ex.Message}");
-                            }
+                            } catch (Exception) { }
                         }
                     });
                 }

@@ -23,7 +23,8 @@ namespace LudoClient.Platforms.Android.Popups
     {
         private TextView _coinsText;
         private EditText _addressEntry, _amountEntry, _walletAmountEntry, _walletSwapAmount, _bankWithdrawAmount, _bankAccountEntry;
-        private TextView _footerTitle, _footerText;
+        private TextView _footerTitle, _footerText, _phantomBtnText;
+        private ImageView _phantomBtnBg;
         
         // Dynamic Footer Buttons
         private global::Android.Views.View _btnSolanaConfirm, _btnPhantomConnect, _btnSubmitManual;
@@ -43,6 +44,7 @@ namespace LudoClient.Platforms.Android.Popups
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
+        private bool _isWalletConnected = false;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -101,6 +103,8 @@ namespace LudoClient.Platforms.Android.Popups
             _footerText = view.FindViewById<TextView>(Resource.Id.footerText);
             _btnSolanaConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSolanaConfirm);
             _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
+            _phantomBtnBg = (ImageView)((ViewGroup)_btnPhantomConnect).GetChildAt(0);
+            _phantomBtnText = view.FindViewById<TextView>(Resource.Id.phantomBtnText);
             _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
             // Global Click Handlers
@@ -121,28 +125,33 @@ namespace LudoClient.Platforms.Android.Popups
 
             // Wallet Tab Logic
             _btnWalletMax.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _walletAmountEntry.Text = _solBalance.ToString("F2");
             };
             _btnSwapMax.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _walletSwapAmount.Text = _solBalance.ToString("F2");
             };
             _btnWalletSign.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 ShowMessage("Requesting Payout Signature...");
             };
             _btnWalletSwapView.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 ShowMessage("Fetching Swap Preview...");
             };
             _btnWalletSwapConfirm.Click += (s, e) => {
+                if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 ShowMessage("Confirming Swap Transaction...");
             };
             _btnPhantomConnect.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                ShowMessage("Connecting to Phantom...");
+                ToggleWalletConnection();
             };
 
             // Bank Tab Logic
@@ -167,7 +176,44 @@ namespace LudoClient.Platforms.Android.Popups
 
             InitializeData();
             InitializeSpinners();
+            UpdateWalletUIState();
+            SwitchTab(1);
             return view;
+        }
+
+        private void ToggleWalletConnection()
+        {
+            _isWalletConnected = !_isWalletConnected;
+            
+            if (_isWalletConnected) {
+                _phantomBtnText.Text = "DISCONNECT";
+                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); 
+                ShowMessage("Wallet Connected Successfully!");
+            } else {
+                _phantomBtnText.Text = "CONNECT";
+                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account); 
+                ShowMessage("Wallet Disconnected.");
+            }
+
+            UpdateWalletUIState();
+        }
+
+        private void UpdateWalletUIState()
+        {
+            float alpha = _isWalletConnected ? 1.0f : 0.4f;
+            bool enabled = _isWalletConnected;
+
+            _btnWalletSign.Enabled = enabled; _btnWalletSign.Alpha = alpha;
+            _btnWalletSwapView.Enabled = enabled; _btnWalletSwapView.Alpha = alpha;
+            _btnWalletSwapConfirm.Enabled = enabled; _btnWalletSwapConfirm.Alpha = alpha;
+            _btnWalletMax.Enabled = enabled; _btnWalletMax.Alpha = alpha;
+            _btnSwapMax.Enabled = enabled; _btnSwapMax.Alpha = alpha;
+            _walletAmountEntry.Enabled = enabled;
+            _walletSwapAmount.Enabled = enabled;
+
+            if (_contentWallet != null && _contentWallet.Visibility == ViewStates.Visible) {
+                _footerText.Text = _isWalletConnected ? "WALLET READY FOR PAYOUTS" : "CONNECT WALLET TO START";
+            }
         }
 
         private void InitializeSpinners()
@@ -205,7 +251,7 @@ namespace LudoClient.Platforms.Android.Popups
             else if (tabIndex == 2)
             {
                 _footerTitle.Text = "PHANTOM WITHDRAWAL";
-                _footerText.Text = "INTERNAL TO EXTERNAL HUB";
+                _footerText.Text = _isWalletConnected ? "WALLET READY FOR PAYOUTS" : "CONNECT WALLET TO START";
                 _btnSolanaConfirm.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Visible;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
