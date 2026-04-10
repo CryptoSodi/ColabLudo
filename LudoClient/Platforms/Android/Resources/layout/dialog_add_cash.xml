@@ -145,7 +145,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="1">
 
-                        <!-- TAB 1: QR CODE (MAXIMIZED AVAILABLE SPACE) -->
+                        <!-- TAB 1: QR CODE (FIXED VISUAL BALANCE) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentQR"
                             android:layout_width="match_parent"
@@ -154,21 +154,34 @@
                             android:layout_marginBottom="10dp"
                             android:padding="8dp"
                             android:background="@drawable/bg_rounded_purple_top">
-                            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
                                 <androidx.constraintlayout.widget.ConstraintLayout
                                     android:layout_width="match_parent"
-                                    android:layout_height="0dp"
-                                    android:layout_weight="1"
-                                    android:padding="15dp"
+                                    android:layout_height="wrap_content"
+                                    android:padding="8dp"
                                     android:background="@drawable/bg_rounded_dark_blue_bottom">
+                                    <TextView 
+                                        android:id="@+id/qrHeader"
+                                        android:layout_width="wrap_content" 
+                                        android:layout_height="wrap_content" 
+                                        android:text="SCAN TO DEPOSIT LUDC TOKEN" 
+                                        android:textColor="#FFFF00" 
+                                        android:textSize="9sp" 
+                                        android:textStyle="bold"
+                                        app:layout_constraintTop_toTopOf="parent"
+                                        app:layout_constraintStart_toStartOf="parent"/>
                                     <ImageView
                                         android:id="@+id/qrCodeImage"
                                         android:layout_width="match_parent"
-                                        android:layout_height="match_parent"
+                                        android:layout_height="110dp"
+                                        android:layout_marginTop="5dp"
                                         android:background="@drawable/bg_rounded_qr_purple"
-                                        android:scaleType="fitCenter" />
+                                        android:scaleType="fitCenter"
+                                        app:layout_constraintTop_toBottomOf="@id/qrHeader"
+                                        app:layout_constraintStart_toStartOf="parent"
+                                        app:layout_constraintEnd_toEndOf="parent" />
                                 </androidx.constraintlayout.widget.ConstraintLayout>
-                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="SCAN TO DEPOSIT LUDC TOKEN" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="10dp"/>
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="DEPOSIT ADDRESS WILL BE SHOWN IN FOOTER" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="10dp"/>
                             </LinearLayout>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
