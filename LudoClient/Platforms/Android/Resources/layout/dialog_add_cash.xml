@@ -145,7 +145,7 @@
                         android:layout_height="0dp"
                         android:layout_weight="1">
 
-                        <!-- TAB 1: QR CODE (STANDARDIZED CONTAINER) -->
+                        <!-- TAB 1: QR CODE (MAXIMIZED AVAILABLE SPACE) -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentQR"
                             android:layout_width="match_parent"
@@ -154,27 +154,25 @@
                             android:layout_marginBottom="10dp"
                             android:padding="8dp"
                             android:background="@drawable/bg_rounded_purple_top">
-                            <androidx.constraintlayout.widget.ConstraintLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="130dp"
-                                android:padding="10dp"
-                                android:background="@drawable/bg_rounded_dark_blue_bottom"
-                                app:layout_constraintTop_toTopOf="parent">
-                                <ImageView
-                                    android:id="@+id/qrCodeImage"
-                                    android:layout_width="0dp"
+                            <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical">
+                                <androidx.constraintlayout.widget.ConstraintLayout
+                                    android:layout_width="match_parent"
                                     android:layout_height="0dp"
-                                    android:layout_margin="5dp"
-                                    android:background="@drawable/bg_rounded_qr_purple"
-                                    android:scaleType="fitCenter"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:layout_constraintBottom_toBottomOf="parent"
-                                    app:layout_constraintStart_toStartOf="parent"
-                                    app:layout_constraintEnd_toEndOf="parent" />
-                            </androidx.constraintlayout.widget.ConstraintLayout>
+                                    android:layout_weight="1"
+                                    android:padding="15dp"
+                                    android:background="@drawable/bg_rounded_dark_blue_bottom">
+                                    <ImageView
+                                        android:id="@+id/qrCodeImage"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="match_parent"
+                                        android:background="@drawable/bg_rounded_qr_purple"
+                                        android:scaleType="fitCenter" />
+                                </androidx.constraintlayout.widget.ConstraintLayout>
+                                <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="SCAN TO DEPOSIT LUDC TOKEN" android:textColor="#80FFFFFF" android:textSize="7sp" android:textStyle="bold" android:gravity="center" android:layout_marginTop="10dp"/>
+                            </LinearLayout>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <!-- TAB 2: WALLET (STANDARDIZED CONTAINER) -->
+                        <!-- TAB 2: WALLET -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentWallet"
                             android:layout_width="match_parent"
@@ -223,7 +221,7 @@
                             </LinearLayout>
                         </androidx.constraintlayout.widget.ConstraintLayout>
 
-                        <!-- TAB 3: BANK (STANDARDIZED CONTAINER) -->
+                        <!-- TAB 3: BANK -->
                         <androidx.constraintlayout.widget.ConstraintLayout
                             android:id="@+id/contentBank"
                             android:layout_width="match_parent"

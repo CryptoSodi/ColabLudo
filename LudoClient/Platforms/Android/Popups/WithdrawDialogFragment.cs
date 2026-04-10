@@ -26,7 +26,7 @@ namespace LudoClient.Platforms.Android.Popups
         private TextView _footerTitle, _footerText;
         
         // Dynamic Footer Buttons
-        private global::Android.Views.View _copyBtn, _btnPhantomConnect, _btnSubmitManual;
+        private global::Android.Views.View _btnSolanaConfirm, _btnPhantomConnect, _btnSubmitManual;
 
         // Tabs
         private global::Android.Views.View _tabSOL, _tabWallet, _tabBank;
@@ -89,7 +89,7 @@ namespace LudoClient.Platforms.Android.Popups
             _btnWalletSwapConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapConfirm);
 
             // Bank Tab Hub
-            _manualWithdrawMethod = view.FindViewById<Spinner>(Resource.Id.manualWithdrawMethod);
+            _manualWithdrawMethod = view.FindViewById<Spinner>(Resource.Id.manualWithdrawMethodSpinner);
             _bankWithdrawAmount = view.FindViewById<EditText>(Resource.Id.bankWithdrawAmount);
             _btnBankWithdrawMax = view.FindViewById<TextView>(Resource.Id.btnBankWithdrawMax);
             _btnBankWithdrawView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankWithdrawView);
@@ -99,7 +99,7 @@ namespace LudoClient.Platforms.Android.Popups
             // Find Footer Buttons
             _footerTitle = view.FindViewById<TextView>(Resource.Id.footerTitle);
             _footerText = view.FindViewById<TextView>(Resource.Id.footerText);
-            _copyBtn = view.FindViewById<global::Android.Views.View>(Resource.Id.copyBtn);
+            _btnSolanaConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSolanaConfirm);
             _btnPhantomConnect = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPhantomConnect);
             _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
@@ -114,7 +114,7 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _amountEntry.Text = _solBalance.ToString("F2");
             };
-            _copyBtn.Click += async (s, e) => {
+            _btnSolanaConfirm.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 await ProcessSolanaWithdraw();
             };
@@ -198,7 +198,7 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _footerTitle.Text = "WITHDRAW LUDC TOKEN";
                 _footerText.Text = "EXTERNAL SOLANA ADDRESS";
-                _copyBtn.Visibility = ViewStates.Visible;
+                _btnSolanaConfirm.Visibility = ViewStates.Visible;
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
             }
@@ -206,7 +206,7 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _footerTitle.Text = "PHANTOM WITHDRAWAL";
                 _footerText.Text = "INTERNAL TO EXTERNAL HUB";
-                _copyBtn.Visibility = ViewStates.Gone;
+                _btnSolanaConfirm.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Visible;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
             }
@@ -214,7 +214,7 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _footerTitle.Text = "BANK PAYOUT HUB";
                 _footerText.Text = "REQUEST MANUAL TRANSFER";
-                _copyBtn.Visibility = ViewStates.Gone;
+                _btnSolanaConfirm.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Visible;
             }
