@@ -6,16 +6,8 @@ using Android.OS;
 using Android.Provider;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Fragment.App;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
-using Microsoft.Maui.ApplicationModel;
 using SharedCode.Constants;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace LudoClient.Platforms.Android.Popups
 {
@@ -155,6 +147,7 @@ namespace LudoClient.Platforms.Android.Popups
 
             InitializeData();
             InitializeSpinners();
+            SwitchTab(1); // Force immediate hydration of footer and QR state
             return view;
         }
 
