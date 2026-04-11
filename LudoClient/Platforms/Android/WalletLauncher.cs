@@ -7,8 +7,6 @@ namespace LudoClient.Platforms.Android
     {
         public const string SchemeMobileWalletAdapter = "solana-wallet";
         public const string LocalPathSuffix = "v1/associate/local";
-        public static event Action? AppPaused;
-        public static event Action? AppResumed;
 
         public static void Launch(string associationToken, int port)
         {
@@ -33,16 +31,6 @@ namespace LudoClient.Platforms.Android
             {
                 Console.WriteLine($"[WalletLauncher] Error launching wallet: {ex.Message}");
             }
-        }
-
-        public static void NotifyAppPaused()
-        {
-            AppPaused?.Invoke();
-        }
-
-        public static void NotifyAppResumed()
-        {
-            AppResumed?.Invoke();
         }
     }
 }

@@ -210,7 +210,7 @@ namespace LudoClient.Platforms.Android.Popups
                     {
                         var authTask = ClientGlobalConstants.WalletConnection.Client.Authorize(
                             new Uri("https://ludocities.com"),
-                            new Uri("favicon.ico", UriKind.Relative),
+                            new Uri("faviconhq.ico", UriKind.Relative),
                             "Ludo Cities",
                             "mainnet-beta"
                         );
