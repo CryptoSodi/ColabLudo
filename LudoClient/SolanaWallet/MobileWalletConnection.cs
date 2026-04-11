@@ -45,13 +45,10 @@ namespace LudoClient.SolanaWallet
 #if ANDROID
                 Console.WriteLine("[WMA] Launching Wallet Intent...");
                 Platforms.Android.WalletLauncher.Launch(_associationToken, _port);
-                
-                Console.WriteLine("[WMA] Waiting 2 seconds for wallet to warm up...");
-                await Task.Delay(2000);
 #endif
 
                 var webSocketUri = $"ws://127.0.0.1:{_port}/solana-wallet";
-                var timeout = TimeSpan.FromSeconds(10);
+                var timeout = TimeSpan.FromSeconds(15);
                 var cts = new CancellationTokenSource(timeout);
 
                 while (!cts.IsCancellationRequested)
@@ -79,7 +76,8 @@ namespace LudoClient.SolanaWallet
                     catch (Exception ex)
                     {
                         Console.WriteLine($"[WMA] Connection attempt failed: {ex.Message}. Retrying...");
-                        await Task.Delay(500);
+                        if (!cts.IsCancellationRequested)
+                            await Task.Delay(250);
                     }
                 }
 
@@ -106,6 +104,39 @@ namespace LudoClient.SolanaWallet
             finally
             {
                 _isConnecting = false;
+            }
+        }
+
+        public async Task DisconnectAsync()
+        {
+            try
+            {
+                if (_webSocket != null)
+                {
+                    if (_webSocket.State == WebSocketState.Open || _webSocket.State == WebSocketState.CloseReceived)
+                    {
+                        try
+                        {
+                            await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Session complete", CancellationToken.None);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[WMA] CloseAsync failed: {ex.Message}");
+                        }
+                    }
+
+                    try { _webSocket.Dispose(); } catch { }
+                    _webSocket = null;
+                }
+            }
+            finally
+            {
+                _client = null;
+                _session = null;
+                _associationToken = null;
+                _handshakeTcs = null;
+                _isConnecting = false;
+                Console.WriteLine("[WMA] Session disconnected.");
             }
         }
 

@@ -15,9 +15,9 @@ namespace LudoClient.Platforms.Android
                 var activity = global::Microsoft.Maui.ApplicationModel.Platform.CurrentActivity;
                 if (activity == null) return;
 
-                var intent = new Intent(Intent.ActionView);
+                var intent = new Intent();
+                intent.SetAction(Intent.ActionView);
                 intent.AddCategory(Intent.CategoryBrowsable);
-                intent.SetFlags(ActivityFlags.NewTask);
 
                 var url = $"{SchemeMobileWalletAdapter}:/" +
                           $"{LocalPathSuffix}?association={associationToken}&port={port}";
