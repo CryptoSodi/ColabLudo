@@ -17,6 +17,10 @@ namespace LudoClient.SolanaWallet
         private int _port;
         private string? _associationToken;
         private TaskCompletionSource<bool>? _handshakeTcs;
+        private TaskCompletionSource<bool>? _walletClosedTcs;
+        private bool _walletAppWasBackgrounded;
+        public bool LastLaunchCanceled { get; private set; }
+        public event Action? RemoteClosed;
 
         public MobileWalletAdapterClient? Client => _client;
 
@@ -31,18 +35,34 @@ namespace LudoClient.SolanaWallet
             }
 
             _isConnecting = true;
+            Action? handleAppPaused = null;
+            Action? handleAppResumed = null;
             try
             {
+                LastLaunchCanceled = false;
                 Console.WriteLine("[WMA] Initializing MobileWalletSession...");
                 _session = new MobileWalletSession();
                 _associationToken = _session.AssociationToken;
                 _port = new Random().Next(49152, 65535);
                 _client = null; // Reset client for new connection
+                _walletClosedTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+                _walletAppWasBackgrounded = false;
 
                 Console.WriteLine($"[WMA] Association Token: {_associationToken}");
                 Console.WriteLine($"[WMA] Local Port: {_port}");
 
 #if ANDROID
+                handleAppPaused = () => _walletAppWasBackgrounded = true;
+                handleAppResumed = () =>
+                {
+                    if (_walletAppWasBackgrounded && (_webSocket == null || _webSocket.State != WebSocketState.Open))
+                    {
+                        _walletClosedTcs?.TrySetResult(true);
+                    }
+                };
+
+                Platforms.Android.WalletLauncher.AppPaused += handleAppPaused;
+                Platforms.Android.WalletLauncher.AppResumed += handleAppResumed;
                 Console.WriteLine("[WMA] Launching Wallet Intent...");
                 Platforms.Android.WalletLauncher.Launch(_associationToken, _port);
 #endif
@@ -66,7 +86,16 @@ namespace LudoClient.SolanaWallet
                         _webSocket = new ClientWebSocket();
                         _webSocket.Options.AddSubProtocol("com.solana.mobilewalletadapter.v1");
 
-                        await _webSocket.ConnectAsync(new Uri(webSocketUri), cts.Token);
+                        var connectTask = _webSocket.ConnectAsync(new Uri(webSocketUri), cts.Token);
+                        var completedTask = await Task.WhenAny(connectTask, _walletClosedTcs.Task);
+                        if (completedTask == _walletClosedTcs.Task)
+                        {
+                            LastLaunchCanceled = true;
+                            Console.WriteLine("[WMA] Wallet was closed before establishing a connection.");
+                            return false;
+                        }
+
+                        await connectTask;
                         if (_webSocket.State == WebSocketState.Open)
                         {
                             Console.WriteLine("[WMA] WebSocket Connected!");
@@ -103,6 +132,12 @@ namespace LudoClient.SolanaWallet
             }
             finally
             {
+#if ANDROID
+                if (handleAppPaused != null)
+                    Platforms.Android.WalletLauncher.AppPaused -= handleAppPaused;
+                if (handleAppResumed != null)
+                    Platforms.Android.WalletLauncher.AppResumed -= handleAppResumed;
+#endif
                 _isConnecting = false;
             }
         }
@@ -135,6 +170,8 @@ namespace LudoClient.SolanaWallet
                 _session = null;
                 _associationToken = null;
                 _handshakeTcs = null;
+                _walletClosedTcs = null;
+                _walletAppWasBackgrounded = false;
                 _isConnecting = false;
                 Console.WriteLine("[WMA] Session disconnected.");
             }
@@ -153,6 +190,9 @@ namespace LudoClient.SolanaWallet
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         Console.WriteLine("[WMA] WebSocket Closed by remote.");
+                        LastLaunchCanceled = true;
+                        _walletClosedTcs?.TrySetResult(true);
+                        RemoteClosed?.Invoke();
                         await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                     }
                     else if (result.MessageType == WebSocketMessageType.Binary)
@@ -181,6 +221,12 @@ namespace LudoClient.SolanaWallet
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[WMA] WebSocket Receive Loop Error: {ex.Message}");
+                    if (_webSocket?.State != WebSocketState.Open)
+                    {
+                        LastLaunchCanceled = true;
+                        _walletClosedTcs?.TrySetResult(true);
+                        RemoteClosed?.Invoke();
+                    }
                     break;
                 }
             }

@@ -177,6 +177,20 @@ namespace LudoClient.Platforms.Android.Popups
             if (!_isWalletConnected)
             {
                 SetWalletConnectingState(true);
+                void HandleRemoteClosed()
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        if (!_isWalletConnected)
+                        {
+                            _walletAddress = "";
+                            _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
+                            SetWalletConnectingState(false);
+                            UpdateWalletUIState();
+                        }
+                    });
+                }
+                ClientGlobalConstants.WalletConnection.RemoteClosed += HandleRemoteClosed;
 
                 try
                 {
@@ -213,7 +227,17 @@ namespace LudoClient.Platforms.Android.Popups
                     }
                     else
                     {
-                        ShowMessage("Failed to connect wallet.");
+                        if (ClientGlobalConstants.WalletConnection.LastLaunchCanceled)
+                        {
+                            _isWalletConnected = false;
+                            _walletAddress = "";
+                            _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
+                            SetWalletConnectingState(false);
+                            UpdateWalletUIState();
+                            ShowMessage("Wallet was closed before connecting.");
+                        }
+                        else
+                            ShowMessage("Failed to connect wallet.");
                     }
                 }
                 catch (Exception ex)
@@ -222,6 +246,7 @@ namespace LudoClient.Platforms.Android.Popups
                 }
                 finally
                 {
+                    ClientGlobalConstants.WalletConnection.RemoteClosed -= HandleRemoteClosed;
                     await ClientGlobalConstants.WalletConnection.DisconnectAsync();
                     SetWalletConnectingState(false);
                 }

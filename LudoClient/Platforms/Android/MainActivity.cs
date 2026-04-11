@@ -79,6 +79,19 @@ namespace LudoClient
             {
             }
         }
+
+        protected override void OnPause()
+        {
+            base.OnPause();
+            WalletLauncher.NotifyAppPaused();
+        }
+
+        protected override void OnResume()
+        {
+            base.OnResume();
+            WalletLauncher.NotifyAppResumed();
+        }
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, PMPermission[] grantResults)
         {
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
