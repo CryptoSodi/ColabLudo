@@ -27,6 +27,8 @@ namespace LudoClient.Platforms.Android.Popups
         private decimal _phantomSolBalance = 0;
         private decimal _phantomUsdcBalance = 0;
         private string _selectedBase64Image = "";
+        private string _preparedSwapTx = "";
+        private decimal _preparedSwapOutput = 0;
         private decimal _currentBalance = 0;
         private bool _isWalletConnected = false;
         private bool _isWalletConnecting = false;
@@ -106,9 +108,10 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             };
             _btnSwapMax.Click += (s, e) => OnSwapMaxButtonClicked();
-            _btnSwapPreview.Click += (s, e) => {
+            _btnSwapPreview.Click += async (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                await OnSwapPreviewClicked();
             };
             _btnWalletSwap.Click += (s, e) => {
                 if (!_isWalletConnected) return;
@@ -315,6 +318,58 @@ namespace LudoClient.Platforms.Android.Popups
             string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
             decimal bal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
             _swapInputAmount.Text = bal.ToString(selectedAsset == "SOL" ? "F4" : "F2");
+        }
+
+        private async Task OnSwapPreviewClicked()
+        {
+            if (!_isWalletConnected || string.IsNullOrEmpty(_walletAddress))
+            {
+                ShowMessage("Connect wallet first.");
+                return;
+            }
+
+            string amountText = _swapInputAmount.Text?.Trim();
+            if (string.IsNullOrEmpty(amountText) || !decimal.TryParse(amountText, out decimal amount) || amount <= 0)
+            {
+                ShowMessage("Enter a valid amount.");
+                return;
+            }
+
+            string inputAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
+            string outputAsset = "LUDC";
+
+            try
+            {
+                ShowMessage($"Calculating swap: {amount} {inputAsset}...");
+                var result = await GlobalConstants.MatchMaker.PrepareAssetSwap(_walletAddress, inputAsset, outputAsset, amount, 100);
+                
+                if (result != null)
+                {
+                    string json = result.ToString();
+                    var data = Newtonsoft.Json.Linq.JObject.Parse(json);
+
+                    if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
+                    {
+                        _preparedSwapTx = (string)(data["swapTransaction"] ?? data["SwapTransaction"]);
+                        _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"]) ?? 0m;
+                        
+                        // If it's a raw ulong from Jupiter, we need to scale it by LUDC decimals (9)
+                        if (_preparedSwapOutput > 1000000) 
+                            _preparedSwapOutput /= 1_000_000_000m;
+
+                        ShowMessage($"PREVIEW: Receive approx {_preparedSwapOutput:N2} LUDC. Ready to Swap.");
+                    }
+                    else
+                    {
+                        string err = (string)(data["error"] ?? data["Error"]) ?? "Failed to get swap quote.";
+                        ShowMessage($"Swap Error: {err}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Preview failed: {ex.Message}");
+            }
         }
 
         private void SetWalletConnectingState(bool isConnecting)

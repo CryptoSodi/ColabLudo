@@ -306,5 +306,9 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
         }
+        public async Task<object> PrepareAssetSwap(string walletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps)
+        {
+            return await _hubConnection.InvokeAsync<object>("PrepareAssetSwap", walletAddress, inputAsset, outputAsset, amount, slippageBps).ConfigureAwait(false);
+        }
     }
 }

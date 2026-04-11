@@ -7,16 +7,16 @@ using SharedCode;
 using SharedCode.Constants;
 using SignalR.Server.Payments;
 using SignalR.Server.Services;
-using System.Collections.Concurrent;
+using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Types;
 using Solnet.Wallet;
-using Solnet.Programs;
+using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
 
-    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, LudcPaymentProvider _ludcPaymentProvider) : Hub
+    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, LudcPaymentProvider _ludcPaymentProvider, JupiterSwapService _jupiterSwapService) : Hub
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
@@ -25,6 +25,142 @@ namespace SignalR.Server
         private const string StandardTokenProgram = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
         private const string UsdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
         private const string SolMint = "So11111111111111111111111111111111111111112";
+        private const int SolDecimals = 9;
+        private const int UsdcDecimals = 6;
+        private const int LudcDecimals = 9;
+        private const int MaxSwapSlippageBps = 150;
+
+        public async Task<object> PrepareAssetSwap(string senderWalletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps = 100)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+
+                if (string.IsNullOrWhiteSpace(senderWalletAddress) || amount <= 0)
+                    return new { Success = false, Error = "Invalid swap request." };
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                if (wallet == null || string.IsNullOrWhiteSpace(wallet.WalletAddress))
+                    return new { Success = false, Error = "Internal LUDC wallet not ready." };
+
+                var normalizedInput = (inputAsset ?? string.Empty).Trim().ToUpperInvariant();
+                var normalizedOutput = (outputAsset ?? string.Empty).Trim().ToUpperInvariant();
+
+                if (normalizedInput == normalizedOutput)
+                    return new { Success = false, Error = "Choose two different assets." };
+
+                if (normalizedInput != "LUDC" && normalizedOutput != "LUDC")
+                    return new { Success = false, Error = "One side of the swap must be LUDC." };
+
+                var inputConfig = GetSupportedAsset(normalizedInput, _ludcPaymentProvider.MintAddress);
+                var outputConfig = GetSupportedAsset(normalizedOutput, _ludcPaymentProvider.MintAddress);
+                if (inputConfig == null || outputConfig == null)
+                    return new { Success = false, Error = "Unsupported asset." };
+
+                if (slippageBps <= 0 || slippageBps > MaxSwapSlippageBps)
+                    slippageBps = 100;
+
+                decimal scale = (decimal)Math.Pow(10, inputConfig.Value.Decimals);
+                ulong amountRaw = Convert.ToUInt64(decimal.Round(amount * scale, 0, MidpointRounding.AwayFromZero));
+                if (amountRaw == 0)
+                    return new { Success = false, Error = "Swap amount is too small." };
+
+                string receiver;
+                if (normalizedOutput == "LUDC")
+                {
+                    receiver = wallet.WalletAddress;
+                }
+                else if (!string.IsNullOrEmpty(outputConfig.Value.TokenProgram))
+                {
+                    receiver = DeriveAssociatedTokenAddress(senderWalletAddress, outputConfig.Value.Mint, outputConfig.Value.TokenProgram);
+                }
+                else
+                {
+                    receiver = senderWalletAddress;
+                }
+
+                using var order = await _jupiterSwapService.GetOrderAsync(
+                    inputConfig.Value.Mint,
+                    outputConfig.Value.Mint,
+                    amountRaw.ToString(),
+                    senderWalletAddress,
+                    receiver,
+                    slippageBps);
+
+                var root = order.RootElement;
+                return new
+                {
+                    Success = true,
+                    SwapTransaction = GetJsonString(root, "swapTransaction"),
+                    OutAmount = decimal.TryParse(GetJsonString(root, "outAmount"), out var oa) ? (decimal?)oa : null,
+                    PriceImpactPct = decimal.TryParse(GetJsonString(root, "priceImpactPct"), out var pip) ? (decimal?)pip : null,
+                    RequestId = GetJsonString(root, "requestId")
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+
+        private static string GetJsonString(System.Text.Json.JsonElement parent, string propertyName, string fallback = "")
+        {
+            if (!parent.TryGetProperty(propertyName, out var value))
+                return fallback;
+
+            return value.ValueKind switch
+            {
+                System.Text.Json.JsonValueKind.String => value.GetString() ?? fallback,
+                System.Text.Json.JsonValueKind.Number => value.GetRawText(),
+                System.Text.Json.JsonValueKind.True => bool.TrueString,
+                System.Text.Json.JsonValueKind.False => bool.FalseString,
+                _ => fallback
+            };
+        }
+
+        public async Task<object> ExecutePreparedSwap(string requestId, string signedTxBase64)
+        {
+            try
+            {
+                using var result = await _jupiterSwapService.ExecuteOrderAsync(requestId, signedTxBase64);
+                var root = result.RootElement;
+                return new
+                {
+                    Success = true,
+                    Signature = GetJsonString(root, "signature"),
+                    RequestId = GetJsonString(root, "requestId")
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+
+        private static (string Mint, int Decimals, string? TokenProgram)? GetSupportedAsset(string assetCode, string ludcMintAddress)
+        {
+            return (assetCode ?? string.Empty).Trim().ToUpperInvariant() switch
+            {
+                "SOL" => (SolMint, SolDecimals, null),
+                "USDC" => (UsdcMint, UsdcDecimals, StandardTokenProgram),
+                "LUDC" => (ludcMintAddress, LudcDecimals, Token2022Program),
+                _ => null
+            };
+        }
+
+        private static string DeriveAssociatedTokenAddress(string ownerAddress, string mintAddress, string tokenProgramAddress)
+        {
+            var owner = new PublicKey(ownerAddress);
+            var mint = new PublicKey(mintAddress);
+            var tokenProgram = new PublicKey(tokenProgramAddress);
+            PublicKey.TryFindProgramAddress(
+                new[] { owner.KeyBytes, tokenProgram.KeyBytes, mint.KeyBytes },
+                AssociatedTokenAccountProgram.ProgramIdKey,
+                out var ata,
+                out _);
+            return ata.Key;
+        }
 
         public async Task<object> GetSwapBalances(string senderWalletAddress)
         {
