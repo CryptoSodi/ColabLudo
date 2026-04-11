@@ -22,6 +22,42 @@ namespace SignalR.Server
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
         private readonly IRpcClient _solanaRpc = ClientFactory.GetClient(Cluster.MainNet);
         private const string Token2022Program = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+        private const string StandardTokenProgram = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
+        private const string UsdcMint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+        private const string SolMint = "So11111111111111111111111111111111111111112";
+
+        public async Task<object> GetSwapBalances(string senderWalletAddress)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+                
+                using var ctx = _contextFactory.CreateDbContext();
+                var internalWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                var internalLudc = internalWallet?.AvailableBalance ?? 0m;
+
+                var phantomSol = await _solanaRpc.GetBalanceAsync(senderWalletAddress, Commitment.Confirmed);
+                var phantomSolAmount = phantomSol.WasSuccessful && phantomSol.Result != null
+                    ? phantomSol.Result.Value / 1_000_000_000m
+                    : 0m;
+
+                var phantomUsdc = await GetTokenBalanceAsync(senderWalletAddress, UsdcMint, StandardTokenProgram);
+                var phantomLudc = await GetTokenBalanceAsync(senderWalletAddress, _ludcPaymentProvider.MintAddress, Token2022Program);
+
+                return new
+                {
+                    Success = true,
+                    PhantomSol = phantomSolAmount,
+                    PhantomUsdc = phantomUsdc,
+                    PhantomLudc = phantomLudc,
+                    InternalLudc = internalLudc
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
 
         public async Task<object> GetWalletBalance(string senderWalletAddress)
         {

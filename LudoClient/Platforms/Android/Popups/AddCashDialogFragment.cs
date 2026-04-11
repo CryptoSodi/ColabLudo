@@ -24,6 +24,8 @@ namespace LudoClient.Platforms.Android.Popups
 
         private string _walletAddress = "";
         private decimal _phantomLudcBalance = 0;
+        private decimal _phantomSolBalance = 0;
+        private decimal _phantomUsdcBalance = 0;
         private string _selectedBase64Image = "";
         private decimal _currentBalance = 0;
         private bool _isWalletConnected = false;
@@ -98,17 +100,12 @@ namespace LudoClient.Platforms.Android.Popups
             // 1. QR Tab Action
             _copyBtn.Click += OnCopyButtonClicked;
 
-            // 2. Wallet Tab Actions
             _btnDepositMax.Click += (s, e) => OnMaxButtonClicked();
             _btnWalletTransfer.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             };
-            _btnSwapMax.Click += (s, e) => {
-                if (!_isWalletConnected) return;
-                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                _swapInputAmount.Text = _phantomLudcBalance.ToString("F2"); 
-            };
+            _btnSwapMax.Click += (s, e) => OnSwapMaxButtonClicked();
             _btnSwapPreview.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -127,6 +124,8 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 await ProcessWalletDeposit();
             };
+
+            _swapInputAsset.ItemSelected += (s, e) => UpdateSwapBalanceDisplay();
 
             // 3. Bank Tab Actions
             _btnPickImage.Click += (s, e) => {
@@ -207,7 +206,7 @@ namespace LudoClient.Platforms.Android.Popups
                                 _walletAddress = auth.Accounts[0].DisplayAddress; // 🔥 USE BASE58 ADDRESS
                                 _phantomBtnText.Text = "DISCONNECT";
                                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
-                                _ = LoadWalletBalance(); // 🔥 FETCH BALANCE IMMEDIATELY
+                                _ = LoadAllBalances(); // 🔥 FETCH ALL BALANCES IMMEDIATELY
                             }
                             else
                             {
@@ -255,45 +254,48 @@ namespace LudoClient.Platforms.Android.Popups
             UpdateWalletUIState();
         }
 
-        private async Task LoadWalletBalance()
+        private async Task LoadAllBalances()
         {
             if (!_isWalletConnected || string.IsNullOrEmpty(_walletAddress))
                 return;
 
             try
             {
-                var result = await GlobalConstants.MatchMaker.GetWalletBalance(_walletAddress);
+                var result = await GlobalConstants.MatchMaker.GetSwapBalances(_walletAddress);
                 if (result != null)
                 {
                     string json = result.ToString();
-                    Console.WriteLine($"[AddCash] Received Balance JSON: {json}");
+                    Console.WriteLine($"[AddCash] Received All Balances JSON: {json}");
                     
                     var data = Newtonsoft.Json.Linq.JObject.Parse(json);
                     
-                    // Handle both PascalCase and camelCase
-                    var successToken = data["Success"] ?? data["success"];
-                    var balanceToken = data["PhantomLudc"] ?? data["phantomLudc"];
+                    if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
+                    {
+                        _phantomSolBalance = (decimal?)(data["phantomSol"] ?? data["PhantomSol"]) ?? 0m;
+                        _phantomUsdcBalance = (decimal?)(data["phantomUsdc"] ?? data["PhantomUsdc"]) ?? 0m;
+                        _phantomLudcBalance = (decimal?)(data["phantomLudc"] ?? data["PhantomLudc"]) ?? 0m;
 
-                    if (successToken != null && (bool)successToken == true)
-                    {
-                        _phantomLudcBalance = (decimal?)balanceToken ?? 0m;
-                        Console.WriteLine($"[AddCash] Balance set to: {_phantomLudcBalance}");
-                        
-                        MainThread.BeginInvokeOnMainThread(() => {
-                            if (_infoAddressText != null)
-                                _infoAddressText.Text = $"BALANCE: {_phantomLudcBalance:N2} LUDC";
-                        });
-                    }
-                    else
-                    {
-                        Console.WriteLine("[AddCash] Success was false or token missing in JSON.");
+                        UpdateSwapBalanceDisplay();
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[AddCash] Error loading wallet balance: {ex}");
+                Console.WriteLine($"[AddCash] Error loading all balances: {ex}");
             }
+        }
+
+        private void UpdateSwapBalanceDisplay()
+        {
+            MainThread.BeginInvokeOnMainThread(() => {
+                if (_contentWallet.Visibility == ViewStates.Visible)
+                {
+                    // If we are looking at the Swap section (Spinner is visible)
+                    string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
+                    decimal bal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
+                    _infoAddressText.Text = $"BALANCE: {bal:N4} {selectedAsset}";
+                }
+            });
         }
 
         private void OnMaxButtonClicked()
@@ -301,8 +303,18 @@ namespace LudoClient.Platforms.Android.Popups
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (!_isWalletConnected) return;
             
-            Console.WriteLine($"[AddCash] Max Clicked. Current Balance: {_phantomLudcBalance}");
+            // If the user clicked MAX for the deposit amount
             _walletTransferAmount.Text = _phantomLudcBalance.ToString("F2");
+        }
+
+        private void OnSwapMaxButtonClicked()
+        {
+            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            if (!_isWalletConnected) return;
+
+            string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
+            decimal bal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
+            _swapInputAmount.Text = bal.ToString(selectedAsset == "SOL" ? "F4" : "F2");
         }
 
         private void SetWalletConnectingState(bool isConnecting)
@@ -435,7 +447,7 @@ namespace LudoClient.Platforms.Android.Popups
                 _btnSubmitManual.Visibility = ViewStates.Gone;
                 _infoAddressTitle.Text = "PHANTOM DEPOSIT HUB";
                 if (_isWalletConnected) {
-                    _ = LoadWalletBalance();
+                    _ = LoadAllBalances();
                 } else {
                     _infoAddressText.Text = "CONNECT WALLET TO START";
                 }

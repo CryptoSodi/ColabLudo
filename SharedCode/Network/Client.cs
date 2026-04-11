@@ -302,5 +302,9 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<object>("PrepareLudcDeposit", walletAddress, amount).ConfigureAwait(false);
         }
+        public async Task<object> GetSwapBalances(string walletAddress)
+        {
+            return await _hubConnection.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
+        }
     }
 }
