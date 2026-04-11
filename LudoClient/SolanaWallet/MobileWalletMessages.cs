@@ -78,6 +78,15 @@ namespace LudoClient.SolanaWallet
         public bool Failed => Error is not null;
     }
 
+    public class MobileWalletException : Exception
+    {
+        public long Code { get; }
+        public MobileWalletException(long code, string message) : base(message)
+        {
+            Code = code;
+        }
+    }
+
     public abstract class JsonRpc20Client
     {
         private readonly IMessageSender _messageSender;
@@ -117,7 +126,7 @@ namespace LudoClient.SolanaWallet
                         {
                             var error = errorToken.ToObject<Response<object>.ResponseError>();
                             Console.WriteLine($"[WMA] RPC Error: {error?.Message}");
-                            pending.tcs.SetException(new Exception(error?.Message ?? "Unknown RPC error"));
+                            pending.tcs.SetException(new MobileWalletException(error?.Code ?? -1, error?.Message ?? "Unknown RPC error"));
                         }
                         else if (response.TryGetValue("result", out var resultToken))
                         {

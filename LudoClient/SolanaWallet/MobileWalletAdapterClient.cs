@@ -13,16 +13,38 @@ namespace LudoClient.SolanaWallet
         {
         }
 
-        public Task<AuthorizationResult> Authorize(Uri identityUri, Uri iconUri, string identityName, string cluster)
+        public async Task<AuthorizationResult> Authorize(Uri identityUri, Uri iconUri, string identityName, string cluster)
         {
-            var request = PrepareAuthRequest(
-                identityUri,
-                iconUri,
-                identityName,
-                cluster,
-                "authorize");
+            int maxRetries = 1; // Only retry once on bio bug
+            int attempt = 0;
 
-            return SendRequest<AuthorizationResult>(request);
+            while (attempt < maxRetries)
+            {
+                try
+                {
+                    var request = PrepareAuthRequest(
+                        identityUri,
+                        iconUri,
+                        identityName,
+                        cluster,
+                        "authorize");
+
+                    return await SendRequest<AuthorizationResult>(request);
+                }
+                catch (MobileWalletException ex)
+                {
+                    if (ex.Message.Contains("authorization request declined"))
+                    {
+                        attempt++;
+                        Console.WriteLine($"[WMA] Bio Bug detected (attempt {attempt}). Waiting for user to complete bio auth and retrying...");
+                        await Task.Delay(3000); // Wait for bio dialog to potentially clear
+                        continue; // Retry in the same session
+                    }
+                    throw; // Re-throw real errors like "failed"
+                }
+            }
+
+            throw new Exception("Maximum retries exceeded for authorization.");
         }
 
         public Task<AuthorizationResult> Reauthorize(Uri identityUri, Uri iconUri, string identityName, string authToken)

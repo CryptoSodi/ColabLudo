@@ -20,7 +20,7 @@ public partial class MintingPage : BasePopup
         {
             ProcessNFT(0);
         });
-        StartNFTTimer();
+       // StartNFTTimer();
     }
     private void StartNFTTimer()
     {
