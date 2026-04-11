@@ -294,5 +294,13 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);
         }
+        public async Task<object> GetWalletBalance(string walletAddress)
+        {
+            return await _hubConnection.InvokeAsync<object>("GetWalletBalance", walletAddress).ConfigureAwait(false);
+        }
+        public async Task<object> PrepareLudcDeposit(string walletAddress, decimal amount)
+        {
+            return await _hubConnection.InvokeAsync<object>("PrepareLudcDeposit", walletAddress, amount).ConfigureAwait(false);
+        }
     }
 }

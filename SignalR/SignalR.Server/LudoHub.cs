@@ -8,14 +8,91 @@ using SharedCode.Constants;
 using SignalR.Server.Payments;
 using SignalR.Server.Services;
 using System.Collections.Concurrent;
+using Solnet.Rpc;
+using Solnet.Rpc.Types;
+using Solnet.Wallet;
+using Solnet.Programs;
 
 namespace SignalR.Server
 {// A simple command class that holds details for a command.
 
-    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService) : Hub
+    public class LudoHub(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, FriendsService _friendsService, TournamentService _tournamentService, DailyBonusService _dailyBonusService, GoogleAuthService _googleAuthService, UtilService _utilService, LudcPaymentProvider _ludcPaymentProvider) : Hub
     {
         // Thread-safe connection mappings        
         public static ConcurrentDictionary<string, Player> ConnectionToPlayer = new ConcurrentDictionary<string, Player>();
+        private readonly IRpcClient _solanaRpc = ClientFactory.GetClient(Cluster.MainNet);
+        private const string Token2022Program = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+
+        public async Task<object> GetWalletBalance(string senderWalletAddress)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+                
+                using var ctx = _contextFactory.CreateDbContext();
+                var internalWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                var internalLudc = internalWallet?.AvailableBalance ?? 0m;
+
+                var phantomLudc = await GetTokenBalanceAsync(senderWalletAddress, _ludcPaymentProvider.MintAddress, Token2022Program);
+
+                return new
+                {
+                    Success = true,
+                    PhantomLudc = phantomLudc,
+                    InternalLudc = internalLudc
+                };
+            }
+            catch (Exception ex)
+            {
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+
+        public async Task<object> PrepareLudcDeposit(string senderWalletAddress, decimal amount)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+
+                if (string.IsNullOrWhiteSpace(senderWalletAddress) || amount <= 0)
+                    return null;
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                if (wallet == null || string.IsNullOrWhiteSpace(wallet.WalletAddress))
+                    return null;
+
+                return await _ludcPaymentProvider.PrepareDepositFromExternalWalletAsync(senderWalletAddress, wallet.WalletAddress, amount);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        private async Task<decimal> GetTokenBalanceAsync(string ownerAddress, string mintAddress, string tokenProgramAddress)
+        {
+            try
+            {
+                var owner = new PublicKey(ownerAddress);
+                var mint = new PublicKey(mintAddress);
+                var tokenProgram = new PublicKey(tokenProgramAddress);
+                PublicKey.TryFindProgramAddress(
+                    new[] { owner.KeyBytes, tokenProgram.KeyBytes, mint.KeyBytes },
+                    AssociatedTokenAccountProgram.ProgramIdKey,
+                    out var ata,
+                    out _);
+
+                var balanceResult = await _solanaRpc.GetTokenAccountBalanceAsync(ata.Key, Commitment.Confirmed);
+                if (balanceResult.WasSuccessful && balanceResult.Result?.Value != null)
+                {
+                    return decimal.TryParse(balanceResult.Result.Value.UiAmountString, out var parsed) ? parsed : 0m;
+                }
+            }
+            catch { }
+            return 0m;
+        }
+
         public async Task<PlayerInfo> GoogleAuthentication(string idToken, string city, string countryCode)
         {
             try

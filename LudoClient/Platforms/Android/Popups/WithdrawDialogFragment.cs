@@ -1,21 +1,10 @@
 using Android.App;
-using Android.Content;
-using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.OS;
-using Android.Provider;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Fragment.App;
-using CommunityToolkit.Maui.Alerts;
-using CommunityToolkit.Maui.Core;
 using LudoClient.Constants;
-using Microsoft.Maui.ApplicationModel;
 using SharedCode.Constants;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace LudoClient.Platforms.Android.Popups
 {
@@ -221,11 +210,11 @@ namespace LudoClient.Platforms.Android.Popups
                             if (auth != null && auth.Accounts.Count > 0)
                             {
                                 _isWalletConnected = true;
-                                _userWalletAddress = auth.Accounts[0].Address;
+                                _userWalletAddress = auth.Accounts[0].DisplayAddress; // 🔥 USE BASE58 ADDRESS
                                 _phantomBtnText.Text = "DISCONNECT";
                                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
+                                ShowMessage("Wallet Connected Successfully!");
                             }
-                            else
                             {
                                 ShowMessage("Authorization failed.");
                             }
