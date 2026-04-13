@@ -159,8 +159,8 @@ namespace LudoClient.Platforms.Android.Popups
 
             InitializeData();
             InitializeSpinners();
-            UpdateWalletUIState(); 
-            SwitchTab(1); 
+            UpdateWalletUIState();
+            SwitchTab(2, false); 
             return view;
         }
 
@@ -474,8 +474,12 @@ namespace LudoClient.Platforms.Android.Popups
             _manualMethod.SetSelection(0);
         }
 
-        private void SwitchTab(int tabIndex)
+        private void SwitchTab(int tabIndex, bool playsound = true)
         {
+            if (playsound)
+            {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+            }
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             _tabQRImg.SetImageResource(tabIndex == 1 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
             _tabWalletImg.SetImageResource(tabIndex == 2 ? Resource.Drawable.tab_active : Resource.Drawable.tab_normal);
