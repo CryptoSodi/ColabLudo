@@ -1,4 +1,4 @@
-﻿using LudoClient.CoreEngine;
+using LudoClient.CoreEngine;
 using LudoClient.Popups;
 using LudoClient.SolanaWallet;
 using Microsoft.Maui.Platform;
@@ -8,7 +8,7 @@ namespace LudoClient.Constants
 {
     public static class ClientGlobalConstants
     {
-        public static MobileWalletConnection WalletConnection { get; } = new MobileWalletConnection();
+        public static LudoClient.SolanaWallet.WalletConnection WalletConnection { get; } = new LudoClient.SolanaWallet.WalletConnection();
         public static Stopwatch sw;   // START TIMER
         private static HepticEngine _hepticEngine;
         public static HepticEngine hepticEngine => _hepticEngine ??= Application.Current?.Handler?.MauiContext?.Services.GetService<HepticEngine>();

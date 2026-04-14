@@ -45,6 +45,7 @@ namespace LudoClient
             builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddSingleton<IGamepadInputService, GamepadInputService>();
+            builder.Services.AddSingleton<ISolanaWalletService, SolanaWalletService>();
 #endif
 
 #if ANDROID
