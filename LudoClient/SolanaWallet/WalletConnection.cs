@@ -25,6 +25,12 @@ namespace LudoClient.SolanaWallet
             private set => Preferences.Set("WalletAuthToken", value ?? "");
         }
 
+        private string? CachedAccountsJson
+        {
+            get => Preferences.Get("WalletAuthorizedAccounts", "");
+            set => Preferences.Set("WalletAuthorizedAccounts", value ?? "");
+        }
+
         public List<AccountDetails> Accounts { get; private set; } = new();
         public byte[]? MainAddress => Accounts.FirstOrDefault()?.PublicKey;
         public string? MainAddressBase58 => Accounts.FirstOrDefault()?.DisplayAddress;
@@ -39,6 +45,8 @@ namespace LudoClient.SolanaWallet
             _clusterName = isMainnet ? "mainnet-beta" : "devnet";
             Console.WriteLine($"[WMA] Network switched to: {_clusterName} ({url})");
             
+            AuthToken = null;
+            CachedAccountsJson = null;
             Accounts = new();
             SolBalance = 0;
             TokenBalances = new();
@@ -46,11 +54,23 @@ namespace LudoClient.SolanaWallet
 
         public async Task<bool> Connect()
         {
+            if (Accounts.Count == 0 && !string.IsNullOrEmpty(CachedAccountsJson))
+            {
+                try
+                {
+                    Accounts = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AccountDetails>>(CachedAccountsJson) ?? new();
+                    Console.WriteLine($"[WMA] Restored {Accounts.Count} accounts from cache.");
+                }
+                catch { }
+            }
             return await _connection.Connect();
         }
 
         public async Task DisconnectAsync()
         {
+            AuthToken = null;
+            CachedAccountsJson = null;
+            Accounts = new();
             await _connection.DisconnectAsync();
         }
 
@@ -81,6 +101,7 @@ namespace LudoClient.SolanaWallet
                 {
                     Console.WriteLine($"[WMA] Reauthorize failed: {ex.Message}. Falling back to Authorize.");
                     AuthToken = null;
+                    CachedAccountsJson = null;
                 }
             }
 
@@ -102,11 +123,16 @@ namespace LudoClient.SolanaWallet
                 if (result.Accounts != null && result.Accounts.Count > 0)
                 {
                     Accounts = result.Accounts;
+                    CachedAccountsJson = Newtonsoft.Json.JsonConvert.SerializeObject(Accounts);
                     Console.WriteLine($"[WMA] Session updated. Main Address: {MainAddressBase58}");
+                }
+                else if (Accounts.Count > 0)
+                {
+                    Console.WriteLine("[WMA] Warning: Reauthorize response had no accounts. Using cached accounts.");
                 }
                 else
                 {
-                    Console.WriteLine("[WMA] Warning: Reauthorize response had no accounts. Preserving existing account state.");
+                    Console.WriteLine("[WMA] Error: No accounts available after authorization.");
                 }
 
                 await RefreshBalances();

@@ -241,7 +241,7 @@ namespace LudoClient.Platforms.Android.Popups
 
         private async Task LoadAllBalances()
         {
-            if (!_isWalletConnected || string.IsNullOrEmpty(_connectedWalletAddress))
+            if (!_isWalletConnected || _solanaService == null)
                 return;
 
             try
@@ -251,17 +251,17 @@ namespace LudoClient.Platforms.Android.Popups
                 {
                     string json = result.ToString();
                     Console.WriteLine($"[AddCash] Received All Balances JSON: {json}");
-                    
+
                     var data = Newtonsoft.Json.Linq.JObject.Parse(json);
-                    
+
                     if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
                     {
                         _phantomSolBalance = (decimal?)(data["phantomSol"] ?? data["PhantomSol"]) ?? 0m;
                         _phantomUsdcBalance = (decimal?)(data["phantomUsdc"] ?? data["PhantomUsdc"]) ?? 0m;
                         _phantomLudcBalance = (decimal?)(data["phantomLudc"] ?? data["PhantomLudc"]) ?? 0m;
 
-                        UpdateSwapBalanceDisplay();
-                    }
+                UpdateSwapBalanceDisplay();
+            }
                 }
             }
             catch (Exception ex)
@@ -275,10 +275,11 @@ namespace LudoClient.Platforms.Android.Popups
             MainThread.BeginInvokeOnMainThread(() => {
                 if (_contentWallet.Visibility == ViewStates.Visible)
                 {
-                    // If we are looking at the Swap section (Spinner is visible)
                     string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
-                    decimal bal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
-                    _infoAddressText.Text = $"BALANCE: {bal:N4} {selectedAsset}";
+                    decimal assetBal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
+                    
+                    // Show both LUDC and the selected swap asset in the footer portal
+                    _infoAddressText.Text = $"LUDC: {_phantomLudcBalance:N2}  |  {selectedAsset}: {assetBal:N4}";
                 }
             });
         }

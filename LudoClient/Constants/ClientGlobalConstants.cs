@@ -8,6 +8,7 @@ namespace LudoClient.Constants
 {
     public static class ClientGlobalConstants
     {
+        public static bool isMainnet = true;
         public static LudoClient.SolanaWallet.WalletConnection WalletConnection { get; } = new LudoClient.SolanaWallet.WalletConnection();
         public static Stopwatch sw;   // START TIMER
         private static HepticEngine _hepticEngine;
