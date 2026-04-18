@@ -45,6 +45,9 @@ namespace LudoClient.Platforms.Android.Popups
             }
 
             var view = inflater.Inflate(Resource.Layout.dialog_withdraw, container, false);
+            
+            // ... (rest of FindViewById calls unchanged) ...
+            // ... (rest of the FindViewByID calls) ...
 
             // Find Common UI
             _coinsText = view.FindViewById<TextView>(Resource.Id.coinsText);
@@ -194,49 +197,19 @@ namespace LudoClient.Platforms.Android.Popups
                 try
                 {
                     await Task.Yield();
-                    bool success = await ClientGlobalConstants.WalletConnection.Connect();
-                    if (success && ClientGlobalConstants.WalletConnection.Client != null)
-                    {
-                        var authTask = ClientGlobalConstants.WalletConnection.Client.Authorize(
-                            new Uri("https://ludocities.com"),
-                            new Uri("faviconhq.ico", UriKind.Relative),
-                            "Ludo Cities",
-                            "mainnet-beta"
-                        );
-                        try
-                        {
-                            var auth = await authTask.WaitAsync(TimeSpan.FromSeconds(12));
+                    var auth = await ClientGlobalConstants.WalletConnection.AuthorizeOrReauthorize();
 
-                            if (auth != null && auth.Accounts.Count > 0)
-                            {
-                                _isWalletConnected = true;
-                                _userWalletAddress = auth.Accounts[0].DisplayAddress; // 🔥 USE BASE58 ADDRESS
-                                _phantomBtnText.Text = "DISCONNECT";
-                                _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
-                                ShowMessage("Wallet Connected Successfully!");
-                            }
-                            {
-                                ShowMessage("Authorization failed.");
-                            }
-                        }
-                        catch (TimeoutException)
-                        {
-                            return;
-                        }
+                    if (auth != null && auth.Accounts.Count > 0)
+                    {
+                        _isWalletConnected = true;
+                        _userWalletAddress = auth.Accounts[0].DisplayAddress;
+                        _phantomBtnText.Text = "DISCONNECT";
+                        _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
+                        ShowMessage("Wallet Connected Successfully!");
                     }
                     else
                     {
-                        if (ClientGlobalConstants.WalletConnection.LastLaunchCanceled)
-                        {
-                            _isWalletConnected = false;
-                            _userWalletAddress = "";
-                            _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
-                            SetWalletConnectingState(false);
-                            UpdateWalletUIState();
-                            ShowMessage("Wallet was closed before connecting.");
-                        }
-                        else
-                            ShowMessage("Failed to connect wallet.");
+                        ShowMessage("Authorization failed.");
                     }
                 }
                 catch (Exception ex)
@@ -246,7 +219,7 @@ namespace LudoClient.Platforms.Android.Popups
                 finally
                 {
                     ClientGlobalConstants.WalletConnection.RemoteClosed -= HandleRemoteClosed;
-                    await ClientGlobalConstants.WalletConnection.DisconnectAsync();
+                    ClientGlobalConstants.WalletConnection.DisconnectAsync(false);
                     SetWalletConnectingState(false);
                 }
             }
@@ -254,12 +227,14 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _isWalletConnected = false;
                 _userWalletAddress = "";
+                await ClientGlobalConstants.WalletConnection.DisconnectAsync(true);
                 _phantomBtnText.Text = "CONNECT";
                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
             }
 
             UpdateWalletUIState();
         }
+
 
         private void SetWalletConnectingState(bool isConnecting)
         {

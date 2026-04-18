@@ -7,13 +7,8 @@ using Android.Provider;
 using Android.Views;
 using Android.Widget;
 using LudoClient.Constants;
-using SharedCode.Constants;
-using Solnet.Programs;
-using Solnet.Rpc;
-using Solnet.Rpc.Builders;
-using Solnet.Wallet;
 using LudoClient.SolanaWallet;
-using LudoClient.Services;
+using SharedCode.Constants;
 
 namespace LudoClient.Platforms.Android.Popups
 {
@@ -41,8 +36,6 @@ namespace LudoClient.Platforms.Android.Popups
         private bool _isWalletConnecting = false;
         private const int PickImageRequest = 1001;
 
-        private ISolanaWalletService _solanaService;
-
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             if (Dialog != null && Dialog.Window != null)
@@ -51,9 +44,9 @@ namespace LudoClient.Platforms.Android.Popups
                 Dialog.Window.RequestFeature(WindowFeatures.NoTitle);
             }
 
-            _solanaService = Microsoft.Maui.Controls.Application.Current?.Handler?.MauiContext?.Services.GetService<ISolanaWalletService>();
-
             var view = inflater.Inflate(Resource.Layout.dialog_add_cash, container, false);
+            
+            // ... (rest of FindViewById calls unchanged) ...
 
             _coinsText = view.FindViewById<TextView>(Resource.Id.coinsText);
             _qrCodeImage = view.FindViewById<ImageView>(Resource.Id.qrCodeImage);
@@ -175,7 +168,7 @@ namespace LudoClient.Platforms.Android.Popups
 
         private async Task ToggleWalletConnection()
         {
-            if (_isWalletConnecting || _solanaService == null)
+            if (_isWalletConnecting)
                 return;
 
             if (!_isWalletConnected)
@@ -194,18 +187,17 @@ namespace LudoClient.Platforms.Android.Popups
                         }
                     });
                 }
-                _solanaService.RemoteClosed += HandleRemoteClosed;
+                ClientGlobalConstants.WalletConnection.RemoteClosed += HandleRemoteClosed;
 
                 try
                 {
                     await Task.Yield();
-                    var auth = await _solanaService.AuthorizeOrReauthorizeAsync();
+                    var auth = await ClientGlobalConstants.WalletConnection.AuthorizeOrReauthorize();
 
                     if (auth != null && auth.Accounts.Count > 0)
                     {
                         _isWalletConnected = true;
                         _connectedWalletAddress = auth.Accounts[0].DisplayAddress;
-                        
                         _phantomBtnText.Text = "DISCONNECT";
                         _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
                         _ = LoadAllBalances(); // 🔥 FETCH ALL BALANCES IMMEDIATELY
@@ -221,8 +213,8 @@ namespace LudoClient.Platforms.Android.Popups
                 }
                 finally
                 {
-                    _solanaService.RemoteClosed -= HandleRemoteClosed;
-                    await _solanaService.DisconnectAsync();
+                    ClientGlobalConstants.WalletConnection.RemoteClosed -= HandleRemoteClosed;
+                    ClientGlobalConstants.WalletConnection.DisconnectAsync(false);
                     SetWalletConnectingState(false);
                 }
             }
@@ -230,8 +222,7 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _isWalletConnected = false;
                 _connectedWalletAddress = "";
-                // Clear the saved token if explicitly disconnecting
-                Preferences.Remove("WalletAuthToken");
+                await ClientGlobalConstants.WalletConnection.DisconnectAsync(true); 
                 _phantomBtnText.Text = "CONNECT";
                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account); // GREEN State
             }
@@ -241,7 +232,12 @@ namespace LudoClient.Platforms.Android.Popups
 
         private async Task LoadAllBalances()
         {
-            if (!_isWalletConnected || _solanaService == null)
+            // 🔥 RE-SYNC ADDR IF EMPTY
+            if (string.IsNullOrEmpty(_connectedWalletAddress)) {
+                _connectedWalletAddress = ClientGlobalConstants.WalletConnection.MainAddressBase58 ?? "";
+            }
+
+            if (!_isWalletConnected || string.IsNullOrEmpty(_connectedWalletAddress))
                 return;
 
             try
@@ -259,16 +255,33 @@ namespace LudoClient.Platforms.Android.Popups
                         _phantomSolBalance = (decimal?)(data["phantomSol"] ?? data["PhantomSol"]) ?? 0m;
                         _phantomUsdcBalance = (decimal?)(data["phantomUsdc"] ?? data["PhantomUsdc"]) ?? 0m;
                         _phantomLudcBalance = (decimal?)(data["phantomLudc"] ?? data["PhantomLudc"]) ?? 0m;
+                    }
+                }
+                
+                // Fallback: If MatchMaker returned 0 or failed, try refreshing local service balances
+                if (_phantomLudcBalance == 0)
+                {
+                    await ClientGlobalConstants.WalletConnection.RefreshBalances();
+                    _phantomSolBalance = (decimal)ClientGlobalConstants.WalletConnection.SolBalance;
+
+                    // Try Mainnet then Devnet mints
+                    var ludc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_MAINNET)
+                            ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_DEVNET);
+                    if (ludc != null) _phantomLudcBalance = ludc.Amount;
+                    
+                    var usdc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_MAINNET)
+                            ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_DEVNET);
+                    if (usdc != null) _phantomUsdcBalance = usdc.Amount;
+                }
 
                 UpdateSwapBalanceDisplay();
-            }
-                }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[AddCash] Error loading all balances: {ex}");
             }
         }
+
 
         private void UpdateSwapBalanceDisplay()
         {
@@ -406,7 +419,7 @@ namespace LudoClient.Platforms.Android.Popups
 
                 ShowMessage("Awaiting Wallet Signature...");
                 
-                string signature = await _solanaService.SendTokenAsync(depositAddressStr, (ulong)(amount * (decimal)Math.Pow(10, decimals)), ludcMintStr, decimals);
+                string signature = await ClientGlobalConstants.WalletConnection.SendToken(depositAddressStr, (ulong)(amount * (decimal)Math.Pow(10, decimals)), ludcMintStr, decimals);
 
                 if (!string.IsNullOrEmpty(signature))
                 {
@@ -422,6 +435,7 @@ namespace LudoClient.Platforms.Android.Popups
             }
             catch (Exception ex)
             {
+                ClientGlobalConstants.WalletConnection.DisconnectAsync(false);
                 ShowMessage($"Error: {ex.Message}");
             }
         }
@@ -436,12 +450,12 @@ namespace LudoClient.Platforms.Android.Popups
                     return;
                 }
 
-                if (!_isWalletConnected || _solanaService == null) return;
+                if (!_isWalletConnected) return;
 
                 ShowMessage("Awaiting Swap Signature...");
                 var txBytes = Convert.FromBase64String(_preparedSwapTx);
                 
-                if (!await _solanaService.ConnectAsync()) return;
+                if (!await ClientGlobalConstants.WalletConnection.Connect()) return;
                 
                 // Using Client from the registered service implementation
                 // We could expose SignTransactions in ISolanaWalletService for better isolation
@@ -490,9 +504,26 @@ namespace LudoClient.Platforms.Android.Popups
             _swapInputAsset.Enabled = enabled;
 
             // Update footer info if we are on the WALLET tab
-            if (_contentWallet.Visibility == ViewStates.Visible) {
-                _infoAddressText.Text = _isWalletConnecting ? "CONNECTING TO WALLET..." : (_isWalletConnected ? "WALLET READY FOR TRANSACTIONS" : "CONNECT WALLET TO START");
+            if (_contentWallet != null && _contentWallet.Visibility == ViewStates.Visible) {
+                if (_isWalletConnecting)
+                    _infoAddressText.Text = "CONNECTING TO WALLET...";
+                else if (_isWalletConnected)
+                    UpdateSwapBalanceDisplay(); // 🔥 Show balances instead of generic "READY" message
+                else
+                    _infoAddressText.Text = "CONNECT WALLET TO START";
             }
+        }
+
+        private void OnBalanceChanged(decimal balance)
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                if (_coinsText != null)
+                {
+                    _coinsText.Text = ClientGlobalConstants.NormalizeCoins(balance);
+                    _currentBalance = balance;
+                }
+            });
         }
 
         private void UpdateContextualAccountInfo()
@@ -569,10 +600,9 @@ namespace LudoClient.Platforms.Android.Popups
                 _btnPhantomConnect.Visibility = ViewStates.Visible;
                 _btnSubmitManual.Visibility = ViewStates.Gone;
                 _infoAddressTitle.Text = "PHANTOM DEPOSIT HUB";
+                UpdateWalletUIState(); // 🔥 Update UI state immediately (shows "CONNECT" or "BALANCES")
                 if (_isWalletConnected) {
                     _ = LoadAllBalances();
-                } else {
-                    _infoAddressText.Text = "CONNECT WALLET TO START";
                 }
             } else {
                 _footerSection.Visibility = ViewStates.Visible;
@@ -603,8 +633,17 @@ namespace LudoClient.Platforms.Android.Popups
                             } catch (Exception) { }
                         }
                     });
+
+                    wallet.BalanceChanged += OnBalanceChanged;
                 }
             }
+        }
+
+        public override void OnDestroyView()
+        {
+            if (UserInfo.Instance.player != null && UserInfo.Instance.player.Wallet != null)
+                UserInfo.Instance.player.Wallet.BalanceChanged -= OnBalanceChanged;
+            base.OnDestroyView();
         }
 
         private void OnCopyButtonClicked(object sender, EventArgs e)

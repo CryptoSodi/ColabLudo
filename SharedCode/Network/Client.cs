@@ -304,11 +304,39 @@ namespace SharedCode.Network
         }
         public async Task<object> GetSwapBalances(string walletAddress)
         {
-            return await _hubConnection.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                Console.WriteLine("[HubClient] GetSwapBalances failed: Hub not connected.");
+                return new { Success = false, Error = "Hub not connected" };
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] GetSwapBalances Error: {ex.Message}");
+                return new { Success = false, Error = ex.Message };
+            }
         }
+
         public async Task<object> PrepareAssetSwap(string walletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps)
         {
-            return await _hubConnection.InvokeAsync<object>("PrepareAssetSwap", walletAddress, inputAsset, outputAsset, amount, slippageBps).ConfigureAwait(false);
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return new { Success = false, Error = "Hub not connected" };
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<object>("PrepareAssetSwap", walletAddress, inputAsset, outputAsset, amount, slippageBps).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] PrepareAssetSwap Error: {ex.Message}");
+                return new { Success = false, Error = ex.Message };
+            }
         }
     }
 }

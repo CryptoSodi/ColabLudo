@@ -11,6 +11,14 @@ namespace LudoClient.SolanaWallet
         public static readonly PublicKey TOKEN_2022_PROGRAM_ID = new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
         public static readonly PublicKey ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
+        // LUDC Mints
+        public const string LUDC_MINT_MAINNET = "JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai";
+        public const string LUDC_MINT_DEVNET = "8Abr4aSqHbqUNK1ubRVfcdnAhS3RjmYRPDf11dt7pcfW";
+
+        // USDC Mints
+        public const string USDC_MINT_MAINNET = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
+        public const string USDC_MINT_DEVNET = "4zMMC9srtvS2PPSatZ9LUnTNDK8B6kG58wEYuVfCXU1n";
+
         public static TransactionInstruction CreateTransferCheckedInstruction(
             PublicKey source,
             PublicKey mint,
