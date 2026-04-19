@@ -119,22 +119,34 @@ namespace SignalR.Server
             };
         }
 
-        public async Task<object> ExecutePreparedSwap(string requestId, string signedTxBase64)
+        public async Task<BlockchainResult> ExecutePreparedSwap(string requestId, string signedTxBase64)
         {
             try
             {
+                Player player = await GetCallerPlayer();
+                if (string.IsNullOrWhiteSpace(requestId) || string.IsNullOrWhiteSpace(signedTxBase64))
+                    return new BlockchainResult { Success = false, Error = "Invalid signed transaction." };
+
                 using var result = await _jupiterSwapService.ExecuteOrderAsync(requestId, signedTxBase64);
                 var root = result.RootElement;
-                return new
+                
+                string signature = GetJsonString(root, "signature");
+                string error = GetJsonString(root, "error");
+                string message = GetJsonString(root, "message");
+
+                if (!string.IsNullOrWhiteSpace(error) || !string.IsNullOrWhiteSpace(message))
+                    return new BlockchainResult { Success = false, Error = string.IsNullOrWhiteSpace(message) ? error : message };
+
+                return new BlockchainResult
                 {
                     Success = true,
-                    Signature = GetJsonString(root, "signature"),
-                    RequestId = GetJsonString(root, "requestId")
+                    Signature = signature,
+                    RequestId = requestId
                 };
             }
             catch (Exception ex)
             {
-                return new { Success = false, Error = ex.Message };
+                return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
 
@@ -239,6 +251,68 @@ namespace SignalR.Server
             catch (Exception ex)
             {
                 return null;
+            }
+        }
+
+        public async Task<bool> ConfirmSolanaTransaction(string signature)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+                if (string.IsNullOrWhiteSpace(signature))
+                    return false;
+
+                return await _ludcPaymentProvider.ConfirmSignatureAsync(signature);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+                if (string.IsNullOrWhiteSpace(txBase64)) 
+                    return new BlockchainResult { Success = false, Error = "Empty transaction data." };
+
+                Console.WriteLine("[LudoHub] Broadcasting external transaction via LudcPaymentProvider...");
+                
+                // Pass raw base64; the provider handles decoding to bytes for a stable Solnet broadcast.
+                var res = await _ludcPaymentProvider.BroadcastTransactionAsync(txBase64);
+                
+                if (res.WasSuccessful)
+                {
+                    string signature = res.Result;
+                    Console.WriteLine($"[LudoHub] Broadcast Success! Signature: {signature}. Awaiting on-chain verification...");
+
+                    // Await confirmation to ensure ledger updates before responding to the UI
+                    bool confirmed = await _ludcPaymentProvider.ConfirmSignatureAsync(signature);
+
+                    if (confirmed)
+                    {
+                        Console.WriteLine($"[LudoHub] Signature {signature} verified on-chain. Ledger synced.");
+                        return new BlockchainResult { Success = true, Signature = signature };
+                    }
+                    else 
+                    {
+                        Console.WriteLine($"[LudoHub] Signature {signature} broadcasted but failed to verify on-chain.");
+                        return new BlockchainResult { Success = false, Error = "Transaction broadcasted but failed on-chain execution.", Signature = signature };
+                    }
+                }
+
+                else
+                {
+                    Console.WriteLine($"[LudoHub] Broadcast Failed: {res.Reason}");
+                    return new BlockchainResult { Success = false, Error = res.Reason };
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudoHub] Broadcast Exception: {ex.Message}");
+                return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
 

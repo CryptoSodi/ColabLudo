@@ -1,11 +1,9 @@
 using CommunityToolkit.Maui.Alerts;
-using Org.BouncyCastle.Asn1.Ocsp;
 using Solnet.Programs;
 using Solnet.Rpc;
 using Solnet.Rpc.Builders;
 using Solnet.Wallet;
-using static Org.BouncyCastle.Bcpg.Attr.ImageAttrib;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Text;
 
 namespace LudoClient.SolanaWallet
 {
@@ -15,34 +13,13 @@ namespace LudoClient.SolanaWallet
         private IRpcClient _rpcClient = ClientFactory.GetClient(Cluster.MainNet);
         private string _clusterName = "mainnet-beta";
 
-        public MobileWalletAdapterClient? Client => _connection.Client;
-        public bool LastLaunchCanceled => _connection.LastLaunchCanceled;
-        public event Action? RemoteClosed
+        public event Action RemoteClosed
         {
             add => _connection.RemoteClosed += value;
             remove => _connection.RemoteClosed -= value;
         }
 
-        public string? AuthToken = "";
-
-        public List<AccountDetails> Accounts = new();
-        public byte[]? MainAddress => Accounts.FirstOrDefault()?.PublicKey;
-        public string? MainAddressBase58 
-        {
-            get
-            {
-                var acc = Accounts.FirstOrDefault();
-                if (acc == null) return null;
-                if (!string.IsNullOrEmpty(acc.DisplayAddress)) return acc.DisplayAddress;
-                try {
-                    return new Solnet.Wallet.PublicKey(acc.PublicKey).Key;
-                } catch {
-                    return null;
-                }
-            }
-        }
-        public double SolBalance { get; private set; }
-        public List<TokenBalance> TokenBalances { get; private set; } = new();
+        public IAdapterOperations? Client => _connection.Client;
 
         public void SetNetwork(bool isMainnet)
         {
@@ -56,7 +33,26 @@ namespace LudoClient.SolanaWallet
             SolBalance = 0;
             TokenBalances = new();
         }
+        
+        public string? AuthToken { get; private set; }
+        public List<AccountDetails> Accounts { get; private set; } = new();
+        public byte[]? MainAddress => Accounts.FirstOrDefault()?.PublicKey;
+        public string? MainAddressBase58 {
+            get {
+                var acc = Accounts.FirstOrDefault();
+                if (acc == null) return null;
+                if (!string.IsNullOrEmpty(acc.DisplayAddress)) return acc.DisplayAddress;
+                try {
+                    // Fallback: Derive Base58 from raw PublicKey bytes
+                    return new Solnet.Wallet.PublicKey(acc.PublicKey).Key;
+                } catch {
+                    return null;
+                }
+            }
+        }
 
+        public double SolBalance { get; private set; }
+        public List<TokenBalance> TokenBalances { get; private set; } = new();
 
         public async Task<bool> Connect()
         {
@@ -81,7 +77,7 @@ namespace LudoClient.SolanaWallet
             var uriIdentity = new Uri("https://ludocities.com");
             var iconRelativeUri = new Uri("faviconhq.ico", UriKind.Relative);
             string identityName = "Ludo Cities";
-
+            
             if (!string.IsNullOrEmpty(AuthToken))
             {
                 try
@@ -97,7 +93,7 @@ namespace LudoClient.SolanaWallet
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[WMA] Reauthorize failed: {ex.Message}. Falling back to Authorize.");
-                    AuthToken = null;                    
+                    AuthToken = null;
                 }
             }
 
@@ -121,14 +117,6 @@ namespace LudoClient.SolanaWallet
                     Accounts = result.Accounts;
                     Console.WriteLine($"[WMA] Session updated. Main Address: {MainAddressBase58}");
                 }
-                else if (Accounts.Count > 0)
-                {
-                    Console.WriteLine("[WMA] Warning: Reauthorize response had no accounts. Using cached accounts.");
-                }
-                else
-                {
-                    Console.WriteLine("[WMA] Error: No accounts available after authorization.");
-                }
 
                 await RefreshBalances();
             }
@@ -143,18 +131,16 @@ namespace LudoClient.SolanaWallet
             {
                 Console.WriteLine($"[WMA] Refreshing balances for {MainAddressBase58}...");
                 
-                // Fetch SOL balance
                 var balanceResult = await _rpcClient.GetBalanceAsync(MainAddressBase58);
                 if (balanceResult.WasSuccessful)
                 {
-                    SolBalance = (double)balanceResult.Result.Value / 1_000_000_000.0;
+                    SolBalance = balanceResult.Result.Value / 1000000000.0;
                 }
 
                 var newList = new List<TokenBalance>();
                 var owner = new PublicKey(MainAddressBase58);
                 bool isMainnet = _clusterName == "mainnet-beta";
 
-                // Explicit Token Fetching Task (LUDC and USDC)
                 async Task FetchToken(string mintAddr, string symbol)
                 {
                     try {
@@ -185,44 +171,80 @@ namespace LudoClient.SolanaWallet
             }
         }
 
-        /// <summary>
-        /// Centralized helper to handle the MWA 65-byte header, signing, and broadcasting.
-        /// </summary>
-        private async Task<string> SignAndSendTransaction(TransactionBuilder txBuilder)
+        public async Task<string> SignAndSendTransaction(TransactionBuilder txBuilder)
         {
-            var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
-            if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
-
-            txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
-            var msgBytes = txBuilder.CompileMessage();
-
-            // MWA requires a 65-byte buffer: [1 byte for signature count (usually 1)] + [64 zero bytes for sig space] + [message bytes]
+            byte[] msgBytes;
+            try 
+            {
+                msgBytes = txBuilder.CompileMessage();
+            }
+            catch (Exception)
+            {
+                var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
+                if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
+                txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
+                msgBytes = txBuilder.CompileMessage();
+            }
+            
+            // Standard Solana Transaction Wire Format for 1 signature
             var txBytes = new byte[1 + 64 + msgBytes.Length];
-            txBytes[0] = 1; // Number of signatures
+            txBytes[0] = 1; 
             Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
 
             var auth = await AuthorizeOrReauthorize();
-            if (auth == null) 
-                throw new Exception("Wallet not connected");
+            if (auth == null) throw new Exception("Wallet not connected");
 
+            // Request signature via MWA
+            Console.WriteLine($"[WMA] Requesting signature for {txBytes.Length} byte payload...");
             var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
-            if (signResult == null || signResult.SignedPayloads.Count == 0) throw new Exception("Signature failed or declined");
+            
+            if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
+                throw new Exception("Signature failed or declined (no payloads returned)");
 
+            // Broadcast the signed transaction bytes using our RPC client
+            Console.WriteLine("[WMA] Broadcasting signed transaction to cluster...");
             var txSignature = await _rpcClient.SendTransactionAsync(signResult.SignedPayloadsBytes[0]);
-            if (!txSignature.WasSuccessful) throw new Exception($"Broadcast failed: {txSignature.Reason}");
+            
+            if (!txSignature.WasSuccessful) 
+            {
+                throw new Exception($"Broadcast failed: {txSignature.Reason}");
+            }
 
             return txSignature.Result;
         }
 
+        public async Task<string> SignTransaction(TransactionBuilder txBuilder)
+        {
+            byte[] msgBytes;
+            try 
+            {
+                msgBytes = txBuilder.CompileMessage();
+            }
+            catch (Exception)
+            {
+                var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
+                if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
+                txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
+                msgBytes = txBuilder.CompileMessage();
+            }
+            
+            var txBytes = new byte[1 + 64 + msgBytes.Length];
+            txBytes[0] = 1; 
+            Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
+
+            var auth = await AuthorizeOrReauthorize();
+            if (auth == null) throw new Exception("Wallet not connected");
+
+            var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
+            if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
+                throw new Exception("Signature failed or declined");
+
+            return signResult.SignedPayloads[0];
+        }
+
         public async Task<string> SendToken(string recipientBase58, ulong amount, string mintAddress, int decimals)
         {
-            if (MainAddress == null)
-                throw new Exception("Wallet not connected");
-
-
-            var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
-            if (!blockhashResult.WasSuccessful || blockhashResult.Result == null)
-                throw new Exception($"Failed to get latest blockhash: {blockhashResult.Reason}");
+            if (MainAddress == null) throw new Exception("Wallet not connected");
 
             var feePayer = new PublicKey(MainAddress);
             var mint = new PublicKey(mintAddress);
@@ -231,51 +253,24 @@ namespace LudoClient.SolanaWallet
             var senderAta = SolanaTokenService.FindAssociatedTokenAddress(feePayer, mint);
             var recipientAta = SolanaTokenService.FindAssociatedTokenAddress(recipient, mint);
 
-            Console.WriteLine($"[WMA] Sending {amount} tokens. Sender ATA: {senderAta}, Recipient ATA: {recipientAta}");
-
             var txBuilder = new TransactionBuilder()
-                .SetRecentBlockHash(blockhashResult.Result.Value.Blockhash)
                 .SetFeePayer(feePayer);
+
             var recipientAtaInfo = await _rpcClient.GetAccountInfoAsync(recipientAta.Key);
             if (!recipientAtaInfo.WasSuccessful || recipientAtaInfo.Result.Value == null)
             {
-                Console.WriteLine("[WMA] Recipient ATA not found. Adding creation instruction...");
                 txBuilder.AddInstruction(SolanaTokenService.CreateAssociatedTokenAccountInstruction(feePayer, recipient, mint));
             }
 
             txBuilder.AddInstruction(SolanaTokenService.CreateTransferCheckedInstruction(
                 senderAta, mint, recipientAta, feePayer, amount, (byte)decimals
             ));
-            // Build the transaction message
-            var msgBytes = txBuilder.CompileMessage();
 
-            // Manually construct the Transaction wire format for WMA:
-            // signature_count (1) + signature (64 zero bytes) + message
-            var txBytes = new byte[1 + 64 + msgBytes.Length];
-            txBytes[0] = 1; // 1 signature slot
-            Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
-
-            var auth = await AuthorizeOrReauthorize();
-            if (auth == null)
-                throw new Exception("Wallet not connected");
-
-            Console.WriteLine("[WMA] Requesting signature from wallet...");
-            var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
-            if (signResult == null || signResult.SignedPayloads.Count == 0)
-                throw new Exception("Signature failed or declined");
-
-            Console.WriteLine($"[WMA] Received sign result. Payloads count: {signResult?.SignedPayloads?.Count ?? 0}");
-            Console.WriteLine("[WMA] Broadcasting signed transaction...");
-            var txSignature = await _rpcClient.SendTransactionAsync(signResult.SignedPayloads[0]);
-
-            if (!txSignature.WasSuccessful) 
-                throw new Exception($"Broadcast failed: {txSignature.Reason}");
-            return txSignature.Result;
+            return await SignAndSendTransaction(txBuilder);
         }
 
         public async Task<string> SendSol(string recipientBase58, ulong lamports)
         {
-            await Connect();
             if (MainAddress == null) throw new Exception("Wallet not connected");
 
             var feePayer = new PublicKey(MainAddress);

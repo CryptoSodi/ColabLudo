@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using SharedCode.Constants;
 using System.ComponentModel;
@@ -298,10 +298,6 @@ namespace SharedCode.Network
         {
             return await _hubConnection.InvokeAsync<object>("GetWalletBalance", walletAddress).ConfigureAwait(false);
         }
-        public async Task<object> PrepareLudcDeposit(string walletAddress, decimal amount)
-        {
-            return await _hubConnection.InvokeAsync<object>("PrepareLudcDeposit", walletAddress, amount).ConfigureAwait(false);
-        }
         public async Task<object> GetSwapBalances(string walletAddress)
         {
             if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
@@ -321,6 +317,60 @@ namespace SharedCode.Network
             }
         }
 
+        public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return new BlockchainResult { Success = false, Error = "Hub not connected" };
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<BlockchainResult>("BroadcastTransaction", txBase64).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] BroadcastTransaction Error: {ex.Message}");
+                return new BlockchainResult { Success = false, Error = ex.Message };
+            }
+        }
+
+        public async Task<BlockchainResult> ExecutePreparedSwap(string requestId, string signedTxBase64)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return new BlockchainResult { Success = false, Error = "Hub not connected" };
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<BlockchainResult>("ExecutePreparedSwap", requestId, signedTxBase64).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] ExecutePreparedSwap Error: {ex.Message}");
+                return new BlockchainResult { Success = false, Error = ex.Message };
+            }
+        }
+
+        public async Task<bool> ConfirmSolanaTransaction(string signature)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return false;
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<bool>("ConfirmSolanaTransaction", signature).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] ConfirmSolanaTransaction Error: {ex.Message}");
+                return false;
+            }
+        }
+
         public async Task<object> PrepareAssetSwap(string walletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps)
         {
             if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
@@ -336,6 +386,24 @@ namespace SharedCode.Network
             {
                 Console.WriteLine($"[HubClient] PrepareAssetSwap Error: {ex.Message}");
                 return new { Success = false, Error = ex.Message };
+            }
+        }
+
+        public async Task<object> PrepareLudcDeposit(string walletAddress, decimal amount)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return null;
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<object>("PrepareLudcDeposit", walletAddress, amount).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] PrepareLudcDeposit Error: {ex.Message}");
+                return null;
             }
         }
     }

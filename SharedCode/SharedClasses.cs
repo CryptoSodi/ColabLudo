@@ -106,4 +106,12 @@
         public string Type { get; set; } = ""; // "Message", "Tournament", etc.
         public string Payload { get; set; } = ""; // Extra data like SenderId or TournamentId
     }
+
+    public class BlockchainResult
+    {
+        public bool Success { get; set; }
+        public string? Signature { get; set; }
+        public string? Error { get; set; }
+        public string? RequestId { get; set; }
+    }
 }

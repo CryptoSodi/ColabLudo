@@ -202,7 +202,7 @@ namespace LudoClient.Platforms.Android.Popups
                     if (auth != null && auth.Accounts.Count > 0)
                     {
                         _isWalletConnected = true;
-                        _userWalletAddress = auth.Accounts[0].DisplayAddress;
+                        _userWalletAddress = ClientGlobalConstants.WalletConnection.MainAddressBase58;
                         _phantomBtnText.Text = "DISCONNECT";
                         _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
                         ShowMessage("Wallet Connected Successfully!");
