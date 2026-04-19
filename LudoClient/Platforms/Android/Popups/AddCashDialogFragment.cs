@@ -8,7 +8,12 @@ using Android.Views;
 using Android.Widget;
 using LudoClient.Constants;
 using LudoClient.SolanaWallet;
+using Newtonsoft.Json.Linq;
+using SharedCode;
 using SharedCode.Constants;
+using Solnet.Programs;
+using Solnet.Rpc.Builders;
+using Solnet.Wallet;
 
 namespace LudoClient.Platforms.Android.Popups
 {
@@ -30,6 +35,7 @@ namespace LudoClient.Platforms.Android.Popups
         private decimal _phantomUsdcBalance = 0;
         private string _selectedBase64Image = "";
         private string _preparedSwapTx = "";
+        private string _preparedSwapRequestId = "";
         private decimal _preparedSwapOutput = 0;
         private decimal _currentBalance = 0;
         private bool _isWalletConnected = false;
@@ -46,8 +52,6 @@ namespace LudoClient.Platforms.Android.Popups
 
             var view = inflater.Inflate(Resource.Layout.dialog_add_cash, container, false);
             
-            // ... (rest of FindViewById calls unchanged) ...
-
             _coinsText = view.FindViewById<TextView>(Resource.Id.coinsText);
             _qrCodeImage = view.FindViewById<ImageView>(Resource.Id.qrCodeImage);
             _copyBtn = view.FindViewById<global::Android.Views.View>(Resource.Id.copyBtn);
@@ -197,7 +201,7 @@ namespace LudoClient.Platforms.Android.Popups
                     if (auth != null && auth.Accounts.Count > 0)
                     {
                         _isWalletConnected = true;
-                        _connectedWalletAddress = auth.Accounts[0].DisplayAddress;
+                        _connectedWalletAddress = ClientGlobalConstants.WalletConnection.MainAddressBase58;
                         _phantomBtnText.Text = "DISCONNECT";
                         _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink); // RED State
                         _ = LoadAllBalances(); // 🔥 FETCH ALL BALANCES IMMEDIATELY
@@ -347,6 +351,7 @@ namespace LudoClient.Platforms.Android.Popups
                     if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
                     {
                         _preparedSwapTx = (string)(data["swapTransaction"] ?? data["SwapTransaction"]);
+                        _preparedSwapRequestId = (string)(data["requestId"] ?? data["RequestId"]);
                         _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"]) ?? 0m;
                         
                         // If it's a raw ulong from Jupiter, we need to scale it by LUDC decimals (9)
@@ -405,37 +410,85 @@ namespace LudoClient.Platforms.Android.Popups
                     return;
                 }
 
-                string depositAddressStr = UserInfo.Instance.player?.Wallet?.WalletAddress;
-                if (string.IsNullOrEmpty(depositAddressStr))
+                ShowMessage("Preparing LUDC Deposit...");
+
+                // 1. Prepare Deposit (Fetch blueprint and auto-initialize internal wallet if needed)
+                var prepResult = await GlobalConstants.MatchMaker.PrepareLudcDeposit(_connectedWalletAddress, amount);
+                if (prepResult == null)
                 {
-                    ShowMessage("Deposit address not found.");
+                    ShowMessage("Server failed to prepare deposit.");
                     return;
                 }
 
-                ShowMessage("Preparing LUDC Transfer...");
+                var prep = Newtonsoft.Json.Linq.JObject.Parse(prepResult.ToString());
+                T GetVal<T>(string key) => prep.Value<T>(key) ?? prep.Value<T>(char.ToLower(key[0]) + key.Substring(1));
 
-                string ludcMintStr = "JSXWEi4ZXJkrkqWQg4UjUPzpmpYYFxzLmBuADh5cyai";
-                int decimals = 9;
+                string blockhash = GetVal<string>("Blockhash");
+                string senderAta = GetVal<string>("SenderAta");
+                string destinationAta = GetVal<string>("DestinationAta");
+                string mint = GetVal<string>("Mint");
+                int decimals = GetVal<int>("Decimals") == 0 ? 9 : GetVal<int>("Decimals");
+                string amountRawStr = GetVal<string>("AmountRaw");
+                string destinationOwner = GetVal<string>("DestinationOwner");
+
+                if (string.IsNullOrEmpty(blockhash) || string.IsNullOrEmpty(senderAta) || 
+                    string.IsNullOrEmpty(destinationAta) || string.IsNullOrEmpty(mint) || 
+                    string.IsNullOrEmpty(amountRawStr) || string.IsNullOrEmpty(destinationOwner))
+                {
+                    ShowMessage("Incomplete deposit data received from server.");
+                    return;
+                }
+
+                // 2. Build Transaction locally
+                var feePayer = new Solnet.Wallet.PublicKey(_connectedWalletAddress);
+                var mintPub = new Solnet.Wallet.PublicKey(mint);
+                var senderAtaPub = new Solnet.Wallet.PublicKey(senderAta);
+                var destAtaPub = new Solnet.Wallet.PublicKey(destinationAta);
+
+
+                var txBuilder = new Solnet.Rpc.Builders.TransactionBuilder()
+                    .SetRecentBlockHash(blockhash)
+                    .SetFeePayer(feePayer)
+                    .AddInstruction(SolanaTokenService.CreateTransferCheckedInstruction(
+                        senderAtaPub, mintPub, destAtaPub, feePayer, ulong.Parse(amountRawStr), (byte)decimals
+                    ));
 
                 ShowMessage("Awaiting Wallet Signature...");
                 
-                string signature = await ClientGlobalConstants.WalletConnection.SendToken(depositAddressStr, (ulong)(amount * (decimal)Math.Pow(10, decimals)), ludcMintStr, decimals);
+                // 3. Sign via Wallet (MWA) - does not broadcast locally
+                string signedTxBase64 = await ClientGlobalConstants.WalletConnection.SignTransaction(txBuilder);
 
-                if (!string.IsNullOrEmpty(signature))
+                if (!string.IsNullOrEmpty(signedTxBase64))
                 {
-                    ShowMessage("Transfer Sent! Verifying...");
+                    ShowMessage("Broadcasting via Server...");
                     
-                    // Notify backend
-                    _ = GlobalConstants.MatchMaker.PrepareLudcDeposit(_connectedWalletAddress, amount);
-                    
-                    ShowMessage($"Success! Sig: {signature.Substring(0, 8)}...");
-                    await Task.Delay(2000);
-                    _ = LoadAllBalances();
+                    // 4. Broadcast via Server (Server handles the "Unable to parse json" and translates errors)
+                    BlockchainResult result = await GlobalConstants.MatchMaker.BroadcastTransaction(signedTxBase64);
+
+                    if (result != null)
+                    {
+                        if (result.Success && !string.IsNullOrEmpty(result.Signature))
+                        {
+                            ShowMessage($"Success! Sig: {result.Signature.Substring(0, 8)}...");
+                            await Task.Delay(2000);
+                            _ = LoadAllBalances();
+                        }
+                        else
+                        {
+                            // Display the user-friendly translated error (e.g. "Insufficient SOL for Rent")
+                            string userError = result.Error ?? "Broadcast failed.";
+                            ShowMessage(userError);
+                            Console.WriteLine($"[AddCash] Deposit Failed: {userError}");
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage("Server failed to respond to broadcast.");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                ClientGlobalConstants.WalletConnection.DisconnectAsync(false);
                 ShowMessage($"Error: {ex.Message}");
             }
         }
@@ -444,7 +497,7 @@ namespace LudoClient.Platforms.Android.Popups
         {
             try
             {
-                if (string.IsNullOrEmpty(_preparedSwapTx))
+                if (string.IsNullOrEmpty(_preparedSwapTx) || string.IsNullOrEmpty(_preparedSwapRequestId))
                 {
                     ShowMessage("Get a quote first.");
                     return;
@@ -457,27 +510,33 @@ namespace LudoClient.Platforms.Android.Popups
                 
                 if (!await ClientGlobalConstants.WalletConnection.Connect()) return;
                 
-                // Using Client from the registered service implementation
-                // We could expose SignTransactions in ISolanaWalletService for better isolation
-                // but for now we'll stick to the existing Client access or just extend the interface.
                 var walletConnection = ClientGlobalConstants.WalletConnection; 
                 var signResult = await walletConnection.Client!.SignTransactions(new List<byte[]> { txBytes });
 
                 if (signResult != null && signResult.SignedPayloads.Count > 0)
                 {
                     ShowMessage("Broadcasting Swap...");
-                    var rpcClient = Solnet.Rpc.ClientFactory.GetClient("https://api.mainnet-beta.solana.com");
-                    var sendResult = await rpcClient.SendTransactionAsync(signResult.SignedPayloadsBytes[0]);
+                    string signedTxBase64 = signResult.SignedPayloads[0];
                     
-                    if (sendResult.WasSuccessful)
+                    BlockchainResult result = await GlobalConstants.MatchMaker.ExecutePreparedSwap(_preparedSwapRequestId, signedTxBase64);
+                    if (result != null)
                     {
-                        ShowMessage("Swap Sent! Signature: " + sendResult.Result.Substring(0, 8) + "...");
-                        _preparedSwapTx = ""; // Clear after use
-                        _ = LoadAllBalances(); // Refresh balances
-                    }
-                    else
-                    {
-                        ShowMessage("Swap Failed: " + sendResult.Reason);
+                        if (result.Success)
+                        {
+                            string signature = result.Signature;
+                            string sigDisplay = !string.IsNullOrEmpty(signature) 
+                                ? signature.Substring(0, Math.Min(8, signature.Length)) 
+                                : "Unknown";
+                            ShowMessage("Swap Sent! Signature: " + sigDisplay + "...");
+                            _preparedSwapTx = ""; 
+                            _preparedSwapRequestId = "";
+                            _ = LoadAllBalances(); 
+                        }
+                        else
+                        {
+                            string err = result.Error ?? "Swap execution failed.";
+                            ShowMessage("Swap Failed: " + err);
+                        }
                     }
                 }
             }

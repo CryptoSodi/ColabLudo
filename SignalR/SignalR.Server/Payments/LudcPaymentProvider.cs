@@ -113,8 +113,115 @@ namespace SignalR.Server.Payments
         }
         public async Task<bool> ConfirmSignatureAsync(string signature)
         {
-            var tx = await _rpc.GetTransactionAsync(signature, Commitment.Confirmed);
-            return tx.WasSuccessful && tx.Result != null;
+            if (string.IsNullOrWhiteSpace(signature)) return false;
+
+            try 
+            {
+                // Poll for confirmation (Max 30 seconds)
+                for (int i = 0; i < 15; i++)
+                {
+                    var tx = await _rpc.GetTransactionAsync(signature, Commitment.Confirmed);
+                    if (tx.WasSuccessful && tx.Result != null)
+                    {
+                        // Check if the transaction actually succeeded or if it reverted
+                        bool hasError = tx.Result.Meta.Error != null;
+                        if (!hasError)
+                        {
+                            return true;
+                        }
+                        else 
+                        {
+                            Console.WriteLine($"[LudcProvider] Signature {signature} found but FAILED on-chain.");
+                            return false;
+                        }
+                    }
+                    await Task.Delay(2000); // Wait 2 seconds between checks
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudcProvider] Error during confirmation: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<BroadcastResult> BroadcastTransactionAsync(string txBase64)
+        {
+            try
+            {
+                string cleanTx = txBase64.Trim('\"', ' ', '\n', '\r');
+                byte[] txBytes = Convert.FromBase64String(cleanTx);
+                
+                Console.WriteLine($"[LudcProvider] Broadcasting {txBytes.Length} bytes...");
+                
+                // Try Solnet first with skipPreflight = true for speed and flexibility
+                var res = await _rpc.SendTransactionAsync(txBytes, skipPreflight: true);
+                
+                if (res.WasSuccessful) 
+                    return new BroadcastResult { WasSuccessful = true, Result = res.Result };
+
+                // Handle common failure: Solnet fails to parse HTML/Non-JSON response from rate-limited nodes
+                if (res.Reason != null && (res.Reason.Contains("json", StringComparison.OrdinalIgnoreCase) || res.Reason.Contains("simulation", StringComparison.OrdinalIgnoreCase)))
+                {
+                    Console.WriteLine($"[LudcProvider] Solnet error ({res.Reason}). Attempting manual RPC call to capture raw error...");
+                    
+                    var rpcRequest = new
+                    {
+                        jsonrpc = "2.0",
+                        id = 1,
+                        method = "sendTransaction",
+                        @params = new object[] { cleanTx, new { skipPreflight = true, encoding = "base64" } }
+                    };
+
+                    string targetUrl = rpcUrl ?? "https://api.mainnet-beta.solana.com";
+                    using var httpRes = await _http.PostAsJsonAsync(targetUrl, rpcRequest);
+                    var content = await httpRes.Content.ReadAsStringAsync();
+                    
+                    if (httpRes.IsSuccessStatusCode || !string.IsNullOrEmpty(content))
+                    {
+                        try 
+                        {
+                            using var doc = JsonDocument.Parse(content);
+                            if (doc.RootElement.TryGetProperty("result", out var sig))
+                            {
+                                return new BroadcastResult { WasSuccessful = true, Result = sig.GetString() };
+                            }
+                            
+                            if (doc.RootElement.TryGetProperty("error", out var err))
+                            {
+                                string msg = err.TryGetProperty("message", out var m) ? m.GetString() : "Unknown RPC Error";
+                                
+                                // --- ERROR TRANSLATION LOGIC ---
+                                if (msg.Contains("insufficient funds for rent", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    msg = "Insufficient SOL in your wallet to pay for account rent. Please add at least 0.003 SOL and try again.";
+                                }
+                                else if (msg.Contains("insufficient lamports", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    msg = "Insufficient SOL balance to pay for transaction gas fees.";
+                                }
+                                else if (msg.Contains("Blockhash not found", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    msg = "Transaction expired. Please try again immediately.";
+                                }
+                                
+                                Console.WriteLine($"[LudcProvider] Translated RPC error: {msg}");
+                                return new BroadcastResult { WasSuccessful = false, Reason = msg };
+                            }
+                        }
+                        catch { /* Fallback to raw content if JSON parse fails */ }
+                    }
+                    return new BroadcastResult { WasSuccessful = false, Reason = $"RPC Error {httpRes.StatusCode}: {content}" };
+                }
+
+                return new BroadcastResult { WasSuccessful = false, Reason = res.Reason };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudcProvider] Broadcast Exception: {ex.Message}");
+                return new BroadcastResult { WasSuccessful = false, Reason = ex.Message };
+            }
         }
         // ================= INTERNAL SEND =================
         private async Task<string> SendLudcAsync(PlayerWalletKey senderKey, string destination, decimal amount)
@@ -227,20 +334,22 @@ namespace SignalR.Server.Payments
                     if (pre == null)
                         continue;
 
-                    decimal postAmount =
-                        decimal.Parse(balance.UiTokenAmount.UiAmountString);
+                    // Use raw amount and divide by 1m as per user fix
+                    if (!decimal.TryParse(balance.UiTokenAmount.Amount, out decimal postRaw)) continue;
+                    decimal preRaw = 0;
+                    if (pre != null && decimal.TryParse(pre.UiTokenAmount.Amount, out var p)) preRaw = p;
 
-                    decimal preAmount =
-                        decimal.Parse(pre.UiTokenAmount.UiAmountString);
-
-                    decimal delta = postAmount - preAmount;
+                    decimal delta = (postRaw - preRaw) / 1m;
 
                     // Only detect deposits
                     if (delta <= 0)
                         continue;
 
+                    Console.WriteLine($"[LudcProvider] Deposit Detected! Sig: {sig.Signature} | Crediting: {delta} LUDC");
+
                     // Fetch ATA account info
                     var accountInfo = await _rpc.GetAccountInfoAsync(tokenAccountAddress);
+
 
                     if (!accountInfo.WasSuccessful || accountInfo.Result?.Value == null)
                         continue;
@@ -314,5 +423,12 @@ namespace SignalR.Server.Payments
         public string Signature { get; set; } = "";
         public string WalletAddress { get; set; } = "";
         public decimal Amount { get; set; }
+    }
+
+    public class BroadcastResult
+    {
+        public bool WasSuccessful { get; set; }
+        public string Result { get; set; } = "";
+        public string Reason { get; set; } = "";
     }
 }
