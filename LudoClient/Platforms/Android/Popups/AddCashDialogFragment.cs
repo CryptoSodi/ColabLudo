@@ -361,15 +361,16 @@ namespace LudoClient.Platforms.Android.Popups
 
                     if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
                     {
-                        _preparedSwapTx = (string)(data["swapTransaction"] ?? data["SwapTransaction"]);
-                        _preparedSwapRequestId = (string)(data["requestId"] ?? data["RequestId"]);
-                        _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"]) ?? 0m;
+                        _preparedSwapTx = (string)(data["swapTransaction"] ?? data["SwapTransaction"] ?? data["swap_transaction"]);
+                        _preparedSwapRequestId = (string)(data["requestId"] ?? data["RequestId"] ?? data["request_id"]);
+                        _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"] ?? data["out_amount"]) ?? 0m;
                         
                         // If it's a raw ulong from Jupiter, we need to scale it by LUDC decimals (9)
                         if (_preparedSwapOutput > 1000000) 
                             _preparedSwapOutput /= 1_000_000_000m;
 
                         ShowMessage($"PREVIEW: Receive approx {_preparedSwapOutput:N2} LUDC. Ready to Swap.");
+                        Console.WriteLine($"[Swap] Prepared Quote: ID={_preparedSwapRequestId}, TxLen={_preparedSwapTx?.Length}");
                     }
                     else
                     {

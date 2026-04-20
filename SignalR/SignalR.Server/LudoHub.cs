@@ -89,17 +89,26 @@ namespace SignalR.Server
                     slippageBps);
 
                 var root = order.RootElement;
+                var swapTx = GetJsonString(root, "transaction"); // Jupiter V2/Order uses "transaction"
+                if (string.IsNullOrEmpty(swapTx)) swapTx = GetJsonString(root, "swapTransaction"); // Fallback for V6
+
+                var reqId = GetJsonString(root, "requestId");
+                var outAmt = GetJsonString(root, "outAmount", "0");
+
+                Console.WriteLine($"[LudoHub] Prepared Swap: Req={reqId}, TxLen={swapTx?.Length}, Out={outAmt}");
+
                 return new
                 {
                     Success = true,
-                    SwapTransaction = GetJsonString(root, "swapTransaction"),
-                    OutAmount = decimal.TryParse(GetJsonString(root, "outAmount"), out var oa) ? (decimal?)oa : null,
+                    SwapTransaction = swapTx,
+                    OutAmount = decimal.TryParse(outAmt, out var oa) ? (decimal?)oa : null,
                     PriceImpactPct = decimal.TryParse(GetJsonString(root, "priceImpactPct"), out var pip) ? (decimal?)pip : null,
-                    RequestId = GetJsonString(root, "requestId")
+                    RequestId = reqId
                 };
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[LudoHub] PrepareAssetSwap Error: {ex.Message}");
                 return new { Success = false, Error = ex.Message };
             }
         }
