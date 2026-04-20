@@ -520,15 +520,12 @@ namespace LudoClient.Platforms.Android.Popups
                 ShowMessage("Awaiting Swap Signature...");
                 var txBytes = Convert.FromBase64String(_preparedSwapTx);
                 
-                if (!await ClientGlobalConstants.WalletConnection.Connect()) return;
-                
-                var walletConnection = ClientGlobalConstants.WalletConnection; 
-                var signResult = await walletConnection.Client!.SignTransactions(new List<byte[]> { txBytes });
+                // Use the robust SignRawTransaction helper which handles authorization and disconnection
+                string signedTxBase64 = await ClientGlobalConstants.WalletConnection.SignRawTransaction(txBytes);
 
-                if (signResult != null && signResult.SignedPayloads.Count > 0)
+                if (!string.IsNullOrEmpty(signedTxBase64))
                 {
                     ShowMessage("Broadcasting Swap...");
-                    string signedTxBase64 = signResult.SignedPayloads[0];
                     
                     BlockchainResult result = await GlobalConstants.MatchMaker.ExecutePreparedSwap(_preparedSwapRequestId, signedTxBase64);
                     if (result != null)

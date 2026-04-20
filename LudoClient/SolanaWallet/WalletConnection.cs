@@ -241,6 +241,18 @@ namespace LudoClient.SolanaWallet
                 txBytes[0] = 1; 
                 Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
 
+                return await SignRawTransaction(txBytes);
+            }
+            finally
+            {
+                await DisconnectAsync(false);
+            }
+        }
+
+        public async Task<string> SignRawTransaction(byte[] txBytes)
+        {
+            try
+            {
                 var auth = await AuthorizeOrReauthorize();
                 if (auth == null) throw new Exception("Wallet not connected");
 
