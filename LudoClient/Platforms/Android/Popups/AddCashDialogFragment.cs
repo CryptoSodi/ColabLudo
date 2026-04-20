@@ -317,7 +317,18 @@ namespace LudoClient.Platforms.Android.Popups
 
             string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
             decimal bal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
-            _swapInputAmount.Text = bal.ToString(selectedAsset == "SOL" ? "F4" : "F2");
+
+            if (selectedAsset == "SOL")
+            {
+                // Leave 0.01 SOL for transaction fees/rent
+                bal -= 0.01m;
+                if (bal < 0) bal = 0;
+                _swapInputAmount.Text = bal.ToString("F4");
+            }
+            else
+            {
+                _swapInputAmount.Text = bal.ToString("F2");
+            }
         }
 
         private async Task OnSwapPreviewClicked()
