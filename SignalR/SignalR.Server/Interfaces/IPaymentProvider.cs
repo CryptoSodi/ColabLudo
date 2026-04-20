@@ -9,6 +9,6 @@ namespace SignalR.Server.Interfaces
         Task<decimal> GetOnChainBalanceAsync(string walletAddress);
         Task<string> SweepAsync(int playerId, decimal amount);
         Task<PlayerWallet> EnsurePlayerWalletExists(int playerId, string addressType);
-        Task<List<TokenDeposit>> GetRecentDeposits(string beforeSignature);
+        Task<ScannerResult> GetRecentDeposits(string beforeSignature);
     }
 }

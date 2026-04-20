@@ -308,7 +308,7 @@ namespace SignalR.Server.Payments
 
             return result.Result.Value / (decimal)LamportsPerSol;
         }
-        public async Task<List<TokenDeposit>> GetRecentDeposits(string? beforeSignature = null)
+        public async Task<ScannerResult> GetRecentDeposits(string? beforeSignature = null)
         {
             return null;
         }
