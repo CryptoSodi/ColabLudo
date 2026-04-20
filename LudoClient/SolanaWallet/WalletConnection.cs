@@ -173,73 +173,87 @@ namespace LudoClient.SolanaWallet
 
         public async Task<string> SignAndSendTransaction(TransactionBuilder txBuilder)
         {
-            byte[] msgBytes;
-            try 
+            try
             {
-                msgBytes = txBuilder.CompileMessage();
+                byte[] msgBytes;
+                try 
+                {
+                    msgBytes = txBuilder.CompileMessage();
+                }
+                catch (Exception)
+                {
+                    var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
+                    if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
+                    txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
+                    msgBytes = txBuilder.CompileMessage();
+                }
+                
+                // Standard Solana Transaction Wire Format for 1 signature
+                var txBytes = new byte[1 + 64 + msgBytes.Length];
+                txBytes[0] = 1; 
+                Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
+
+                var auth = await AuthorizeOrReauthorize();
+                if (auth == null) throw new Exception("Wallet not connected");
+
+                // Request signature via MWA
+                Console.WriteLine($"[WMA] Requesting signature for {txBytes.Length} byte payload...");
+                var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
+                
+                if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
+                    throw new Exception("Signature failed or declined (no payloads returned)");
+
+                // Broadcast the signed transaction bytes using our RPC client
+                Console.WriteLine("[WMA] Broadcasting signed transaction to cluster...");
+                var txSignature = await _rpcClient.SendTransactionAsync(signResult.SignedPayloadsBytes[0]);
+                
+                if (!txSignature.WasSuccessful) 
+                {
+                    throw new Exception($"Broadcast failed: {txSignature.Reason}");
+                }
+
+                return txSignature.Result;
             }
-            catch (Exception)
+            finally
             {
-                var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
-                if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
-                txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
-                msgBytes = txBuilder.CompileMessage();
+                await DisconnectAsync(false);
             }
-            
-            // Standard Solana Transaction Wire Format for 1 signature
-            var txBytes = new byte[1 + 64 + msgBytes.Length];
-            txBytes[0] = 1; 
-            Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
-
-            var auth = await AuthorizeOrReauthorize();
-            if (auth == null) throw new Exception("Wallet not connected");
-
-            // Request signature via MWA
-            Console.WriteLine($"[WMA] Requesting signature for {txBytes.Length} byte payload...");
-            var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
-            
-            if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
-                throw new Exception("Signature failed or declined (no payloads returned)");
-
-            // Broadcast the signed transaction bytes using our RPC client
-            Console.WriteLine("[WMA] Broadcasting signed transaction to cluster...");
-            var txSignature = await _rpcClient.SendTransactionAsync(signResult.SignedPayloadsBytes[0]);
-            
-            if (!txSignature.WasSuccessful) 
-            {
-                throw new Exception($"Broadcast failed: {txSignature.Reason}");
-            }
-
-            return txSignature.Result;
         }
 
         public async Task<string> SignTransaction(TransactionBuilder txBuilder)
         {
-            byte[] msgBytes;
-            try 
+            try
             {
-                msgBytes = txBuilder.CompileMessage();
+                byte[] msgBytes;
+                try 
+                {
+                    msgBytes = txBuilder.CompileMessage();
+                }
+                catch (Exception)
+                {
+                    var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
+                    if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
+                    txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
+                    msgBytes = txBuilder.CompileMessage();
+                }
+                
+                var txBytes = new byte[1 + 64 + msgBytes.Length];
+                txBytes[0] = 1; 
+                Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
+
+                var auth = await AuthorizeOrReauthorize();
+                if (auth == null) throw new Exception("Wallet not connected");
+
+                var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
+                if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
+                    throw new Exception("Signature failed or declined");
+
+                return signResult.SignedPayloads[0];
             }
-            catch (Exception)
+            finally
             {
-                var blockhashResult = await _rpcClient.GetLatestBlockHashAsync();
-                if (!blockhashResult.WasSuccessful) throw new Exception("Failed to get blockhash");
-                txBuilder.SetRecentBlockHash(blockhashResult.Result.Value.Blockhash);
-                msgBytes = txBuilder.CompileMessage();
+                await DisconnectAsync(false);
             }
-            
-            var txBytes = new byte[1 + 64 + msgBytes.Length];
-            txBytes[0] = 1; 
-            Array.Copy(msgBytes, 0, txBytes, 65, msgBytes.Length);
-
-            var auth = await AuthorizeOrReauthorize();
-            if (auth == null) throw new Exception("Wallet not connected");
-
-            var signResult = await _connection.Client!.SignTransactions(new List<byte[]> { txBytes });
-            if (signResult == null || signResult.SignedPayloads == null || signResult.SignedPayloads.Count == 0) 
-                throw new Exception("Signature failed or declined");
-
-            return signResult.SignedPayloads[0];
         }
 
         public async Task<string> SendToken(string recipientBase58, ulong amount, string mintAddress, int decimals)

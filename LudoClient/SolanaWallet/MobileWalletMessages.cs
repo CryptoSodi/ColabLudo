@@ -97,6 +97,16 @@ namespace LudoClient.SolanaWallet
             _messageSender = messageSender;
         }
 
+        public void FailAllPendingRequests(string reason)
+        {
+            var pending = _pendingRequests.Values.ToList();
+            _pendingRequests.Clear();
+            foreach (var p in pending)
+            {
+                p.tcs.TrySetException(new Exception(reason));
+            }
+        }
+
         protected async Task<T> SendRequest<T>(JsonRequest jsonRequest)
         {
             var message = JsonConvert.SerializeObject(jsonRequest);

@@ -151,6 +151,7 @@ namespace LudoClient.SolanaWallet
                     {
                         Console.WriteLine("[WMA] WebSocket Closed by remote.");
                         LastLaunchCanceled = true;
+                        _client?.FailAllPendingRequests("Connection closed by remote peer");
                         RemoteClosed?.Invoke();
                         await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                     }
