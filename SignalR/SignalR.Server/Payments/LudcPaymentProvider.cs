@@ -41,9 +41,67 @@ namespace SignalR.Server.Payments
             using var ctx = _contextFactory.CreateDbContext();
             using var tx = await ctx.Database.BeginTransactionAsync();
 
-            var wallet = await EnsurePlayerWalletExists(player.PlayerId);
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+            if (wallet == null)
+            {
+                await EnsurePlayerWalletExists(player.PlayerId);
+                wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+            }
+
+            if (wallet == null)
+                return "WALLET_NOT_FOUND";
+
             if (wallet.AvailableBalance < amount)
                 return "INSUFFICIENT_BALANCE";
+
+            var recipientWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.WalletAddress == destination && w.AddressType == "LUDC");
+            if (recipientWallet != null)
+            {
+                if (recipientWallet.PlayerId == player.PlayerId)
+                    return "SELF_TRANSFER_NOT_ALLOWED";
+
+                wallet.AvailableBalance -= amount;
+                recipientWallet.AvailableBalance += amount;
+
+                var senderTransferRef = $"internal:withdraw:{Guid.NewGuid()}";
+                var recipientTransferRef = $"internal:deposit:{Guid.NewGuid()}";
+                ctx.WalletTransaction.Add(new WalletTransaction
+                {
+                    PlayerId = wallet.PlayerId,
+                    OperationId = Guid.NewGuid(),
+                    Amount = -amount,
+                    BalanceAfter = wallet.AvailableBalance,
+                    Type = TransactionType.Withdrawal,
+                    Status = WalletTransactionStatus.Completed,
+                    Description = $"Internal transfer to player {recipientWallet.PlayerId}",
+                    IsOnChain = false,
+                    txId = senderTransferRef,
+                    AddressType = "LUDC"
+                });
+
+                ctx.WalletTransaction.Add(new WalletTransaction
+                {
+                    PlayerId = recipientWallet.PlayerId,
+                    OperationId = Guid.NewGuid(),
+                    Amount = amount,
+                    BalanceAfter = recipientWallet.AvailableBalance,
+                    Type = TransactionType.Deposit,
+                    Status = WalletTransactionStatus.Completed,
+                    Description = $"Internal transfer from player {wallet.PlayerId}",
+                    IsOnChain = false,
+                    txId = recipientTransferRef,
+                    AddressType = "LUDC"
+                });
+
+                ctx.Update(wallet);
+                ctx.Update(recipientWallet);
+                await ctx.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                Console.WriteLine($"[LudcProvider] Internal transfer completed: Player {wallet.PlayerId} -> Player {recipientWallet.PlayerId} Amount: {amount} LUDC");
+                return senderTransferRef;
+            }
+
             var masterKey = await ctx.PlayerWalletKey.FirstAsync(x => x.PlayerId == _masterUserId);
             var sig = await SendLudcAsync(masterKey, destination, amount);
             if(sig != "ERROR")
