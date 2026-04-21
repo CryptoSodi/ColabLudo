@@ -240,7 +240,7 @@ namespace SignalR.Server.Payments
             var receiverAtaInfo = await _rpc.GetAccountInfoAsync(receiverAta);
             bool receiverAtaExists = receiverAtaInfo.WasSuccessful && receiverAtaInfo.Result?.Value != null;
             // ================= TOKEN AMOUNT =================
-            ulong tokenAmount = Convert.ToUInt64(decimal.Round(amount * 1_000_000_000m, 0, MidpointRounding.AwayFromZero));
+            ulong tokenAmount = Convert.ToUInt64(decimal.Round(amount * 1_000_000_000m,0,MidpointRounding.AwayFromZero));
             var blockhash = (await _rpc.GetLatestBlockHashAsync()).Result.Value.Blockhash;
             // ================= BUILD TRANSACTION =================
             var builder = new TransactionBuilder().SetRecentBlockHash(blockhash).SetFeePayer(senderAccount.PublicKey);
@@ -291,8 +291,10 @@ namespace SignalR.Server.Payments
                 return "ERROR";
             }
             else
+            {
                 Console.WriteLine($"SEND SUCCESS : {res.Result}");
-                return "SUCCESS";
+                return res.Result;
+            }
         }
         public async Task<ScannerResult> GetRecentDeposits(string? lastProcessedSignature = null)
         {
@@ -300,13 +302,12 @@ namespace SignalR.Server.Payments
             var signatures = new List<string>();
 
             // 1. DEEP CATCH-UP: Fetch ALL signatures since the last processed one
-            // We loop in blocks of 10 to ensure we don't miss anything if traffic > 10 tx/poll
             string? beforeMarker = null;
             bool foundOldMarker = false;
             int maxSafety = 0;
 
             try {
-                while (!foundOldMarker && maxSafety < 10) // Limit to 100 tx per poll for safety
+                while (!foundOldMarker && maxSafety < 10) 
                 {
                     var rpcRequest = new {
                         jsonrpc = "2.0", id = 1, method = "getSignaturesForAddress",
@@ -320,15 +321,11 @@ namespace SignalR.Server.Payments
                     {
                         var batch = resArr.EnumerateArray().ToList();
                         if (batch.Count == 0) break;
-
                         foreach (var s in batch) signatures.Add(s.GetProperty("signature").GetString());
-                        
-                        // Marker found or we reached the end of available history
                         if (batch.Count < 10) foundOldMarker = true;
                         else beforeMarker = batch.Last().GetProperty("signature").GetString();
                     }
                     else break;
-                    
                     maxSafety++;
                 }
             } catch (Exception ex) {
@@ -336,27 +333,22 @@ namespace SignalR.Server.Payments
             }
 
             if (signatures.Count == 0) return result;
-
-            // Set marker to the NEWEST signature in the entire chain
             result.LatestSeenSignature = signatures.First();
 
-            Console.WriteLine($"[LudcProvider] Caught up on {signatures.Count} new signatures...");
-            signatures.Reverse(); // Process oldest to newest
+            Console.WriteLine($"[LudcProvider] Scanning {signatures.Count} new signatures...");
+            signatures.Reverse(); 
 
             foreach (var sig in signatures)
             {
                 try {
                     Console.WriteLine($"[LudcProvider] Fetching details for: {sig}");
-                    // Mandatory throttle to stay under Public RPC rate limits
                     await Task.Delay(500);
 
-                    // 2. Fetch full transaction using ROBUST GetTransactionRaw (v0 Support + Retry)
                     var txDoc = await GetTransactionRaw(sig);
                     if (txDoc == null) continue;
 
                     var root = txDoc.RootElement;
                     if (!root.TryGetProperty("result", out var txResult) || txResult.ValueKind == JsonValueKind.Null) continue;
-                    
                     if (!txResult.TryGetProperty("meta", out var meta)) continue;
                     if (!meta.TryGetProperty("postTokenBalances", out var postBalances)) continue;
 
@@ -381,7 +373,7 @@ namespace SignalR.Server.Payments
                         decimal delta = postAmt - preAmt;
                         if (delta <= 0) continue;
 
-                        Console.WriteLine($"[LudcProvider] Found Inbound LUDC: {delta} (AccIdx: {accountIndex}) in {sig.Substring(0,8)}...");
+                        using var ctx = _contextFactory.CreateDbContext();
 
                         // 3. Resolve Identity
                         if (!txResult.TryGetProperty("transaction", out var transactionObj)) continue;
@@ -397,13 +389,45 @@ namespace SignalR.Server.Payments
                         string owner = "";
                         if (balance.TryGetProperty("owner", out var ownerNode)) owner = ownerNode.GetString();
 
-                        using var ctx = _contextFactory.CreateDbContext();
-                        var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => 
-                            w.AddressType == "LUDC" && (w.WalletAddress == owner || w.WalletAddress == feePayer));
+                        // Match Player (Priority: Recipient Owner > Signer Fallback)
+                        var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.AddressType == "LUDC" && w.WalletAddress == owner);
+                        bool matchedViaSigner = false;
+                        if (wallet == null) {
+                            wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.AddressType == "LUDC" && w.WalletAddress == feePayer);
+                            matchedViaSigner = true;
+                        }
 
-                        if (wallet != null)
+                        // Treasury-origin transfers to external wallets should be ignored,
+                        // but treasury-origin transfers to another registered player wallet
+                        // are valid deposits and must still be credited.
+                        var masterWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == _masterUserId && w.AddressType == "LUDC");
+                        bool isTreasurySource = false;
+                        if (masterWallet != null && meta.TryGetProperty("preTokenBalances", out var preBalancesObj)) {
+                            var treasuryPre = preBalancesObj.EnumerateArray().FirstOrDefault(b =>
+                                b.TryGetProperty("owner", out var o) && o.GetString() == masterWallet.WalletAddress &&
+                                b.GetProperty("mint").GetString() == LUDC_MINT.Key);
+
+                            if (treasuryPre.ValueKind != JsonValueKind.Undefined) {
+                                int tIdx = treasuryPre.GetProperty("accountIndex").GetInt32();
+                                decimal tPre = decimal.Parse(treasuryPre.GetProperty("uiTokenAmount").GetProperty("uiAmountString").GetString());
+                                decimal tPost = 0;
+                                if (meta.TryGetProperty("postTokenBalances", out var postBalancesObj)) {
+                                    var tPostMatch = postBalancesObj.EnumerateArray().FirstOrDefault(p => p.GetProperty("accountIndex").GetInt32() == tIdx);
+                                    if (tPostMatch.ValueKind != JsonValueKind.Undefined)
+                                        tPost = decimal.Parse(tPostMatch.GetProperty("uiTokenAmount").GetProperty("uiAmountString").GetString());
+                                }
+                                if (tPost < tPre) isTreasurySource = true;
+                            }
+                        }
+
+                        if (isTreasurySource && (wallet == null || wallet.PlayerId == _masterUserId)) {
+                            Console.WriteLine($"[LudcProvider] Skipping Treasury Payout to external/non-player wallet: {sig.Substring(0,8)}...");
+                            continue;
+                        }
+
+                        if (wallet != null && wallet.PlayerId != _masterUserId)
                         {
-                            Console.WriteLine($"[LudcProvider] SUCCESS! Player {wallet.PlayerId} detected. Amount: {delta} LUDC");
+                            Console.WriteLine($"[LudcProvider] SUCCESS! Player {wallet.PlayerId} detected via {(matchedViaSigner ? "Signer" : "Owner")}. Amount: {delta}");
                             result.Deposits.Add(new TokenDeposit { Signature = sig, WalletAddress = wallet.WalletAddress, Amount = delta });
                         }
                     }
@@ -460,7 +484,7 @@ namespace SignalR.Server.Payments
                             return fallbackDoc;
 
                         if (fallbackJson.Contains("429")) {
-                            Console.WriteLine($"[LudcProvider] Fallback RPC Rate Limited. Waiting 5s...");
+                            Console.WriteLine($"[LudcProvider] Public RPC Rate Limited on fallback. Waiting 5s...");
                             await Task.Delay(5000);
                             continue;
                         }

@@ -127,17 +127,21 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _walletSwapAmount.Text = _solBalance.ToString("F2");
             };
-            _btnWalletSign.Click += (s, e) => {
+            _btnWalletSign.Click += async (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                await ProcessWalletWithdraw();
             };
             _btnWalletSwapView.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                _addressEntry.Text = _userWalletAddress; // Link connected wallet to Solana tab
+                ShowMessage("Wallet address linked to withdrawal.");
             };
             _btnWalletSwapConfirm.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                // TODO: Implement Swap confirm logic if needed, or link to swap view
             };
             _btnPhantomConnect.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -360,6 +364,36 @@ namespace LudoClient.Platforms.Android.Popups
             });
         }
 
+        private async Task ProcessWalletWithdraw()
+        {
+            if (!_isWalletConnected) {
+                ShowMessage("Connect Phantom first."); return;
+            }
+
+            string amountText = _walletAmountEntry.Text?.Trim();
+            if (string.IsNullOrWhiteSpace(amountText) || !decimal.TryParse(amountText, out decimal amount)) {
+                ShowMessage("Enter a valid amount."); return;
+            }
+            if (_solBalance < amount) {
+                ShowMessage("Insufficient internal balance."); return;
+            }
+
+            try
+            {
+                ShowMessage("Processing Payout...");
+                // Call renamed InitiateWithdrawal on LudoHub
+                string result = await GlobalConstants.MatchMaker.InitiateWithdrawal(_userWalletAddress, amount);
+                
+                if (result.StartsWith("Success")) {
+                    ShowMessage("Withdrawal successful!");
+                    _walletAmountEntry.Text = "";
+                } else {
+                    ShowMessage("Payout failed: " + result);
+                }
+            }
+            catch (Exception ex) { ShowMessage("Hub Error: " + ex.Message); }
+        }
+
         private async Task ProcessSolanaWithdraw()
         {
             string amountText = _amountEntry.Text?.Replace("LUDC", "").Trim();
@@ -383,8 +417,8 @@ namespace LudoClient.Platforms.Android.Popups
                 if (GlobalConstants.MatchMaker != null)
                 {
                     // Using LudoHub (MatchMaker) for Withdraw
-                    string result = await GlobalConstants.MatchMaker.Withdraw(recAddress, amount);
-                    if (result == "ERROR") ShowMessage("Error sending transaction!");
+                    string result = await GlobalConstants.MatchMaker.InitiateWithdrawal(recAddress, amount);
+                    if (result == "ERROR" || result.StartsWith("Error")) ShowMessage("Error: " + result);
                     else ShowMessage("Transaction Successful!");
                 }
             }

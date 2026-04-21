@@ -268,10 +268,10 @@ namespace SharedCode.Network
                 return null;
             return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
-        public async Task<string> Withdraw(string destination, decimal solAmount)
+        public async Task<string> InitiateWithdrawal(string destination, decimal amount)
         {
-            // Use the generic InvokeAsync<DepositInfo>
-            String info = await _hubConnection.InvokeAsync<String>("Withdraw", destination, solAmount).ConfigureAwait(false);
+            // Use the generic InvokeAsync to call the renamed server method
+            String info = await _hubConnection.InvokeAsync<String>("InitiateWithdrawal", destination, amount).ConfigureAwait(false);
             return info;
         }
         internal async Task<List<TournamentDTO>> GetAllTournaments(string type)

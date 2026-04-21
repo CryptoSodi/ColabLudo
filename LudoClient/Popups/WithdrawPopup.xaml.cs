@@ -135,11 +135,11 @@ public partial class WithdrawPopup : BasePopup
 
         try
         {
-            string result = await GlobalConstants.MatchMaker.Withdraw(recAddress, amount);
+            string result = await GlobalConstants.MatchMaker.InitiateWithdrawal(recAddress, amount);
 
-            if (result == "ERROR")
+            if (result == "ERROR" || result.StartsWith("Error"))
             {
-                await ShowMessage("Error sending transaction!");
+                await ShowMessage("Error: " + result);
             }
             else
             {

@@ -115,11 +115,11 @@ namespace SignalR.Server.Payments
 
             return true;
         }
-        internal string Withdraw(Player player, string destination, decimal amountInSol)
+        internal string Withdraw(Player player, string destination, decimal amount)
         {
             var operationId = Guid.NewGuid();
             var provider = _factory.Get(CurrencyType.LUDC);
-            return provider.WithdrawAsync(player, destination, amountInSol, operationId).GetAwaiter().GetResult();
+            return provider.WithdrawAsync(player, destination, amount, operationId).GetAwaiter().GetResult();
         }
         public async Task<string> MintNFT(int playerid, int amount)
         {

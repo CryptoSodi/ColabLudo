@@ -449,19 +449,37 @@ namespace SignalR.Server
             }
             throw new HubException("Player not recognized.");
         }
-        public async Task<String> Withdraw(string destination, decimal amountInSol)
+        public async Task<string> InitiateWithdrawal(string destination, decimal amount)
         {
             try
             {
+                if (amount <= 0) return "Invalid amount.";
                 Player player = await GetCallerPlayer();
-                var r = _crypto.Withdraw(player, destination, amountInSol);
-                await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
-                return r;
+                
+                // ❗ Re-verify balance from DB directly for safety
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                if (wallet == null || wallet.AvailableBalance < amount)
+                    return "Insufficient internal balance.";
+
+                Console.WriteLine($"[LudoHub] Processing Withdrawal for Player {player.PlayerId}: {amount} LUDC to {destination}");
+                
+                // Use injected CryptoHelper (matches DashboardHub)
+                var result = _crypto.Withdraw(player, destination, amount);
+                
+                if (result != "ERROR" && !result.Contains("INSUFFICIENT"))
+                {
+                    // Update client UI with new balance
+                    await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                    return $"Success: {result}";
+                }
+                
+                return result;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
-                return ex.Message;
+                Console.WriteLine($"[LudoHub] Withdrawal Error: {ex.Message}");
+                return "Error: " + ex.Message;
             }
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)

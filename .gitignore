@@ -365,3 +365,4 @@ FodyWeavers.xsd
 /LudoClient/key.keystore
 /SignalR/SignalR.Server/appsettings.json
 /mobile-wallet-adapter-main
+/screen_output/verify-build
