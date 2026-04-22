@@ -15,7 +15,7 @@ namespace LudoClient.Platforms.Android.Popups
     {
         private TextView _coinsText;
         private EditText _addressEntry, _amountEntry, _walletAmountEntry, _walletSwapAmount, _bankWithdrawAmount, _bankAccountEntry;
-        private TextView _footerTitle, _footerText, _phantomBtnText;
+        private TextView _footerTitle, _footerText, _phantomBtnText, _walletSwapTitle;
         private ImageView _phantomBtnBg;
         
         // Dynamic Footer Buttons
@@ -32,7 +32,7 @@ namespace LudoClient.Platforms.Android.Popups
         // Tab Helpers
         private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm, _btnBankWithdrawView, _btnBankPaste;
         private TextView _btnWithdrawMax, _btnWalletMax, _btnSwapMax, _btnBankWithdrawMax;
-        private Spinner _manualWithdrawMethod;
+        private Spinner _manualWithdrawMethod, _walletSwapOutputSpinner;
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
@@ -42,6 +42,7 @@ namespace LudoClient.Platforms.Android.Popups
         private string _preparedSwapRequestId = "";
         private decimal _preparedSwapOutput = 0;
         private string _preparedSwapRouter = "";
+        private string _selectedSwapOutputAsset = "USDC";
         private bool _isWalletConnected = false;
         private bool _isWalletConnecting = false;
 
@@ -88,6 +89,8 @@ namespace LudoClient.Platforms.Android.Popups
             _btnWalletMax = view.FindViewById<TextView>(Resource.Id.btnWalletMax);
             _btnWalletSign = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSign);
             _walletSwapAmount = view.FindViewById<EditText>(Resource.Id.walletSwapAmount);
+            _walletSwapTitle = view.FindViewById<TextView>(Resource.Id.walletSwapTitle);
+            _walletSwapOutputSpinner = view.FindViewById<Spinner>(Resource.Id.walletSwapOutputSpinner);
             _btnSwapMax = view.FindViewById<TextView>(Resource.Id.btnSwapMax);
             _btnWalletSwapView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapView);
             _btnWalletSwapConfirm = view.FindViewById<global::Android.Views.View>(Resource.Id.btnWalletSwapConfirm);
@@ -294,6 +297,18 @@ namespace LudoClient.Platforms.Android.Popups
             var adapter = new ArrayAdapter<string>(Context, Resource.Layout.spinner_item_hud, payoutMethods);
             adapter.SetDropDownViewResource(Resource.Layout.spinner_dropdown_item_hud);
             _manualWithdrawMethod.Adapter = adapter;
+
+            var swapOutputs = new List<string> { "USDC", "SOL" };
+            var swapOutputAdapter = new ArrayAdapter<string>(Context, Resource.Layout.spinner_item_hud, swapOutputs);
+            swapOutputAdapter.SetDropDownViewResource(Resource.Layout.spinner_dropdown_item_hud);
+            _walletSwapOutputSpinner.Adapter = swapOutputAdapter;
+            _walletSwapOutputSpinner.ItemSelected += (s, e) =>
+            {
+                _selectedSwapOutputAsset = swapOutputs[e.Position];
+                ResetSwapPreview();
+                UpdateSwapTitle();
+            };
+            UpdateSwapTitle();
         }
 
         private void SwitchTab(int tabIndex, bool playsound = true)
@@ -478,8 +493,8 @@ namespace LudoClient.Platforms.Android.Popups
 
             try
             {
-                ShowMessage($"Calculating swap: {amount} LUDC...");
-                var result = await GlobalConstants.MatchMaker.PrepareAssetSwap(_userWalletAddress, "LUDC", "USDC", amount, 100);
+                ShowMessage($"Calculating swap: {amount} LUDC to {_selectedSwapOutputAsset}...");
+                var result = await GlobalConstants.MatchMaker.PrepareAssetSwap(_userWalletAddress, "LUDC", _selectedSwapOutputAsset, amount, 100);
                 if (result == null)
                 {
                     ResetSwapPreview();
@@ -497,17 +512,18 @@ namespace LudoClient.Platforms.Android.Popups
                     decimal rawOutAmount = (decimal?)(data["outputAmountRaw"] ?? data["OutputAmountRaw"] ?? data["outAmountRaw"] ?? data["OutAmountRaw"]) ?? 0m;
                     if (rawOutAmount > 0)
                     {
-                        _preparedSwapOutput = rawOutAmount / 1_000_000m;
+                        _preparedSwapOutput = rawOutAmount / GetSwapOutputScale(_selectedSwapOutputAsset);
                     }
                     else
                     {
                         _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"] ?? data["outputAmount"] ?? data["OutputAmount"] ?? data["out_amount"]) ?? 0m;
                     }
 
-                    Console.WriteLine($"[Withdraw] Prepared wallet swap. RequestId={_preparedSwapRequestId}, Router={_preparedSwapRouter}, EstimatedUsdc={_preparedSwapOutput}");
+                    Console.WriteLine($"[Withdraw] Prepared wallet swap. RequestId={_preparedSwapRequestId}, Output={_selectedSwapOutputAsset}, Router={_preparedSwapRouter}, EstimatedOutput={_preparedSwapOutput}");
+                    string format = GetSwapOutputFormat(_selectedSwapOutputAsset);
                     ShowMessage(!string.IsNullOrWhiteSpace(_preparedSwapRouter)
-                        ? $"Preview: receive about {_preparedSwapOutput:N6} USDC via {_preparedSwapRouter}."
-                        : $"Preview: receive about {_preparedSwapOutput:N6} USDC.");
+                        ? $"Preview: receive about {_preparedSwapOutput.ToString(format)} {_selectedSwapOutputAsset} via {_preparedSwapRouter}."
+                        : $"Preview: receive about {_preparedSwapOutput.ToString(format)} {_selectedSwapOutputAsset}.");
                 }
                 else
                 {
@@ -578,6 +594,26 @@ namespace LudoClient.Platforms.Android.Popups
             _preparedSwapRequestId = "";
             _preparedSwapOutput = 0;
             _preparedSwapRouter = "";
+        }
+
+        private void UpdateSwapTitle()
+        {
+            if (_walletSwapTitle != null)
+            {
+                _walletSwapTitle.Text = $"LUDC TO {_selectedSwapOutputAsset} SWAP";
+            }
+        }
+
+        private static decimal GetSwapOutputScale(string assetCode)
+        {
+            return string.Equals(assetCode, "SOL", StringComparison.OrdinalIgnoreCase)
+                ? 1_000_000_000m
+                : 1_000_000m;
+        }
+
+        private static string GetSwapOutputFormat(string assetCode)
+        {
+            return string.Equals(assetCode, "SOL", StringComparison.OrdinalIgnoreCase) ? "N9" : "N6";
         }
 
         private async Task ProcessSolanaWithdraw()
