@@ -36,6 +36,7 @@ namespace LudoClient.Platforms.Android.Popups
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
+        private decimal _phantomSolBalance = 0;
         private decimal _phantomLudcBalance = 0;
         private decimal _phantomUsdcBalance = 0;
         private string _preparedSwapTx = "";
@@ -243,6 +244,7 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _isWalletConnected = false;
                 _userWalletAddress = "";
+                _phantomSolBalance = 0;
                 _phantomLudcBalance = 0;
                 _phantomUsdcBalance = 0;
                 _preparedSwapTx = "";
@@ -285,9 +287,14 @@ namespace LudoClient.Platforms.Android.Popups
             _btnSwapMax.Enabled = enabled; _btnSwapMax.Alpha = alpha;
             _walletAmountEntry.Enabled = enabled;
             _walletSwapAmount.Enabled = enabled;
+            if (_walletSwapOutputSpinner != null)
+            {
+                _walletSwapOutputSpinner.Enabled = enabled;
+                _walletSwapOutputSpinner.Alpha = alpha;
+            }
 
             if (_contentWallet != null && _contentWallet.Visibility == ViewStates.Visible) {
-                _footerText.Text = _isWalletConnecting ? "CONNECTING TO WALLET..." : (_isWalletConnected ? $"PHANTOM LUDC: {_phantomLudcBalance:N2} | USDC: {_phantomUsdcBalance:N6}" : "CONNECT WALLET TO START");
+                _footerText.Text = _isWalletConnecting ? "CONNECTING TO WALLET..." : (_isWalletConnected ? GetWalletBalanceSummary() : "CONNECT WALLET TO START");
             }
         }
 
@@ -439,9 +446,10 @@ namespace LudoClient.Platforms.Android.Popups
                     var data = JObject.Parse(result.ToString());
                     if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
                     {
+                        _phantomSolBalance = (decimal?)(data["phantomSol"] ?? data["PhantomSol"]) ?? 0m;
                         _phantomLudcBalance = (decimal?)(data["phantomLudc"] ?? data["PhantomLudc"]) ?? 0m;
                         _phantomUsdcBalance = (decimal?)(data["phantomUsdc"] ?? data["PhantomUsdc"]) ?? 0m;
-                        Console.WriteLine($"[Withdraw] Server swap balances. PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
+                        Console.WriteLine($"[Withdraw] Server swap balances. PhantomSol={_phantomSolBalance}, PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
                     }
                     else
                     {
@@ -449,9 +457,10 @@ namespace LudoClient.Platforms.Android.Popups
                     }
                 }
 
-                if (_phantomLudcBalance == 0 || _phantomUsdcBalance == 0)
+                if (_phantomSolBalance == 0 || _phantomLudcBalance == 0 || _phantomUsdcBalance == 0)
                 {
                     await ClientGlobalConstants.WalletConnection.RefreshBalances();
+                    _phantomSolBalance = (decimal)ClientGlobalConstants.WalletConnection.SolBalance;
                     var ludc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_MAINNET)
                             ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_DEVNET);
                     if (ludc != null) _phantomLudcBalance = ludc.Amount;
@@ -459,7 +468,7 @@ namespace LudoClient.Platforms.Android.Popups
                     var usdc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_MAINNET)
                             ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_DEVNET);
                     if (usdc != null) _phantomUsdcBalance = usdc.Amount;
-                    Console.WriteLine($"[Withdraw] Local wallet balances. PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
+                    Console.WriteLine($"[Withdraw] Local wallet balances. PhantomSol={_phantomSolBalance}, PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
                 }
 
                 MainThread.BeginInvokeOnMainThread(UpdateWalletUIState);
@@ -614,6 +623,11 @@ namespace LudoClient.Platforms.Android.Popups
         private static string GetSwapOutputFormat(string assetCode)
         {
             return string.Equals(assetCode, "SOL", StringComparison.OrdinalIgnoreCase) ? "N9" : "N6";
+        }
+
+        private string GetWalletBalanceSummary()
+        {
+            return $"SOL: {_phantomSolBalance:N4} | LUDC: {_phantomLudcBalance:N2} | USDC: {_phantomUsdcBalance:N6}";
         }
 
         private async Task ProcessSolanaWithdraw()

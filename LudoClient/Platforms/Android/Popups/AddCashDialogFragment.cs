@@ -292,11 +292,7 @@ namespace LudoClient.Platforms.Android.Popups
             MainThread.BeginInvokeOnMainThread(() => {
                 if (_contentWallet.Visibility == ViewStates.Visible)
                 {
-                    string selectedAsset = _swapInputAsset.SelectedItem?.ToString() ?? "SOL";
-                    decimal assetBal = selectedAsset == "SOL" ? _phantomSolBalance : _phantomUsdcBalance;
-                    
-                    // Show both LUDC and the selected swap asset in the footer portal
-                    _infoAddressText.Text = $"LUDC: {_phantomLudcBalance:N2}  |  {selectedAsset}: {assetBal:N4}";
+                    _infoAddressText.Text = $"SOL: {_phantomSolBalance:N4} | LUDC: {_phantomLudcBalance:N2} | USDC: {_phantomUsdcBalance:N6}";
                 }
             });
         }
@@ -327,7 +323,7 @@ namespace LudoClient.Platforms.Android.Popups
             }
             else
             {
-                _swapInputAmount.Text = bal.ToString("F2");
+                _swapInputAmount.Text = bal.ToString("F6");
             }
         }
 
