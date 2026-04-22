@@ -71,10 +71,6 @@ namespace SignalR.Server
                 {
                     receiver = wallet.WalletAddress;
                 }
-                else if (!string.IsNullOrEmpty(outputConfig.Value.TokenProgram))
-                {
-                    receiver = DeriveAssociatedTokenAddress(senderWalletAddress, outputConfig.Value.Mint, outputConfig.Value.TokenProgram);
-                }
                 else
                 {
                     receiver = senderWalletAddress;
@@ -93,17 +89,60 @@ namespace SignalR.Server
                 if (string.IsNullOrEmpty(swapTx)) swapTx = GetJsonString(root, "swapTransaction"); // Fallback for V6
 
                 var reqId = GetJsonString(root, "requestId");
+                var inAmt = GetJsonString(root, "inAmount", amountRaw.ToString());
                 var outAmt = GetJsonString(root, "outAmount", "0");
+                var outUsdValue = GetJsonString(root, "outUsdValue");
+                var priceImpactPct = GetJsonString(root, "priceImpactPct");
+                var router = GetJsonString(root, "router");
+                var error = GetJsonString(root, "error");
+                var errorMessage = GetJsonString(root, "errorMessage");
 
-                Console.WriteLine($"[LudoHub] Prepared Swap: Req={reqId}, TxLen={swapTx?.Length}, Out={outAmt}");
+                if (!string.IsNullOrWhiteSpace(error) || !string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    var swapError = string.IsNullOrWhiteSpace(errorMessage) ? error : errorMessage;
+                    if (string.Equals(swapError, "Insufficient funds", StringComparison.OrdinalIgnoreCase))
+                    {
+                        swapError = normalizedInput == "USDC"
+                            ? "Insufficient funds in Phantom wallet. You need enough USDC and a small SOL balance for fees."
+                            : $"Insufficient {normalizedInput} in Phantom wallet.";
+                    }
+                    else if (string.Equals(swapError, "Failed to get quotes", StringComparison.OrdinalIgnoreCase))
+                    {
+                        swapError = "No swap route is available for this amount right now. Try a smaller amount.";
+                    }
+
+                    return new { Success = false, Error = swapError };
+                }
+
+                decimal? normalizedOutAmount = null;
+                if (decimal.TryParse(outAmt, out var rawOut))
+                {
+                    decimal outputScale = (decimal)Math.Pow(10, outputConfig.Value.Decimals);
+                    normalizedOutAmount = rawOut / outputScale;
+                }
+
+                Console.WriteLine($"[LudoHub] Prepared Swap: Req={reqId}, TxLen={swapTx?.Length}, OutRaw={outAmt}, OutNormalized={normalizedOutAmount}");
 
                 return new
                 {
                     Success = true,
+                    InputAsset = normalizedInput,
+                    InputMint = inputConfig.Value.Mint,
+                    InputAmount = amount,
+                    InputAmountRaw = inAmt,
+                    OutputAsset = normalizedOutput,
+                    OutputMint = outputConfig.Value.Mint,
                     SwapTransaction = swapTx,
-                    OutAmount = decimal.TryParse(outAmt, out var oa) ? (decimal?)oa : null,
-                    PriceImpactPct = decimal.TryParse(GetJsonString(root, "priceImpactPct"), out var pip) ? (decimal?)pip : null,
-                    RequestId = reqId
+                    Transaction = swapTx,
+                    OutAmount = normalizedOutAmount,
+                    OutAmountRaw = outAmt,
+                    OutputAmountRaw = outAmt,
+                    Receiver = receiver,
+                    PriceImpactPct = priceImpactPct,
+                    Router = router,
+                    OutUsdValue = outUsdValue,
+                    RequestId = reqId,
+                    SlippageBps = slippageBps
                 };
             }
             catch (Exception ex)

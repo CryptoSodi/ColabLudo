@@ -9,6 +9,7 @@ namespace LudoClient.SolanaWallet
     public static class SolanaTokenService
     {
         public static readonly PublicKey TOKEN_2022_PROGRAM_ID = new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+        public static readonly PublicKey STANDARD_TOKEN_PROGRAM_ID = new PublicKey("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
         public static readonly PublicKey ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
 
         // LUDC Mints
@@ -72,8 +73,13 @@ namespace LudoClient.SolanaWallet
 
         public static PublicKey FindAssociatedTokenAddress(PublicKey owner, PublicKey mint)
         {
+            return FindAssociatedTokenAddress(owner, mint, TOKEN_2022_PROGRAM_ID);
+        }
+
+        public static PublicKey FindAssociatedTokenAddress(PublicKey owner, PublicKey mint, PublicKey tokenProgramId)
+        {
             if (!PublicKey.TryFindProgramAddress(
-                new[] { owner.KeyBytes, TOKEN_2022_PROGRAM_ID.KeyBytes, mint.KeyBytes },
+                new[] { owner.KeyBytes, tokenProgramId.KeyBytes, mint.KeyBytes },
                 ASSOCIATED_TOKEN_PROGRAM_ID,
                 out var ata,
                 out _))

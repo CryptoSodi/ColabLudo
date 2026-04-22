@@ -20,15 +20,20 @@ namespace SignalR.Server.Services
             return request;
         }
 
-        public async Task<JsonDocument> GetOrderAsync(string inputMint, string outputMint, string amountRaw, string taker, string receiver, int slippageBps)
+        public async Task<JsonDocument> GetOrderAsync(string inputMint, string outputMint, string amountRaw, string taker, string? receiver, int slippageBps)
         {
             var query =
                 $"/swap/v2/order?inputMint={Uri.EscapeDataString(inputMint)}" +
                 $"&outputMint={Uri.EscapeDataString(outputMint)}" +
                 $"&amount={Uri.EscapeDataString(amountRaw)}" +
                 $"&slippageBps={slippageBps}" +
-                $"&taker={Uri.EscapeDataString(taker)}" +
-                $"&receiver={Uri.EscapeDataString(receiver)}";
+                $"&taker={Uri.EscapeDataString(taker)}";
+
+            if (!string.IsNullOrWhiteSpace(receiver) &&
+                !string.Equals(receiver, taker, StringComparison.Ordinal))
+            {
+                query += $"&receiver={Uri.EscapeDataString(receiver)}";
+            }
 
             using var request = CreateRequest(HttpMethod.Get, query);
             using var response = await _httpClient.SendAsync(request);

@@ -4,6 +4,9 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using LudoClient.Constants;
+using LudoClient.SolanaWallet;
+using Newtonsoft.Json.Linq;
+using SharedCode;
 using SharedCode.Constants;
 
 namespace LudoClient.Platforms.Android.Popups
@@ -33,6 +36,12 @@ namespace LudoClient.Platforms.Android.Popups
 
         private string _userWalletAddress = "";
         private decimal _solBalance = 0;
+        private decimal _phantomLudcBalance = 0;
+        private decimal _phantomUsdcBalance = 0;
+        private string _preparedSwapTx = "";
+        private string _preparedSwapRequestId = "";
+        private decimal _preparedSwapOutput = 0;
+        private string _preparedSwapRouter = "";
         private bool _isWalletConnected = false;
         private bool _isWalletConnecting = false;
 
@@ -125,7 +134,7 @@ namespace LudoClient.Platforms.Android.Popups
             _btnSwapMax.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                _walletSwapAmount.Text = _solBalance.ToString("F2");
+                _walletSwapAmount.Text = _phantomLudcBalance.ToString("F2");
             };
             _btnWalletSign.Click += async (s, e) => {
                 if (!_isWalletConnected) return;
@@ -135,13 +144,12 @@ namespace LudoClient.Platforms.Android.Popups
             _btnWalletSwapView.Click += (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                _addressEntry.Text = _userWalletAddress; // Link connected wallet to Solana tab
-                ShowMessage("Wallet address linked to withdrawal.");
+                _ = PreviewWalletSwap();
             };
-            _btnWalletSwapConfirm.Click += (s, e) => {
+            _btnWalletSwapConfirm.Click += async (s, e) => {
                 if (!_isWalletConnected) return;
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                // TODO: Implement Swap confirm logic if needed, or link to swap view
+                await ProcessWalletSwap();
             };
             _btnPhantomConnect.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -209,6 +217,7 @@ namespace LudoClient.Platforms.Android.Popups
                         _userWalletAddress = ClientGlobalConstants.WalletConnection.MainAddressBase58;
                         _phantomBtnText.Text = "DISCONNECT";
                         _phantomBtnBg.SetImageResource(Resource.Drawable.btn_pink);
+                        _ = LoadWalletBalances();
                         ShowMessage("Wallet Connected Successfully!");
                     }
                     else
@@ -231,6 +240,11 @@ namespace LudoClient.Platforms.Android.Popups
             {
                 _isWalletConnected = false;
                 _userWalletAddress = "";
+                _phantomLudcBalance = 0;
+                _phantomUsdcBalance = 0;
+                _preparedSwapTx = "";
+                _preparedSwapRequestId = "";
+                _preparedSwapOutput = 0;
                 await ClientGlobalConstants.WalletConnection.DisconnectAsync(true);
                 _phantomBtnText.Text = "CONNECT";
                 _phantomBtnBg.SetImageResource(Resource.Drawable.btn_verify_account);
@@ -270,7 +284,7 @@ namespace LudoClient.Platforms.Android.Popups
             _walletSwapAmount.Enabled = enabled;
 
             if (_contentWallet != null && _contentWallet.Visibility == ViewStates.Visible) {
-                _footerText.Text = _isWalletConnecting ? "CONNECTING TO WALLET..." : (_isWalletConnected ? "WALLET READY FOR PAYOUTS" : "CONNECT WALLET TO START");
+                _footerText.Text = _isWalletConnecting ? "CONNECTING TO WALLET..." : (_isWalletConnected ? $"PHANTOM LUDC: {_phantomLudcBalance:N2} | USDC: {_phantomUsdcBalance:N6}" : "CONNECT WALLET TO START");
             }
         }
 
@@ -392,6 +406,178 @@ namespace LudoClient.Platforms.Android.Popups
                 }
             }
             catch (Exception ex) { ShowMessage("Hub Error: " + ex.Message); }
+        }
+
+        private async Task LoadWalletBalances()
+        {
+            if (string.IsNullOrEmpty(_userWalletAddress))
+                _userWalletAddress = ClientGlobalConstants.WalletConnection.MainAddressBase58 ?? "";
+
+            if (!_isWalletConnected || string.IsNullOrEmpty(_userWalletAddress))
+                return;
+
+            try
+            {
+                var result = await GlobalConstants.MatchMaker.GetSwapBalances(_userWalletAddress);
+                if (result != null)
+                {
+                    var data = JObject.Parse(result.ToString());
+                    if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
+                    {
+                        _phantomLudcBalance = (decimal?)(data["phantomLudc"] ?? data["PhantomLudc"]) ?? 0m;
+                        _phantomUsdcBalance = (decimal?)(data["phantomUsdc"] ?? data["PhantomUsdc"]) ?? 0m;
+                        Console.WriteLine($"[Withdraw] Server swap balances. PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[Withdraw] Server swap balances failed: {result}");
+                    }
+                }
+
+                if (_phantomLudcBalance == 0 || _phantomUsdcBalance == 0)
+                {
+                    await ClientGlobalConstants.WalletConnection.RefreshBalances();
+                    var ludc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_MAINNET)
+                            ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.LUDC_MINT_DEVNET);
+                    if (ludc != null) _phantomLudcBalance = ludc.Amount;
+
+                    var usdc = ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_MAINNET)
+                            ?? ClientGlobalConstants.WalletConnection.TokenBalances.FirstOrDefault(t => t.Mint == SolanaTokenService.USDC_MINT_DEVNET);
+                    if (usdc != null) _phantomUsdcBalance = usdc.Amount;
+                    Console.WriteLine($"[Withdraw] Local wallet balances. PhantomLudc={_phantomLudcBalance}, PhantomUsdc={_phantomUsdcBalance}");
+                }
+
+                MainThread.BeginInvokeOnMainThread(UpdateWalletUIState);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Withdraw] Error loading wallet balances: {ex.Message}");
+            }
+        }
+
+        private async Task PreviewWalletSwap()
+        {
+            if (!_isWalletConnected || string.IsNullOrEmpty(_userWalletAddress))
+            {
+                ShowMessage("Connect wallet first.");
+                return;
+            }
+
+            string amountText = _walletSwapAmount.Text?.Trim();
+            if (string.IsNullOrEmpty(amountText) || !decimal.TryParse(amountText, out decimal amount) || amount <= 0)
+            {
+                ShowMessage("Enter a valid amount.");
+                return;
+            }
+
+            if (amount > _phantomLudcBalance)
+            {
+                ShowMessage($"Insufficient Phantom LUDC. Balance: {_phantomLudcBalance:N2}");
+                return;
+            }
+
+            try
+            {
+                ShowMessage($"Calculating swap: {amount} LUDC...");
+                var result = await GlobalConstants.MatchMaker.PrepareAssetSwap(_userWalletAddress, "LUDC", "USDC", amount, 100);
+                if (result == null)
+                {
+                    ResetSwapPreview();
+                    ShowMessage("Failed to get swap quote.");
+                    return;
+                }
+
+                var data = JObject.Parse(result.ToString());
+                if ((bool?)data["success"] == true || (bool?)data["Success"] == true)
+                {
+                    _preparedSwapTx = (string)(data["transaction"] ?? data["Transaction"] ?? data["swapTransaction"] ?? data["SwapTransaction"] ?? data["swap_transaction"]);
+                    _preparedSwapRequestId = (string)(data["requestId"] ?? data["RequestId"] ?? data["request_id"]);
+                    _preparedSwapRouter = (string)(data["router"] ?? data["Router"]) ?? "";
+
+                    decimal rawOutAmount = (decimal?)(data["outputAmountRaw"] ?? data["OutputAmountRaw"] ?? data["outAmountRaw"] ?? data["OutAmountRaw"]) ?? 0m;
+                    if (rawOutAmount > 0)
+                    {
+                        _preparedSwapOutput = rawOutAmount / 1_000_000m;
+                    }
+                    else
+                    {
+                        _preparedSwapOutput = (decimal?)(data["outAmount"] ?? data["OutAmount"] ?? data["outputAmount"] ?? data["OutputAmount"] ?? data["out_amount"]) ?? 0m;
+                    }
+
+                    Console.WriteLine($"[Withdraw] Prepared wallet swap. RequestId={_preparedSwapRequestId}, Router={_preparedSwapRouter}, EstimatedUsdc={_preparedSwapOutput}");
+                    ShowMessage(!string.IsNullOrWhiteSpace(_preparedSwapRouter)
+                        ? $"Preview: receive about {_preparedSwapOutput:N6} USDC via {_preparedSwapRouter}."
+                        : $"Preview: receive about {_preparedSwapOutput:N6} USDC.");
+                }
+                else
+                {
+                    ResetSwapPreview();
+                    string err = (string)(data["error"] ?? data["Error"]) ?? "Failed to get swap quote.";
+                    ShowMessage($"Swap Error: {err}");
+                }
+            }
+            catch (Exception ex)
+            {
+                ResetSwapPreview();
+                ShowMessage($"Preview failed: {ex.Message}");
+            }
+        }
+
+        private async Task ProcessWalletSwap()
+        {
+            if (!_isWalletConnected || string.IsNullOrEmpty(_userWalletAddress))
+            {
+                ShowMessage("Connect wallet first.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_preparedSwapTx) || string.IsNullOrEmpty(_preparedSwapRequestId))
+            {
+                ShowMessage("Get a quote first.");
+                return;
+            }
+
+            try
+            {
+                ShowMessage("Awaiting wallet signature...");
+                var txBytes = Convert.FromBase64String(_preparedSwapTx);
+                string signedTxBase64 = await ClientGlobalConstants.WalletConnection.SignRawTransaction(txBytes);
+
+                if (string.IsNullOrEmpty(signedTxBase64))
+                {
+                    ShowMessage("Swap signature was declined.");
+                    return;
+                }
+
+                ShowMessage("Broadcasting swap...");
+                BlockchainResult result = await GlobalConstants.MatchMaker.ExecutePreparedSwap(_preparedSwapRequestId, signedTxBase64);
+                if (result != null && result.Success)
+                {
+                    string sigDisplay = !string.IsNullOrEmpty(result.Signature)
+                        ? result.Signature.Substring(0, Math.Min(8, result.Signature.Length))
+                        : "unknown";
+                    ShowMessage($"Swap sent: {sigDisplay}...");
+                    _walletSwapAmount.Text = "";
+                    ResetSwapPreview();
+                    _ = LoadWalletBalances();
+                }
+                else
+                {
+                    ShowMessage("Swap Failed: " + (result?.Error ?? "Unknown error"));
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("Swap Error: " + ex.Message);
+            }
+        }
+
+        private void ResetSwapPreview()
+        {
+            _preparedSwapTx = "";
+            _preparedSwapRequestId = "";
+            _preparedSwapOutput = 0;
+            _preparedSwapRouter = "";
         }
 
         private async Task ProcessSolanaWithdraw()

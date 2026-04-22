@@ -8,6 +8,9 @@ using SignalR.Server.Payments;
 using SignalR.Server.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Logging.AddFilter("System.Net.Http.HttpClient.JupiterSwapService", LogLevel.Warning);
+builder.Logging.AddFilter("System.Net.Http.HttpClient.JupiterSwapService.LogicalHandler", LogLevel.Warning);
+builder.Logging.AddFilter("System.Net.Http.HttpClient.JupiterSwapService.ClientHandler", LogLevel.Warning);
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {

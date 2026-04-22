@@ -144,16 +144,29 @@ namespace LudoClient.SolanaWallet
                 async Task FetchToken(string mintAddr, string symbol)
                 {
                     try {
-                        var ata = SolanaTokenService.FindAssociatedTokenAddress(owner, new PublicKey(mintAddr));
-                        var bal = await _rpcClient.GetTokenAccountBalanceAsync(ata.ToString());
+                        var tokenProgram = symbol == "USDC"
+                            ? SolanaTokenService.STANDARD_TOKEN_PROGRAM_ID
+                            : SolanaTokenService.TOKEN_2022_PROGRAM_ID;
+                        var ata = SolanaTokenService.FindAssociatedTokenAddress(owner, new PublicKey(mintAddr), tokenProgram);
+                        Console.WriteLine($"[WMA] Fetching {symbol} balance. Owner={MainAddressBase58}, Ata={ata.Key}, Mint={mintAddr}, TokenProgram={tokenProgram.Key}");
+                        var bal = await _rpcClient.GetTokenAccountBalanceAsync(ata.Key);
                         if (bal.WasSuccessful && bal.Result?.Value != null)
                         {
+                            decimal parsedAmount = bal.Result.Value.AmountDecimal;
+                            if (parsedAmount == 0 && !string.IsNullOrWhiteSpace(bal.Result.Value.UiAmountString))
+                                decimal.TryParse(bal.Result.Value.UiAmountString, out parsedAmount);
+
+                            Console.WriteLine($"[WMA] {symbol} balance fetched. Ata={ata.Key}, Raw={bal.Result.Value.Amount}, Ui={bal.Result.Value.UiAmountString}, Parsed={parsedAmount}");
                             newList.Add(new TokenBalance {
                                 Mint = mintAddr,
-                                Amount = bal.Result.Value.AmountDecimal,
+                                Amount = parsedAmount,
                                 Decimals = bal.Result.Value.Decimals,
                                 Symbol = symbol
                             });
+                        }
+                        else
+                        {
+                            Console.WriteLine($"[WMA] {symbol} balance fetch failed. Ata={ata.Key}, Success={bal.WasSuccessful}, Reason={bal.Reason}");
                         }
                     } catch { }
                 }
