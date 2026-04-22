@@ -318,6 +318,65 @@ namespace SignalR.Server
             }
         }
 
+        public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string referenceNumber, string receiptUrl)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+
+                if (amount <= 0)
+                    return "Invalid amount.";
+
+                string normalizedMethod = (method ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedMethod))
+                    return "Select a payment method.";
+
+                string normalizedReference = (referenceNumber ?? string.Empty).Trim().ToUpperInvariant();
+                if (string.IsNullOrWhiteSpace(normalizedReference))
+                    return "Reference number is required.";
+
+                string normalizedReceipt = (receiptUrl ?? string.Empty).Trim();
+                Console.WriteLine($"[LudoHub] SubmitManualDeposit payload: amount={amount}, method={normalizedMethod}, reference={normalizedReference}, receiptLen={normalizedReceipt.Length}, receiptPrefix={(normalizedReceipt.Length > 32 ? normalizedReceipt[..32] : normalizedReceipt)}");
+                if (string.IsNullOrWhiteSpace(normalizedReceipt))
+                    return "Receipt proof is required.";
+
+                // Do not trust the client-sent player id when the caller is already authenticated on LudoHub.
+                if (playerId > 0 && playerId != player.PlayerId)
+                {
+                    Console.WriteLine($"[LudoHub] SubmitManualDeposit player mismatch. Caller={player.PlayerId}, Payload={playerId}");
+                }
+
+                using var ctx = _contextFactory.CreateDbContext();
+                bool duplicateExists = await ctx.CashDeposits.AnyAsync(d =>
+                    d.ReferenceNumber == normalizedReference ||
+                    d.ReceiptImageUrl == normalizedReceipt);
+
+                if (duplicateExists)
+                    return "Duplicate receipt or reference number.";
+
+                var deposit = new CashDeposit
+                {
+                    PlayerId = player.PlayerId,
+                    Amount = amount,
+                    ReferenceNumber = normalizedReference,
+                    PaymentMethod = normalizedMethod,
+                    ReceiptImageUrl = normalizedReceipt,
+                    Status = "Pending",
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                ctx.CashDeposits.Add(deposit);
+                await ctx.SaveChangesAsync();
+                Console.WriteLine($"[LudoHub] SubmitManualDeposit saved: depositId={deposit.Id}, receiptLen={deposit.ReceiptImageUrl?.Length ?? 0}");
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudoHub] SubmitManualDeposit Error: {ex.Message}");
+                return "Error";
+            }
+        }
+
         public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
         {
             try

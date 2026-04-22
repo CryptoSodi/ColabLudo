@@ -39,7 +39,12 @@ builder.Services.AddCors(o =>
 // Load secrets (local dev) and environment variables (for production)
 
 // Add SignalR services
-builder.Services.AddSignalR(o => o.StatefulReconnectBufferSize = 100_000);
+builder.Services.AddSignalR(o =>
+{
+    o.StatefulReconnectBufferSize = 100_000;
+    // Manual deposit receipts are sent as base64 data URIs, which can exceed the default 32 KB limit.
+    o.MaximumReceiveMessageSize = 5 * 1024 * 1024;
+});
 
 builder.Services.AddDbContextFactory<LudoDbContext>(options => options.UseSqlServer(dbstring).EnableSensitiveDataLogging(false));// Turn off verbose logging
 

@@ -41,6 +41,23 @@ namespace LudoServer.Data
                 .WithOne(a => a.Player)
                 .HasForeignKey(a => a.PlayerId);
 
+            modelBuilder.Entity<CashDeposit>()
+                .HasOne(cd => cd.Player)
+                .WithMany()
+                .HasForeignKey(cd => cd.PlayerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CashDeposit>()
+                .HasOne(cd => cd.ProcessedByAdmin)
+                .WithMany()
+                .HasForeignKey(cd => cd.ProcessedByAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CashDeposit>()
+                .HasIndex(cd => cd.ReferenceNumber)
+                .IsUnique()
+                .HasFilter("[ReferenceNumber] IS NOT NULL");
+
       
 
             // Self-referencing many-to-many relationship for Friend Requests for Sender

@@ -17,7 +17,7 @@ namespace LudoServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.8")
+                .HasAnnotation("ProductVersion", "9.0.9")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -46,6 +46,9 @@ namespace LudoServer.Migrations
                     b.Property<int>("PlayerId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProcessedByAdminId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("ProcessedDate")
                         .HasColumnType("datetime2");
 
@@ -60,6 +63,8 @@ namespace LudoServer.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("PlayerId");
+
+                    b.HasIndex("ProcessedByAdminId");
 
                     b.ToTable("CashDeposits");
                 });
@@ -583,10 +588,17 @@ namespace LudoServer.Migrations
                     b.HasOne("LudoServer.Models.Player", "Player")
                         .WithMany()
                         .HasForeignKey("PlayerId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("LudoServer.Models.Player", "ProcessedByAdmin")
+                        .WithMany()
+                        .HasForeignKey("ProcessedByAdminId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("Player");
+
+                    b.Navigation("ProcessedByAdmin");
                 });
 
             modelBuilder.Entity("LudoServer.Models.DailyBonus", b =>

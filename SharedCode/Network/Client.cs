@@ -406,5 +406,23 @@ namespace SharedCode.Network
                 return null;
             }
         }
+
+        public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string referenceNumber, string receiptUrl)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return "Hub not connected";
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<string>("SubmitManualDeposit", playerId, amount, method, referenceNumber, receiptUrl).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] SubmitManualDeposit Error: {ex.Message}");
+                return "Error";
+            }
+        }
     }
 }

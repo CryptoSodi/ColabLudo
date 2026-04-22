@@ -13,6 +13,8 @@ namespace LudoServer.Models
         [Column(TypeName = "decimal(18, 8)")]
         public decimal Amount { get; set; }
 
+        public string ReferenceNumber { get; set; } = "";
+
         public string PaymentMethod { get; set; } = ""; // JazzCash, PayTM, etc.
         
         public string ReceiptImageUrl { get; set; } = "";
@@ -20,11 +22,15 @@ namespace LudoServer.Models
         public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
         
         public string? AdminNote { get; set; }
+        public int? ProcessedByAdminId { get; set; }
         
         public DateTime CreatedDate { get; set; } = DateTime.UtcNow;
         public DateTime? ProcessedDate { get; set; }
 
         [ForeignKey("PlayerId")]
         public Player Player { get; set; }
+
+        [ForeignKey("ProcessedByAdminId")]
+        public Player? ProcessedByAdmin { get; set; }
     }
 }

@@ -27,6 +27,7 @@
 		<ApplicationId>com.ludoengine.ludocities</ApplicationId>
 
 		<!-- Versions -->
+		<PackageVersion>1.1.19</PackageVersion>
 		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 

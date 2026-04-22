@@ -101,6 +101,29 @@ namespace SignalR.Server
             _clientRpcUrl = clientRpcUrl ?? string.Empty;
         }
 
+        private async Task<Player?> GetAuthorizedAdmin(string authToken, bool allowManager = true)
+        {
+            if (string.IsNullOrWhiteSpace(authToken))
+                return null;
+
+            var playerIdStr = _utilService.Decrypt(authToken);
+            if (!int.TryParse(playerIdStr, out int playerId))
+                return null;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            var admin = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            if (admin == null || !admin.IsActive || admin.IsBlocked)
+                return null;
+
+            if (admin.Role == "Admin")
+                return admin;
+
+            if (allowManager && admin.Role == "Manager")
+                return admin;
+
+            return null;
+        }
+
         public async Task<bool> ValidateSession(string authToken, string requiredRole)
         {
             try
@@ -890,23 +913,45 @@ namespace SignalR.Server
             }
         }
 
-        public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string receiptUrl)
+        public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string referenceNumber, string receiptUrl)
         {
             try
             {
                 using var ctx = _contextFactory.CreateDbContext();
+                string normalizedReference = (referenceNumber ?? string.Empty).Trim().ToUpperInvariant();
+                string normalizedReceipt = (receiptUrl ?? string.Empty).Trim();
+                Console.WriteLine($"[DashboardHub] SubmitManualDeposit payload: playerId={playerId}, amount={amount}, method={method}, reference={normalizedReference}, receiptLen={normalizedReceipt.Length}, receiptPrefix={(normalizedReceipt.Length > 32 ? normalizedReceipt[..32] : normalizedReceipt)}");
+
+                if (amount <= 0)
+                    return "Invalid amount.";
+
+                if (string.IsNullOrWhiteSpace(normalizedReference))
+                    return "Reference number is required.";
+
+                if (string.IsNullOrWhiteSpace(normalizedReceipt))
+                    return "Receipt proof is required.";
+
+                bool duplicateExists = await ctx.CashDeposits.AnyAsync(d =>
+                    d.ReferenceNumber == normalizedReference ||
+                    d.ReceiptImageUrl == normalizedReceipt);
+
+                if (duplicateExists)
+                    return "Duplicate receipt or reference number.";
+
                 var deposit = new CashDeposit
                 {
                     PlayerId = playerId,
                     Amount = amount,
+                    ReferenceNumber = normalizedReference,
                     PaymentMethod = method,
-                    ReceiptImageUrl = receiptUrl,
+                    ReceiptImageUrl = normalizedReceipt,
                     Status = "Pending",
                     CreatedDate = DateTime.UtcNow
                 };
 
                 ctx.CashDeposits.Add(deposit);
                 await ctx.SaveChangesAsync();
+                Console.WriteLine($"[DashboardHub] SubmitManualDeposit saved: depositId={deposit.Id}, receiptLen={deposit.ReceiptImageUrl?.Length ?? 0}");
                 return "Success";
             }
             catch (Exception ex)
@@ -930,6 +975,7 @@ namespace SignalR.Server
                         Id = d.Id,
                         PlayerName = d.Player.Name,
                         playerId = d.PlayerId,
+                        ReferenceNumber = d.ReferenceNumber,
                         Amount = d.Amount,
                         Method = d.PaymentMethod,
                         ReceiptUrl = d.ReceiptImageUrl,
@@ -945,60 +991,46 @@ namespace SignalR.Server
             }
         }
 
-        public async Task<string> ApproveDeposit(int depositId, string note)
+        public async Task<string> ProcessDeposit(string authToken, int depositId, string action, string note)
         {
             try
             {
-                // Verify caller is admin (In production, use [Authorize(Roles="Admin")] and check Claims)
+                var admin = await GetAuthorizedAdmin(authToken);
+                if (admin == null) return "Unauthorized.";
+
+                var normalizedAction = (action ?? string.Empty).Trim();
+                if (normalizedAction != "Approved" && normalizedAction != "Rejected")
+                    return "Invalid action.";
+
                 using var ctx = _contextFactory.CreateDbContext();
                 var deposit = await ctx.CashDeposits.FirstOrDefaultAsync(d => d.Id == depositId);
                 if (deposit == null || deposit.Status != "Pending") return "Not Found";
 
-                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == deposit.PlayerId);
-                if (wallet == null) return "Wallet Not Found";
-
-                // 1. Credit Wallet
-                wallet.AvailableBalance += deposit.Amount;
-                
-                // 2. Log Transaction
-                var transaction = new WalletTransaction
+                if (normalizedAction == "Approved")
                 {
-                    PlayerId = deposit.PlayerId,
-                    Amount = deposit.Amount,
-                    Type = TransactionType.Deposit,
-                    Status = WalletTransactionStatus.Completed,
-                    Description = $"Approved {deposit.PaymentMethod} deposit. {note}",
-                    OperationId = Guid.NewGuid(),
-                    BalanceAfter = wallet.AvailableBalance
-                };
+                    var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == deposit.PlayerId);
+                    if (wallet == null) return "Wallet Not Found";
 
-                deposit.Status = "Approved";
+                    wallet.AvailableBalance += deposit.Amount;
+
+                    var transaction = new WalletTransaction
+                    {
+                        PlayerId = deposit.PlayerId,
+                        Amount = deposit.Amount,
+                        Type = TransactionType.Deposit,
+                        Status = WalletTransactionStatus.Completed,
+                        Description = $"Approved {deposit.PaymentMethod} deposit ({deposit.ReferenceNumber}). {note}",
+                        OperationId = Guid.NewGuid(),
+                        BalanceAfter = wallet.AvailableBalance
+                    };
+
+                    ctx.WalletTransaction.Add(transaction);
+                    ctx.PlayerWallet.Update(wallet);
+                }
+
+                deposit.Status = normalizedAction;
                 deposit.AdminNote = note;
-                deposit.ProcessedDate = DateTime.UtcNow;
-
-                ctx.WalletTransaction.Add(transaction);
-                ctx.CashDeposits.Update(deposit);
-                ctx.PlayerWallet.Update(wallet);
-
-                await ctx.SaveChangesAsync();
-                return "Success";
-            }
-            catch (Exception ex)
-            {
-                return "Error: " + ex.Message;
-            }
-        }
-
-        public async Task<string> RejectDeposit(int depositId, string note)
-        {
-            try
-            {
-                using var ctx = _contextFactory.CreateDbContext();
-                var deposit = await ctx.CashDeposits.FirstOrDefaultAsync(d => d.Id == depositId);
-                if (deposit == null || deposit.Status != "Pending") return "Not Found";
-
-                deposit.Status = "Rejected";
-                deposit.AdminNote = note;
+                deposit.ProcessedByAdminId = admin.PlayerId;
                 deposit.ProcessedDate = DateTime.UtcNow;
 
                 ctx.CashDeposits.Update(deposit);

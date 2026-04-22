@@ -6,6 +6,8 @@ using Android.OS;
 using Android.Provider;
 using Android.Views;
 using Android.Widget;
+using AndroidX.ExifInterface.Media;
+using System.Globalization;
 using LudoClient.Constants;
 using LudoClient.SolanaWallet;
 using Newtonsoft.Json.Linq;
@@ -19,13 +21,13 @@ namespace LudoClient.Platforms.Android.Popups
 {
     public class AddCashDialogFragment : global::AndroidX.Fragment.App.DialogFragment
     {
-        private TextView _coinsText, _infoAddressTitle, _infoAddressText, _phantomBtnText, _receiptStatus, _selectedAccountNumber;
+        private TextView _coinsText, _infoAddressTitle, _infoAddressText, _phantomBtnText, _selectedAccountNumber;
         private ImageView _qrCodeImage, _receiptPreview, _tabQRImg, _tabWalletImg, _tabBankImg, _phantomBtnBg;
         private TextView _tabQRText, _tabWalletText, _tabBankText;
-        private EditText _walletTransferAmount, _swapInputAmount, _manualAmount;
+        private EditText _walletTransferAmount, _swapInputAmount, _manualAmount, _manualReference;
         private Spinner _swapInputAsset, _manualMethod;
         private global::Android.Views.View _copyBtn, _tabQR, _tabWallet, _tabBank, _contentQR, _contentWallet, _contentBank, _footerSection;
-        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap, _btnSwapPreview, _btnPickImage, _btnBankCopy, _btnBankView, _btnSubmitManual;
+        private global::Android.Views.View _btnPhantomConnect, _btnWalletTransfer, _btnWalletSwap, _btnSwapPreview, _btnPickImage, _btnBankCopy, _btnSubmitManual;
         private TextView _btnDepositMax, _btnSwapMax;
 
         private string _walletAddress = ""; // This is the PLAYER'S deposit address
@@ -41,6 +43,8 @@ namespace LudoClient.Platforms.Android.Popups
         private bool _isWalletConnected = false;
         private bool _isWalletConnecting = false;
         private const int PickImageRequest = 1001;
+        private const int MaxReceiptDimension = 1280;
+        private const int MaxReceiptBytes = 900 * 1024;
 
         public override global::Android.Views.View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
@@ -91,13 +95,12 @@ namespace LudoClient.Platforms.Android.Popups
 
             // Bank Tab Elements
             _manualAmount = view.FindViewById<EditText>(Resource.Id.manualAmount);
+            _manualReference = view.FindViewById<EditText>(Resource.Id.manualReference);
             _manualMethod = view.FindViewById<Spinner>(Resource.Id.manualMethod);
             _btnPickImage = view.FindViewById<global::Android.Views.View>(Resource.Id.btnPickImage);
             _receiptPreview = view.FindViewById<ImageView>(Resource.Id.receiptPreview);
-            _receiptStatus = view.FindViewById<TextView>(Resource.Id.receiptStatus);
             _selectedAccountNumber = view.FindViewById<TextView>(Resource.Id.selectedAccountNumber);
             _btnBankCopy = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankCopy);
-            _btnBankView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankView);
             _btnSubmitManual = view.FindViewById<global::Android.Views.View>(Resource.Id.btnSubmitManual);
 
             // Global Tab Click Handlers
@@ -142,6 +145,10 @@ namespace LudoClient.Platforms.Android.Popups
                 Intent intent = new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri);
                 StartActivityForResult(intent, PickImageRequest);
             };
+            _receiptPreview.Click += (s, e) => {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                ShowReceiptPreview();
+            };
             _btnBankCopy.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 string acc = _selectedAccountNumber.Text;
@@ -150,15 +157,9 @@ namespace LudoClient.Platforms.Android.Popups
                     ShowMessage("Account Copied!");
                 }
             };
-            _btnBankView.Click += (s, e) => {
+            _btnSubmitManual.Click += async (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (!string.IsNullOrEmpty(_manualAmount.Text)) ShowMessage($"Previewing {_manualAmount.Text} LUDC deposit.");
-                else ShowMessage("Enter an amount first.");
-            };
-            _btnSubmitManual.Click += (s, e) => {
-                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (string.IsNullOrEmpty(_manualAmount.Text) || string.IsNullOrEmpty(_selectedBase64Image)) ShowMessage("Fill amount and pick image.");
-                else ShowMessage("Submitting Receipt...");
+                await SubmitManualDepositAsync();
             };
 
             _manualMethod.ItemSelected += (s, e) => UpdateContextualAccountInfo();
@@ -599,6 +600,11 @@ namespace LudoClient.Platforms.Android.Popups
                 case "EasyPaisa": _selectedAccountNumber.Text = "0300-XXXXXXX"; break;
                 default: _selectedAccountNumber.Text = "SELECT METHOD"; break;
             }
+
+            if (_contentBank?.Visibility == ViewStates.Visible)
+            {
+                _infoAddressText.Text = $"{method ?? "METHOD"} | {_selectedAccountNumber.Text}";
+            }
         }
 
         public override void OnActivityResult(int requestCode, int resultCode, global::Android.Content.Intent data)
@@ -607,18 +613,161 @@ namespace LudoClient.Platforms.Android.Popups
             if (requestCode == PickImageRequest && resultCode == (int)global::Android.App.Result.Ok && data != null) {
                 var uri = data.Data;
                 try {
-                    using (var stream = Context.ContentResolver.OpenInputStream(uri)) {
+                    using (var stream = Context.ContentResolver.OpenInputStream(uri))
+                    using (var orientationStream = Context.ContentResolver.OpenInputStream(uri)) {
                         var bitmap = BitmapFactory.DecodeStream(stream);
-                        _receiptPreview.SetImageBitmap(bitmap);
-                        _receiptStatus.Text = "IMAGE ATTACHED SUCCESSFUL";
-                        _receiptStatus.SetTextColor(global::Android.Graphics.Color.White);
+                        if (bitmap == null)
+                        {
+                            ShowMessage("Failed to load image.");
+                            return;
+                        }
+
+                        int orientation = orientationStream != null
+                            ? new ExifInterface(orientationStream).GetAttributeInt(ExifInterface.TagOrientation, (int)ExifInterface.OrientationNormal)
+                            : (int)ExifInterface.OrientationNormal;
+
+                        var optimizedBitmap = OptimizeReceiptBitmap(ApplyExifOrientation(bitmap, orientation));
+                        _receiptPreview.SetImageBitmap(optimizedBitmap);
                         using (var ms = new MemoryStream()) {
-                            bitmap.Compress(Bitmap.CompressFormat.Jpeg, 70, ms);
+                            int quality = 70;
+                            optimizedBitmap.Compress(Bitmap.CompressFormat.Jpeg, quality, ms);
+
+                            while (ms.Length > MaxReceiptBytes && quality > 35)
+                            {
+                                ms.SetLength(0);
+                                quality -= 10;
+                                optimizedBitmap.Compress(Bitmap.CompressFormat.Jpeg, quality, ms);
+                            }
+
                             _selectedBase64Image = Convert.ToBase64String(ms.ToArray());
+                        }
+
+                        if (_contentBank?.Visibility == ViewStates.Visible)
+                        {
+                            _infoAddressText.Text = "RECEIPT ATTACHED. READY TO SUBMIT";
                         }
                     }
                 } catch (Exception) { ShowMessage("Failed to load image."); }
             }
+        }
+
+        private Bitmap OptimizeReceiptBitmap(Bitmap sourceBitmap)
+        {
+            int width = sourceBitmap.Width;
+            int height = sourceBitmap.Height;
+            int longestSide = Math.Max(width, height);
+
+            if (longestSide <= MaxReceiptDimension)
+                return sourceBitmap;
+
+            float scale = (float)MaxReceiptDimension / longestSide;
+            int targetWidth = Math.Max(1, (int)(width * scale));
+            int targetHeight = Math.Max(1, (int)(height * scale));
+
+            return Bitmap.CreateScaledBitmap(sourceBitmap, targetWidth, targetHeight, true);
+        }
+
+        private Bitmap ApplyExifOrientation(Bitmap bitmap, int orientation)
+        {
+            var matrix = new Matrix();
+
+            switch (orientation)
+            {
+                case (int)ExifInterface.OrientationRotate90:
+                    matrix.PostRotate(90);
+                    break;
+                case (int)ExifInterface.OrientationRotate180:
+                    matrix.PostRotate(180);
+                    break;
+                case (int)ExifInterface.OrientationRotate270:
+                    matrix.PostRotate(270);
+                    break;
+                case (int)ExifInterface.OrientationFlipHorizontal:
+                    matrix.PreScale(-1, 1);
+                    break;
+                case (int)ExifInterface.OrientationFlipVertical:
+                    matrix.PreScale(1, -1);
+                    break;
+                case (int)ExifInterface.OrientationTranspose:
+                    matrix.PreScale(-1, 1);
+                    matrix.PostRotate(270);
+                    break;
+                case (int)ExifInterface.OrientationTransverse:
+                    matrix.PreScale(-1, 1);
+                    matrix.PostRotate(90);
+                    break;
+                default:
+                    return bitmap;
+            }
+
+            return Bitmap.CreateBitmap(bitmap, 0, 0, bitmap.Width, bitmap.Height, matrix, true);
+        }
+
+        private void ShowReceiptPreview()
+        {
+            if (string.IsNullOrWhiteSpace(_selectedBase64Image))
+            {
+                ShowMessage("No receipt attached.");
+                return;
+            }
+
+            if (Context == null)
+                return;
+
+            var previewImage = new ImageView(Context)
+            {
+                LayoutParameters = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent)
+            };
+            previewImage.SetBackgroundColor(global::Android.Graphics.Color.Black);
+            previewImage.SetAdjustViewBounds(true);
+            previewImage.SetScaleType(ImageView.ScaleType.FitCenter);
+
+            if (_receiptPreview.Drawable is BitmapDrawable bitmapDrawable && bitmapDrawable.Bitmap != null)
+            {
+                previewImage.SetImageBitmap(bitmapDrawable.Bitmap);
+            }
+            else
+            {
+                previewImage.SetImageResource(global::Android.Resource.Drawable.IcMenuCamera);
+            }
+
+            var container = new FrameLayout(Context)
+            {
+                LayoutParameters = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MatchParent,
+                    ViewGroup.LayoutParams.MatchParent)
+            };
+            container.SetPadding(24, 24, 24, 24);
+            container.SetBackgroundColor(global::Android.Graphics.Color.Argb(220, 0, 0, 0));
+            container.AddView(previewImage);
+
+            var closeButton = new TextView(Context)
+            {
+                Text = "CLOSE",
+                Gravity = GravityFlags.Center
+            };
+            closeButton.SetTextColor(global::Android.Graphics.Color.White);
+            closeButton.SetTextSize(global::Android.Util.ComplexUnitType.Sp, 11);
+            closeButton.SetTypeface(null, TypefaceStyle.Bold);
+            closeButton.SetPadding(0, 0, 0, 4);
+            closeButton.SetBackgroundResource(Resource.Drawable.btn_verify_account);
+
+            var closeParams = new FrameLayout.LayoutParams(200,70, GravityFlags.Bottom | GravityFlags.CenterHorizontal);
+            closeParams.SetMargins(0, 0, 0, 46);
+            closeButton.LayoutParameters = closeParams;
+            container.AddView(closeButton);
+
+            var dialog = new global::Android.App.Dialog(Context, global::Android.Resource.Style.ThemeBlackNoTitleBarFullScreen);
+            dialog.SetContentView(container);
+            dialog.SetCancelable(true);
+
+            closeButton.Click += (s, e) => dialog.Dismiss();
+            container.Click += (s, e) => dialog.Dismiss();
+            previewImage.Click += (s, e) => { };
+
+            dialog.Show();
         }
 
         private void InitializeSpinners()
@@ -674,7 +823,84 @@ namespace LudoClient.Platforms.Android.Popups
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Visible;
                 _infoAddressTitle.Text = "MANUAL DEPOSIT PORTAL";
-                _infoAddressText.Text = "ATTACH PROOF BEFORE SUBMITTING";
+                _infoAddressText.Text = $"{_manualMethod?.SelectedItem?.ToString() ?? "METHOD"} | {_selectedAccountNumber?.Text ?? "SELECT METHOD"}";
+            }
+        }
+
+        private bool TryGetManualDepositRequest(out decimal amount, out string method, out string referenceNumber, out string receiptPayload)
+        {
+            amount = 0;
+            method = _manualMethod.SelectedItem?.ToString() ?? "";
+            referenceNumber = _manualReference.Text?.Trim()?.ToUpperInvariant() ?? "";
+            receiptPayload = "";
+
+            string amountText = _manualAmount.Text?.Trim() ?? "";
+            if (string.IsNullOrWhiteSpace(amountText) || !decimal.TryParse(amountText, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) || amount <= 0)
+            {
+                ShowMessage("Enter a valid amount.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(method))
+            {
+                ShowMessage("Select a payment method.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(referenceNumber))
+            {
+                ShowMessage("Enter TXID / Reference No.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(_selectedBase64Image))
+            {
+                ShowMessage("Attach receipt proof first.");
+                return false;
+            }
+
+            receiptPayload = $"data:image/jpeg;base64,{_selectedBase64Image}";
+            return true;
+        }
+
+        private async Task SubmitManualDepositAsync()
+        {
+            try
+            {
+                if (UserInfo.Instance.player == null)
+                {
+                    ShowMessage("Player not loaded.");
+                    return;
+                }
+
+                if (!TryGetManualDepositRequest(out decimal amount, out string method, out string referenceNumber, out string receiptPayload))
+                    return;
+
+                _btnSubmitManual.Enabled = false;
+                ShowMessage("Submitting receipt...");
+
+                string response = await GlobalConstants.MatchMaker.SubmitManualDeposit(UserInfo.Instance.player.PlayerId, amount, method, referenceNumber, receiptPayload);
+                if (string.Equals(response, "Success", StringComparison.OrdinalIgnoreCase))
+                {
+                    _manualAmount.Text = "";
+                    _manualReference.Text = "";
+                    _selectedBase64Image = "";
+                    _receiptPreview.SetImageResource(global::Android.Resource.Drawable.IcMenuCamera);
+                    _infoAddressText.Text = "REQUEST SENT FOR REVIEW";
+                    ShowMessage("Deposit submitted.");
+                }
+                else
+                {
+                    ShowMessage(string.IsNullOrWhiteSpace(response) ? "Deposit submit failed." : response);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Submit failed: {ex.Message}");
+            }
+            finally
+            {
+                _btnSubmitManual.Enabled = true;
             }
         }
 
