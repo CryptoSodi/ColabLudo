@@ -366,3 +366,4 @@ FodyWeavers.xsd
 /SignalR/SignalR.Server/appsettings.json
 /mobile-wallet-adapter-main
 /screen_output/verify-build
+/.tools
