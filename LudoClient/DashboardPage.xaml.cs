@@ -4,12 +4,9 @@ using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
-using CommunityToolkit.Maui.Views;
 using LudoClient.Constants;
-using LudoClient.Popups;
 using Microsoft.Maui.Controls;
 using SharedCode.Constants;
-using System.Diagnostics;
 
 public partial class DashboardPage : ContentPage
 {
@@ -19,31 +16,19 @@ public partial class DashboardPage : ContentPage
         InitializeComponent();
 
         ClientGlobalConstants.dashBoard = this;
-        Task.Run(async () =>
-        {
-            while (GlobalConstants.MatchMaker == null)
-                await Task.Delay(50);
-
-            UpdateButtons(GlobalConstants.MatchMaker.Connected);
-            GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))
-                    MainThread.BeginInvokeOnMainThread(() =>
-                        UpdateButtons(GlobalConstants.MatchMaker.Connected));
-            };
-        }); 
+        UpdateButtons();
     }
-    void UpdateButtons(bool isConnected)
+    void UpdateButtons()
     {
-        CashImage.Source = isConnected ? Skins.Cash : Skins.Cash_Gray;
-        PlayWithFriendsImage.Source = isConnected ? Skins.Play : Skins.Play_Gray;
-       // PracticeImage.Source = isConnected ? Skins.Practice : Skins.Practice_Gray;
-        TournamentImage.Source = isConnected ? Skins.Tournament : Skins.Tournament_Gray;
-        DailyBonusImage.Source = isConnected ? Skins.DailyBonus : Skins.DailyBonus_Gray;
+        CashImage.Source = Skins.Cash;
+        PlayWithFriendsImage.Source = Skins.Play;
+       // PracticeImage.Source = Skins.Practice;
+        TournamentImage.Source = Skins.Tournament;
+        DailyBonusImage.Source = Skins.DailyBonus;
     }
     private async void CashGame_Clicked(object sender, EventArgs e)
     {
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
         _NavigationCooldown = true;
         try
@@ -67,7 +52,7 @@ public partial class DashboardPage : ContentPage
     }
     private async void PlayWithFriend_Clicked(object sender, EventArgs e)
     {
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
         _NavigationCooldown = true;
         try
@@ -91,7 +76,7 @@ public partial class DashboardPage : ContentPage
     }
     private async void Tournament_Clicked(object sender, EventArgs e)
     {
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
         _NavigationCooldown = true;
         try
@@ -120,7 +105,7 @@ public partial class DashboardPage : ContentPage
 
     private async void Bonus_Clicked(object sender, EventArgs e)
     {
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
         _NavigationCooldown = true;
         try
