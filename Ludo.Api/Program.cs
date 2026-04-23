@@ -102,6 +102,7 @@ builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<ApiPlayerContext>();
 builder.Services.AddScoped<FriendsService>();
 builder.Services.AddScoped<UtilService>();
+builder.Services.AddHttpClient<JupiterSwapService>();
 
 var app = builder.Build();
 

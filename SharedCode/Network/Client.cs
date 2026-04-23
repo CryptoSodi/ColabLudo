@@ -481,131 +481,165 @@ namespace SharedCode.Network
         }
         public async Task<object> GetWalletBalance(string walletAddress)
         {
-            return await _hubConnection.InvokeAsync<object>("GetWalletBalance", walletAddress).ConfigureAwait(false);
-        }
-        public async Task<object> GetSwapBalances(string walletAddress)
-        {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                Console.WriteLine("[HubClient] GetSwapBalances failed: Hub not connected.");
-                return new { Success = false, Error = "Hub not connected" };
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/payments/wallet-balance?walletAddress={Uri.EscapeDataString(walletAddress)}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new { Success = false, Error = "Request failed" };
+
+                return await response.Content.ReadFromJsonAsync<object>().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] GetSwapBalances Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] GetWalletBalance Error: {ex.Message}");
+                return new { Success = false, Error = ex.Message };
+            }
+        }
+        public async Task<object> GetSwapBalances(string walletAddress)
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/payments/swap-balances?walletAddress={Uri.EscapeDataString(walletAddress)}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new { Success = false, Error = "Request failed" };
+
+                return await response.Content.ReadFromJsonAsync<object>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetSwapBalances Error: {ex.Message}");
                 return new { Success = false, Error = ex.Message };
             }
         }
 
         public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return new BlockchainResult { Success = false, Error = "Hub not connected" };
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<BlockchainResult>("BroadcastTransaction", txBase64).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/transactions/broadcast");
+                request.Content = JsonContent.Create(new { TxBase64 = txBase64 });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new BlockchainResult { Success = false, Error = "Request failed" };
+
+                return await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
+                    ?? new BlockchainResult { Success = false, Error = "Empty response" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] BroadcastTransaction Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] BroadcastTransaction Error: {ex.Message}");
                 return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
 
         public async Task<BlockchainResult> ExecutePreparedSwap(string requestId, string signedTxBase64)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return new BlockchainResult { Success = false, Error = "Hub not connected" };
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<BlockchainResult>("ExecutePreparedSwap", requestId, signedTxBase64).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/swap/execute");
+                request.Content = JsonContent.Create(new { RequestId = requestId, SignedTxBase64 = signedTxBase64 });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new BlockchainResult { Success = false, Error = "Request failed" };
+
+                return await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
+                    ?? new BlockchainResult { Success = false, Error = "Empty response" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] ExecutePreparedSwap Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] ExecutePreparedSwap Error: {ex.Message}");
                 return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
 
         public async Task<bool> ConfirmSolanaTransaction(string signature)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return false;
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<bool>("ConfirmSolanaTransaction", signature).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/transactions/confirm");
+                request.Content = JsonContent.Create(new { Signature = signature });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return false;
+
+                return await response.Content.ReadFromJsonAsync<bool>().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] ConfirmSolanaTransaction Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] ConfirmSolanaTransaction Error: {ex.Message}");
                 return false;
             }
         }
 
         public async Task<object> PrepareAssetSwap(string walletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return new { Success = false, Error = "Hub not connected" };
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<object>("PrepareAssetSwap", walletAddress, inputAsset, outputAsset, amount, slippageBps).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/swap/prepare");
+                request.Content = JsonContent.Create(new
+                {
+                    WalletAddress = walletAddress,
+                    InputAsset = inputAsset,
+                    OutputAsset = outputAsset,
+                    Amount = amount,
+                    SlippageBps = slippageBps
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new { Success = false, Error = "Request failed" };
+
+                return await response.Content.ReadFromJsonAsync<object>().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] PrepareAssetSwap Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] PrepareAssetSwap Error: {ex.Message}");
                 return new { Success = false, Error = ex.Message };
             }
         }
 
         public async Task<object> PrepareLudcDeposit(string walletAddress, decimal amount)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return null;
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<object>("PrepareLudcDeposit", walletAddress, amount).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/ludc-deposit/prepare");
+                request.Content = JsonContent.Create(new { WalletAddress = walletAddress, Amount = amount });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<object>().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] PrepareLudcDeposit Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] PrepareLudcDeposit Error: {ex.Message}");
                 return null;
             }
         }
 
         public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string referenceNumber, string receiptUrl)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return "Hub not connected";
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<string>("SubmitManualDeposit", playerId, amount, method, referenceNumber, receiptUrl).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/manual-deposits");
+                request.Content = JsonContent.Create(new
+                {
+                    PlayerId = playerId,
+                    Amount = amount,
+                    Method = method,
+                    ReferenceNumber = referenceNumber,
+                    ReceiptUrl = receiptUrl
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return "Request failed";
+
+                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] SubmitManualDeposit Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] SubmitManualDeposit Error: {ex.Message}");
                 return "Error";
             }
         }
