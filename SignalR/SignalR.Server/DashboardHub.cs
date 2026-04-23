@@ -124,6 +124,23 @@ namespace SignalR.Server
             return null;
         }
 
+        private async Task<Player?> GetAuthorizedPlayer(string authToken)
+        {
+            if (string.IsNullOrWhiteSpace(authToken))
+                return null;
+
+            var playerIdStr = _utilService.Decrypt(authToken);
+            if (!int.TryParse(playerIdStr, out int playerId))
+                return null;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            var player = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == playerId);
+            if (player == null || !player.IsActive || player.IsBlocked || player.Role != "Player")
+                return null;
+
+            return player;
+        }
+
         public async Task<bool> ValidateSession(string authToken, string requiredRole)
         {
             try
@@ -620,6 +637,12 @@ namespace SignalR.Server
                     .Take(10)
                     .ToListAsync();
 
+                var manualWithdrawals = await ctx.CashWithdrawals
+                    .Where(w => w.PlayerId == playerId)
+                    .OrderByDescending(w => w.CreatedDate)
+                    .Take(10)
+                    .ToListAsync();
+
                 // MATCH HISTORY (With Opponent Names)
                 var games = await ctx.Games
                     .Include(g => g.MultiPlayer)
@@ -676,6 +699,7 @@ namespace SignalR.Server
                     Role = player.Role,
                     Transactions = transactions,
                     ManualDeposits = manualDeposits,
+                    ManualWithdrawals = manualWithdrawals,
                     RecentGames = matchHistory
                 };
             }
@@ -957,6 +981,60 @@ namespace SignalR.Server
             catch (Exception ex)
             {
                 Console.WriteLine($"Error submitting deposit: {ex.Message}");
+                return "Error";
+            }
+        }
+
+        public async Task<string> SubmitManualWithdrawal(string authToken, decimal amount, string method, string destinationDetails)
+        {
+            try
+            {
+                var player = await GetAuthorizedPlayer(authToken);
+                if (player == null) return "Unauthorized.";
+
+                if (amount <= 0)
+                    return "Invalid amount.";
+
+                string normalizedMethod = (method ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedMethod) || normalizedMethod == "Select Payout Method")
+                    return "Select a payout method.";
+
+                string normalizedDestination = (destinationDetails ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedDestination))
+                    return "Account details are required.";
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                if (wallet == null) return "Wallet Not Found";
+                if (wallet.AvailableBalance < amount) return "Insufficient internal balance.";
+
+                bool duplicatePending = await ctx.CashWithdrawals.AnyAsync(w =>
+                    w.PlayerId == player.PlayerId &&
+                    w.Status == "Pending" &&
+                    w.Amount == amount &&
+                    w.PayoutMethod == normalizedMethod &&
+                    w.DestinationDetails == normalizedDestination);
+
+                if (duplicatePending)
+                    return "A similar payout request is already pending.";
+
+                var withdrawal = new CashWithdrawal
+                {
+                    PlayerId = player.PlayerId,
+                    Amount = amount,
+                    PayoutMethod = normalizedMethod,
+                    DestinationDetails = normalizedDestination,
+                    Status = "Pending",
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                ctx.CashWithdrawals.Add(withdrawal);
+                await ctx.SaveChangesAsync();
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error submitting withdrawal: {ex.Message}");
                 return "Error";
             }
         }
