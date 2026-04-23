@@ -5,9 +5,17 @@ using SharedCode;
 using SharedCode.Constants;
 using System.Collections.Generic;
 using System.Text.Json;
+#if ANDROID
+using LudoClient.Platforms.Android;
+#endif
 namespace LudoClient;
 public partial class TournamentPage : ContentPage
 {
+    private List<TournamentDTO>? _allTournaments;
+    private Task<List<TournamentDTO>>? _tournamentLoadTask;
+    private int _loadVersion;
+    private string _activeTabType = "Local";
+
     public TournamentPage()
     {
         InitializeComponent();
@@ -16,57 +24,111 @@ public partial class TournamentPage : ContentPage
         Tab3.SwitchSource = Tab3.SwitchOff;
         Tab4.SwitchSource = Tab4.SwitchOff;
 
-        InitializeTournamentsAsync("Local");
+        MainThread.BeginInvokeOnMainThread(async () => await InitializeTournamentsAsync("Local"));
     }
-    public async Task InitializeTournamentsAsync(String TabType)
+
+    public async Task InitializeTournamentsAsync(string tabType)
     {
-        // 1) Clear old items
-        TournamentListStack.Children.Clear();
+        _activeTabType = tabType;
+        var version = ++_loadVersion;
+        ReleaseCurrentCards();
 
-        // 2) Fetch all tournaments from the API        
+        if (_allTournaments == null)
+            _allTournaments = await GetTournamentCacheAsync();
 
-        List<TournamentDTO> tournaments = await GlobalConstants.MatchMaker.GetAllTournaments("All");
+        if (version != _loadVersion)
+            return;
 
-        // 3) If "Local" tab is requested, filter by user's city
-        if (TabType == "Local")
+        var tournaments = FilterTournaments(_allTournaments ?? new List<TournamentDTO>(), tabType);
+        await PopulateTournamentsAsync(tournaments, version);
+    }
+
+    private List<TournamentDTO> FilterTournaments(List<TournamentDTO> tournaments, string tabType)
+    {
+        if (tabType == "Local")
         {
             var userCity = UserInfo.Instance.player.City?.Trim() ?? string.Empty;
+            return tournaments
+                .Where(t => string.Equals(t.City?.Trim(), userCity, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
 
-            tournaments = tournaments.Where(t =>string.Equals(t.City?.Trim(), userCity, StringComparison.OrdinalIgnoreCase)).ToList();
-        }
-        if (TabType == "Global")
+        if (tabType == "Global")
         {
-            //tournaments = tournaments
-            //    .Where(t =>
-            //        string.Equals(t.City?.Trim(), "Global", StringComparison.OrdinalIgnoreCase)
-            //    )
-            //    .ToList();
+            return tournaments.ToList();
         }
-        if (TabType == "Ended")
+
+        if (tabType == "Ended")
         {
-            // Only keep tournaments whose EndDate has already passed
-            // (assuming EndDate and ServerDateTime are both DateTime types)
-            tournaments = tournaments
+            return tournaments
                 .Where(t => t.EndDate <= t.ServerDateTime)
                 .ToList();
         }
-        if (TabType == "Active")
+
+        if (tabType == "Active")
         {
-            // Only keep tournaments that are currently running:
-            // ServerDateTime is between StartDate and EndDate (inclusive)
-            tournaments = tournaments
+            return tournaments
                 .Where(t => t.ServerDateTime >= t.StartDate &&
                             t.ServerDateTime <= t.EndDate)
                 .ToList();
         }
-        // 4) Populate the UI with whatever is left
-        foreach (var tournament in tournaments)
+
+        return tournaments.ToList();
+    }
+
+    private Task<List<TournamentDTO>> GetTournamentCacheAsync()
+    {
+        _tournamentLoadTask ??= GlobalConstants.MatchMaker.GetAllTournaments("All");
+        return _tournamentLoadTask;
+    }
+
+    protected override void OnDisappearing()
+    {
+        _loadVersion++;
+        ReleaseCurrentCards();
+        base.OnDisappearing();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        if (TournamentListStack.Children.Count == 0)
+            await InitializeTournamentsAsync(_activeTabType);
+    }
+
+    private async Task PopulateTournamentsAsync(List<TournamentDTO> tournaments, int version)
+    {
+        for (var i = 0; i < tournaments.Count; i++)
         {
-            var tournamentDetail = new TournamentDetailList(tournament);
-            TournamentListStack.Children.Add(tournamentDetail);
+            if (version != _loadVersion)
+                return;
+
+#if ANDROID
+            TournamentListStack.Children.Add(new NativeTournamentCard(tournaments[i]));
+#else
+            TournamentListStack.Children.Add(new TournamentDetailList(tournaments[i]));
+#endif
+
+            if (i % 4 == 3)
+                await Task.Yield();
         }
     }
-    private void TabRequestedActivate(object sender, EventArgs e)
+
+    private void ReleaseCurrentCards()
+    {
+        foreach (var child in TournamentListStack.Children.OfType<TournamentDetailList>())
+            child.Release();
+
+#if ANDROID
+        foreach (var child in TournamentListStack.Children.OfType<NativeTournamentCard>())
+            child.Handler?.DisconnectHandler();
+#endif
+
+        TournamentListStack.Children.Clear();
+    }
+
+    private async void TabRequestedActivate(object sender, EventArgs e)
     {
         if (sender is ImageSwitch activeTab)
         {
@@ -78,13 +140,13 @@ public partial class TournamentPage : ContentPage
             // Add logic here to change the content based on the active tab
             // 1) Note which tab is active (for example, store an index)
             if (activeTab == Tab1)
-                InitializeTournamentsAsync("Local");
+                await InitializeTournamentsAsync("Local");
             else if (activeTab == Tab2)
-                InitializeTournamentsAsync("Global");
+                await InitializeTournamentsAsync("Global");
             else if (activeTab == Tab3)
-                InitializeTournamentsAsync("Active");
+                await InitializeTournamentsAsync("Active");
             else // activeTab == Tab3
-                InitializeTournamentsAsync("Ended");
+                await InitializeTournamentsAsync("Ended");
         }
     }
 }

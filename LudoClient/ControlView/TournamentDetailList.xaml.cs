@@ -17,10 +17,12 @@ namespace LudoClient.ControlView
         public TournamentDetailList(TournamentDTO tournament)
         {
             InitializeComponent();
+            Unloaded += (_, _) => StopCountdownTimer();
             SetTournamentDetails(tournament);
         }
         internal void SetTournamentDetails(TournamentDTO tournament)
         {
+            StopCountdownTimer();
             ServerDateTime = tournament.ServerDateTime;
             this.tournament = tournament;
             
@@ -112,6 +114,10 @@ namespace LudoClient.ControlView
                 countdownTimer.Dispose();
                 countdownTimer = null;
             }
+        }
+        internal void Release()
+        {
+            StopCountdownTimer();
         }
         /// <summary>
         /// Handles the click event to expand or collapse the tournament details.

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="96dp"
+    android:paddingVertical="2dp">
+
+    <ImageView
+        android:id="@+id/TournamentBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/tournament_bg"
+        android:scaleType="fitXY" />
+
+    <TextView
+        android:id="@+id/TournamentName"
+        android:layout_width="0dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/TimeRemaining" />
+
+    <TextView
+        android:id="@+id/TimeRemaining"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center_vertical"
+        android:textColor="#FFFFFF"
+        android:textSize="11sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/TimeIcon" />
+
+    <ImageView
+        android:id="@+id/TimeIcon"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
+        android:src="@drawable/time_gyro"
+        android:scaleType="fitCenter"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/PrizeSection"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/ActionSection">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:background="#40000000"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="17dp"
+                android:background="#FF8C00"
+                android:gravity="center"
+                android:text="1st Prize"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/PrizeOne"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:layout_marginEnd="4dp"
+            android:background="#40000000"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="17dp"
+                android:background="#FFA500"
+                android:gravity="center"
+                android:text="2nd Prize"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/PrizeTwo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="#40000000"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="17dp"
+                android:background="#555555"
+                android:gravity="center"
+                android:text="3rd Prize"
+                android:textColor="#FFFFFF"
+                android:textSize="9sp" />
+
+            <TextView
+                android:id="@+id/PrizeThree"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ActionSection"
+        android:layout_width="88dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="10dp"
+        android:background="#40000000"
+        android:orientation="vertical"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <TextView
+            android:id="@+id/EntryPrice"
+            android:layout_width="match_parent"
+            android:layout_height="17dp"
+            android:background="#FF8C00"
+            android:gravity="center"
+            android:textColor="#FFFFFF"
+            android:textSize="9sp" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/JoinButton"
+            android:layout_width="match_parent"
+            android:layout_height="31dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="6dp"
+                android:layout_marginVertical="3dp"
+                android:src="@drawable/btn_green"
+                android:scaleType="fitXY" />
+
+            <TextView
+                android:id="@+id/ButtonText"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="JOIN"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/TournamentStartDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="2dp"
+        android:textColor="#DDFFFFFF"
+        android:textSize="9sp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/TournamentEndDate"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/TournamentEndDate"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="2dp"
+        android:gravity="end"
+        android:textColor="#DDFFFFFF"
+        android:textSize="9sp"
+        android:singleLine="true"
+        android:ellipsize="end"
+        app:layout_constraintStart_toEndOf="@id/TournamentStartDate"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+</androidx.constraintlayout.widget.ConstraintLayout>
