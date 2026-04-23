@@ -483,7 +483,7 @@ namespace SignalR.Server.Payments
                             continue;
                         }
 
-                        if (wallet != null && wallet.PlayerId != _masterUserId)
+                        if (wallet != null)
                         {
                             Console.WriteLine($"[LudcProvider] SUCCESS! Player {wallet.PlayerId} detected via {(matchedViaSigner ? "Signer" : "Owner")}. Amount: {delta}");
                             result.Deposits.Add(new TokenDeposit { Signature = sig, WalletAddress = wallet.WalletAddress, Amount = delta });

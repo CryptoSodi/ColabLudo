@@ -68,7 +68,6 @@ builder.Services.AddSingleton<IPaymentProvider>(sp => sp.GetRequiredService<SolP
 builder.Services.AddSingleton<IPaymentProvider>(sp => sp.GetRequiredService<LudcPaymentProvider>());
 builder.Services.AddSingleton<PaymentProviderFactory>();
 
-builder.Services.AddHostedService<DepositScannerService>();
 builder.Services.AddHostedService<PlayerCleanupService>();
 builder.Services.AddHostedService<TournamentBackgroundWorker>();
 

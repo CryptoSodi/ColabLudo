@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LudoClient", "LudoClient\Lu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR.Server", "SignalR\SignalR.Server\SignalR.Server.csproj", "{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DepositScanner.Worker", "SignalR\DepositScanner.Worker\DepositScanner.Worker.csproj", "{5D457104-70C9-4A47-9E35-5E41BF06C50B}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{BA0A23AB-A2D3-4881-8D0F-6B0747470C80}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -32,6 +34,10 @@ Global
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F2B8EA85-F520-40D5-A8CE-B6DDE0C0AC00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D457104-70C9-4A47-9E35-5E41BF06C50B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D457104-70C9-4A47-9E35-5E41BF06C50B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D457104-70C9-4A47-9E35-5E41BF06C50B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D457104-70C9-4A47-9E35-5E41BF06C50B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1F9DE16-4893-422A-8C9B-A5BAAEAB6C23}.Debug|Any CPU.Deploy.0 = Debug|Any CPU

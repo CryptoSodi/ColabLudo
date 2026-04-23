@@ -761,10 +761,44 @@ namespace SignalR.Server
 
                 // Use injected CryptoHelper
                 var result = _crypto.Withdraw(player, destinationAddress, amount);
+
+                if (result != "ERROR" &&
+                    !result.Contains("INSUFFICIENT", StringComparison.OrdinalIgnoreCase) &&
+                    result.StartsWith("internal:withdraw:", StringComparison.OrdinalIgnoreCase))
+                {
+                    var recipientPlayerId = await ResolveInternalRecipientPlayerIdAsync(destinationAddress);
+                    if (recipientPlayerId.HasValue)
+                    {
+                        var recipient = await ctx.Players.FirstOrDefaultAsync(p => p.PlayerId == recipientPlayerId.Value);
+                        if (recipient != null)
+                            await Clients.User(recipient.PlayerId.ToString()).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(recipient));
+                    }
+                }
                 
                 return result;
             }
             catch (Exception ex) { return "Error: " + ex.Message; }
+        }
+
+        private async Task<int?> ResolveInternalRecipientPlayerIdAsync(string destination)
+        {
+            var normalizedDestination = destination?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedDestination))
+                return null;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            var walletPlayerId = await ctx.PlayerWallet
+                .Where(w => w.WalletAddress == normalizedDestination)
+                .Select(w => (int?)w.PlayerId)
+                .FirstOrDefaultAsync();
+
+            if (walletPlayerId.HasValue)
+                return walletPlayerId.Value;
+
+            return await ctx.PlayerWalletKey
+                .Where(k => k.PublicKey == normalizedDestination)
+                .Select(k => (int?)k.PlayerId)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<object> GetGameAudit(int gameId)

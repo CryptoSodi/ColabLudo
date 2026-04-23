@@ -625,6 +625,17 @@ namespace SignalR.Server
                 {
                     // Update client UI with new balance
                     await Clients.Caller.SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(player));
+                    if (result.StartsWith("internal:withdraw:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var recipientPlayerId = await ResolveInternalRecipientPlayerIdAsync(destination);
+                        if (recipientPlayerId.HasValue)
+                        {
+                            using var recipientCtx = _contextFactory.CreateDbContext();
+                            var recipient = await recipientCtx.Players.FirstOrDefaultAsync(p => p.PlayerId == recipientPlayerId.Value);
+                            if (recipient != null)
+                                await Clients.User(recipient.PlayerId.ToString()).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(recipient));
+                        }
+                    }
                     return $"Success: {result}";
                 }
                 
@@ -635,6 +646,27 @@ namespace SignalR.Server
                 Console.WriteLine($"[LudoHub] Withdrawal Error: {ex.Message}");
                 return "Error: " + ex.Message;
             }
+        }
+
+        private async Task<int?> ResolveInternalRecipientPlayerIdAsync(string destination)
+        {
+            var normalizedDestination = destination?.Trim();
+            if (string.IsNullOrWhiteSpace(normalizedDestination))
+                return null;
+
+            using var ctx = _contextFactory.CreateDbContext();
+            var walletPlayerId = await ctx.PlayerWallet
+                .Where(w => w.WalletAddress == normalizedDestination)
+                .Select(w => (int?)w.PlayerId)
+                .FirstOrDefaultAsync();
+
+            if (walletPlayerId.HasValue)
+                return walletPlayerId.Value;
+
+            return await ctx.PlayerWalletKey
+                .Where(k => k.PublicKey == normalizedDestination)
+                .Select(k => (int?)k.PlayerId)
+                .FirstOrDefaultAsync();
         }
         public Task<List<GameCommand>> PullCommands(int lastSeenIndex, String RoomCode)
         {
