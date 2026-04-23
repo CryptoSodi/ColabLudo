@@ -377,6 +377,62 @@ namespace SignalR.Server
             }
         }
 
+        public async Task<string> SubmitManualWithdrawal(decimal amount, string method, string destinationDetails)
+        {
+            try
+            {
+                Player player = await GetCallerPlayer();
+                if (amount <= 0)
+                    return "Invalid amount.";
+
+                string normalizedMethod = (method ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedMethod) || normalizedMethod == "Select Payout Method")
+                    return "Select a payout method.";
+
+                string normalizedDestination = (destinationDetails ?? string.Empty).Trim();
+                if (string.IsNullOrWhiteSpace(normalizedDestination))
+                    return "Account details are required.";
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+                if (wallet == null)
+                    return "Wallet Not Found";
+
+                if (wallet.AvailableBalance < amount)
+                    return "Insufficient internal balance.";
+
+                bool duplicatePending = await ctx.CashWithdrawals.AnyAsync(w =>
+                    w.PlayerId == player.PlayerId &&
+                    w.Status == "Pending" &&
+                    w.Amount == amount &&
+                    w.PayoutMethod == normalizedMethod &&
+                    w.DestinationDetails == normalizedDestination);
+
+                if (duplicatePending)
+                    return "A similar payout request is already pending.";
+
+                var withdrawal = new CashWithdrawal
+                {
+                    PlayerId = player.PlayerId,
+                    Amount = amount,
+                    PayoutMethod = normalizedMethod,
+                    DestinationDetails = normalizedDestination,
+                    Status = "Pending",
+                    CreatedDate = DateTime.UtcNow
+                };
+
+                ctx.CashWithdrawals.Add(withdrawal);
+                await ctx.SaveChangesAsync();
+                Console.WriteLine($"[LudoHub] SubmitManualWithdrawal saved: withdrawalId={withdrawal.Id}, playerId={player.PlayerId}, amount={amount}, method={normalizedMethod}");
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudoHub] SubmitManualWithdrawal Error: {ex.Message}");
+                return "Error";
+            }
+        }
+
         public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
         {
             try

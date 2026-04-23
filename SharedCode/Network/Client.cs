@@ -424,5 +424,23 @@ namespace SharedCode.Network
                 return "Error";
             }
         }
+
+        public async Task<string> SubmitManualWithdrawal(decimal amount, string method, string destinationDetails)
+        {
+            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
+            {
+                return "Hub not connected";
+            }
+
+            try
+            {
+                return await _hubConnection.InvokeAsync<string>("SubmitManualWithdrawal", amount, method, destinationDetails).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[HubClient] SubmitManualWithdrawal Error: {ex.Message}");
+                return "Error";
+            }
+        }
     }
 }

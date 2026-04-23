@@ -991,6 +991,35 @@ namespace SignalR.Server
             }
         }
 
+        public async Task<List<object>> GetPendingWithdrawals()
+        {
+            try
+            {
+                using var ctx = _contextFactory.CreateDbContext();
+                var withdrawals = await ctx.CashWithdrawals
+                    .Include(w => w.Player)
+                    .Where(w => w.Status == "Pending")
+                    .OrderByDescending(w => w.CreatedDate)
+                    .Select(w => new
+                    {
+                        Id = w.Id,
+                        PlayerName = w.Player.Name,
+                        playerId = w.PlayerId,
+                        Amount = w.Amount,
+                        Method = w.PayoutMethod,
+                        DestinationDetails = w.DestinationDetails,
+                        Date = w.CreatedDate
+                    })
+                    .ToListAsync<object>();
+                return withdrawals;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting pending withdrawals: {ex.Message}");
+                return new List<object>();
+            }
+        }
+
         public async Task<string> ProcessDeposit(string authToken, int depositId, string action, string note)
         {
             try
@@ -1034,6 +1063,59 @@ namespace SignalR.Server
                 deposit.ProcessedDate = DateTime.UtcNow;
 
                 ctx.CashDeposits.Update(deposit);
+                await ctx.SaveChangesAsync();
+                return "Success";
+            }
+            catch (Exception ex)
+            {
+                return "Error: " + ex.Message;
+            }
+        }
+
+        public async Task<string> ProcessWithdrawal(string authToken, int withdrawalId, string action, string note)
+        {
+            try
+            {
+                var admin = await GetAuthorizedAdmin(authToken);
+                if (admin == null) return "Unauthorized.";
+
+                var normalizedAction = (action ?? string.Empty).Trim();
+                if (normalizedAction != "Approved" && normalizedAction != "Rejected")
+                    return "Invalid action.";
+
+                using var ctx = _contextFactory.CreateDbContext();
+                var withdrawal = await ctx.CashWithdrawals.FirstOrDefaultAsync(w => w.Id == withdrawalId);
+                if (withdrawal == null || withdrawal.Status != "Pending") return "Not Found";
+
+                if (normalizedAction == "Approved")
+                {
+                    var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == withdrawal.PlayerId && w.AddressType == "LUDC");
+                    if (wallet == null) return "Wallet Not Found";
+                    if (wallet.AvailableBalance < withdrawal.Amount) return "Insufficient balance.";
+
+                    wallet.AvailableBalance -= withdrawal.Amount;
+
+                    var transaction = new WalletTransaction
+                    {
+                        PlayerId = withdrawal.PlayerId,
+                        Amount = withdrawal.Amount,
+                        Type = TransactionType.Withdrawal,
+                        Status = WalletTransactionStatus.Completed,
+                        Description = $"Approved manual {withdrawal.PayoutMethod} payout. {note}",
+                        OperationId = Guid.NewGuid(),
+                        BalanceAfter = wallet.AvailableBalance
+                    };
+
+                    ctx.WalletTransaction.Add(transaction);
+                    ctx.PlayerWallet.Update(wallet);
+                }
+
+                withdrawal.Status = normalizedAction;
+                withdrawal.AdminNote = note;
+                withdrawal.ProcessedByAdminId = admin.PlayerId;
+                withdrawal.ProcessedDate = DateTime.UtcNow;
+
+                ctx.CashWithdrawals.Update(withdrawal);
                 await ctx.SaveChangesAsync();
                 return "Success";
             }

@@ -7,15 +7,11 @@ using Android.Provider;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ExifInterface.Media;
-using System.Globalization;
 using LudoClient.Constants;
 using LudoClient.SolanaWallet;
-using Newtonsoft.Json.Linq;
 using SharedCode;
 using SharedCode.Constants;
-using Solnet.Programs;
-using Solnet.Rpc.Builders;
-using Solnet.Wallet;
+using System.Globalization;
 
 namespace LudoClient.Platforms.Android.Popups
 {

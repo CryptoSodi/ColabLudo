@@ -3,6 +3,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using System.Globalization;
 using LudoClient.Constants;
 using LudoClient.SolanaWallet;
 using Newtonsoft.Json.Linq;
@@ -30,7 +31,7 @@ namespace LudoClient.Platforms.Android.Popups
         private global::Android.Views.View _contentSOL, _contentWallet, _contentBank;
 
         // Tab Helpers
-        private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm, _btnBankWithdrawView, _btnBankPaste;
+        private global::Android.Views.View _btnPaste, _btnWalletSign, _btnWalletSwapView, _btnWalletSwapConfirm, _btnBankPaste;
         private TextView _btnWithdrawMax, _btnWalletMax, _btnSwapMax, _btnBankWithdrawMax;
         private Spinner _manualWithdrawMethod, _walletSwapOutputSpinner;
 
@@ -100,7 +101,6 @@ namespace LudoClient.Platforms.Android.Popups
             _manualWithdrawMethod = view.FindViewById<Spinner>(Resource.Id.manualWithdrawMethodSpinner);
             _bankWithdrawAmount = view.FindViewById<EditText>(Resource.Id.bankWithdrawAmount);
             _btnBankWithdrawMax = view.FindViewById<TextView>(Resource.Id.btnBankWithdrawMax);
-            _btnBankWithdrawView = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankWithdrawView);
             _bankAccountEntry = view.FindViewById<EditText>(Resource.Id.bankAccountEntry);
             _btnBankPaste = view.FindViewById<global::Android.Views.View>(Resource.Id.btnBankPaste);
 
@@ -165,20 +165,12 @@ namespace LudoClient.Platforms.Android.Popups
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
                 _bankWithdrawAmount.Text = _solBalance.ToString("F2");
             };
-            _btnBankWithdrawView.Click += (s, e) => {
-                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (!string.IsNullOrEmpty(_bankWithdrawAmount.Text)) ShowMessage($"Previewing {_bankWithdrawAmount.Text} LUDC payout...");
-                else ShowMessage("Enter an amount first.");
-            };
             _btnBankPaste.Click += OnBankPasteButtonClicked;
             _btnSubmitManual.Click += (s, e) => {
                 ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-                if (string.IsNullOrEmpty(_bankWithdrawAmount.Text) || string.IsNullOrEmpty(_bankAccountEntry.Text)) {
-                    ShowMessage("Fill all bank details.");
-                } else {
-                    ShowMessage("Submitting Manual Payout Request...");
-                }
+                _ = SubmitManualWithdrawalAsync();
             };
+            _manualWithdrawMethod.ItemSelected += (s, e) => UpdateManualWithdrawContext();
 
             InitializeData();
             InitializeSpinners();
@@ -316,6 +308,7 @@ namespace LudoClient.Platforms.Android.Popups
                 UpdateSwapTitle();
             };
             UpdateSwapTitle();
+            UpdateManualWithdrawContext();
         }
 
         private void SwitchTab(int tabIndex, bool playsound = true)
@@ -355,7 +348,7 @@ namespace LudoClient.Platforms.Android.Popups
             else
             {
                 _footerTitle.Text = "BANK PAYOUT HUB";
-                _footerText.Text = "REQUEST MANUAL TRANSFER";
+                UpdateManualWithdrawContext();
                 _btnSolanaConfirm.Visibility = ViewStates.Gone;
                 _btnPhantomConnect.Visibility = ViewStates.Gone;
                 _btnSubmitManual.Visibility = ViewStates.Visible;
@@ -659,6 +652,135 @@ namespace LudoClient.Platforms.Android.Popups
                 }
             }
             catch (Exception ex) { ShowMessage("Error: " + ex.Message); }
+        }
+
+        private async Task SubmitManualWithdrawalAsync()
+        {
+            if (!TryGetManualWithdrawalInput(out decimal amount, out string method, out string destinationDetails))
+                return;
+
+            try
+            {
+                ShowMessage("Submitting Manual Payout Request...");
+                string result = await GlobalConstants.MatchMaker.SubmitManualWithdrawal(amount, method, destinationDetails);
+                if (result == "Success")
+                {
+                    ShowMessage("Manual payout request submitted.");
+                    ResetManualWithdrawalForm();
+                }
+                else
+                {
+                    ShowMessage(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage("Hub Error: " + ex.Message);
+            }
+        }
+
+        private bool TryGetManualWithdrawalInput(out decimal amount, out string method, out string destinationDetails)
+        {
+            amount = 0;
+            method = (_manualWithdrawMethod?.SelectedItem?.ToString() ?? string.Empty).Trim();
+            destinationDetails = (_bankAccountEntry.Text ?? string.Empty).Trim();
+
+            string amountText = (_bankWithdrawAmount.Text ?? string.Empty).Trim();
+            if (!decimal.TryParse(amountText, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) &&
+                !decimal.TryParse(amountText, NumberStyles.Number, CultureInfo.CurrentCulture, out amount))
+            {
+                ShowMessage("Enter a valid amount.");
+                return false;
+            }
+
+            if (amount <= 0)
+            {
+                ShowMessage("Enter a valid amount.");
+                return false;
+            }
+
+            if (amount > _solBalance)
+            {
+                ShowMessage("Insufficient internal balance.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(method) || method == "Select Payout Method")
+            {
+                ShowMessage("Select a payout method.");
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(destinationDetails))
+            {
+                ShowMessage(GetManualWithdrawDetailsMessage(method));
+                return false;
+            }
+
+            return true;
+        }
+
+        private void ResetManualWithdrawalForm()
+        {
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                _bankWithdrawAmount.Text = string.Empty;
+                _bankAccountEntry.Text = string.Empty;
+                if (_manualWithdrawMethod != null)
+                    _manualWithdrawMethod.SetSelection(0);
+                UpdateManualWithdrawContext();
+            });
+        }
+
+        private void UpdateManualWithdrawContext()
+        {
+            if (_manualWithdrawMethod == null || _footerText == null || _bankAccountEntry == null)
+                return;
+
+            string method = (_manualWithdrawMethod.SelectedItem?.ToString() ?? "Select Payout Method").Trim();
+            _bankAccountEntry.Hint = GetManualWithdrawHint(method);
+
+            if (_contentBank?.Visibility == ViewStates.Visible)
+                _footerText.Text = GetManualWithdrawFooter(method);
+        }
+
+        private static string GetManualWithdrawHint(string method)
+        {
+            return method switch
+            {
+                "JazzCash" => "Enter JazzCash number",
+                "PayTM" => "Enter PayTM number",
+                "EasyPaisa" => "Enter EasyPaisa number",
+                "Bank Account" => "Enter bank account details",
+                "Binance Pay" => "Enter Binance Pay ID",
+                _ => "Enter Account Details"
+            };
+        }
+
+        private static string GetManualWithdrawFooter(string method)
+        {
+            return method switch
+            {
+                "JazzCash" => "SEND JAZZCASH PAYOUT DETAILS",
+                "PayTM" => "SEND PAYTM PAYOUT DETAILS",
+                "EasyPaisa" => "SEND EASYPAISA PAYOUT DETAILS",
+                "Bank Account" => "SEND BANK PAYOUT DETAILS",
+                "Binance Pay" => "SEND BINANCE PAYOUT DETAILS",
+                _ => "REQUEST MANUAL TRANSFER"
+            };
+        }
+
+        private static string GetManualWithdrawDetailsMessage(string method)
+        {
+            return method switch
+            {
+                "JazzCash" => "Enter a JazzCash number.",
+                "PayTM" => "Enter a PayTM number.",
+                "EasyPaisa" => "Enter an EasyPaisa number.",
+                "Bank Account" => "Enter bank account details.",
+                "Binance Pay" => "Enter a Binance Pay ID.",
+                _ => "Enter account details."
+            };
         }
 
         private async void OnPasteButtonClicked(object sender, EventArgs e)

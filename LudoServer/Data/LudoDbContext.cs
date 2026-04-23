@@ -18,6 +18,7 @@ namespace LudoServer.Data
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<PlayerWalletKey> PlayerWalletKey { get; set; }
         public DbSet<CashDeposit> CashDeposits { get; set; }
+        public DbSet<CashWithdrawal> CashWithdrawals { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -57,6 +58,18 @@ namespace LudoServer.Data
                 .HasIndex(cd => cd.ReferenceNumber)
                 .IsUnique()
                 .HasFilter("[ReferenceNumber] IS NOT NULL");
+
+            modelBuilder.Entity<CashWithdrawal>()
+                .HasOne(cw => cw.Player)
+                .WithMany()
+                .HasForeignKey(cw => cw.PlayerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CashWithdrawal>()
+                .HasOne(cw => cw.ProcessedByAdmin)
+                .WithMany()
+                .HasForeignKey(cw => cw.ProcessedByAdminId)
+                .OnDelete(DeleteBehavior.Restrict);
 
       
 
