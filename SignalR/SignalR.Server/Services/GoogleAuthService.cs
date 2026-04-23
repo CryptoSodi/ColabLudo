@@ -78,6 +78,20 @@ namespace SignalR.Server.Services
                     existingPlayer.AuthToken = utilService.Encrypt(existingPlayer.PlayerId.ToString()); // or a JWT with playerId claim
                     await ctx.SaveChangesAsync();
                 }
+                else
+                {
+                    existingPlayer.GoogleId = string.IsNullOrWhiteSpace(existingPlayer.GoogleId) ? googleId : existingPlayer.GoogleId;
+                    existingPlayer.PictureUrl = string.IsNullOrWhiteSpace(pictureUrl) ? existingPlayer.PictureUrl : pictureUrl;
+                    existingPlayer.City = city;
+                    existingPlayer.CountryCode = countryCode;
+                    existingPlayer.LastLogin = DateTime.UtcNow;
+                    existingPlayer.IsOnline = true;
+
+                    if (string.IsNullOrWhiteSpace(existingPlayer.AuthToken))
+                        existingPlayer.AuthToken = utilService.Encrypt(existingPlayer.PlayerId.ToString());
+
+                    await ctx.SaveChangesAsync();
+                }
                 return existingPlayer;
             }
             catch (Exception ex)

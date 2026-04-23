@@ -140,7 +140,7 @@ namespace LudoClient.Platforms.Android.Popups
                 Console.WriteLine(ex);
             }
 
-            if (GlobalConstants.MatchMaker.Connected)
+            if (GlobalConstants.MatchMaker != null)
             {
                 string result = await GlobalConstants.MatchMaker.MintNFT(0);
                 if (!string.IsNullOrWhiteSpace(result) && result.Contains("Success"))
@@ -157,8 +157,6 @@ namespace LudoClient.Platforms.Android.Popups
 
         private void OnManageNftsClicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected)
-                return;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Dismiss();
             

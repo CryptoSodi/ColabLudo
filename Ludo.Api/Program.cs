@@ -101,6 +101,8 @@ builder.Services.AddSingleton<CryptoHelper>(sp =>
 builder.Services.AddScoped<DailyBonusService>();
 builder.Services.AddScoped<ApiPlayerContext>();
 builder.Services.AddScoped<FriendsService>();
+builder.Services.AddScoped<GoogleAuthService>();
+builder.Services.AddScoped<TournamentService>();
 builder.Services.AddScoped<UtilService>();
 builder.Services.AddHttpClient<JupiterSwapService>();
 

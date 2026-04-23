@@ -80,7 +80,6 @@ namespace LudoClient.Platforms.Android.Popups
 
         private void OnBtnMinusClicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected) return;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (_amount > 1)
                 _amount--;
@@ -89,7 +88,6 @@ namespace LudoClient.Platforms.Android.Popups
 
         private void OnBtnPlusClicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected) return;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (UserInfo.Instance.player.Wallet.AvailableBalance > (_amount + 1) * 1000)
             {
@@ -106,7 +104,6 @@ namespace LudoClient.Platforms.Android.Popups
 
         private async void OnBtnMintClicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected) return;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             await ProcessNFT(_amount);
         }

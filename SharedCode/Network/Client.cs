@@ -37,7 +37,8 @@ namespace SharedCode.Network
         {
             _apiClient = CreateApiClient();
             Connected = false;
-            _ = ConnectAsync();
+            if (!string.IsNullOrWhiteSpace(getAuthToken()))
+                _ = ConnectAsync();
         }
 
         private static HttpClient CreateApiClient()
@@ -131,6 +132,10 @@ namespace SharedCode.Network
                 // This lambda runs on a non-UI thread:
                 PlayerInfoUpdate?.Invoke(this, (playerInfo));
             });
+            _hubConnection.On<decimal>("UpdateBalance", balance =>
+            {
+                ApplyWalletBalance(balance);
+            });
             // Player seat event
             _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
             {
@@ -159,6 +164,12 @@ namespace SharedCode.Network
         /// Establish the connection to the server asynchronously.
         public async Task ConnectAsync()
         {
+            if (string.IsNullOrWhiteSpace(getAuthToken()))
+            {
+                Connected = false;
+                return;
+            }
+
             if (_hubConnection == null)
             {
                 // Build connection with automatic reconnect
@@ -289,6 +300,32 @@ namespace SharedCode.Network
                 return null;
             return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
         }
+        public async Task<PlayerInfo?> GoogleAuthentication(string idToken, string city, string countryCode)
+        {
+            try
+            {
+                using var response = await _apiClient.PostAsJsonAsync("api/auth/google", new
+                {
+                    IdToken = idToken,
+                    City = city,
+                    CountryCode = countryCode
+                }).ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Console.WriteLine($"[ApiClient] GoogleAuthentication failed: {(int)response.StatusCode} {error}");
+                    return null;
+                }
+
+                return await response.Content.ReadFromJsonAsync<PlayerInfo>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GoogleAuthentication Error: {ex.Message}");
+                return null;
+            }
+        }
         public async Task<string> InitiateWithdrawal(string destination, decimal amount)
         {
              try
@@ -313,15 +350,59 @@ namespace SharedCode.Network
         }
         internal async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
-            return await _hubConnection.InvokeAsync<List<TournamentDTO>>("GetAllTournaments", type).ConfigureAwait(false);
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/tournaments?type={Uri.EscapeDataString(type ?? "All")}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<TournamentDTO>();
+
+                return await response.Content.ReadFromJsonAsync<List<TournamentDTO>>().ConfigureAwait(false)
+                    ?? new List<TournamentDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetAllTournaments Error: {ex.Message}");
+                return new List<TournamentDTO>();
+            }
         }
         internal async Task<TournamentDTO> JoinTournament(int TournamentID)
         {
-            return await _hubConnection.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Post, $"api/tournaments/{TournamentID}/join");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                var result = await response.Content.ReadFromJsonAsync<TournamentDTO>().ConfigureAwait(false);
+                if (result?.StatusCode == "SUCCESS")
+                    await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] JoinTournament Error: {ex.Message}");
+                return null;
+            }
         }
         internal async Task<TournamentResultDTO> GetResultsTournament(int TournamentID)
         {
-            return await _hubConnection.InvokeAsync<TournamentResultDTO>("GetResultsTournament", TournamentID).ConfigureAwait(false);
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/tournaments/{TournamentID}/results");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<TournamentResultDTO>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetResultsTournament Error: {ex.Message}");
+                return null;
+            }
         }
         public string getAuthToken()
         {
@@ -400,14 +481,73 @@ namespace SharedCode.Network
             }
         }
 
-        private async Task RefreshPlayerInfoFromApi()
+        public async Task RefreshPlayerInfoFromApi()
         {
             var playerInfo = await GetProfile<PlayerInfo>().ConfigureAwait(false);
+            ApplyPlayerInfoUpdate(playerInfo);
+        }
+
+        public async Task RefreshSessionFromApi()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/auth/session");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return;
+
+                var playerInfo = await response.Content.ReadFromJsonAsync<PlayerInfo>().ConfigureAwait(false);
+                ApplyPlayerInfoUpdate(playerInfo);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] RefreshSession Error: {ex.Message}");
+            }
+        }
+
+        private void ApplyPlayerInfoUpdate(PlayerInfo? playerInfo)
+        {
             if (playerInfo == null)
                 return;
 
-            UserInfo.Instance.player = playerInfo;
-            PlayerInfoUpdate?.Invoke(this, playerInfo);
+            var handler = PlayerInfoUpdate;
+            if (handler != null)
+                handler.Invoke(this, playerInfo);
+            else
+                UserInfo.Instance.player = playerInfo;
+        }
+
+        private void ApplyWalletBalance(decimal balance)
+        {
+            var wallet = UserInfo.Instance.player?.Wallet;
+            if (wallet != null)
+            {
+                wallet.AvailableBalance = balance;
+                return;
+            }
+
+            _ = RefreshPlayerInfoFromApi();
+        }
+
+        private void QueuePlayerInfoRefreshPolling(decimal? previousBalance)
+        {
+            _ = RefreshPlayerInfoUntilBalanceChanges(previousBalance);
+        }
+
+        private async Task RefreshPlayerInfoUntilBalanceChanges(decimal? previousBalance)
+        {
+            for (var attempt = 0; attempt < 10; attempt++)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(attempt == 0 ? 2 : 5)).ConfigureAwait(false);
+                await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+
+                if (!previousBalance.HasValue)
+                    return;
+
+                var currentBalance = UserInfo.Instance.player?.Wallet?.AvailableBalance;
+                if (currentBalance.HasValue && currentBalance.Value != previousBalance.Value)
+                    return;
+            }
         }
 
         public async Task<List<PlayerCard>> GetFriends(string type = "All")
@@ -503,7 +643,25 @@ namespace SharedCode.Network
 
         public async Task<string> MintNFT(int amount)
         {
-            return await _hubConnection.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Post, "api/nfts/mint");
+                request.Content = JsonContent.Create(new { Amount = amount });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return "Failed";
+
+                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                if (amount > 0 && result.Contains("Success", StringComparison.OrdinalIgnoreCase))
+                    await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] MintNFT Error: {ex.Message}");
+                return "Failed";
+            }
         }
         public async Task<object> GetWalletBalance(string walletAddress)
         {
@@ -544,14 +702,19 @@ namespace SharedCode.Network
         {
             try
             {
+                var previousBalance = UserInfo.Instance.player?.Wallet?.AvailableBalance;
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/transactions/broadcast");
                 request.Content = JsonContent.Create(new { TxBase64 = txBase64 });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                     return new BlockchainResult { Success = false, Error = "Request failed" };
 
-                return await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
+                var result = await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
                     ?? new BlockchainResult { Success = false, Error = "Empty response" };
+                if (result.Success)
+                    QueuePlayerInfoRefreshPolling(previousBalance);
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -564,14 +727,19 @@ namespace SharedCode.Network
         {
             try
             {
+                var previousBalance = UserInfo.Instance.player?.Wallet?.AvailableBalance;
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/swap/execute");
                 request.Content = JsonContent.Create(new { RequestId = requestId, SignedTxBase64 = signedTxBase64 });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                     return new BlockchainResult { Success = false, Error = "Request failed" };
 
-                return await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
+                var result = await response.Content.ReadFromJsonAsync<BlockchainResult>().ConfigureAwait(false)
                     ?? new BlockchainResult { Success = false, Error = "Empty response" };
+                if (result.Success)
+                    QueuePlayerInfoRefreshPolling(previousBalance);
+
+                return result;
             }
             catch (Exception ex)
             {

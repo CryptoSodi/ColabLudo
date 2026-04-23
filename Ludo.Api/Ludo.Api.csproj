@@ -21,7 +21,9 @@
     <Compile Include="..\SignalR\SignalR.Server\Payments\SolPaymentProvider.cs" Link="Payments\SolPaymentProvider.cs" />
     <Compile Include="..\SignalR\SignalR.Server\Services\DailyBonusService.cs" Link="Services\DailyBonusService.cs" />
     <Compile Include="..\SignalR\SignalR.Server\Services\FriendsService.cs" Link="Services\FriendsService.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Services\GoogleAuthService.cs" Link="Services\GoogleAuthService.cs" />
     <Compile Include="..\SignalR\SignalR.Server\Services\JupiterSwapService.cs" Link="Services\JupiterSwapService.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Services\TournamentService.cs" Link="Services\TournamentService.cs" />
     <Compile Include="..\SignalR\SignalR.Server\Services\UtilService.cs" Link="Services\UtilService.cs" />
     <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="SharedCode\Constants\PlayerInfo.cs" />
   </ItemGroup>

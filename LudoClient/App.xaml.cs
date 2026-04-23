@@ -484,12 +484,8 @@ namespace LudoClient
                 {
                     var matchMaker = GlobalConstants.MatchMaker;
 
-                    if (matchMaker?.Connected == true && matchMaker._hubConnection.State != HubConnectionState.Disconnected)
-                    {
-                        var newPlayer = await matchMaker.UserConnectedSetID();
-                        if (newPlayer != null)
-                            OnPlayerInfoUpdate(null, newPlayer);
-                    }
+                    if (matchMaker != null)
+                        await matchMaker.RefreshSessionFromApi();
                 }
                 catch (TaskCanceledException)
                 {

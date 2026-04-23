@@ -85,7 +85,7 @@ public partial class ProfileInfo : BasePopup
             Console.WriteLine(ex);
         }
 
-        if (GlobalConstants.MatchMaker.Connected)
+        if (GlobalConstants.MatchMaker != null)
         {
             string result = await GlobalConstants.MatchMaker.MintNFT(0);
             if (string.IsNullOrWhiteSpace(result))
@@ -102,8 +102,6 @@ public partial class ProfileInfo : BasePopup
     }
     private void OnManageNftsTapped(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");        
         ClientGlobalConstants.dashBoard.ShowPopup(ClientGlobalConstants.mintingPage, new PopupOptions { Shape = null });
     }

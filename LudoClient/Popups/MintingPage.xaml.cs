@@ -37,8 +37,6 @@ public partial class MintingPage : BasePopup
     }
     private void BtnMinus(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if (amount > 1)
             amount--;
@@ -47,8 +45,6 @@ public partial class MintingPage : BasePopup
     }
     private void BtnPlus(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         if(UserInfo.Instance.player.Wallet.AvailableBalance > (amount+1) * 1000)
         {
@@ -60,10 +56,8 @@ public partial class MintingPage : BasePopup
     }
     private async void Mint_Clicked(object sender, EventArgs e)
     {
-        if (!GlobalConstants.MatchMaker.Connected)
-            return;
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        ProcessNFT(amount);
+        await ProcessNFT(amount);
     }
     // ---------------- NFT Mint + UI Build ----------------
     //182,184,Success

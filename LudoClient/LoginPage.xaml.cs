@@ -33,97 +33,97 @@ namespace LudoClient
         }
         private async void GuestSignup_Clicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected)
-            {
-                await DisplayAlert("Google Sign-In Failed", "Not connected to server. Reload the app if the issue presists.", "OK");
-                return;
-            }
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
-            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            await performLoginAsync("Guest3");
-            _isLoggingIn = false;
+            try
+            {
+                ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+                await performLoginAsync("Guest3");
+            }
+            finally
+            {
+                _isLoggingIn = false;
+            }
             return;
 
         }
         private async void GooleSignup_Clicked(object sender, EventArgs e)
         {
-            if (!GlobalConstants.MatchMaker.Connected)
-            {
-                await DisplayAlert("Google Sign-In Failed", "Not connected to server. Reload the app if the issue presists.", "OK");
-                return;
-            }
             if (_isLoggingIn)
                 return;
             _isLoggingIn = true;
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-#if WINDOWS
-            await performLoginAsync("Guest3");
-            _isLoggingIn = false;
-            return;
-#endif
-#if ANDROID
-            // Show loading indicator on the main thread
-            MainThread.BeginInvokeOnMainThread(() => {
-                UserDialogs.Instance.ShowLoading("Logging in with Google.", MaskType.Black);
-            });
-#endif
-            IGoogleAuthService authService = null;
             try
             {
-                authService = DependencyService.Get<IGoogleAuthService>();
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlert("Google Sign-In FAILED", "Sign-in returned no token.", "OK");
+#if WINDOWS
+                await performLoginAsync("Guest3");
                 return;
-            }
-            if (authService != null)
-            {
+#endif
+#if ANDROID
+                // Show loading indicator on the main thread
+                MainThread.BeginInvokeOnMainThread(() => {
+                    UserDialogs.Instance.ShowLoading("Logging in with Google.", MaskType.Black);
+                });
+#endif
+                IGoogleAuthService authService = null;
                 try
                 {
-                    string idToken = await authService.SignInAsync();
-                    await performLoginAsync(idToken);
+                    authService = DependencyService.Get<IGoogleAuthService>();
                 }
                 catch (Exception ex)
                 {
-                    await DisplayAlert("Google Sign-In Failed.", ex.Message, "OK");
+                    await DisplayAlert("Google Sign-In FAILED", "Sign-in returned no token.", "OK");
+                    return;
                 }
-                // Successfully signed in
+                if (authService != null)
+                {
+                    try
+                    {
+                        string idToken = await authService.SignInAsync();
+                        await performLoginAsync(idToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        await DisplayAlert("Google Sign-In Failed.", ex.Message, "OK");
+                    }
+                    // Successfully signed in
+                }
+                else
+                {
+                    await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");
+                }
             }
-            else
+            finally
             {
-                await DisplayAlert("Google Sign-In", "Sign-in returned no token.", "OK");
-            }
 #if ANDROID
-            UserDialogs.Instance.HideLoading();
+                UserDialogs.Instance.HideLoading();
 #endif
-            _isLoggingIn = false;
+                _isLoggingIn = false;
+            }
         }
         private async Task performLoginAsync(String idToken)
         {
             try
             {
-                if (GlobalConstants.MatchMaker.Connected)
-                {
-                    UserInfo.Instance.player = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<PlayerInfo>("GoogleAuthentication", idToken, city, countryCode).ConfigureAwait(false);
+                UserInfo.Instance.player = await GlobalConstants.MatchMaker.GoogleAuthentication(idToken, city, countryCode).ConfigureAwait(false);
 
-                    if (UserInfo.Instance.player != null)
+                if (UserInfo.Instance.player != null)
+                {
+                    UserInfo.SaveState();
+                    _ = GlobalConstants.MatchMaker.ConnectAsync();
+
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        UserInfo.SaveState();
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            Application.Current.MainPage = new AppShell();
-                        });
-                    }
-                    else
+                        Application.Current.MainPage = new AppShell();
+                    });
+                }
+                else
+                {
+                    MainThread.BeginInvokeOnMainThread(() =>
                     {
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            DisplayAlert("Error", $"An error occurred: Player not created", "OK");
-                        });
-                    }
+                        DisplayAlert("Error", $"An error occurred: Player not created", "OK");
+                    });
                 }
             }
             catch (Exception ex)
@@ -181,7 +181,7 @@ namespace LudoClient
         }
         private void UpdateButtons(bool isConnected)
         {
-            GoogleLoginPanel.Source = isConnected ? "google_login.webp" : "google_login_gray.webp";
+            GoogleLoginPanel.Source = "google_login.webp";
         }
         protected override void OnAppearing()
         {

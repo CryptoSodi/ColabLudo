@@ -16,9 +16,15 @@ public class ProfileController(
     {
         var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
         if (player == null)
+        {
+            Console.WriteLine("[ProfileApi] GetProfile unauthorized.");
             return Unauthorized();
+        }
 
-        return await utilService.CastPlayerToInfoAsync(player);
+        Console.WriteLine($"[ProfileApi] GetProfile requested. PlayerId={player.PlayerId}");
+        var info = await utilService.CastPlayerToInfoAsync(player);
+        Console.WriteLine($"[ProfileApi] GetProfile completed. PlayerId={player.PlayerId}");
+        return info;
     }
 
     [HttpGet("wallet")]
@@ -26,12 +32,20 @@ public class ProfileController(
     {
         var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
         if (player == null)
+        {
+            Console.WriteLine("[ProfileApi] GetWallet unauthorized.");
             return Unauthorized();
+        }
 
+        Console.WriteLine($"[ProfileApi] GetWallet requested. PlayerId={player.PlayerId}");
         var info = await utilService.CastPlayerToInfoAsync(player);
         if (info.Wallet == null)
+        {
+            Console.WriteLine($"[ProfileApi] GetWallet not found. PlayerId={player.PlayerId}");
             return NotFound();
+        }
 
+        Console.WriteLine($"[ProfileApi] GetWallet completed. PlayerId={player.PlayerId}, Balance={info.Wallet.AvailableBalance}");
         return info.Wallet;
     }
 }

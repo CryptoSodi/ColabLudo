@@ -16,9 +16,15 @@ public class DailyBonusController(
     {
         var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
         if (player == null)
+        {
+            Console.WriteLine("[DailyBonusApi] Get unauthorized.");
             return Unauthorized();
+        }
 
-        return await dailyBonusService.GetDailyBonus(player);
+        Console.WriteLine($"[DailyBonusApi] Get requested. PlayerId={player.PlayerId}");
+        var dto = await dailyBonusService.GetDailyBonus(player);
+        Console.WriteLine($"[DailyBonusApi] Get completed. PlayerId={player.PlayerId}");
+        return dto;
     }
 
     [HttpPost("claim")]
@@ -26,8 +32,14 @@ public class DailyBonusController(
     {
         var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
         if (player == null)
+        {
+            Console.WriteLine("[DailyBonusApi] Claim unauthorized.");
             return Unauthorized();
+        }
 
-        return await dailyBonusService.ClaimTodayBonus(player);
+        Console.WriteLine($"[DailyBonusApi] Claim requested. PlayerId={player.PlayerId}");
+        var dto = await dailyBonusService.ClaimTodayBonus(player);
+        Console.WriteLine($"[DailyBonusApi] Claim completed. PlayerId={player.PlayerId}");
+        return dto;
     }
 }
