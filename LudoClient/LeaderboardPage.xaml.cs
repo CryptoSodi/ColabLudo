@@ -101,12 +101,12 @@ public partial class LeaderboardPage : ContentPage
         if (Filter == "" || Filter == "Global")
         {
             // Global Tab: Get the real full leaderboard (ranked from 1)
-            return await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetLeaderboard").ConfigureAwait(false);
+            return await GlobalConstants.MatchMaker.GetLeaderboard();
         }
         else
         {
             // Tournament Tabs: Get leaderboard for specific category (Daily, Weekly, Monthly, Yearly)
-            return await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetTournamentLeaderboard", Filter).ConfigureAwait(false);
+            return await GlobalConstants.MatchMaker.GetTournamentLeaderboard(Filter);
         }
     }
     private void TabRequestedActivate(object sender, EventArgs e)

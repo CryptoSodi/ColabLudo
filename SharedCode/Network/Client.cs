@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.Logging;
 using SharedCode.Constants;
 using System.ComponentModel;
+using System.Net.Http.Json;
 
 namespace SharedCode.Network
 {
     public class Client
     {
         private bool _connected;
+        private readonly HttpClient _apiClient;
         public HubConnection _hubConnection { get; set; }
 
         // Event Definitions using standard .NET event patterns
@@ -33,8 +35,31 @@ namespace SharedCode.Network
         }
         public Client()
         {
+            _apiClient = CreateApiClient();
             Connected = false;
             _ = ConnectAsync();
+        }
+
+        private static HttpClient CreateApiClient()
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            return new HttpClient(handler)
+            {
+                BaseAddress = new Uri(GlobalConstants.ApiUrl)
+            };
+        }
+
+        private HttpRequestMessage CreateApiRequest(HttpMethod method, string path)
+        {
+            var request = new HttpRequestMessage(method, path);
+            var authToken = getAuthToken();
+            if (!string.IsNullOrWhiteSpace(authToken))
+                request.Headers.Add("X-Auth-Token", authToken);
+            return request;
         }
         private async Task StartHeartbeat()
         {
@@ -257,10 +282,6 @@ namespace SharedCode.Network
                 return null;
             }
         }
-        public async Task<PlayerCard> GetPlayerById(int playerId)
-        {
-            return await _hubConnection.InvokeAsync<PlayerCard>("GetPlayerById", playerId).ConfigureAwait(false);
-        }
         public async Task<PlayerInfo> UserConnectedSetID()
         {
             String AuthToken = getAuthToken();
@@ -290,6 +311,170 @@ namespace SharedCode.Network
         {
             return Preferences.Get("AuthToken", "");
         }
+
+        public async Task<T?> GetDailyBonus<T>()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/daily-bonus");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return default;
+
+                return await response.Content.ReadFromJsonAsync<T>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetDailyBonus Error: {ex.Message}");
+                return default;
+            }
+        }
+
+        public async Task<T?> ClaimTodayBonus<T>()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Post, "api/daily-bonus/claim");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return default;
+
+                return await response.Content.ReadFromJsonAsync<T>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] ClaimTodayBonus Error: {ex.Message}");
+                return default;
+            }
+        }
+
+        public async Task<T?> GetProfile<T>()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/profile");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return default;
+
+                return await response.Content.ReadFromJsonAsync<T>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetProfile Error: {ex.Message}");
+                return default;
+            }
+        }
+
+        public async Task<T?> GetWallet<T>()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/wallet");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return default;
+
+                return await response.Content.ReadFromJsonAsync<T>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetWallet Error: {ex.Message}");
+                return default;
+            }
+        }
+
+        public async Task<List<PlayerCard>> GetFriends(string type = "All")
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/friends?type={Uri.EscapeDataString(type)}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<PlayerCard>();
+
+                return await response.Content.ReadFromJsonAsync<List<PlayerCard>>().ConfigureAwait(false) ?? new List<PlayerCard>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetFriends Error: {ex.Message}");
+                return new List<PlayerCard>();
+            }
+        }
+
+        public async Task<string> SendFriendRequest(int receiverId, string status)
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Post, "api/friends/request");
+                request.Content = JsonContent.Create(new { ReceiverId = receiverId, Status = status });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return "Error";
+
+                return await response.Content.ReadFromJsonAsync<string>().ConfigureAwait(false) ?? "Error";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] SendFriendRequest Error: {ex.Message}");
+                return "Error";
+            }
+        }
+
+        public async Task<PlayerCard> GetPlayerById(int playerId)
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/players/{playerId}/card");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<PlayerCard>().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetPlayerById Error: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<List<PlayerCard>> GetLeaderboard()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/leaderboard");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<PlayerCard>();
+
+                return await response.Content.ReadFromJsonAsync<List<PlayerCard>>().ConfigureAwait(false) ?? new List<PlayerCard>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetLeaderboard Error: {ex.Message}");
+                return new List<PlayerCard>();
+            }
+        }
+
+        public async Task<List<PlayerCard>> GetTournamentLeaderboard(string tournamentType)
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/leaderboard/tournament/{Uri.EscapeDataString(tournamentType)}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<PlayerCard>();
+
+                return await response.Content.ReadFromJsonAsync<List<PlayerCard>>().ConfigureAwait(false) ?? new List<PlayerCard>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetTournamentLeaderboard Error: {ex.Message}");
+                return new List<PlayerCard>();
+            }
+        }
+
         public async Task<string> MintNFT(int amount)
         {
             return await _hubConnection.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);

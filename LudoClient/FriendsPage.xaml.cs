@@ -89,7 +89,7 @@ public partial class FriendsPage : ContentPage
     }
     private async Task<List<PlayerCard>> GetPlayerCards()
     {
-        List<PlayerCard> Friends = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<PlayerCard>>("GetFriends", "All").ConfigureAwait(false);
+        List<PlayerCard> Friends = await GlobalConstants.MatchMaker.GetFriends("All");
         if (Filter == "BLOCK") // Remove friends where status is "Block"
             Friends = Friends.Where(f => f.status == "BLOCK").ToList();
         else

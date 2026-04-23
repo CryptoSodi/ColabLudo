@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <UserSecretsId>012c7178-1fd9-4a7c-a74b-9d0fa6380b62</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\LudoServer\LudoServer.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\SignalR\SignalR.Server\Interfaces\IPaymentProvider.cs" Link="Interfaces\IPaymentProvider.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Payments\CryptoHelper.cs" Link="Payments\CryptoHelper.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Payments\CurrencyType.cs" Link="Payments\CurrencyType.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Payments\LudcPaymentProvider.cs" Link="Payments\LudcPaymentProvider.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Payments\PaymentProviderFactory.cs" Link="Payments\PaymentProviderFactory.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Payments\SolPaymentProvider.cs" Link="Payments\SolPaymentProvider.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Services\DailyBonusService.cs" Link="Services\DailyBonusService.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Services\FriendsService.cs" Link="Services\FriendsService.cs" />
+    <Compile Include="..\SignalR\SignalR.Server\Services\UtilService.cs" Link="Services\UtilService.cs" />
+    <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="SharedCode\Constants\PlayerInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\SignalR\SignalR.Server\appsettings.json" Link="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+    <PackageReference Include="Solnet.Extensions" Version="6.1.0" />
+    <PackageReference Include="Solnet.Programs" Version="6.1.0" />
+    <PackageReference Include="Solnet.Rpc" Version="6.1.0" />
+    <PackageReference Include="Solnet.Wallet" Version="6.1.0" />
+  </ItemGroup>
+
+</Project>

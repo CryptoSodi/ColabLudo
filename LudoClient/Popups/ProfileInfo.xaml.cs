@@ -53,11 +53,12 @@ public partial class ProfileInfo : BasePopup
     }
     private async Task loadValues()
     {
-        if (GlobalConstants.MatchMaker.Connected)
+        try
         {
-            try
+            PlayerInfo dto = await GlobalConstants.MatchMaker.GetProfile<PlayerInfo>();
+            if (dto != null)
             {
-                PlayerInfo dto = await GlobalConstants.MatchMaker.UserConnectedSetID();
+                UserInfo.Instance.player = dto;
                 C1.setValue(dto.GamesPlayed + "");
                 C2.setValue(dto.GamesWon + "");
                 C3.setValue(dto.GamesLost + "");
@@ -78,10 +79,14 @@ public partial class ProfileInfo : BasePopup
                 }
                 //Score.setValue(dto.Score + "");
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+
+        if (GlobalConstants.MatchMaker.Connected)
+        {
             string result = await GlobalConstants.MatchMaker.MintNFT(0);
             if (string.IsNullOrWhiteSpace(result))
             {

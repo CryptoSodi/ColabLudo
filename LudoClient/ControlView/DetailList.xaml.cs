@@ -141,7 +141,7 @@ namespace LudoClient.ControlView
         public async Task SendFriendRequestAsync(int receiverId, string status)
         {
             // Send the HTTP POST request
-            string responseBody = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<string>("SendFriendRequest", receiverId, status);
+            string responseBody = await GlobalConstants.MatchMaker.SendFriendRequest(receiverId, status);
             if (status == responseBody)
             {
                 playerCard.status = status;

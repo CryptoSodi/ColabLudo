@@ -1,10 +1,8 @@
 ﻿using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Views;
-using Android.Widget;
 using AndroidX.Fragment.App;
 using LudoClient.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.Text.Json;
 
@@ -57,7 +55,7 @@ namespace LudoClient.Platforms.Android.Popups
         {
             try
             {
-                var dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("GetDailyBonus").ConfigureAwait(false);
+                var dto = await GlobalConstants.MatchMaker.GetDailyBonus<DailyBonusDto>().ConfigureAwait(false);
                 if (dto != null)
                 {
                     MainThread.BeginInvokeOnMainThread(() => UpdateFromDto(dto));
@@ -74,7 +72,7 @@ namespace LudoClient.Platforms.Android.Popups
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             try
             {
-                var dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("ClaimTodayBonus").ConfigureAwait(false);
+                var dto = await GlobalConstants.MatchMaker.ClaimTodayBonus<DailyBonusDto>().ConfigureAwait(false);
                 if (dto != null)
                 {
                     MainThread.BeginInvokeOnMainThread(() => UpdateFromDto(dto));

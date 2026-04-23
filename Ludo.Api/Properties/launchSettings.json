@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "Ludo.Api": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://0.0.0.0:8444;http://0.0.0.0:8086"
+    }
+  }
+}

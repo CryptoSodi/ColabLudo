@@ -204,7 +204,7 @@ namespace LudoClient.Platforms.Android.Popups
 
         public async Task SendFriendRequestAsync(int receiverId, string status)
         {
-            string responseBody = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<string>("SendFriendRequest", receiverId, status);
+            string responseBody = await GlobalConstants.MatchMaker.SendFriendRequest(receiverId, status);
             if (status == responseBody)
             {
                 MainThread.BeginInvokeOnMainThread(() =>

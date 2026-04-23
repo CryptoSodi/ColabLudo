@@ -118,29 +118,30 @@ namespace LudoClient.Platforms.Android.Popups
 
         private async Task LoadValuesAsync()
         {
+            try
+            {
+                PlayerInfo dto = await GlobalConstants.MatchMaker.GetProfile<PlayerInfo>();
+                if (dto != null)
+                {
+                    UserInfo.Instance.player = dto;
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        UpdateStats(dto.GamesPlayed, dto.GamesWon, dto.GamesLost, dto.BestWin, dto.TotalWin, dto.TotalLost);
+                        _playerBox.SetScore(dto.Score, dto.PhoneNumber != "###########" && !string.IsNullOrEmpty(dto.PhoneNumber));
+                        if (dto.PhoneNumber != null)
+                        {
+                            _numberText.Text = dto.PhoneNumber;
+                        }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
             if (GlobalConstants.MatchMaker.Connected)
             {
-                try
-                {
-                    PlayerInfo dto = await GlobalConstants.MatchMaker.UserConnectedSetID();
-                    if (dto != null)
-                    {
-                        MainThread.BeginInvokeOnMainThread(() =>
-                        {
-                            UpdateStats(dto.GamesPlayed, dto.GamesWon, dto.GamesLost, dto.BestWin, dto.TotalWin, dto.TotalLost);
-                            _playerBox.SetScore(dto.Score, dto.PhoneNumber != "###########" && !string.IsNullOrEmpty(dto.PhoneNumber));
-                            if (dto.PhoneNumber != null)
-                            {
-                                _numberText.Text = dto.PhoneNumber;
-                            }
-                        });
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex);
-                }
-
                 string result = await GlobalConstants.MatchMaker.MintNFT(0);
                 if (!string.IsNullOrWhiteSpace(result) && result.Contains("Success"))
                 {

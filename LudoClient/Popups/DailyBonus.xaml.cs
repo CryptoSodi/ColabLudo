@@ -1,5 +1,4 @@
 using LudoClient.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.Text.Json;
 namespace LudoClient.Popups;
@@ -41,7 +40,7 @@ public partial class DailyBonus : BasePopup
         DailyBonusDto dto = null;
         try
         {
-            dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("GetDailyBonus").ConfigureAwait(false);
+            dto = await GlobalConstants.MatchMaker.GetDailyBonus<DailyBonusDto>().ConfigureAwait(false);
             UpdateFromDto(dto);
         }
         catch (Exception ex)
@@ -57,7 +56,7 @@ public partial class DailyBonus : BasePopup
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         try
         {
-            var dto = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<DailyBonusDto>("ClaimTodayBonus").ConfigureAwait(false);
+            var dto = await GlobalConstants.MatchMaker.ClaimTodayBonus<DailyBonusDto>().ConfigureAwait(false);
             UpdateFromDto(dto);
         }
         catch (Exception ex)
@@ -67,6 +66,9 @@ public partial class DailyBonus : BasePopup
     }
     private void UpdateFromDto(DailyBonusDto dto)
     {
+        if (dto == null)
+            return;
+
         MainThread.BeginInvokeOnMainThread(() =>
         {
             bool ShowClaim = false;
