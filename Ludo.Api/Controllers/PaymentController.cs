@@ -319,6 +319,90 @@ public class PaymentController(
         return "Success";
     }
 
+    [HttpPost("withdrawals/initiate")]
+    public async Task<ActionResult<string>> InitiateWithdrawal([FromBody] InitiateWithdrawalDto request)
+    {
+        var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
+        if (player == null)
+            return Unauthorized();
+
+        if (request.Amount <= 0)
+            return "Invalid amount.";
+
+        var destination = (request.Destination ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(destination))
+            return "Invalid destination.";
+
+        try
+        {
+            using var ctx = await contextFactory.CreateDbContextAsync();
+            var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+            if (wallet == null || wallet.AvailableBalance < request.Amount)
+                return "Insufficient internal balance.";
+
+            var result = await ludcPaymentProvider.WithdrawAsync(player, destination, request.Amount, Guid.NewGuid());
+            if (result != "ERROR" && !result.Contains("INSUFFICIENT", StringComparison.OrdinalIgnoreCase))
+                return $"Success: {result}";
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            return "Error: " + ex.Message;
+        }
+    }
+
+    [HttpPost("manual-withdrawals")]
+    public async Task<ActionResult<string>> SubmitManualWithdrawal([FromBody] ManualWithdrawalDto request)
+    {
+        var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
+        if (player == null)
+            return Unauthorized();
+
+        if (request.Amount <= 0)
+            return "Invalid amount.";
+
+        var normalizedMethod = (request.Method ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalizedMethod) || normalizedMethod == "Select Payout Method")
+            return "Select a payout method.";
+
+        var normalizedDestination = (request.DestinationDetails ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(normalizedDestination))
+            return "Account details are required.";
+
+        using var ctx = await contextFactory.CreateDbContextAsync();
+        var wallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == player.PlayerId && w.AddressType == "LUDC");
+        if (wallet == null)
+            return "Wallet Not Found";
+
+        if (wallet.AvailableBalance < request.Amount)
+            return "Insufficient internal balance.";
+
+        var duplicatePending = await ctx.CashWithdrawals.AnyAsync(w =>
+            w.PlayerId == player.PlayerId &&
+            w.Status == "Pending" &&
+            w.Amount == request.Amount &&
+            w.PayoutMethod == normalizedMethod &&
+            w.DestinationDetails == normalizedDestination);
+
+        if (duplicatePending)
+            return "A similar payout request is already pending.";
+
+        var withdrawal = new CashWithdrawal
+        {
+            PlayerId = player.PlayerId,
+            Amount = request.Amount,
+            PayoutMethod = normalizedMethod,
+            DestinationDetails = normalizedDestination,
+            Status = "Pending",
+            CreatedDate = DateTime.UtcNow
+        };
+
+        ctx.CashWithdrawals.Add(withdrawal);
+        await ctx.SaveChangesAsync();
+        return "Success";
+    }
+
     private async Task<decimal> GetTokenBalanceAsync(string ownerAddress, string mintAddress, string tokenProgramAddress)
     {
         try
@@ -391,3 +475,5 @@ public record ConfirmTransactionDto(string Signature);
 public record PrepareAssetSwapDto(string WalletAddress, string InputAsset, string OutputAsset, decimal Amount, int SlippageBps);
 public record ExecutePreparedSwapDto(string RequestId, string SignedTxBase64);
 public record ManualDepositDto(int PlayerId, decimal Amount, string Method, string ReferenceNumber, string ReceiptUrl);
+public record InitiateWithdrawalDto(string Destination, decimal Amount);
+public record ManualWithdrawalDto(decimal Amount, string Method, string DestinationDetails);

@@ -291,9 +291,25 @@ namespace SharedCode.Network
         }
         public async Task<string> InitiateWithdrawal(string destination, decimal amount)
         {
-            // Use the generic InvokeAsync to call the renamed server method
-            String info = await _hubConnection.InvokeAsync<String>("InitiateWithdrawal", destination, amount).ConfigureAwait(false);
-            return info;
+             try
+            {
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/withdrawals/initiate");
+                request.Content = JsonContent.Create(new { Destination = destination, Amount = amount });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return "Request failed";
+
+                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                if (result.StartsWith("Success:", StringComparison.OrdinalIgnoreCase))
+                    await RefreshPlayerInfoFromApi();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] InitiateWithdrawal Error: {ex.Message}");
+                return "Error";
+            }
         }
         internal async Task<List<TournamentDTO>> GetAllTournaments(string type)
         {
@@ -382,6 +398,16 @@ namespace SharedCode.Network
                 Console.WriteLine($"[ApiClient] GetWallet Error: {ex.Message}");
                 return default;
             }
+        }
+
+        private async Task RefreshPlayerInfoFromApi()
+        {
+            var playerInfo = await GetProfile<PlayerInfo>().ConfigureAwait(false);
+            if (playerInfo == null)
+                return;
+
+            UserInfo.Instance.player = playerInfo;
+            PlayerInfoUpdate?.Invoke(this, playerInfo);
         }
 
         public async Task<List<PlayerCard>> GetFriends(string type = "All")
@@ -646,18 +672,24 @@ namespace SharedCode.Network
 
         public async Task<string> SubmitManualWithdrawal(decimal amount, string method, string destinationDetails)
         {
-            if (_hubConnection == null || _hubConnection.State != HubConnectionState.Connected)
-            {
-                return "Hub not connected";
-            }
-
             try
             {
-                return await _hubConnection.InvokeAsync<string>("SubmitManualWithdrawal", amount, method, destinationDetails).ConfigureAwait(false);
+                using var request = CreateApiRequest(HttpMethod.Post, "api/payments/manual-withdrawals");
+                request.Content = JsonContent.Create(new
+                {
+                    Amount = amount,
+                    Method = method,
+                    DestinationDetails = destinationDetails
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return "Request failed";
+
+                return await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[HubClient] SubmitManualWithdrawal Error: {ex.Message}");
+                Console.WriteLine($"[ApiClient] SubmitManualWithdrawal Error: {ex.Message}");
                 return "Error";
             }
         }

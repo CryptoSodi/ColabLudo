@@ -1,7 +1,6 @@
 using Ludo.Api.Services;
 using LudoServer.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using SignalR.Server.Services;
 
 namespace Ludo.Api.Controllers;
