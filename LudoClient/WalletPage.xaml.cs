@@ -47,17 +47,14 @@ public partial class WalletPage : ContentPage
                 try
                 {
                     if (UserInfo.Instance.player != null)
-                    {
                         Coins.Text = ClientGlobalConstants.NormalizeCoins(balance);
-                        balance = UserInfo.Instance.player.Wallet?.SignupBonus ?? 0;
-                        SignupBonus.Text = ClientGlobalConstants.NormalizeCoins(balance);
-                    }
                 }
                 catch (Exception)
                 {
                 }
             });
     }
+
     private void OnDepositButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -72,6 +69,7 @@ public partial class WalletPage : ContentPage
         this.ShowPopup(ClientGlobalConstants.addCash, new PopupOptions { Shape = null });
 #endif
     }
+
     private void OnWithdrawButtonClicked(object sender, TappedEventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
@@ -85,5 +83,29 @@ public partial class WalletPage : ContentPage
 #else
         this.ShowPopup(ClientGlobalConstants.withdrawPopup, new PopupOptions { Shape = null });
 #endif
+    }
+
+    private async void OnBonusSectionClicked(object sender, TappedEventArgs e)
+    {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        await Navigation.PushAsync(new WalletSectionPage(WalletSectionKind.Bonus));
+    }
+
+    private async void OnDepositSectionClicked(object sender, TappedEventArgs e)
+    {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        await Navigation.PushAsync(new WalletSectionPage(WalletSectionKind.Deposit));
+    }
+
+    private async void OnWithdrawSectionClicked(object sender, TappedEventArgs e)
+    {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        await Navigation.PushAsync(new WalletSectionPage(WalletSectionKind.Withdraw));
+    }
+
+    private async void OnGamesSectionClicked(object sender, TappedEventArgs e)
+    {
+        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
+        await Navigation.PushAsync(new WalletSectionPage(WalletSectionKind.Games));
     }
 }

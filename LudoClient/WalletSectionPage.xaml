@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="LudoClient.WalletSectionPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controlView="clr-namespace:LudoClient.ControlView"
+             xmlns:controlview="clr-namespace:LudoClient.ControlView"
+             BackgroundImageSource="background_waitingroom.webp">
+
+    <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".1*,1*,.1*" ColumnDefinitions=".02*,1*,.02*">
+        <controlview:Capsule ImageSource="tournament_bg_container.webp" Grid.Row="1" Grid.Column="1" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <Grid Margin="0,20,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".23*,1*">
+                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".4*,.6*" ColumnDefinitions=".1*,6*,.1*">
+                    <Grid x:Name="TabsGrid" Grid.Column="1" HorizontalOptions="CenterAndExpand" HeightRequest="30" VerticalOptions="End" ColumnDefinitions="1*,1*,1*,1*,1*">
+                        <controlview:ImageSwitch x:Name="Tab1" SwitchText="TAB1" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab2" SwitchText="TAB2" Grid.Column="1" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab3" SwitchText="TAB3" Grid.Column="2" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab4" SwitchText="TAB4" Grid.Column="3" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                        <controlview:ImageSwitch x:Name="Tab5" SwitchText="TAB5" Grid.Column="4" SwitchOn="tab_normal.webp" SwitchOff="tab_active.webp" VerticalOptions="End" HorizontalOptions="Fill" RequestActivate="TabRequestedActivate" IsIndependent="False"/>
+                    </Grid>
+                    <controlview:Capsule Grid.Row="1" Grid.ColumnSpan="3" ImageSource="tab_border.webp" HorizontalOptions="Fill" VerticalOptions="Start">
+                        <Grid HorizontalOptions="Fill" VerticalOptions="Center" ColumnDefinitions=".4*,.26*,.24*,.1*">
+                            <Label x:Name="HeaderLabel1" Text="TYPE" TextColor="White" HorizontalOptions="Center"/>
+                            <Label x:Name="HeaderLabel2" Grid.Column="1" Text="STATUS" TextColor="White" HorizontalOptions="Center"/>
+                            <Label x:Name="HeaderLabel3" Grid.Column="2" Text="AMOUNT" TextColor="White" HorizontalOptions="End"/>
+                        </Grid>
+                    </controlview:Capsule>
+                </Grid>
+                <ScrollView Margin="20,5,20,0" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <VerticalStackLayout x:Name="ItemsStack" HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="8"/>
+                </ScrollView>
+            </Grid>
+        </controlview:Capsule>
+        <controlview:TitleBar x:Name="SectionTitleBar" Grid.Row="1" Grid.Column="1" TitleImage="popup_title.webp" Title="" Margin="45,-28,45,0" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <controlView:BottomNavigation Grid.Row="2" Grid.ColumnSpan="5"/>
+    </Grid>
+</ContentPage>

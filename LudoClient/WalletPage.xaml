@@ -76,44 +76,56 @@
                 <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Fill" VerticalOptions="Fill">
                     <local:Capsule ImageSource="info_4.webp" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnBonusSectionClicked" />
+                            </Grid.GestureRecognizers>
                             <Image Margin="4" Source="subinfo_4.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="UNUTILIZED" TextColor="White" HorizontalTextAlignment="Start"/>
-                                <Label Text="Coins" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="BONUS" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="Hub" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="Rewards and airdrops" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                     <local:Capsule ImageSource="info_2.webp" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnDepositSectionClicked" />
+                            </Grid.GestureRecognizers>
                             <Image Margin="4" Source="subinfo_2.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="REFER" TextColor="White" HorizontalTextAlignment="Start"/>
-                                <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="DEPOSIT" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="History" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="Manual, local and direct" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                 </StackLayout>
                 <StackLayout Orientation="Horizontal" Spacing="10" HorizontalOptions="Fill" VerticalOptions="Fill">
                     <local:Capsule ImageSource="info_3.webp" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnWithdrawSectionClicked" />
+                            </Grid.GestureRecognizers>
                             <Image Margin="4" Source="subinfo_3.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="DAILY" TextColor="White" HorizontalTextAlignment="Start"/>
-                                <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="WITHDRAW" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="History" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="Payouts and pending" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                     <local:Capsule ImageSource="info_1.webp" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
                         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions=".6*,.4*" ColumnDefinitions=".3*,.7*">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnGamesSectionClicked" />
+                            </Grid.GestureRecognizers>
                             <Image Margin="4" Source="subinfo_1.webp" VerticalOptions="Center" HorizontalOptions="Start"/>
                             <StackLayout Margin="4" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Fill">
-                                <Label Text="SIGNUP" TextColor="White" HorizontalTextAlignment="Start"/>
-                                <Label Text="Bonus" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="GAMES" TextColor="White" HorizontalTextAlignment="Start"/>
+                                <Label Text="Ledger" TextColor="White" HorizontalTextAlignment="Start"/>
                             </StackLayout>
-                            <Label x:Name="SignupBonus" Text="0.00 LUDC" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
+                            <Label Text="Matches, wins and losses" Margin="0,0,0,4" Grid.Row="1" Grid.ColumnSpan="2" TextColor="Black" VerticalOptions="Center" HorizontalOptions="Center"/>
                         </Grid>
                     </local:Capsule>
                 </StackLayout>

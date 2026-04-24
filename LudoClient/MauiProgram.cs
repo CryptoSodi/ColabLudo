@@ -61,6 +61,7 @@ builder.Services.AddSingleton<ISoundService, MauiAudioService>();
                 handlers.AddHandler(typeof(CameraWebView), typeof(LudoClient.Platforms.Android.CameraWebViewHandler));
                 handlers.AddHandler(typeof(NativeFriendCard), typeof(NativeFriendCardHandler));
                 handlers.AddHandler(typeof(NativeTournamentCard), typeof(NativeTournamentCardHandler));
+                handlers.AddHandler(typeof(NativeWalletHistoryCard), typeof(NativeWalletHistoryCardHandler));
 #endif
             });
 

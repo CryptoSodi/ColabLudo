@@ -886,5 +886,81 @@ namespace SharedCode.Network
                 return "Error";
             }
         }
+
+        public async Task<List<WalletBonusHistoryItem>> GetWalletBonusHistory()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/bonuses");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<WalletBonusHistoryItem>();
+
+                return await response.Content.ReadFromJsonAsync<List<WalletBonusHistoryItem>>().ConfigureAwait(false)
+                    ?? new List<WalletBonusHistoryItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetWalletBonusHistory Error: {ex.Message}");
+                return new List<WalletBonusHistoryItem>();
+            }
+        }
+
+        public async Task<List<WalletDepositHistoryItem>> GetWalletDepositHistory()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/deposits");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<WalletDepositHistoryItem>();
+
+                return await response.Content.ReadFromJsonAsync<List<WalletDepositHistoryItem>>().ConfigureAwait(false)
+                    ?? new List<WalletDepositHistoryItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetWalletDepositHistory Error: {ex.Message}");
+                return new List<WalletDepositHistoryItem>();
+            }
+        }
+
+        public async Task<List<WalletWithdrawalHistoryItem>> GetWalletWithdrawalHistory()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/withdrawals");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<WalletWithdrawalHistoryItem>();
+
+                return await response.Content.ReadFromJsonAsync<List<WalletWithdrawalHistoryItem>>().ConfigureAwait(false)
+                    ?? new List<WalletWithdrawalHistoryItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetWalletWithdrawalHistory Error: {ex.Message}");
+                return new List<WalletWithdrawalHistoryItem>();
+            }
+        }
+
+        public async Task<List<WalletGameHistoryItem>> GetWalletGameHistory()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/games");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<WalletGameHistoryItem>();
+
+                return await response.Content.ReadFromJsonAsync<List<WalletGameHistoryItem>>().ConfigureAwait(false)
+                    ?? new List<WalletGameHistoryItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetWalletGameHistory Error: {ex.Message}");
+                return new List<WalletGameHistoryItem>();
+            }
+        }
     }
 }

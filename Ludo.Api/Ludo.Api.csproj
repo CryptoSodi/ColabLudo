@@ -26,6 +26,7 @@
     <Compile Include="..\SignalR\SignalR.Server\Services\TournamentService.cs" Link="Services\TournamentService.cs" />
     <Compile Include="..\SignalR\SignalR.Server\Services\UtilService.cs" Link="Services\UtilService.cs" />
     <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="SharedCode\Constants\PlayerInfo.cs" />
+    <Compile Include="..\SharedCode\Constants\WalletHubDtos.cs" Link="SharedCode\Constants\WalletHubDtos.cs" />
   </ItemGroup>
 
   <ItemGroup>
