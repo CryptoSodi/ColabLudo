@@ -491,13 +491,13 @@ namespace SharedCode.Network
         {
             try
             {
-                using var request = CreateApiRequest(HttpMethod.Get, "api/auth/session");
+                using var request = CreateApiRequest(HttpMethod.Get, "api/session/sync");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
                     return;
 
-                var playerInfo = await response.Content.ReadFromJsonAsync<PlayerInfo>().ConfigureAwait(false);
-                ApplyPlayerInfoUpdate(playerInfo);
+                var syncInfo = await response.Content.ReadFromJsonAsync<SessionSyncInfo>().ConfigureAwait(false);
+                ApplySessionSync(syncInfo);
             }
             catch (Exception ex)
             {
@@ -529,6 +529,31 @@ namespace SharedCode.Network
             _ = RefreshPlayerInfoFromApi();
         }
 
+        private void ApplySessionSync(SessionSyncInfo? syncInfo)
+        {
+            if (syncInfo == null)
+                return;
+
+            var player = UserInfo.Instance.player;
+            if (player == null || player.PlayerId != syncInfo.PlayerId)
+            {
+                _ = RefreshPlayerInfoFromApi();
+                return;
+            }
+
+            player.IsOnline = syncInfo.IsOnline;
+
+            if (syncInfo.Wallet == null)
+                return;
+
+            player.Wallet ??= new PlayerWallet();
+            player.Wallet.WalletId = syncInfo.Wallet.WalletId;
+            player.Wallet.PlayerId = syncInfo.Wallet.PlayerId;
+            player.Wallet.AddressType = syncInfo.Wallet.AddressType;
+            player.Wallet.WalletAddress = syncInfo.Wallet.WalletAddress;
+            player.Wallet.AvailableBalance = syncInfo.Wallet.AvailableBalance;
+        }
+
         private void QueuePlayerInfoRefreshPolling(decimal? previousBalance)
         {
             _ = RefreshPlayerInfoUntilBalanceChanges(previousBalance);
@@ -539,7 +564,7 @@ namespace SharedCode.Network
             for (var attempt = 0; attempt < 10; attempt++)
             {
                 await Task.Delay(TimeSpan.FromSeconds(attempt == 0 ? 2 : 5)).ConfigureAwait(false);
-                await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+                await RefreshSessionFromApi().ConfigureAwait(false);
 
                 if (!previousBalance.HasValue)
                     return;

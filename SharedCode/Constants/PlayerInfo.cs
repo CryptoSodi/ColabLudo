@@ -71,6 +71,25 @@ public class PlayerWallet
         BalanceChanged?.Invoke(newBalance);
     }
 }
+
+public class SessionSyncInfo
+{
+    public int PlayerId { get; set; }
+    public bool IsOnline { get; set; }
+    public DateTime ServerTime { get; set; }
+    public PlayerWalletSyncInfo? Wallet { get; set; }
+}
+
+public class PlayerWalletSyncInfo
+{
+    public int WalletId { get; set; }
+    public int PlayerId { get; set; }
+    public string? AddressType { get; set; } = "";
+    public string? WalletAddress { get; set; } = "";
+    [Column(TypeName = "decimal(18,8)")]
+    public decimal AvailableBalance { get; set; }
+}
+
 public class WalletTransaction
 {
     [Key]

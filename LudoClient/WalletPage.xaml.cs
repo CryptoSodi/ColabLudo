@@ -10,14 +10,19 @@ public partial class WalletPage : ContentPage
     {
         InitializeComponent();
     }
-    protected override void OnAppearing()
+    protected override async void OnAppearing()
     {
         base.OnAppearing();
+
+        if (GlobalConstants.MatchMaker != null)
+            await GlobalConstants.MatchMaker.RefreshPlayerInfoFromApi();
+
         if (UserInfo.Instance.player != null)
         {
             var wallet = UserInfo.Instance.player?.Wallet;
             if (wallet != null)
             {
+                wallet.BalanceChanged -= Wallet_BalanceChanged;
                 wallet.BalanceChanged += Wallet_BalanceChanged;
                 // Update immediately
                 Wallet_BalanceChanged(wallet.AvailableBalance);
