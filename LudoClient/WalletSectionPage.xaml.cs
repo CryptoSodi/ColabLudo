@@ -269,6 +269,7 @@ public partial class WalletSectionPage : ContentPage
 #else
         return new TransactionLongDetailList
         {
+            IndexText = indexText,
             TitleText = title,
             DateText = subtitle,
             StatusText = status,

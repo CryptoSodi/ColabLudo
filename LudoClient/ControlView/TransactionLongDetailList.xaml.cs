@@ -2,6 +2,9 @@ namespace LudoClient.ControlView;
 
 public partial class TransactionLongDetailList : ContentView
 {
+    public static readonly BindableProperty IndexTextProperty =
+        BindableProperty.Create(nameof(IndexText), typeof(string), typeof(TransactionLongDetailList), string.Empty, propertyChanged: OnTextChanged);
+
     public static readonly BindableProperty TitleTextProperty =
         BindableProperty.Create(nameof(TitleText), typeof(string), typeof(TransactionLongDetailList), string.Empty, propertyChanged: OnTextChanged);
 
@@ -33,6 +36,12 @@ public partial class TransactionLongDetailList : ContentView
     {
         InitializeComponent();
         ApplyState();
+    }
+
+    public string IndexText
+    {
+        get => (string)GetValue(IndexTextProperty);
+        set => SetValue(IndexTextProperty, value);
     }
 
     public string TitleText
@@ -120,8 +129,9 @@ public partial class TransactionLongDetailList : ContentView
 
     private void ApplyState()
     {
+        IndexTextLabel.Text = IndexText;
         TitleTextLabel.Text = TitleText;
-        DateTextLabel.Text = DateText;
+        DateTextLabel.Text = TrimHeaderText(DateText, 26);
         ExpandedStatusLabel.Text = $" {StatusText}";
         AmountTextLabel.Text = AmountText;
         DetailTextLabel.Text = DetailText;
@@ -130,5 +140,13 @@ public partial class TransactionLongDetailList : ContentView
         if(StatusText == "Success")
         StatusBackground.Source = "success.webp";
         AmountTextLabel.TextColor = AmountColor;
+    }
+
+    private static string TrimHeaderText(string value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length <= maxLength)
+            return value;
+
+        return $"{value[..maxLength]}...";
     }
 }

@@ -21,8 +21,9 @@
         </Grid>
         <local:Capsule x:Name="SubSheet" ImageSource="header_container.webp" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
             <Grid ColumnSpacing="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".1*,.5*,.20*,.25*,.04*" Padding="2,0,10,0" >
-                <Grid BackgroundColor="Red" HorizontalOptions="Fill" VerticalOptions="Fill">
-                    <Label Text="12" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+                <Grid Margin="12,-2,0,0" HorizontalOptions="Fill" VerticalOptions="Fill" WidthRequest="25" HeightRequest="25">
+                    <Image Source="detailgold.webp" Aspect="Fill"/>
+                    <Label x:Name="IndexTextLabel" Text="12" TextColor="White" FontSize="14" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
                 </Grid>   
                 <StackLayout Grid.Column="1" Spacing="4" Margin="12,2,0,5" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
                     <Label x:Name="TitleTextLabel" Text="SPINNER BONUS" FontSize="12" TextColor="White" FontAttributes="Bold" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
