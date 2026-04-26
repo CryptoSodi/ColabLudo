@@ -26,7 +26,7 @@
                     </controlview:Capsule>
                 </Grid>
                 <ScrollView Margin="20,5,20,0" Grid.Row="1" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
-                    <VerticalStackLayout x:Name="ItemsStack" HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="8"/>
+                    <VerticalStackLayout x:Name="ItemsStack" HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="4"/>
                 </ScrollView>
             </Grid>
         </controlview:Capsule>

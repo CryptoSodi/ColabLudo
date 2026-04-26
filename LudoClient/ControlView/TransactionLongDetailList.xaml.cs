@@ -93,13 +93,16 @@ public partial class TransactionLongDetailList : ContentView
     {
         if (ExpandSheet.Padding.Top > 0)
         {
+            ExpandSheet.IsVisible = false;
+            ExpandSheet.Margin = new Thickness(10, 0, 10, 0);
             ExpandSheet.Padding = new Thickness(0, 0, 0, 0);
-            ExpandSheet.Margin = new Thickness(0, 0, 0, 0);
             SheetDirection.Source = "arr_down.webp";
             return;
         }
         else
         {
+            ExpandSheet.Margin = new Thickness(10, 0, 10, 0);
+            ExpandSheet.IsVisible = true;
             SheetDirection.Source = "arr_up.webp";
             ExpandSheet.Padding = new Thickness(0, (SubSheet.Height - 10), 0, 0);
         }
@@ -119,13 +122,13 @@ public partial class TransactionLongDetailList : ContentView
     {
         TitleTextLabel.Text = TitleText;
         DateTextLabel.Text = DateText;
-        StatusTextLabel.Text = StatusText;
         ExpandedStatusLabel.Text = $" {StatusText}";
         AmountTextLabel.Text = AmountText;
         DetailTextLabel.Text = DetailText;
         ReferenceTitleLabel.Text = ReferenceTitle;
         ReferenceValueLabel.Text = $" {ReferenceValue}";
-        StatusBackground.BackgroundColor = StatusColor;
+        if(StatusText == "Success")
+        StatusBackground.Source = "success.webp";
         AmountTextLabel.TextColor = AmountColor;
     }
 }

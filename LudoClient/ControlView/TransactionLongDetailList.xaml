@@ -4,8 +4,8 @@
              x:Class="LudoClient.ControlView.TransactionLongDetailList"
              xmlns:local="clr-namespace:LudoClient.ControlView">
     <Grid>
-        <Grid x:Name="ExpandSheet" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <local:Capsule ImageSource="expand_card.webp" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+        <Grid x:Name="ExpandSheet" Margin="10,0,10,0" IsVisible="False" Grid.ColumnSpan="3" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <local:Capsule ImageSource="expand_card.webp"  HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
                 <StackLayout Spacing="1" Margin="22,10,0,10" HorizontalOptions="StartAndExpand" VerticalOptions="FillAndExpand">
                     <Label x:Name="DetailTextLabel" Text="You Got Spinner Bonus" FontSize="10" TextColor="LightGray" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
                     <StackLayout Orientation="Horizontal" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
@@ -19,18 +19,20 @@
                 </StackLayout>
             </local:Capsule>
         </Grid>
-        <local:Capsule x:Name="SubSheet" ImageSource="total_available_bal_bg.webp" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
-            <Grid ColumnSpacing="10" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".5*,.2*,.18*,.04*" Padding="2,0,10,0">
-                <StackLayout Margin="12,0,0,0" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
-                    <Label x:Name="TitleTextLabel" Text="SPINNER BONUS" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
-                    <Label x:Name="DateTextLabel" Text="06/02/2020 17:20:03" FontSize="10" TextColor="Black" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+        <local:Capsule x:Name="SubSheet" ImageSource="header_container.webp" HorizontalOptions="FillAndExpand" VerticalOptions="StartAndExpand">
+            <Grid ColumnSpacing="2" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand" ColumnDefinitions=".1*,.5*,.20*,.25*,.04*" Padding="2,0,10,0" >
+                <Grid BackgroundColor="Red" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <Label Text="12" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+                </Grid>   
+                <StackLayout Grid.Column="1" Spacing="4" Margin="12,2,0,5" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand">
+                    <Label x:Name="TitleTextLabel" Text="SPINNER BONUS" FontSize="12" TextColor="White" FontAttributes="Bold" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
+                    <Label x:Name="DateTextLabel" Text="06/02/2020 17:20:03" FontSize="8" TextColor="White" HorizontalOptions="StartAndExpand" VerticalOptions="CenterAndExpand"/>
                 </StackLayout>
-                <Grid Grid.Column="1" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand">
-                    <BoxView x:Name="StatusBackground" CornerRadius="6" BackgroundColor="DarkBlue" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand"/>
-                    <Label x:Name="StatusTextLabel" Text="SUCCESS" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" TextColor="White" FontSize="10"/>
+                <Grid Grid.Column="2" HorizontalOptions="FillAndExpand" VerticalOptions="CenterAndExpand" >
+                    <Image x:Name="StatusBackground" Source="success.webp" Grid.Column="3" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
                 </Grid>
-                <Label x:Name="AmountTextLabel" Grid.Column="2" Text="+23" TextColor="Black" FontAttributes="Bold" HorizontalTextAlignment="End" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" HorizontalOptions="FillAndExpand"/>
-                <Image x:Name="SheetDirection" Source="arr_down.webp" Grid.Column="3" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+                <Label x:Name="AmountTextLabel" Grid.Column="3" Text="+23" FontSize="8" TextColor="#54DE58" FontAttributes="Bold" HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="CenterAndExpand" HorizontalOptions="FillAndExpand"/>
+                <Image x:Name="SheetDirection" Source="arr_down.webp" Grid.Column="4" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
             </Grid>
         </local:Capsule>
         <ImageButton Grid.ColumnSpan="3" Visual="false" Clicked="Expand_Clicked" HorizontalOptions="Fill" VerticalOptions="Fill"/>
