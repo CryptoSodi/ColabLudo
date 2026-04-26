@@ -132,14 +132,10 @@ public partial class TransactionLongDetailList : ContentView
         IndexTextLabel.Text = IndexText;
         TitleTextLabel.Text = TitleText;
         DateTextLabel.Text = TrimHeaderText(DateText, 26);
-        ExpandedStatusLabel.Text = $" {StatusText}";
         AmountTextLabel.Text = AmountText;
-        DetailTextLabel.Text = DetailText;
-        ReferenceTitleLabel.Text = ReferenceTitle;
-        ReferenceValueLabel.Text = $" {ReferenceValue}";
-        if(StatusText == "Success")
-        StatusBackground.Source = "success.webp";
+        StatusBackground.Source = GetStatusAsset(StatusText);
         AmountTextLabel.TextColor = AmountColor;
+        RebuildDetails();
     }
 
     private static string TrimHeaderText(string value, int maxLength)
@@ -148,5 +144,186 @@ public partial class TransactionLongDetailList : ContentView
             return value;
 
         return $"{value[..maxLength]}...";
+    }
+
+    private void RebuildDetails()
+    {
+        PrimaryDetailsStack.Children.Clear();
+        SecondaryDetailsStack.Children.Clear();
+
+        var detailLines = (DetailText ?? string.Empty)
+            .Split([Environment.NewLine], StringSplitOptions.None)
+            .Select(line => line.Trim())
+            .Where(static line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+        var primaryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Created",
+            "Payment",
+            "Receipt",
+            "Admin Note",
+            "Status"
+        };
+
+        var primaryLines = new List<string>();
+        var secondaryLines = new List<string>();
+
+        foreach (var line in detailLines)
+        {
+            var key = ExtractKey(line);
+            if (key != null && primaryKeys.Contains(key))
+            {
+                primaryLines.Add(line);
+            }
+            else
+            {
+                secondaryLines.Add(line);
+            }
+        }
+
+        if (!primaryLines.Any(static line => line.StartsWith("Status:", StringComparison.OrdinalIgnoreCase)))
+            primaryLines.Add($"Status: {StatusText}");
+
+        foreach (var line in primaryLines)
+            PrimaryDetailsStack.Children.Add(CreateDetailRow(line));
+
+        foreach (var line in secondaryLines)
+            SecondaryDetailsStack.Children.Add(CreateDetailRow(line));
+
+        SecondaryDetailsStack.Children.Add(CreateDetailRow($"{ReferenceTitle.TrimEnd()} {ReferenceValue}".Trim()));
+
+        if (PrimaryDetailsStack.Children.Count == 0)
+            PrimaryDetailsStack.Children.Add(CreateDetailRow("DETAIL: -"));
+    }
+
+    private static string? ExtractKey(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var separatorIndex = line.IndexOf(':');
+        if (separatorIndex <= 0)
+            return null;
+
+        return line[..separatorIndex].Trim();
+    }
+
+    private static View CreateDetailRow(string line)
+    {
+        var parts = line.Split(':', 2, StringSplitOptions.TrimEntries);
+        var hasValue = parts.Length == 2;
+        var labelText = hasValue ? parts[0].ToUpperInvariant() : "DETAIL";
+        var valueText = hasValue ? parts[1] : line;
+
+        var valueLabel = new Label
+        {
+            Text = valueText,
+            TextColor = GetValueColor(labelText, valueText),
+            FontSize = 10,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalTextAlignment = TextAlignment.Start,
+            HorizontalOptions = LayoutOptions.Start,
+            LineBreakMode = LineBreakMode.WordWrap
+        };
+        Grid.SetColumn(valueLabel, 1);
+
+        var label = new Label
+        {
+            Text = labelText,
+            TextColor = Color.FromArgb("#A99BEF"),
+            FontSize = 10,
+            FontAttributes = FontAttributes.Bold,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalTextAlignment = TextAlignment.Start,
+            HorizontalOptions = LayoutOptions.Start
+        };
+        Grid.SetColumn(label, 1);
+        Grid.SetColumn(valueLabel, 2);
+
+        var bullet = CreateBulletLabel();
+
+        return new Grid
+        {
+            ColumnDefinitions =
+            [
+                new ColumnDefinition(new GridLength(16)),
+                new ColumnDefinition(new GridLength(120)),
+                new ColumnDefinition(GridLength.Star)
+            ],
+            ColumnSpacing = 12,
+            HorizontalOptions = LayoutOptions.Fill,
+            Children =
+            {
+                bullet,
+                label,
+                valueLabel
+            }
+        };
+    }
+
+    private static Label CreateBulletLabel()
+    {
+        return new Label
+        {
+            Text = "•",
+            TextColor = Color.FromArgb("#5FD4FF"),
+            FontSize = 12,
+            HorizontalTextAlignment = TextAlignment.Center,
+            VerticalTextAlignment = TextAlignment.Center,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
+    }
+
+    private static Color GetValueColor(string label, string value)
+    {
+        if (label.Contains("STATUS", StringComparison.OrdinalIgnoreCase))
+            return GetStatusTextColor(value);
+
+        if (label.Contains("PAYMENT", StringComparison.OrdinalIgnoreCase) ||
+            label.Contains("PAYOUT", StringComparison.OrdinalIgnoreCase) ||
+            label.Contains("RECEIPT", StringComparison.OrdinalIgnoreCase))
+            return Color.FromArgb("#F7B233");
+
+        return Colors.White;
+    }
+
+    private static string GetStatusAsset(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return "pending.webp";
+
+        if (status.Contains("success", StringComparison.OrdinalIgnoreCase))
+            return "success.webp";
+        if (status.Contains("complete", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("approved", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("won", StringComparison.OrdinalIgnoreCase))
+            return "complete.webp";
+        if (status.Contains("processing", StringComparison.OrdinalIgnoreCase))
+            return "processing.webp";
+        if (status.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("fail", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("lost", StringComparison.OrdinalIgnoreCase))
+            return "failed.webp";
+
+        return "pending.webp";
+    }
+
+    private static Color GetStatusTextColor(string status)
+    {
+        if (string.IsNullOrWhiteSpace(status))
+            return Colors.White;
+
+        if (status.Contains("pending", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("processing", StringComparison.OrdinalIgnoreCase))
+            return Color.FromArgb("#F7B233");
+
+        if (status.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("fail", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("lost", StringComparison.OrdinalIgnoreCase))
+            return Color.FromArgb("#FF8D8D");
+
+        return Color.FromArgb("#F7B233");
     }
 }
