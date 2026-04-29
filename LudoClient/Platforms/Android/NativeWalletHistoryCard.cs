@@ -1,10 +1,8 @@
 using Android.Content;
-using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AndroidX.ConstraintLayout.Widget;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 
@@ -18,16 +16,13 @@ public class NativeWalletHistoryCard : Microsoft.Maui.Controls.View
     {
         RowData = rowData;
         HorizontalOptions = Microsoft.Maui.Controls.LayoutOptions.Fill;
-        Margin = new Thickness(0);
     }
+
 }
 
 public class NativeWalletHistoryCardHandler : ViewHandler<NativeWalletHistoryCard, WalletHistoryDetailView>
 {
-    public static PropertyMapper<NativeWalletHistoryCard, NativeWalletHistoryCardHandler> Mapper = new(ViewHandler.ViewMapper)
-    {
-        [nameof(NativeWalletHistoryCard.RowData)] = MapRowData,
-    };
+    public static PropertyMapper<NativeWalletHistoryCard, NativeWalletHistoryCardHandler> Mapper = new(ViewHandler.ViewMapper) { [nameof(NativeWalletHistoryCard.RowData)] = MapRowData, };
 
     public NativeWalletHistoryCardHandler() : base(Mapper)
     {
@@ -39,6 +34,7 @@ public class NativeWalletHistoryCardHandler : ViewHandler<NativeWalletHistoryCar
         view.LayoutParameters = new ViewGroup.LayoutParams(
             ViewGroup.LayoutParams.MatchParent,
             ViewGroup.LayoutParams.WrapContent);
+
         return view;
     }
 
@@ -73,9 +69,10 @@ public class NativeWalletHistoryCardHandler : ViewHandler<NativeWalletHistoryCar
         if (PlatformView == null)
             return Microsoft.Maui.Graphics.Size.Zero;
 
-        var widthSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(
-            (int)Context.ToPixels(widthConstraint),
-            global::Android.Views.MeasureSpecMode.AtMost);
+        var widthPx = widthConstraint > 0 && !double.IsInfinity(widthConstraint)
+            ? (int)Context.ToPixels(widthConstraint)
+            : Context.Resources?.DisplayMetrics?.WidthPixels ?? 0;
+        var widthSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(widthPx, global::Android.Views.MeasureSpecMode.Exactly);
         var heightSpec = global::Android.Views.View.MeasureSpec.MakeMeasureSpec(
             0,
             global::Android.Views.MeasureSpecMode.Unspecified);
@@ -84,25 +81,15 @@ public class NativeWalletHistoryCardHandler : ViewHandler<NativeWalletHistoryCar
 
         return new Microsoft.Maui.Graphics.Size(
             Context.FromPixels(PlatformView.MeasuredWidth),
-            Context.FromPixels(PlatformView.MeasuredHeight) > 0 ? Context.FromPixels(PlatformView.MeasuredHeight) : 72);
+            Context.FromPixels(PlatformView.MeasuredHeight));
     }
+
 }
 
 [Register("ludoclient.platforms.android.WalletHistoryDetailView")]
-public class WalletHistoryDetailView : LinearLayout
+public class WalletHistoryDetailView : FrameLayout
 {
-    private TextView _indexText = null!;
-    private TextView _titleText = null!;
-    private TextView _dateText = null!;
-    private TextView _statusText = null!;
-    private TextView _amountText = null!;
-    private ImageView _arrow = null!;
-    private FrameLayout _detailContainer = null!;
-    private global::Android.Views.View _detailBackdrop = null!;
-    private TextView _detailText = null!;
-    private TextView _referenceValue = null!;
-    private TextView _expandedStatus = null!;
-    private bool _isExpanded;
+    private FrameLayout _detailContainer = null!; private TextView _indexText = null!; private TextView _titleText = null!; private TextView _dateText = null!; private ImageView _statusImage = null!; private TextView _amountText = null!; private ImageView _arrowImage = null!; private LinearLayout _primaryDetails = null!; private ImageView _detailDivider = null!; private LinearLayout _secondaryDetails = null!; private bool _isExpanded;
 
     public WalletHistoryDetailView(Context context) : base(context)
     {
@@ -125,42 +112,37 @@ public class WalletHistoryDetailView : LinearLayout
 
     private void Initialize(Context context)
     {
-        Orientation = Orientation.Vertical;
         var view = LayoutInflater.FromContext(context).Inflate(Resource.Layout.item_wallet_history_detail, this, true);
 
-        _titleText = view.FindViewById<TextView>(Resource.Id.WalletRowTitle);
-        _indexText = view.FindViewById<TextView>(Resource.Id.WalletRowIndex);
-        _dateText = view.FindViewById<TextView>(Resource.Id.WalletRowDate);
-        _statusText = view.FindViewById<TextView>(Resource.Id.WalletRowStatus);
-        _amountText = view.FindViewById<TextView>(Resource.Id.WalletRowAmount);
-        _arrow = view.FindViewById<ImageView>(Resource.Id.WalletRowArrow);
-        _detailContainer = view.FindViewById<FrameLayout>(Resource.Id.WalletRowDetails);
-        _detailBackdrop = view.FindViewById<global::Android.Views.View>(Resource.Id.WalletRowDetailBackdrop);
-        _detailText = view.FindViewById<TextView>(Resource.Id.WalletRowDetailText);
-        _referenceValue = view.FindViewById<TextView>(Resource.Id.WalletRowReferenceValue);
-        _expandedStatus = view.FindViewById<TextView>(Resource.Id.WalletRowExpandedStatus);
+        _detailContainer = view.FindViewById<FrameLayout>(Resource.Id.WalletRowDetails)!;
+        _indexText = view.FindViewById<TextView>(Resource.Id.WalletRowIndex)!;
+        _titleText = view.FindViewById<TextView>(Resource.Id.WalletRowTitle)!;
+        _dateText = view.FindViewById<TextView>(Resource.Id.WalletRowDate)!;
+        _statusImage = view.FindViewById<ImageView>(Resource.Id.WalletRowStatus)!;
+        _amountText = view.FindViewById<TextView>(Resource.Id.WalletRowAmount)!;
+        _arrowImage = view.FindViewById<ImageView>(Resource.Id.WalletRowArrow)!;
+        _primaryDetails = view.FindViewById<LinearLayout>(Resource.Id.WalletRowPrimaryDetails)!;
+        _detailDivider = view.FindViewById<ImageView>(Resource.Id.WalletRowDetailDivider)!;
+        _secondaryDetails = view.FindViewById<LinearLayout>(Resource.Id.WalletRowSecondaryDetails)!;
 
-        view.FindViewById<ConstraintLayout>(Resource.Id.WalletRowSummary).Click += (_, _) => ToggleExpanded();
+        var clickTarget = view.FindViewById<LinearLayout>(Resource.Id.WalletRowSummaryClickTarget)!;
+        clickTarget.Click += OnSummaryClicked;
     }
 
     public void SetDetails(WalletHistoryRowData rowData)
     {
-        _titleText.Text = rowData.Title;
         _indexText.Text = rowData.IndexText;
-        _dateText.Text = rowData.DateText;
-        _statusText.Text = FormatStatus(rowData.Status);
+        _titleText.Text = rowData.Title;
+        _dateText.Text = TrimHeaderText(rowData.DateText, 26);
         _amountText.Text = rowData.AmountText;
-        _detailText.Text = rowData.DetailText;
-        _referenceValue.Text = rowData.ReferenceValue;
-        _expandedStatus.Text = FormatStatus(rowData.Status);
-
         _amountText.SetTextColor(rowData.AmountColor.ToPlatform());
-        ApplyStatusBackground(_statusText, rowData.StatusColor.ToPlatform());
-        ApplyDetailBackground();
-        Elevation = 0f;
-        viewSetElevation();
+        _statusImage.SetImageResource(GetStatusAsset(rowData.Status));
 
-        if (!_isExpanded)
+        RebuildDetails(rowData);
+
+        if (_isExpanded)
+            Expand();
+        else
             Collapse();
     }
 
@@ -168,7 +150,7 @@ public class WalletHistoryDetailView : LinearLayout
     {
     }
 
-    private void ToggleExpanded()
+    private void OnSummaryClicked(object? sender, EventArgs e)
     {
         if (_isExpanded)
             Collapse();
@@ -180,7 +162,7 @@ public class WalletHistoryDetailView : LinearLayout
     {
         _isExpanded = true;
         _detailContainer.Visibility = ViewStates.Visible;
-        _arrow.SetImageResource(Resource.Drawable.arr_up);
+        _arrowImage.SetImageResource(Resource.Drawable.arr_up);
         RequestLayout();
     }
 
@@ -188,58 +170,182 @@ public class WalletHistoryDetailView : LinearLayout
     {
         _isExpanded = false;
         _detailContainer.Visibility = ViewStates.Gone;
-        _arrow.SetImageResource(Resource.Drawable.arr_down);
+        _arrowImage.SetImageResource(Resource.Drawable.arr_down);
         RequestLayout();
     }
 
-    private static void ApplyStatusBackground(TextView textView, global::Android.Graphics.Color color)
+    private void RebuildDetails(WalletHistoryRowData rowData)
     {
-        var drawable = new GradientDrawable();
-        drawable.SetCornerRadius(12f);
-        drawable.SetColor(color);
-        textView.Background = drawable;
+        _primaryDetails.RemoveAllViews();
+        _secondaryDetails.RemoveAllViews();
+
+        var detailLines = (rowData.DetailText ?? string.Empty)
+            .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
+            .Select(static line => line.Trim())
+            .Where(static line => !string.IsNullOrWhiteSpace(line))
+            .ToList();
+
+        var primaryKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        "Created",
+        "Payment",
+        "Receipt",
+        "Admin Note",
+        "Status"
+    };
+
+        var primaryLines = new List<string>();
+        var secondaryLines = new List<string>();
+
+        foreach (var line in detailLines)
+        {
+            var key = ExtractKey(line);
+            if (key != null && primaryKeys.Contains(key))
+                primaryLines.Add(line);
+            else
+                secondaryLines.Add(line);
+        }
+
+        if (!primaryLines.Any(static line => line.StartsWith("Status:", StringComparison.OrdinalIgnoreCase)))
+            primaryLines.Add($"Status: {rowData.Status}");
+
+        foreach (var line in primaryLines)
+            _primaryDetails.AddView(CreateDetailRow(line));
+
+        foreach (var line in secondaryLines)
+            _secondaryDetails.AddView(CreateDetailRow(line));
+
+        _secondaryDetails.AddView(CreateDetailRow($"TRANSACTION ID: {rowData.ReferenceValue}".Trim()));
+        _detailDivider.Visibility = _secondaryDetails.ChildCount > 0 ? ViewStates.Visible : ViewStates.Gone;
     }
 
-    private static string FormatStatus(string? status)
+    private LinearLayout CreateDetailRow(string line)
+    {
+        var parts = line.Split(':', 2, StringSplitOptions.TrimEntries);
+        var hasValue = parts.Length == 2;
+        var labelText = hasValue ? parts[0].ToUpperInvariant() : "DETAIL";
+        var valueText = hasValue ? parts[1] : line;
+
+        var row = new LinearLayout(Context)
+        {
+            Orientation = Orientation.Horizontal
+        };
+        row.SetGravity(GravityFlags.CenterVertical);
+        row.LayoutParameters = new LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MatchParent,
+            ViewGroup.LayoutParams.WrapContent)
+        {
+            TopMargin = Dp(2),
+            BottomMargin = Dp(2)
+        };
+
+        var bullet = new TextView(Context)
+        {
+            Text = "\u2022",
+            TextSize = 12f
+        };
+        bullet.SetTextColor(global::Android.Graphics.Color.Rgb(95, 212, 255));
+        bullet.SetPadding(0, 0, Dp(10), 0);
+
+        var label = new TextView(Context)
+        {
+            Text = labelText,
+            TextSize = 10f,
+            Typeface = global::Android.Graphics.Typeface.DefaultBold
+        };
+        label.SetTextColor(global::Android.Graphics.Color.Rgb(169, 155, 239));
+        label.LayoutParameters = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WrapContent, 1f);
+
+        var value = new TextView(Context)
+        {
+            Text = valueText,
+            TextSize = 10f
+        };
+        value.SetTextColor(GetValueColor(labelText, valueText));
+        if (labelText.Equals("STATUS", StringComparison.OrdinalIgnoreCase))
+            value.Typeface = global::Android.Graphics.Typeface.DefaultBold;
+        value.LayoutParameters = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WrapContent, 1.35f);
+
+        row.AddView(bullet);
+        row.AddView(label);
+        row.AddView(value);
+        return row;
+    }
+
+    private static string? ExtractKey(string line)
+    {
+        if (string.IsNullOrWhiteSpace(line))
+            return null;
+
+        var separatorIndex = line.IndexOf(':');
+        if (separatorIndex <= 0)
+            return null;
+
+        return line[..separatorIndex].Trim();
+    }
+
+    private static string TrimHeaderText(string value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length <= maxLength)
+            return value;
+
+        return $"{value[..maxLength]}...";
+    }
+
+    private static int GetStatusAsset(string status)
     {
         if (string.IsNullOrWhiteSpace(status))
-            return "-";
+            return Resource.Drawable.pending;
 
-        return status.Trim() switch
-        {
-            var s when s.Equals("Pending", StringComparison.OrdinalIgnoreCase) => "Pending",
-            var s when s.Equals("Completed", StringComparison.OrdinalIgnoreCase) => "Completed",
-            var s when s.Equals("Approved", StringComparison.OrdinalIgnoreCase) => "Approved",
-            var s when s.Equals("Rejected", StringComparison.OrdinalIgnoreCase) => "Rejected",
-            _ => status.Trim()
-        };
+        if (status.Contains("success", StringComparison.OrdinalIgnoreCase))
+            return Resource.Drawable.success;
+        if (status.Contains("complete", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("approved", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("won", StringComparison.OrdinalIgnoreCase))
+            return Resource.Drawable.complete;
+        if (status.Contains("processing", StringComparison.OrdinalIgnoreCase))
+            return Resource.Drawable.processing;
+        if (status.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("fail", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("lost", StringComparison.OrdinalIgnoreCase))
+            return Resource.Drawable.failed;
+
+        return Resource.Drawable.pending;
     }
 
-    private void ApplyDetailBackground()
+    private static global::Android.Graphics.Color GetValueColor(string label, string value)
     {
-        var drawable = new GradientDrawable();
-        drawable.SetCornerRadii(new float[]
-        {
-            18f, 18f,
-            18f, 18f,
-            18f, 18f,
-            18f, 18f
-        });
-        drawable.SetColor(global::Android.Graphics.Color.Rgb(24, 52, 96));
-        drawable.SetStroke(2, global::Android.Graphics.Color.Rgb(46, 84, 145));
-        _detailBackdrop.Background = drawable;
+        if (label.Contains("STATUS", StringComparison.OrdinalIgnoreCase))
+            return GetStatusTextColor(value);
+
+        if (label.Contains("PAYMENT", StringComparison.OrdinalIgnoreCase) ||
+            label.Contains("PAYOUT", StringComparison.OrdinalIgnoreCase) ||
+            label.Contains("RECEIPT", StringComparison.OrdinalIgnoreCase))
+            return global::Android.Graphics.Color.Rgb(247, 178, 51);
+
+        return global::Android.Graphics.Color.White;
     }
 
-    private void viewSetElevation()
+    private static global::Android.Graphics.Color GetStatusTextColor(string status)
     {
-        var summary = FindViewById<ConstraintLayout>(Resource.Id.WalletRowSummary);
+        if (string.IsNullOrWhiteSpace(status))
+            return global::Android.Graphics.Color.White;
+
+        if (status.Contains("pending", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("processing", StringComparison.OrdinalIgnoreCase))
+            return global::Android.Graphics.Color.Rgb(247, 178, 51);
+
+        if (status.Contains("reject", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("fail", StringComparison.OrdinalIgnoreCase) ||
+            status.Contains("lost", StringComparison.OrdinalIgnoreCase))
+            return global::Android.Graphics.Color.Rgb(255, 141, 141);
+
+        return global::Android.Graphics.Color.Rgb(247, 178, 51);
+    }
+
+    private int Dp(float value)
+    {
         var density = Context.Resources?.DisplayMetrics?.Density ?? 1f;
-        summary.Elevation = 8f * density;
-        if (summary.Background == null)
-        {
-            var drawable = new GradientDrawable();
-            drawable.SetColor(global::Android.Graphics.Color.Transparent);
-            summary.Background = drawable;
-        }
+        return (int)(value * density);
     }
 }

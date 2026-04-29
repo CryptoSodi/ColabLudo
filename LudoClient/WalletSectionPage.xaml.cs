@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Extensions;
 using LudoClient.Constants;
 using LudoClient.ControlView;
 using SharedCode.Constants;
+using Microsoft.Maui;
 #if ANDROID
 using LudoClient.Platforms.Android;
 #endif
@@ -25,6 +26,7 @@ public partial class WalletSectionPage : ContentPage
     private IReadOnlyList<WalletWithdrawalHistoryItem> _withdrawalItems = Array.Empty<WalletWithdrawalHistoryItem>();
     private IReadOnlyList<WalletGameHistoryItem> _gameItems = Array.Empty<WalletGameHistoryItem>();
     private ImageSwitch? _activeTab;
+    private readonly Dictionary<string, List<IView>> _tabViewCache = new(StringComparer.OrdinalIgnoreCase);
 
     public WalletSectionPage(WalletSectionKind section)
     {
@@ -46,6 +48,7 @@ public partial class WalletSectionPage : ContentPage
     protected override void OnDisappearing()
     {
         ReleaseCurrentRows();
+        ClearRenderCache();
         base.OnDisappearing();
     }
 
@@ -94,7 +97,8 @@ public partial class WalletSectionPage : ContentPage
 
     private async Task LoadAsync()
     {
-        ReleaseCurrentRows();
+        ClearRenderCache();
+        DetachCurrentRows();
 
         switch (_section)
         {
@@ -357,7 +361,16 @@ public partial class WalletSectionPage : ContentPage
 
     private void RenderCurrentSection()
     {
-        ReleaseCurrentRows();
+        var cacheKey = GetTabCacheKey();
+        if (_tabViewCache.TryGetValue(cacheKey, out var cachedViews))
+        {
+            DetachCurrentRows();
+            foreach (var view in cachedViews)
+                ItemsStack.Children.Add(view);
+            return;
+        }
+
+        DetachCurrentRows();
 
         switch (_section)
         {
@@ -374,6 +387,8 @@ public partial class WalletSectionPage : ContentPage
                 RenderGames();
                 break;
         }
+
+        _tabViewCache[cacheKey] = ItemsStack.Children.ToList();
     }
 
     private static Color GetStatusColor(string? status)
@@ -403,6 +418,25 @@ public partial class WalletSectionPage : ContentPage
             child.Handler?.DisconnectHandler();
 #endif
         ItemsStack.Children.Clear();
+    }
+
+    private string GetTabCacheKey()
+    {
+        return $"{_section}:{GetCurrentFilter()}";
+    }
+
+    private void DetachCurrentRows()
+    {
+        ItemsStack.Children.Clear();
+    }
+
+    private void ClearRenderCache()
+    {
+#if ANDROID
+        foreach (var view in _tabViewCache.Values.SelectMany(static views => views).OfType<NativeWalletHistoryCard>())
+            view.Handler?.DisconnectHandler();
+#endif
+        _tabViewCache.Clear();
     }
 
     private void OpenDepositDialog()
