@@ -5,6 +5,8 @@ namespace LudoClient;
 
 public partial class GameRoom : ContentPage
 {
+    private CancellationTokenSource? _lobbyPollingCts;
+
     public GameRoom(string GameType, decimal GameCost)
     {
         InitializeComponent();
@@ -96,11 +98,43 @@ public partial class GameRoom : ContentPage
             GlobalConstants.GameCost = args.GameCost;
             shareBox.SetShareCode(args.RoomCode);
             await GlobalConstants.MatchMaker.ReadyAsync();
+            StartLobbyPolling();
         });
     }
+
+    private void StartLobbyPolling()
+    {
+        _lobbyPollingCts?.Cancel();
+        _lobbyPollingCts = new CancellationTokenSource();
+        var token = _lobbyPollingCts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            while (!token.IsCancellationRequested && !string.IsNullOrWhiteSpace(GlobalConstants.RoomCode))
+            {
+                try
+                {
+                    if (App.IsInForeground)
+                        await GlobalConstants.MatchMaker.GetLobbyAsync(GlobalConstants.RoomCode);
+
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
+                }
+                catch (TaskCanceledException)
+                {
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1), token);
+                }
+            }
+        }, token);
+    }
+
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
+        _lobbyPollingCts?.Cancel();
         GlobalConstants.MatchMaker.RoomJoined -= OnRoomJoined;
         GlobalConstants.MatchMaker.PlayerSeated -= PlayerSeated;
     }

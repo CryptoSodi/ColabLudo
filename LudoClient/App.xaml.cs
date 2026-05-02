@@ -1,5 +1,4 @@
 using LudoClient.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
@@ -9,7 +8,10 @@ namespace LudoClient
 {
     public partial class App : Application
     {
+        public static bool IsInForeground { get; private set; } = true;
+
         private List<NotificationDTO> _pendingNotifications { get; set; } = new();
+        private (string GameType, string seatsData, string rollsString)? _pendingGameStart;
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
         static extern bool AllocConsole();
@@ -290,7 +292,7 @@ namespace LudoClient
                         break;
                     if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
                     {
-                        if (GlobalConstants.MatchMaker.Connected && GlobalConstants.MatchMaker._hubConnection.State != HubConnectionState.Disconnected)
+                        if (GlobalConstants.MatchMaker.Connected)
                         {
                             // Invoke the hub method to pull commands newer than _lastSeenIndex.
                             int lastSeen = game.engine.EngineHelper.indexServer;
@@ -380,6 +382,10 @@ namespace LudoClient
                                                             }
                                                         }
                                                         break;
+                                                    case "ShowResults":
+                                                        await OnShowResultsFromCommand(command);
+                                                        game._commandStore.Add(command);
+                                                        break;
                                                 }
                                             }
                                             catch (Exception ex)
@@ -436,11 +442,28 @@ namespace LudoClient
                 GlobalConstants.GameCost = 0;
             });
         }
+        private async Task OnShowResultsFromCommand(GameCommand command)
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                OnShowResults(this, (
+                    command.ShowResultsSeats ?? string.Empty,
+                    command.ShowResultsGameType ?? string.Empty,
+                    command.ShowResultsGameCost ?? string.Empty));
+                await Task.CompletedTask;
+            });
+        }
         private void OnGameStarted(object? sender, (string GameType, string seatsData, string rollsString) args)
         {
             Console.WriteLine("Starting Game: " + args.GameType + " " + args.seatsData + " " + args.rollsString);
             MainThread.BeginInvokeOnMainThread(() =>
             {
+                if (!IsInForeground)
+                {
+                    _pendingGameStart = args;
+                    return;
+                }
+
                 var existingPages = ClientGlobalConstants.dashBoard.Navigation.NavigationStack.ToList();
                 if (existingPages.Count == 1)
                     return;
@@ -485,7 +508,7 @@ namespace LudoClient
                     var matchMaker = GlobalConstants.MatchMaker;
 
                     if (matchMaker != null)
-                        await matchMaker.RefreshSessionFromApi();
+                        _ = matchMaker.ConnectAsync();
                 }
                 catch (TaskCanceledException)
                 {
@@ -502,10 +525,19 @@ namespace LudoClient
         protected override void OnSleep()
         {
             Console.WriteLine("App backgrounded");
+            IsInForeground = false;
         }
         protected override void OnResume()
         {
             Console.WriteLine("App resumed");
+            IsInForeground = true;
+
+            if (_pendingGameStart.HasValue)
+            {
+                var pending = _pendingGameStart.Value;
+                _pendingGameStart = null;
+                OnGameStarted(this, pending);
+            }
         }
 #if WINDOWS
         protected override Window CreateWindow(IActivationState activationState)
