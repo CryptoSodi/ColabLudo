@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Extensions.Logging;
 using SharedCode.Constants;
 using System.ComponentModel;
 using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace SharedCode.Network
 {
@@ -10,19 +9,19 @@ namespace SharedCode.Network
     {
         private bool _connected;
         private readonly HttpClient _apiClient;
-        public HubConnection _hubConnection { get; set; }
-
+        private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
+        private string _startedRaisedForRoom = string.Empty;
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
-        public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
-        public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
+        public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
+        
+        public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event EventHandler<NotificationDTO> ReceiveNotification;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private CancellationTokenSource _pingCts;
         public bool Connected
         {
             get => _connected;
@@ -37,8 +36,6 @@ namespace SharedCode.Network
         {
             _apiClient = CreateApiClient();
             Connected = false;
-            if (!string.IsNullOrWhiteSpace(getAuthToken()))
-                _ = ConnectAsync();
         }
 
         private static HttpClient CreateApiClient()
@@ -62,105 +59,6 @@ namespace SharedCode.Network
                 request.Headers.Add("X-Auth-Token", authToken);
             return request;
         }
-        private async Task StartHeartbeat()
-        {
-            _pingCts?.Cancel();
-            _pingCts = new CancellationTokenSource();
-
-            var token = _pingCts.Token;
-
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    if (_hubConnection.State == HubConnectionState.Connected)
-                        await _hubConnection.SendAsync("Ping", token);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Heartbeat error: {ex}");
-                }
-
-                await Task.Delay(TimeSpan.FromSeconds(10), token);
-            }
-        }
-        private void RegisterHubEvents()
-        {
-            _hubConnection.Reconnected += async connectionId =>
-            {
-                Connected = true;
-                Console.WriteLine("Connection lost. Reconnecting...");
-                try
-                {
-                    await UserConnectedSetID();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Reconnect sync error: {ex}");
-                }
-            };
-            _hubConnection.Reconnecting += error =>
-            {
-                Connected = false;
-                Console.WriteLine("Connection lost. Reconnecting...");
-                if (error != null)
-                {
-                    Console.WriteLine($"Reconnecting due to: {error.Message}");
-                }
-                return Task.CompletedTask;
-            };
-            _hubConnection.Closed += async error =>
-            {
-                Connected = false;
-                Console.WriteLine("Connection closed.");
-                if (error != null)
-                {
-                    Console.WriteLine($"Connection closed due to error: {error.Message}");
-                }
-            };
-            // Player ReceiveMessage event
-            _hubConnection.On<List<ChatMessages>>("ReceiveChatMessage", msgs =>
-            {
-                ReceiveChatMessage?.Invoke(this, msgs);
-            });
-            _hubConnection.On<NotificationDTO>("ReceiveNotification", notification =>
-            {
-                ReceiveNotification?.Invoke(this, notification);
-            });
-            _hubConnection.On<PlayerInfo>("PlayerInfoUpdate", playerInfo =>
-            {
-                // This lambda runs on a non-UI thread:
-                PlayerInfoUpdate?.Invoke(this, (playerInfo));
-            });
-            _hubConnection.On<decimal>("UpdateBalance", balance =>
-            {
-                ApplyWalletBalance(balance);
-            });
-            // Player seat event
-            _hubConnection.On<string, int, string, string>("PlayerSeat", (playerType, playerId, userName, pictureUrl) =>
-            {
-                Console.WriteLine($"{playerType}: {userName} has joined.");
-                PlayerSeated?.Invoke(this, (playerType, playerId, userName, pictureUrl));
-            });
-            // Game start event
-            _hubConnection.On<string, string, string>("GameStarted", (GameType, seatsData, rollsString) =>
-            {
-                //Game(GameType, playerCount, PlayerColor)
-                GameStarted?.Invoke(this, (GameType, seatsData, rollsString));
-                Console.WriteLine("Starting Game : " + DateTime.Now, GameType, seatsData);
-            });
-            _hubConnection.On<string, string, string>("ShowResults", (seats, GameType, GameCost) =>
-            {
-                Console.WriteLine("ShowResults : " + DateTime.Now, seats, GameType, GameCost);
-                //Game(GameType, playerCount, PlayerColor)
-                ShowResults?.Invoke(this, (seats, GameType, GameCost));
-            });
-            // Message event
-            _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-            {   
-                Console.WriteLine($"{user} says {message}");
-            });
-        }
         /// Establish the connection to the server asynchronously.
         public async Task ConnectAsync()
         {
@@ -169,87 +67,60 @@ namespace SharedCode.Network
                 Connected = false;
                 return;
             }
-
-            if (_hubConnection == null)
-            {
-                // Build connection with automatic reconnect
-                _hubConnection = new HubConnectionBuilder().WithUrl(GlobalConstants.HubUrl + "LudoHub", options =>
-                {
-                    options.HttpMessageHandlerFactory = handler =>
-                    {
-                        if (handler is HttpClientHandler clientHandler)
-                            clientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-                        return handler;
-                    };
-                    options.CloseTimeout = TimeSpan.FromSeconds(30);
-                }).WithAutomaticReconnect().WithStatefulReconnect().ConfigureLogging(logging => logging.AddDebug().SetMinimumLevel(LogLevel.Debug))
-                .Build();
-            }
-            if (_hubConnection.State == HubConnectionState.Connected)
-            {
-                Connected = true;
-                await UserConnectedSetID();
-                Console.WriteLine("Already connected.");
-                return;
-            }
-            try
-            {
-                RegisterHubEvents();
-                await _hubConnection.StartAsync();//.ConfigureAwait(false);
-                Connected = true;
-                await UserConnectedSetID();
-                _ = StartHeartbeat();
-                Console.WriteLine("Connection started. Waiting for messages from the server...");
-            }
-            catch (Exception ex)
-            {
-                Connected = false;
-                Console.WriteLine($"Failed to start the connection: {ex.Message}");
-                // Consider retry logic here if desired
-            }
+            await RefreshSessionFromApi();
+            Connected = true;
         }
         /// Disconnect from the server.
         public async Task DisconnectAsync()
         {
-            if (_hubConnection == null) return;
-            if (_hubConnection.State == HubConnectionState.Disconnected) return;
-
-            try
-            {
-                await _hubConnection.StopAsync().ConfigureAwait(false);
-                Console.WriteLine("Disconnected from the server.");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error while disconnecting: {ex.Message}");
-            }
+            Connected = false;
+            await Task.CompletedTask;
         }
         public async Task CreateJoinLobbyAsync(GameDto gameDto)//string gameType, double gameCost, string roomCode
         {
             try
             {
-                String roomCode = await _hubConnection.InvokeAsync<string>("CreateJoinLobby", gameDto).ConfigureAwait(false);
-                Console.WriteLine($"Joined room: {roomCode}");
-                RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, roomCode));
+                using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/join");
+                request.Content = JsonContent.Create(new { Game = gameDto });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return;
+
+                var joined = await response.Content.ReadFromJsonAsync<GameplayJoinResponse>().ConfigureAwait(false);
+                if (joined == null)
+                    return;
+
+                GlobalConstants.RoomCode = joined.RoomCode ?? string.Empty;
+                _lastKnownLobbySeats.Clear();
+                _startedRaisedForRoom = string.Empty;
+                RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, joined.RoomCode));
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in CreateJoinLobbyAsync: {ex.Message}");
+                Console.WriteLine($"[ApiClient] CreateJoinLobbyAsync Error: {ex.Message}");
             }
         }
         public async Task<GameCommand> SendMessageAsync(GameCommand commandValue, string command)
         {
-            String AuthToken = getAuthToken();
-            if (AuthToken == "")
-                return null;
             try
             {
-                GameCommand result = await _hubConnection.InvokeAsync<GameCommand>("Send", AuthToken, commandValue, command, GlobalConstants.RoomCode).ConfigureAwait(false);
-                return result;
+                using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/commands/send");
+                request.Content = JsonContent.Create(new
+                {
+                    RoomCode = GlobalConstants.RoomCode,
+                    CommandType = command,
+                    Command = commandValue
+                });
+
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<GameCommand>().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending message: {ex.Message}");
+                Console.WriteLine($"[ApiClient] SendMessageAsync Error: {ex.Message}");
                 return null;
             }
         }
@@ -257,48 +128,194 @@ namespace SharedCode.Network
         {
             try
             {
-                string result = await _hubConnection.InvokeAsync<string>("Ready").ConfigureAwait(false);
-                Console.WriteLine($"Ready acknowledged for room: {result}");
+                using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/ready");
+                request.Content = JsonContent.Create(new
+                {
+                    RoomCode = GlobalConstants.RoomCode
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return;
+
+                var ready = await response.Content.ReadFromJsonAsync<GameplayReadyResponse>().ConfigureAwait(false);
+                if (ready == null)
+                    return;
+
+                if (!string.IsNullOrWhiteSpace(ready.RoomCode))
+                    GlobalConstants.RoomCode = ready.RoomCode;
+
+                if (ready.SeatAssignments != null)
+                {
+                    foreach (var seat in ready.SeatAssignments)
+                    {
+                        if (seat == null || string.IsNullOrWhiteSpace(seat.PlayerType) || seat.PlayerId <= 0)
+                            continue;
+
+                        if (_lastKnownLobbySeats.TryGetValue(seat.PlayerType, out var existingId) && existingId == seat.PlayerId)
+                            continue;
+
+                        _lastKnownLobbySeats[seat.PlayerType] = seat.PlayerId;
+                        PlayerSeated?.Invoke(this, (seat.PlayerType, seat.PlayerId, seat.UserName ?? "Waiting", seat.PictureUrl ?? "user.webp"));
+                    }
+                }
+
+                if (ready.Started)
+                {
+                    _startedRaisedForRoom = ready.RoomCode ?? GlobalConstants.RoomCode;
+                    GameStarted?.Invoke(this, (ready.GameType, ready.SeatsJson ?? string.Empty, ready.RollsString ?? string.Empty));
+                }
+
+                return;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in ReadyAsync: {ex.Message}");
+                Console.WriteLine($"[ApiClient] ReadyAsync Error: {ex.Message}");
             }
         }
-        public void LeaveCloseLobby()
+        public async Task LeaveCloseLobby()
         {
             String AuthToken = getAuthToken();
             if (AuthToken == "")
                 return;
             if (GlobalConstants.RoomCode != "")
             {
-                _ = _hubConnection.InvokeAsync("LeaveCloseLobby").ConfigureAwait(false);
                 GlobalConstants.RoomCode = "";
+                try
+                {
+                    using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/leave");
+                    using var response = await _apiClient.SendAsync(request);
+                    
+                    if (!response.IsSuccessStatusCode)
+                        return;
+
+                    _lastKnownLobbySeats.Clear();
+                    _startedRaisedForRoom = string.Empty;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ApiClient] LeaveCloseLobbyAsync Error: {ex.Message}");
+                }
             }
         }
         public async Task<List<GameCommand>> PullCommands(int lastSeenIndex, string RoomCode)
         {
-            return await _hubConnection.InvokeAsync<List<GameCommand>>("PullCommands", lastSeenIndex, RoomCode).ConfigureAwait(false);
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/commands/pull?roomCode={Uri.EscapeDataString(RoomCode)}&lastSeenIndex={lastSeenIndex}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<GameCommand>();
+
+                return await response.Content.ReadFromJsonAsync<List<GameCommand>>().ConfigureAwait(false) ?? new List<GameCommand>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] PullCommands Error: {ex.Message}");
+                return new List<GameCommand>();
+            }
+        }
+        public async Task GetLobbyAsync(string roomCode)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(roomCode))
+                    return;
+
+                using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/lobbies/state?roomCode={Uri.EscapeDataString(roomCode)}");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return;
+
+                var lobby = await response.Content.ReadFromJsonAsync<GameplayReadyResponse>().ConfigureAwait(false);
+                if (lobby == null)
+                    return;
+
+                if (!string.IsNullOrWhiteSpace(lobby.RoomCode))
+                    GlobalConstants.RoomCode = lobby.RoomCode;
+
+                if (lobby.SeatAssignments != null)
+                {
+                    foreach (var seat in lobby.SeatAssignments)
+                    {
+                        if (seat == null || string.IsNullOrWhiteSpace(seat.PlayerType) || seat.PlayerId <= 0)
+                            continue;
+
+                        if (_lastKnownLobbySeats.TryGetValue(seat.PlayerType, out var existingId) && existingId == seat.PlayerId)
+                            continue;
+
+                        _lastKnownLobbySeats[seat.PlayerType] = seat.PlayerId;
+                        PlayerSeated?.Invoke(this, (seat.PlayerType, seat.PlayerId, seat.UserName ?? "Waiting", seat.PictureUrl ?? "user.webp"));
+                    }
+                }
+
+                var startedRoom = lobby.RoomCode ?? GlobalConstants.RoomCode;
+                if (lobby.Started && !string.Equals(_startedRaisedForRoom, startedRoom, StringComparison.Ordinal))
+                {
+                    _startedRaisedForRoom = startedRoom;
+                    GameStarted?.Invoke(this, (lobby.GameType, lobby.SeatsJson ?? string.Empty, lobby.RollsString ?? string.Empty));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetLobbyAsync Error: {ex.Message}");
+            }
+        }
+        public async Task<List<ActiveGameListItem>> GetActivePublicGamesAsync()
+        {
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/gameplay/games/active");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<ActiveGameListItem>();
+
+                return await response.Content.ReadFromJsonAsync<List<ActiveGameListItem>>().ConfigureAwait(false) ?? new List<ActiveGameListItem>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ApiClient] GetActivePublicGamesAsync Error: {ex.Message}");
+                return new List<ActiveGameListItem>();
+            }
         }
         public async Task<List<ChatMessages>> SendChatMessageAsync(ChatMessages CM, string roomCode)
         {
             try
             {
-                List<ChatMessages> result = await _hubConnection.InvokeAsync<List<ChatMessages>>("SendChatMessage", CM, roomCode).ConfigureAwait(false);
-                return result;
+                using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/chat/send");
+                request.Content = JsonContent.Create(new
+                {
+                    RoomCode = roomCode,
+                    Message = CM
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return new List<ChatMessages>();
+
+                var messages = await response.Content.ReadFromJsonAsync<List<ChatMessages>>().ConfigureAwait(false) ?? new List<ChatMessages>();
+                ReceiveChatMessage?.Invoke(this, messages);
+                return messages;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error sending message: {ex.Message}");
-                return null;
+                Console.WriteLine($"[ApiClient] SendChatMessageAsync Error: {ex.Message}");
+                return new List<ChatMessages>();
             }
         }
         public async Task<PlayerInfo> UserConnectedSetID()
         {
-            String AuthToken = getAuthToken();
-            if (AuthToken == "")
+            try
+            {
+                using var request = CreateApiRequest(HttpMethod.Get, "api/auth/session");
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<PlayerInfo>().ConfigureAwait(false);
+            }
+            catch
+            {
                 return null;
-            return await _hubConnection.InvokeAsync<PlayerInfo>("UserConnectedSetID", AuthToken).ConfigureAwait(false);
+            }
         }
         public async Task<PlayerInfo?> GoogleAuthentication(string idToken, string city, string countryCode)
         {
@@ -961,6 +978,33 @@ namespace SharedCode.Network
                 Console.WriteLine($"[ApiClient] GetWalletGameHistory Error: {ex.Message}");
                 return new List<WalletGameHistoryItem>();
             }
+        }
+
+        private sealed class GameplayJoinResponse
+        {
+            public string RoomCode { get; set; } = string.Empty;
+            public string GameType { get; set; } = string.Empty;
+            public decimal BetAmount { get; set; }
+            public string State { get; set; } = string.Empty;
+        }
+
+        private sealed class GameplayReadyResponse
+        {
+            public string RoomCode { get; set; } = string.Empty;
+            public string GameType { get; set; } = string.Empty;
+            public string State { get; set; } = string.Empty;
+            public bool Started { get; set; }
+            public string SeatsJson { get; set; } = string.Empty;
+            public string RollsString { get; set; } = string.Empty;
+            public List<GameplaySeatInfo> SeatAssignments { get; set; } = new();
+        }
+
+        private sealed class GameplaySeatInfo
+        {
+            public string PlayerType { get; set; } = string.Empty;
+            public int PlayerId { get; set; }
+            public string UserName { get; set; } = string.Empty;
+            public string PictureUrl { get; set; } = string.Empty;
         }
     }
 }
