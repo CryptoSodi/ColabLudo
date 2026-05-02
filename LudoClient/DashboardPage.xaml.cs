@@ -14,7 +14,6 @@ public partial class DashboardPage : ContentPage
     public DashboardPage()
     {
         InitializeComponent();
-
         ClientGlobalConstants.dashBoard = this;
         UpdateButtons();
     }

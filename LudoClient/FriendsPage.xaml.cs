@@ -1,6 +1,5 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 #if ANDROID

@@ -1,9 +1,7 @@
 using LudoClient.Constants;
 using LudoClient.ControlView;
-using LudoClient.Models;
-using Microsoft.AspNetCore.SignalR.Client;
+using SharedCode;
 using SharedCode.Constants;
-using System.Text.Json;
 namespace LudoClient;
 public partial class GamesListPage : ContentPage
 { 
@@ -76,10 +74,10 @@ public partial class GamesListPage : ContentPage
             }
         }
     }
-    private async Task<List<Game>> GetGamesAsync()
+    private async Task<List<ActiveGameListItem>> GetGamesAsync()
     {
-        List<Game> games = await GlobalConstants.MatchMaker._hubConnection.InvokeAsync<List<Game>>("GetGame", false).ConfigureAwait(false);
-        return games?.Where(g => g.State == "Active").ToList() ?? new List<Game>();
+        List<ActiveGameListItem> games = await GlobalConstants.MatchMaker.GetActivePublicGamesAsync().ConfigureAwait(false);
+        return games?.Where(g => g.State == "Active").ToList() ?? new List<ActiveGameListItem>();
     }
     private void TabRequestedActivate(object sender, EventArgs e)
     {

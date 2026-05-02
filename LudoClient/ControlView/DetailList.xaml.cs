@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode;
 using SharedCode.Constants;
 

@@ -1120,7 +1120,12 @@ public partial class Game : ContentPage
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
                     if (engine.EngineHelper.gameMode == "Client")
+                    {
                         GlobalConstants.MatchMaker.LeaveCloseLobby();
+                        try { PopoverButton.HideAttachedPopover(); } catch { }
+                        engine.cleanGame();
+                        ClientGlobalConstants.GoBack();
+                    }
                     else
                     {
                         try { PopoverButton.HideAttachedPopover(); } catch { }

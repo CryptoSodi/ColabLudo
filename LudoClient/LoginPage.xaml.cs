@@ -1,7 +1,6 @@
 using Acr.UserDialogs;
 using LudoClient.Constants;
 using LudoClient.Services;
-using Microsoft.AspNetCore.SignalR.Client;
 using SharedCode.Constants;
 using System.Text.Json;
 

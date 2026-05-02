@@ -6,10 +6,6 @@ using Android.Widget;
 using AndroidX.ConstraintLayout.Widget;
 using SharedCode;
 using SharedCode.Constants;
-using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.Maui.ApplicationModel;
 
 namespace LudoClient.Platforms.Android.Popups
 {

@@ -368,3 +368,7 @@ FodyWeavers.xsd
 /screen_output/verify-build
 /.tools
 /screen_output/verify-api
+/.graphifyignore
+/graphify-out
+/graphify-out/graph.json
+/graphify-out/GRAPH_REPORT.md

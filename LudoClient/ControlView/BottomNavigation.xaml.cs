@@ -14,6 +14,5 @@ public partial class BottomNavigation : ContentView
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
         GlobalConstants.MatchMaker.LeaveCloseLobby();
         await Navigation.PopAsync();
-        //await Shell.Current.GoToAsync("..");
     }
 }
