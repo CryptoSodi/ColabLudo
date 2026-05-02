@@ -10,7 +10,7 @@ using SignalR.Server.Services;
 
 namespace SignalR.Server
 {
-    public class GameRoom(IHubContext<LudoHub> _hubContext, IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
+    public class GameRoom(IDbContextFactory<LudoDbContext> _contextFactory, DatabaseManager DM, CryptoHelper _crypto, UtilService _utilService, SharedCode.GameDto gameDTO)
     {
         public SharedCode.GameDto gameDTO { get; } = gameDTO;
         private readonly SemaphoreSlim _roomLock = new SemaphoreSlim(1, 1);
@@ -99,7 +99,7 @@ namespace SignalR.Server
                     {
                         try
                         {
-                            await _hubContext.Clients.Client(LudoHub.ConnectionToPlayer.FirstOrDefault(kv => kv.Value.PlayerId == winnerId).Key).SendAsync("PlayerInfoUpdate", await _utilService.CastPlayerToInfoAsync(ctx.Players.Find(winnerId)));
+                            await Task.CompletedTask;
                         }
                         catch (Exception)
                         {
@@ -116,8 +116,21 @@ namespace SignalR.Server
             StopProgressAnimation("");
             // Instead of Thread.Sleep, use Task.Delay for async waiting.
             await Task.Delay(500);
-            // Send the rearranged list to your clients (make sure your client is set up to handle this list)
-            await _hubContext.Clients.Group(gameDTO.RoomCode).SendAsync("ShowResults", JsonConvert.SerializeObject(orderedSeats), gameDTO.GameType, gameDTO.BetAmount.ToString());
+            // Queue ShowResults in pull-command stream so HTTP polling clients receive it.
+            var showResultsCommand = new GameCommand
+            {
+                SendToClientFunctionName = "ShowResults",
+                ShowResultsSeats = JsonConvert.SerializeObject(orderedSeats),
+                ShowResultsGameType = gameDTO.GameType,
+                ShowResultsGameCost = gameDTO.BetAmount.ToString(),
+                Index = _commandStore.Count,
+                IndexServer = ++engine.EngineHelper.index
+            };
+
+            lock (_commandStore)
+                _commandStore.Add(showResultsCommand);
+
+            await Task.CompletedTask;
         }
         private void UpdatePlayerStats(List<SharedCode.PlayerDto> orderedSeats, List<string> winnerIds, decimal BetAmount)
         {
@@ -240,7 +253,7 @@ namespace SignalR.Server
             }
             Console.WriteLine($"TIMEOUT : {result}");
         }
-        internal async Task<GameCommand> MovePieceAsync(string authToken, GameCommand commandValue)
+        public async Task<GameCommand> MovePieceAsync(string authToken, GameCommand commandValue)
         {
             await _roomLock.WaitAsync();
             try
@@ -286,7 +299,7 @@ namespace SignalR.Server
                 _roomLock.Release();
             }
         }
-        internal async Task<GameCommand> SeatTurn(string authToken, GameCommand commandValue)
+        public async Task<GameCommand> SeatTurn(string authToken, GameCommand commandValue)
         {
             await _roomLock.WaitAsync();
             try
