@@ -1151,8 +1151,12 @@ public partial class Game : ContentPage
         mb = null;
         if (result == "Approve")
         {
-            if (engine.EngineHelper.gameMode == "Client")
+            if (engine.EngineHelper.gameMode == "Client"){
+
                 GlobalConstants.MatchMaker.LeaveCloseLobby();
+                    engine.cleanGame();
+                    ClientGlobalConstants.GoBack();
+                }
             else
             {
                 try

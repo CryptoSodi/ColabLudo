@@ -13,29 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\SignalR\SignalR.Server\Interfaces\IPaymentProvider.cs" Link="Interfaces\IPaymentProvider.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Payments\CryptoHelper.cs" Link="Payments\CryptoHelper.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Payments\CurrencyType.cs" Link="Payments\CurrencyType.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Payments\LudcPaymentProvider.cs" Link="Payments\LudcPaymentProvider.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Payments\PaymentProviderFactory.cs" Link="Payments\PaymentProviderFactory.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Payments\SolPaymentProvider.cs" Link="Payments\SolPaymentProvider.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\DatabaseManager.cs" Link="Gameplay\DatabaseManager.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\GameRoom.cs" Link="Gameplay\GameRoom.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\DailyBonusService.cs" Link="Services\DailyBonusService.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\FriendsService.cs" Link="Services\FriendsService.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\GoogleAuthService.cs" Link="Services\GoogleAuthService.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\JupiterSwapService.cs" Link="Services\JupiterSwapService.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\TournamentService.cs" Link="Services\TournamentService.cs" />
-    <Compile Include="..\SignalR\SignalR.Server\Services\UtilService.cs" Link="Services\UtilService.cs" />
     <Compile Include="..\SharedCode\Constants\PlayerInfo.cs" Link="SharedCode\Constants\PlayerInfo.cs" />
     <Compile Include="..\SharedCode\Constants\WalletHubDtos.cs" Link="SharedCode\Constants\WalletHubDtos.cs" />
     <Compile Include="..\SharedCode\CoreEngine\*.cs" Link="SharedCode\CoreEngine\%(Filename)%(Extension)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\SignalR\SignalR.Server\appsettings.json" Link="appsettings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <ItemGroup>

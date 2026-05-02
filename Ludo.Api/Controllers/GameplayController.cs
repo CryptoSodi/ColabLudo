@@ -188,7 +188,7 @@ public class GameplayController(
                 SenderPicture = player.PictureUrl,
                 SenderColor = request.Message.SenderColor,
                 ReceiverId = request.Message.ReceiverId,
-                ReceiverName = request.Message.ReceiverName,
+                ReceiverName = request.Message.ReceiverName != null ? request.Message.ReceiverName: "",
                 Message = request.Message.Message,
                 RoomCode = request.RoomCode,
                 CreatedDate = DateTime.UtcNow
