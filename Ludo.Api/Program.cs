@@ -1,8 +1,8 @@
-using LudoServer.Data;
 using Ludo.Api.Services;
+using LudoServer.Data;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.EntityFrameworkCore;
+using SignalR.Server;
 using SignalR.Server.Interfaces;
 using SignalR.Server.Payments;
 using SignalR.Server.Services;
@@ -103,8 +103,17 @@ builder.Services.AddScoped<ApiPlayerContext>();
 builder.Services.AddScoped<FriendsService>();
 builder.Services.AddScoped<GoogleAuthService>();
 builder.Services.AddScoped<TournamentService>();
-builder.Services.AddScoped<UtilService>();
+builder.Services.AddSingleton<UtilService>();
+builder.Services.AddSingleton<PlayerPresenceTracker>();
+builder.Services.AddHostedService<PlayerInactivityCleanupService>();
 builder.Services.AddHttpClient<JupiterSwapService>();
+builder.Services.AddSingleton<DatabaseManager>(sp =>
+{
+    var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
+    var crypto = sp.GetRequiredService<CryptoHelper>();
+    var utilService = sp.GetRequiredService<UtilService>();
+    return new DatabaseManager(contextFactory, crypto, utilService);
+});
 
 var app = builder.Build();
 

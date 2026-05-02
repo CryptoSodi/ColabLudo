@@ -12,6 +12,7 @@ namespace Ludo.Api.Controllers;
 public class ProfileController(
     ApiPlayerContext playerContext,
     UtilService utilService,
+    PlayerPresenceTracker presenceTracker,
     IDbContextFactory<LudoDbContext> contextFactory) : ControllerBase
 {
     [HttpGet("profile")]
@@ -63,7 +64,10 @@ public class ProfileController(
         }
 
         Console.WriteLine($"[ProfileApi] SyncSession requested. PlayerId={player.PlayerId}");
-        await utilService.SetPlayerOnlineState(player.PlayerId, true);
+        if (presenceTracker.TryMarkOnlineTransition(player.PlayerId))
+            await utilService.SetPlayerOnlineState(player.PlayerId, true, touchLastLogin: true);
+
+        presenceTracker.RecordPing(player.PlayerId);
 
         using var ctx = await contextFactory.CreateDbContextAsync();
         var wallet = await ctx.PlayerWallet

@@ -71,7 +71,7 @@ namespace SignalR.Server.Services
             }
             return new List<SharedCode.Constants.WalletTransaction>();
         }
-        public async Task SetPlayerOnlineState(int playerId, bool isOnline)
+        public async Task SetPlayerOnlineState(int playerId, bool isOnline, bool touchLastLogin = false)
         {
             try
             {
@@ -79,6 +79,11 @@ namespace SignalR.Server.Services
                 var player = new Player { PlayerId = playerId, IsOnline = isOnline };
                 ctx.Players.Attach(player);
                 ctx.Entry(player).Property(p => p.IsOnline).IsModified = true;
+                if (touchLastLogin)
+                {
+                    player.LastLogin = DateTime.UtcNow;
+                    ctx.Entry(player).Property(p => p.LastLogin).IsModified = true;
+                }
                 await ctx.SaveChangesAsync();
             }
             catch (Exception ex)
