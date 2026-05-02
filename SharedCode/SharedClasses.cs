@@ -34,6 +34,14 @@
         public bool IsPrivateGame { get; set; } = false; // Flag for private games
         public string playerColor { get; set; } = "";
     }
+    public class ActiveGameListItem
+    {
+        public int GameId { get; set; }
+        public string GameType { get; set; } = "";
+        public string RoomCode { get; set; } = "";
+        public decimal BetAmount { get; set; }
+        public string State { get; set; } = "";
+    }
     public class TournamentDTO
     {
         public int TournamentId { get; set; }
@@ -73,6 +81,9 @@
         public int Index { get; set; }
         public int IndexServer { get; set; }
         public String? Result { get; set; }
+        public string? ShowResultsSeats { get; set; }
+        public string? ShowResultsGameType { get; set; }
+        public string? ShowResultsGameCost { get; set; }
     }
     public class PlayerCard
     {
