@@ -1,6 +1,5 @@
 using LudoServer.Data;
 using LudoServer.Models;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server.Payments;
 using SignalR.Server.Services;
@@ -8,14 +7,14 @@ using System.Collections.Concurrent;
 
 namespace SignalR.Server
 {
-    public class DatabaseManager(IHubContext<LudoHub> _hubContext, IHubContext<DashboardHub> _dashboardHub, IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService)
+    public class DatabaseManager(IDbContextFactory<LudoDbContext> _contextFactory, CryptoHelper _crypto, UtilService _utilService)
     {
         public ConcurrentDictionary<string, GameRoom> _gameRooms { get; set; } = new();
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _roomLocks = new();
 
         private async Task BroadcastMatchUpdate()
         {
-            await _dashboardHub.Clients.All.SendAsync("RefreshMatchCenter");
+            await Task.CompletedTask;
         }
 
         public async Task<Game> JoinGameLobby(Player player, SharedCode.GameDto gameDTO)
@@ -103,7 +102,7 @@ namespace SignalR.Server
             }
 
             // Add to GameRoom memory list
-            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_hubContext, _contextFactory, this, _crypto, _utilService, gameDTO));
+            GameRoom gameRoom = _gameRooms.GetOrAdd(existingGame.RoomCode, _ => new GameRoom(_contextFactory, this, _crypto, _utilService, gameDTO));
             
             lock (gameRoom.Users) 
             {
@@ -199,11 +198,11 @@ namespace SignalR.Server
         {
             _roomLocks.TryRemove(roomCode, out _);
         }
-        internal async Task<(Game existingGame, List<SharedCode.PlayerDto> seats, string rollsString)> Ready(int playerId)
+        internal async Task<(Game existingGame, List<SharedCode.PlayerDto> seats, string rollsString)> Ready(int playerId, string roomCode)
         {
             using var ctx = _contextFactory.CreateDbContext();
 
-            Game existingGame = await GetActiveGameAsync("Active", playerId, ctx);
+            Game existingGame = await GetActiveGameAsync("Active", playerId, ctx, roomCode);
             if (existingGame == null)
                 return (null, null, null);
 
@@ -213,7 +212,7 @@ namespace SignalR.Server
             try
             {
                 // Reload inside lock
-                existingGame = await GetActiveGameAsync("Active", playerId, ctx);
+                existingGame = await GetActiveGameAsync("Active", playerId, ctx, roomCode);
                 if (existingGame == null)
                     return (null, null, null);
 
@@ -312,9 +311,10 @@ namespace SignalR.Server
                 throw new InvalidOperationException("Game is full.");
             return multiPlayer;
         }
-        internal async Task<Game> GetActiveGameAsync(String State, int playerId, LudoDbContext ctx)
+        internal async Task<Game> GetActiveGameAsync(String State, int playerId, LudoDbContext ctx, string roomCode = null)
         {
             Game game = await ctx.Games.Include(g => g.MultiPlayer).FirstOrDefaultAsync(g => g.State == State &&
+                (string.IsNullOrEmpty(roomCode) || g.RoomCode == roomCode) &&
                 (g.MultiPlayer.P1 == playerId ||
                  g.MultiPlayer.P2 == playerId ||
                  g.MultiPlayer.P3 == playerId ||

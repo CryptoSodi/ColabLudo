@@ -91,7 +91,7 @@ builder.Services.AddSingleton<DatabaseManager>(sp => {
     var contextFactory = sp.GetRequiredService<IDbContextFactory<LudoDbContext>>();
     var crypto = sp.GetRequiredService<CryptoHelper>();
     var utilService = sp.GetRequiredService<UtilService>();
-    var dm = new DatabaseManager(hubContext, dashboardHubContext, contextFactory, crypto, utilService);
+    var dm = new DatabaseManager(contextFactory, crypto, utilService);
     return dm;
 });
 // Replace your existing CryptoHelper registration with this:
