@@ -338,12 +338,14 @@ namespace SharedCode.Network
         {
             try
             {
-                using var response = await _apiClient.PostAsJsonAsync("api/auth/google", new
+                using var request = CreateApiRequest(HttpMethod.Post, "api/auth/google");
+                request.Content = JsonContent.Create(new
                 {
                     IdToken = idToken,
                     City = city,
                     CountryCode = countryCode
-                }).ConfigureAwait(false);
+                });
+                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
                 {
