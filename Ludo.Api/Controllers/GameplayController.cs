@@ -174,10 +174,21 @@ public class GameplayController(
         if (player == null)
             return Unauthorized();
 
-        if (request.Message == null || string.IsNullOrWhiteSpace(request.RoomCode))
-            return BadRequest("message and roomCode are required.");
+        if (request.Message == null)
+            return BadRequest("message is required.");
 
         using var ctx = await contextFactory.CreateDbContextAsync();
+
+        var isRoomChat = !string.IsNullOrWhiteSpace(request.RoomCode);
+        if (!isRoomChat)
+        {
+            var isBlocked = await ctx.FriendsRequests.AnyAsync(fr =>
+                ((fr.SenderId == player.PlayerId && fr.ReceiverId == request.Message.ReceiverId) ||
+                 (fr.SenderId == request.Message.ReceiverId && fr.ReceiverId == player.PlayerId)) &&
+                fr.Status == "BLOCK");
+            if (isBlocked)
+                return new List<ChatMessages>();
+        }
 
         if (!string.IsNullOrWhiteSpace(request.Message.Message))
         {
@@ -190,15 +201,29 @@ public class GameplayController(
                 ReceiverId = request.Message.ReceiverId,
                 ReceiverName = request.Message.ReceiverName != null ? request.Message.ReceiverName: "",
                 Message = request.Message.Message,
-                RoomCode = request.RoomCode,
+                RoomCode = isRoomChat ? request.RoomCode : "",
                 CreatedDate = DateTime.UtcNow
             };
             ctx.ChatMessages.Add(entity);
             await ctx.SaveChangesAsync();
         }
 
-        var history = await ctx.ChatMessages
-            .Where(x => x.RoomCode == request.RoomCode)
+        IQueryable<ChatMessage> historyQuery;
+        if (isRoomChat)
+        {
+            historyQuery = ctx.ChatMessages.Where(x => x.RoomCode == request.RoomCode);
+        }
+        else
+        {
+            historyQuery = ctx.ChatMessages.Where(x =>
+                (x.RoomCode == null || x.RoomCode == "") &&
+                ((x.SenderId == player.PlayerId && x.ReceiverId == request.Message.ReceiverId) ||
+                 (x.SenderId == request.Message.ReceiverId && x.ReceiverId == player.PlayerId)));
+        }
+
+        var history = await historyQuery
+            .OrderByDescending(x => x.Index)
+            .Take(isRoomChat ? 200 : 30)
             .OrderBy(x => x.Index)
             .Select(x => new ChatMessages
             {
@@ -216,6 +241,61 @@ public class GameplayController(
             .ToListAsync();
 
         return history;
+    }
+
+    [HttpGet("chat/pull")]
+    public async Task<ActionResult<List<ChatMessages>>> PullChat([FromQuery] string? roomCode = null, [FromQuery] int lastSeenIndex = 0)
+    {
+        var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
+        if (player == null)
+            return Unauthorized();
+
+        var playerId = player.PlayerId;
+        using var ctx = await contextFactory.CreateDbContextAsync();
+        IQueryable<ChatMessage> query;
+        if (!string.IsNullOrWhiteSpace(roomCode))
+        {
+            var isMember = await ctx.Games
+                .Include(g => g.MultiPlayer)
+                .AnyAsync(g =>
+                    g.RoomCode == roomCode &&
+                    (g.State == "Active" || g.State == "Playing") &&
+                    (g.MultiPlayer.P1 == playerId ||
+                     g.MultiPlayer.P2 == playerId ||
+                     g.MultiPlayer.P3 == playerId ||
+                     g.MultiPlayer.P4 == playerId));
+            if (!isMember)
+                return new List<ChatMessages>();
+
+            query = ctx.ChatMessages.Where(x => x.RoomCode == roomCode && x.Index > lastSeenIndex);
+        }
+        else
+        {
+            query = ctx.ChatMessages.Where(x =>
+                (x.RoomCode == null || x.RoomCode == "") &&
+                x.ReceiverId == playerId &&
+                x.Index > lastSeenIndex);
+        }
+
+        var updates = await query
+            .OrderBy(x => x.Index)
+            .Take(50)
+            .Select(x => new ChatMessages
+            {
+                Index = x.Index,
+                SenderId = x.SenderId,
+                SenderName = x.SenderName,
+                SenderPicture = x.SenderPicture,
+                SenderColor = x.SenderColor,
+                ReceiverId = x.ReceiverId,
+                ReceiverName = x.ReceiverName,
+                Message = x.Message,
+                RoomCode = x.RoomCode,
+                CreatedDate = x.CreatedDate
+            })
+            .ToListAsync();
+
+        return updates;
     }
 
     [HttpPost("lobbies/leave")]

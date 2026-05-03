@@ -2,7 +2,6 @@ using SharedCode.Constants;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 
 namespace SharedCode.Network
 {
@@ -13,6 +12,11 @@ namespace SharedCode.Network
         private readonly HttpClient _apiClient;
         private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
         private string _startedRaisedForRoom = string.Empty;
+        private CancellationTokenSource? _chatPollingCts;
+        private Task? _chatPollingTask;
+        private int _lastSeenRoomChatIndex;
+        private int _lastSeenPrivateChatIndex;
+        private string _lastPolledRoomCode = string.Empty;
         // Event Definitions using standard .NET event patterns
         public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
         public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
@@ -79,10 +83,12 @@ namespace SharedCode.Network
             }
             await RefreshSessionFromApi();
             Connected = true;
+            StartChatPolling();
         }
         /// Disconnect from the server.
         public async Task DisconnectAsync()
         {
+            StopChatPolling();
             Connected = false;
             await Task.CompletedTask;
         }
@@ -302,6 +308,7 @@ namespace SharedCode.Network
                     return new List<ChatMessages>();
 
                 var messages = await response.Content.ReadFromJsonAsync<List<ChatMessages>>().ConfigureAwait(false) ?? new List<ChatMessages>();
+                UpdateLastSeenChatIndexes(messages);
                 ReceiveChatMessage?.Invoke(this, messages);
                 return messages;
             }
@@ -987,6 +994,104 @@ namespace SharedCode.Network
             {
                 Console.WriteLine($"[ApiClient] GetWalletGameHistory Error: {ex.Message}");
                 return new List<WalletGameHistoryItem>();
+            }
+        }
+
+        private void StartChatPolling()
+        {
+            StopChatPolling();
+            _chatPollingCts = new CancellationTokenSource();
+            _chatPollingTask = Task.Run(() => ChatPollingLoopAsync(_chatPollingCts.Token));
+        }
+
+        private void StopChatPolling()
+        {
+            try
+            {
+                _chatPollingCts?.Cancel();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                _chatPollingCts?.Dispose();
+                _chatPollingCts = null;
+                _chatPollingTask = null;
+            }
+        }
+
+        private async Task ChatPollingLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
+            {
+                try
+                {
+                    if (!Connected || string.IsNullOrWhiteSpace(getAuthToken()))
+                    {
+                        await Task.Delay(1500, token).ConfigureAwait(false);
+                        continue;
+                    }
+
+                    var roomCode = GlobalConstants.RoomCode ?? string.Empty;
+                    if (!string.Equals(_lastPolledRoomCode, roomCode, StringComparison.Ordinal))
+                    {
+                        _lastPolledRoomCode = roomCode;
+                        _lastSeenRoomChatIndex = 0;
+                    }
+
+                    await PullChatUpdatesAsync(roomCode).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ApiClient] ChatPollingLoop Error: {ex.Message}");
+                }
+
+                await Task.Delay(1500, token).ConfigureAwait(false);
+            }
+        }
+
+        private async Task PullChatUpdatesAsync(string roomCode)
+        {
+            var roomCodeValue = string.IsNullOrWhiteSpace(roomCode) ? string.Empty : Uri.EscapeDataString(roomCode);
+            var lastSeenIndex = string.IsNullOrWhiteSpace(roomCode) ? _lastSeenPrivateChatIndex : _lastSeenRoomChatIndex;
+            using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/chat/pull?roomCode={roomCodeValue}&lastSeenIndex={lastSeenIndex}");
+            using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+            if (!response.IsSuccessStatusCode)
+                return;
+
+            var updates = await response.Content.ReadFromJsonAsync<List<ChatMessages>>().ConfigureAwait(false) ?? new List<ChatMessages>();
+            if (updates.Count == 0)
+                return;
+
+            UpdateLastSeenChatIndexes(updates);
+            ReceiveChatMessage?.Invoke(this, updates);
+        }
+
+        private void UpdateLastSeenChatIndexes(List<ChatMessages> messages)
+        {
+            if (messages == null || messages.Count == 0)
+                return;
+
+            foreach (var message in messages)
+            {
+                if (message == null)
+                    continue;
+
+                if (!string.IsNullOrWhiteSpace(message.RoomCode))
+                {
+                    if (message.Index > _lastSeenRoomChatIndex)
+                        _lastSeenRoomChatIndex = message.Index;
+                }
+                else
+                {
+                    if (message.Index > _lastSeenPrivateChatIndex)
+                        _lastSeenPrivateChatIndex = message.Index;
+                }
             }
         }
 
