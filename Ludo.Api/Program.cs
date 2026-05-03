@@ -1,6 +1,7 @@
 using Ludo.Api.Services;
 using LudoServer.Data;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using SignalR.Server;
 using SignalR.Server.Interfaces;
@@ -12,7 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(8086);
-    serverOptions.ListenAnyIP(8444, listenOptions => listenOptions.UseHttps());
+    serverOptions.ListenAnyIP(8444, listenOptions =>
+    {
+        listenOptions.UseHttps();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+    });
 });
 
 const int masterUserId = 1;

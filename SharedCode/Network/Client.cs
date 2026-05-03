@@ -1,5 +1,6 @@
 using SharedCode.Constants;
 using System.ComponentModel;
+using System.Net;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -8,6 +9,7 @@ namespace SharedCode.Network
     public class Client
     {
         private bool _connected;
+        private static readonly HttpClient SharedApiClient = CreateApiClient();
         private readonly HttpClient _apiClient;
         private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
         private string _startedRaisedForRoom = string.Empty;
@@ -34,20 +36,28 @@ namespace SharedCode.Network
         }
         public Client()
         {
-            _apiClient = CreateApiClient();
+            _apiClient = SharedApiClient;
             Connected = false;
         }
 
         private static HttpClient CreateApiClient()
         {
-            var handler = new HttpClientHandler
+            var handler = new SocketsHttpHandler
             {
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                SslOptions =
+                {
+                    RemoteCertificateValidationCallback = (_, _, _, _) => true
+                },
+                PooledConnectionIdleTimeout = TimeSpan.FromMinutes(5),
+                PooledConnectionLifetime = TimeSpan.FromMinutes(30),
+                EnableMultipleHttp2Connections = false
             };
 
-            return new HttpClient(handler)
+            return new HttpClient(handler, disposeHandler: false)
             {
-                BaseAddress = new Uri(GlobalConstants.ApiUrl)
+                BaseAddress = new Uri(GlobalConstants.ApiUrl),
+                DefaultRequestVersion = HttpVersion.Version30,
+                DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
             };
         }
 
