@@ -1063,6 +1063,15 @@ namespace SharedCode.Network
             var lastSeenIndex = string.IsNullOrWhiteSpace(roomCode) ? _lastSeenPrivateChatIndex : _lastSeenRoomChatIndex;
             using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/chat/pull?roomCode={roomCodeValue}&lastSeenIndex={lastSeenIndex}");
             using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
+            if (!string.IsNullOrWhiteSpace(roomCode) && response.StatusCode == HttpStatusCode.Conflict)
+            {
+                // Room state is stale on client; recover to private polling mode.
+                Console.WriteLine($"[ApiClient] ChatPolling recovered from stale room '{roomCode}'. Switching to private polling.");
+                GlobalConstants.RoomCode = string.Empty;
+                _lastPolledRoomCode = string.Empty;
+                _lastSeenRoomChatIndex = 0;
+                return;
+            }
             if (!response.IsSuccessStatusCode)
                 return;
 

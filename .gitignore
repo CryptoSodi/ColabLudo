@@ -375,3 +375,4 @@ FodyWeavers.xsd
 /Ludo.Api/appsettings.json
 /screen_output/verify-api-chat
 /screen_output/verify-api-tournament-guard
+/screen_output/verify-api-chatpoll

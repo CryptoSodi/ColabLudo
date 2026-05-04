@@ -265,7 +265,7 @@ public class GameplayController(
                      g.MultiPlayer.P3 == playerId ||
                      g.MultiPlayer.P4 == playerId));
             if (!isMember)
-                return new List<ChatMessages>();
+                return StatusCode(StatusCodes.Status409Conflict, "Player is not in the requested room.");
 
             query = ctx.ChatMessages.Where(x => x.RoomCode == roomCode && x.Index > lastSeenIndex);
         }
