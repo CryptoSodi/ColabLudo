@@ -17,7 +17,7 @@ namespace LudoServer.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> CreatePlayerData(string idToken, string city, string countryCode)
+        public async Task<IActionResult> CreatePlayerData(string idToken, string city, string country, string countryCallingCode)
         {
             // Example: extract useful info
             String email = "";
@@ -57,7 +57,8 @@ namespace LudoServer.Controllers
                     Email = existingPlayer.Email,
                     PictureUrl = existingPlayer.PictureUrl,
                     PhoneNumber = existingPlayer.PhoneNumber,
-                    CountryCode = existingPlayer.CountryCode,
+                    Country = existingPlayer.Country,
+                    CountryCallingCode = existingPlayer.CountryCallingCode,
                     City = existingPlayer.City,
                     GamesPlayed = existingPlayer.GamesPlayed,
                     GamesWon = existingPlayer.GamesWon,
@@ -74,8 +75,9 @@ namespace LudoServer.Controllers
                 Name = name,
                 Email = email,
                 PictureUrl = pictureUrl,
+                Country = country,
                 City = city,
-                CountryCode = countryCode
+                CountryCallingCode = countryCallingCode
             };
             _context.Players.Add(newPlayer);
             // Save changes to the database
@@ -94,7 +96,8 @@ namespace LudoServer.Controllers
                     Email = player.Email,
                     PictureUrl = player.PictureUrl,
                     PhoneNumber = player.PhoneNumber,
-                    CountryCode = player.CountryCode,
+                    Country = player.Country,
+                    CountryCallingCode = player.CountryCallingCode,
                     City = player.City,
                     GamesPlayed = player.GamesPlayed,
                     GamesWon = player.GamesWon,

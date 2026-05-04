@@ -88,7 +88,8 @@ namespace LudoServer.Controllers
                 // Update the OTP if the player already exists
                 existingPlayer.Otp = Otp;
                 existingPlayer.PhoneNumber = request.PhoneNumber;
-                existingPlayer.CountryCode = request.countryCode;
+                existingPlayer.Country = request.country;
+                existingPlayer.CountryCallingCode = request.countryCode;
                 existingPlayer.City = request.city;
                 _context.Players.Update(existingPlayer);
             }
@@ -99,7 +100,8 @@ namespace LudoServer.Controllers
                 {
                     Otp = Otp,
                     PhoneNumber = request.PhoneNumber,
-                    CountryCode = request.countryCode,
+                    Country = request.country,
+                    CountryCallingCode = request.countryCode,
                     City = request.city,
                 };
                 _context.Players.Add(newPlayer);
@@ -140,7 +142,8 @@ namespace LudoServer.Controllers
                     Email = otpRecord.Email,
                     PictureUrl = otpRecord.PictureUrl,
                     PhoneNumber = otpRecord.PhoneNumber,
-                    CountryCode = otpRecord.CountryCode,
+                    Country = otpRecord.Country,
+                    CountryCallingCode = otpRecord.CountryCallingCode,
                     City = otpRecord.City,
                     GamesPlayed = otpRecord.GamesPlayed,
                     GamesWon = otpRecord.GamesWon,

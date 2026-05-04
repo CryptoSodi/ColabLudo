@@ -334,16 +334,14 @@ namespace SharedCode.Network
                 return null;
             }
         }
-        public async Task<PlayerInfo?> GoogleAuthentication(string idToken, string city, string countryCode)
+        public async Task<PlayerInfo?> GoogleAuthentication(string idToken)
         {
             try
             {
                 using var request = CreateApiRequest(HttpMethod.Post, "api/auth/google");
                 request.Content = JsonContent.Create(new
                 {
-                    IdToken = idToken,
-                    City = city,
-                    CountryCode = countryCode
+                    IdToken = idToken
                 });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
 

@@ -376,3 +376,5 @@ FodyWeavers.xsd
 /screen_output/verify-api-chat
 /screen_output/verify-api-tournament-guard
 /screen_output/verify-api-chatpoll
+/screen_output/verify-api-geo-auth
+/screen_output/verify-api-country-fields

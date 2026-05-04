@@ -107,7 +107,8 @@ namespace SharedCode.Constants
                     UserInfo.Instance.ProfileImageSource = ImageSource.FromUri(new Uri(instance.player.PictureUrl));
 
                     instance.player.PhoneNumber = instance.player.PhoneNumber==null || instance.player.PhoneNumber == "" ? "###########" : instance.player.PhoneNumber;
-                    instance.player.CountryCode = instance.player.CountryCode == "" ? "###" : instance.player.CountryCode;
+                    instance.player.CountryCallingCode = instance.player.CountryCallingCode == "" ? "###" : instance.player.CountryCallingCode;
+                    instance.player.Country = instance.player.Country == "" ? "###########" : instance.player.Country;
                     instance.player.City = instance.player.City == "" ? "###########" : instance.player.City;
                     instance.AddressQRBlob = Preferences.Get(nameof(instance.AddressQRBlob), string.Empty);
                 }

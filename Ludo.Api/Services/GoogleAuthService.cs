@@ -11,7 +11,7 @@ namespace SignalR.Server.Services
         private readonly string _expectedAudience = "973406093603-g14f7hkjafphcij4p16ectibrkmj7q8f.apps.googleusercontent.com";
         private readonly string _expectedAudienceWeb = "973406093603-dlm3o6jrkuf6b1m1lc7m8hir9qc4cul5.apps.googleusercontent.com";
         private readonly string _expectedAudienceWebNew = "973406093603-t7b4fbs99ouvg6u4hud80s3b64eek5qt.apps.googleusercontent.com";
-        public async Task<Player> GoogleAuthentication(string idToken, string city, string countryCode)
+        public async Task<Player> GoogleAuthentication(string city, string country, string countryCallingCode, string lastKnownIp, string idToken)
         {
             try
             {
@@ -65,8 +65,10 @@ namespace SignalR.Server.Services
                         Name = name,
                         Email = email,
                         PictureUrl = pictureUrl,
+                        Country = country,
                         City = city,
-                        CountryCode = countryCode,
+                        CountryCallingCode = countryCallingCode,
+                        LastKnownIp = lastKnownIp,
                         IsOnline = true,
                         AuthToken = "",
                         Role = "Player"
@@ -82,8 +84,10 @@ namespace SignalR.Server.Services
                 {
                     existingPlayer.GoogleId = string.IsNullOrWhiteSpace(existingPlayer.GoogleId) ? googleId : existingPlayer.GoogleId;
                     existingPlayer.PictureUrl = string.IsNullOrWhiteSpace(pictureUrl) ? existingPlayer.PictureUrl : pictureUrl;
+                    existingPlayer.Country = country;
                     existingPlayer.City = city;
-                    existingPlayer.CountryCode = countryCode;
+                    existingPlayer.CountryCallingCode = countryCallingCode;
+                    existingPlayer.LastKnownIp = lastKnownIp;
                     existingPlayer.LastLogin = DateTime.UtcNow;
                     existingPlayer.IsOnline = true;
 
