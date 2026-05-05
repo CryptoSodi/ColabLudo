@@ -8,8 +8,8 @@ public class PlayerInactivityCleanupService(
     UtilService utilService,
     DatabaseManager databaseManager) : BackgroundService
 {
-    private static readonly TimeSpan InactivityTimeout = TimeSpan.FromMinutes(2);
-    private static readonly TimeSpan SweepInterval = TimeSpan.FromSeconds(30);
+    private static readonly TimeSpan InactivityTimeout = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan SweepInterval = TimeSpan.FromSeconds(20);
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {

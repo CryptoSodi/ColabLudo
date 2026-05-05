@@ -94,6 +94,7 @@ public partial class GameRoom : ContentPage
     {
         MainThread.BeginInvokeOnMainThread(async () =>
         {
+            Console.WriteLine("OnRoomJoined: " + args.RoomCode);
             GlobalConstants.RoomCode = args.RoomCode;
             GlobalConstants.GameCost = args.GameCost;
             shareBox.SetShareCode(args.RoomCode);

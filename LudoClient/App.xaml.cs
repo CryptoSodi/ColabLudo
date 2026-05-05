@@ -48,14 +48,7 @@ namespace LudoClient
                 _ = Task.Run(() => SetOnline(_onlineCts.Token));
                 _ = Task.Run(() => CheckForResumeNotifications(_onlineCts.Token));
             });
-            if (isUserLoggedIn)
-            {
-                MainPage = new AppShell();
-            }
-            else
-            {
-                MainPage = new LoginPage();
-            }
+            MainPage = isUserLoggedIn ? new AppShell() : new LoginPage();
         }
         private void RegisterHubEvents()
         {
@@ -383,6 +376,7 @@ namespace LudoClient
                                                         }
                                                         break;
                                                     case "ShowResults":
+                                                        Console.WriteLine($"Received ShowResults command. Seats: {command.ShowResultsSeats}, GameType: {command.ShowResultsGameType}, GameCost: {command.ShowResultsGameCost}");
                                                         await OnShowResultsFromCommand(command);
                                                         game._commandStore.Add(command);
                                                         break;

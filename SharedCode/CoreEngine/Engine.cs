@@ -147,6 +147,7 @@
             if (gameMode == "Client" || gameMode == "AI")
                 EngineHelper.rolls = rollsString.Select(c => int.Parse(c.ToString())).ToList();
 
+            EngineHelper.rollCursor = 0;
             EngineHelper.rollsString = string.Join("", EngineHelper.rolls);
         }
         public async Task<string> SeatTurn(string seatName, String DiceValue, String Piece1, String Piece2)
@@ -601,6 +602,7 @@
         internal int indexServer { get; set; } = 0;
         // Game logic helpers
         public List<int> rolls = new List<int>();
+        public int rollCursor = 0;
         public string rollsString = "";
         public Player currentPlayer = null;
         public string gameType = "";
@@ -843,10 +845,10 @@
         }
         public int RollDice()
         {
-            if (rolls.Count != 0)
+            if (rollCursor < rolls.Count)
             {
-                diceValue = rolls[0];
-                rolls.RemoveAt(0);
+                diceValue = rolls[rollCursor];
+                rollCursor++;
                 return diceValue;
             }
             else
