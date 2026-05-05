@@ -130,9 +130,26 @@ namespace SharedCode.Network
 
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
+                {
+                    var errorBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    Console.WriteLine($"[ApiClient] SendMessageAsync rejected. Status={(int)response.StatusCode}, CommandType={command}, Body={errorBody}");
+                    return null;
+                }
+
+                var result = await response.Content.ReadFromJsonAsync<GameCommand>().ConfigureAwait(false);
+                if (result == null)
                     return null;
 
-                return await response.Content.ReadFromJsonAsync<GameCommand>().ConfigureAwait(false);
+                // Server can return a GameCommand with Result="Error: ...".
+                // Do not execute local engine steps with default/empty command fields.
+                if (!string.IsNullOrWhiteSpace(result.Result) &&
+                    result.Result.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"[ApiClient] SendMessageAsync server error command ignored. CommandType={command}, Result={result.Result}");
+                    return null;
+                }
+
+                return result;
             }
             catch (Exception ex)
             {
@@ -1065,7 +1082,7 @@ namespace SharedCode.Network
             {
                 // Room state is stale on client; recover to private polling mode.
                 Console.WriteLine($"[ApiClient] ChatPolling recovered from stale room '{roomCode}'. Switching to private polling.");
-                GlobalConstants.RoomCode = string.Empty;
+              //  GlobalConstants.RoomCode = string.Empty;
                 _lastPolledRoomCode = string.Empty;
                 _lastSeenRoomChatIndex = 0;
                 return;
