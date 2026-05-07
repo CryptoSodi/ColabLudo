@@ -26,6 +26,8 @@ public partial class Game : ContentPage
     List<PlayerDto>? seats = new List<PlayerDto>();
     // A simple persistent store for commands.        
     public readonly List<GameCommand> _commandStore = new List<GameCommand>();
+    private readonly HashSet<int> _pendingDiceSend = new();
+    private readonly object _pendingDiceSendLock = new();
     private readonly IGamepadInputService _input;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
@@ -809,7 +811,15 @@ public partial class Game : ContentPage
                     };
                     
                     GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
-                    if (resultCommand != null)
+                    if (resultCommand != null && string.Equals(resultCommand.Result, "Replay", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var replayApplied = await ApplyReplayCommandAsync(resultCommand);
+                        if (!replayApplied)
+                            result = "-2";
+                    }
+                    else if (resultCommand != null &&
+                        !string.IsNullOrWhiteSpace(resultCommand.piece1) &&
+                        !string.IsNullOrWhiteSpace(resultCommand.piece2))
                     {
                         string result2 = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
                         Console.WriteLine($"Local : {result}");
@@ -833,7 +843,8 @@ public partial class Game : ContentPage
                     }
                     else
                     {
-                        Console.WriteLine("Server rejected the move request.");
+                        result = "-2";
+                        Console.WriteLine("Server rejected/staled move request. Waiting for pull sync.");
                     }
                 }
                 else
@@ -886,6 +897,45 @@ public partial class Game : ContentPage
             }
         }
     }
+    private async Task<bool> ApplyReplayCommandAsync(GameCommand command)
+    {
+        if (command == null || string.IsNullOrWhiteSpace(command.SendToClientFunctionName))
+            return false;
+
+        if (_commandStore.Any(c => c.IndexServer == command.IndexServer))
+            return true;
+
+        switch (command.SendToClientFunctionName)
+        {
+            case "MovePiece":
+                if (!string.IsNullOrWhiteSpace(command.piece1) && !string.IsNullOrWhiteSpace(command.piece2))
+                {
+                    var moveResult = await MovePiece(command.piece1, command.piece2, false);
+                    if (moveResult != "-2" && !moveResult.Contains("-1") && !moveResult.Contains("-0"))
+                    {
+                        _commandStore.Add(command);
+                        return true;
+                    }
+                }
+                break;
+            case "DiceRoll":
+                if (!string.IsNullOrWhiteSpace(command.seatName) &&
+                    !string.IsNullOrWhiteSpace(command.diceValue) &&
+                    command.piece1 != null &&
+                    command.piece2 != null)
+                {
+                    var rollResult = await PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                    if (rollResult != "-2" && !rollResult.Contains("-1") && !rollResult.Contains("-0"))
+                    {
+                       // _commandStore.Add(command);
+                        return true;
+                    }
+                }
+                break;
+        }
+
+        return false;
+    }
     public async Task<string> PlayerDiceClicked(String SeatColor, String DiceValue, String Piece1, String Piece2, bool SendToServer = true)
     {
         if (isInputLocked || (SendToServer && engine.processing)) 
@@ -928,30 +978,21 @@ public partial class Game : ContentPage
                         Index = ClientGlobalConstants.game.engine.EngineHelper.index + 1,
                         IndexServer = ClientGlobalConstants.game.engine.EngineHelper.indexServer + 1,
                     };
-                    
-                    GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
-                    if (resultCommand != null)
+                    //Applying the speed up locally to give instant feedback to the user, the server will validate and send a replay command if needed to correct any discrepancies
+                    String localResult = await engine.SeatTurn(SeatColor, DiceValue, Piece1, Piece2);
+                    result = localResult;
+                    Console.WriteLine($"Local : {localResult}");
+                    if (localResult.Contains("-1") || localResult.Contains("-0"))
                     {
-                        result = await engine.SeatTurn(resultCommand.seatName, resultCommand.diceValue, resultCommand.piece1, resultCommand.piece2);
-                        Console.WriteLine($"Local : {result}");
-                        if (result.Contains("-1") || result.Contains("-0"))
-                        {
-                            Console.WriteLine("Invalid move attempted.");
-                        }
-                        else
-                        {
-                            _commandStore.Add(resultCommand); 
-                            ClientGlobalConstants.game.engine.EngineHelper.index++;
-                            ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
-                        }
-                        if (command.Index != resultCommand.Index)
-                        {
-                            Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
-                        }
+                        Console.WriteLine("Invalid move attempted.");
                     }
                     else
                     {
-                        Console.WriteLine("Server rejected the roll request (resultCommand is null).");
+                        _commandStore.Add(command);
+
+                        ClientGlobalConstants.game.engine.EngineHelper.index++;
+                        ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                        _ = SendDiceRollWithRetryAsync(command);
                     }
                 }
                 else
@@ -978,6 +1019,63 @@ public partial class Game : ContentPage
 
         UpdateUI();
         return result;
+    }
+    private bool TryMarkDiceSendPending(int indexServer)
+    {
+        lock (_pendingDiceSendLock)
+        {
+            return _pendingDiceSend.Add(indexServer);
+        }
+    }
+    private void ClearDiceSendPending(int indexServer)
+    {
+        lock (_pendingDiceSendLock)
+        {
+            _pendingDiceSend.Remove(indexServer);
+        }
+    }
+    private async Task SendDiceRollWithRetryAsync(GameCommand command, int maxAttempts = 2)
+    {
+        if (command == null || !TryMarkDiceSendPending(command.IndexServer))
+            return;
+
+        try
+        {
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                GameCommand? resultCommand = null;
+                try
+                {
+                    resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"DiceRoll send attempt {attempt} failed: {ex.Message}");
+                }
+
+                if (resultCommand != null && string.Equals(resultCommand.Result, "Replay", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"DiceRoll replay received for IndexServer={command.IndexServer}. Stop retry and rely on sync/pull.");
+                    return;
+                }
+
+                if (resultCommand != null && !string.IsNullOrWhiteSpace(resultCommand.seatName) && !string.IsNullOrWhiteSpace(resultCommand.diceValue))
+                {
+                    if (command.Index != resultCommand.Index)
+                        Console.WriteLine("ERROR SERVER OUT OF SYNC AT DICEROLL");
+                    return;
+                }
+
+                if (attempt < maxAttempts)
+                    await Task.Delay(250 * attempt);
+            }
+
+            Console.WriteLine($"DiceRoll send gave up after {maxAttempts} attempts. Pull sync will converge state. IndexServer={command.IndexServer}");
+        }
+        finally
+        {
+            ClearDiceSendPending(command.IndexServer);
+        }
     }
     public async Task<string> PlayerLeft(string seatName, bool SendToServer)
     {
