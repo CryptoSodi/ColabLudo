@@ -39,8 +39,38 @@ namespace SignalR.Server
             lock (_commandStore)// Return only commands that have not been seen based on IndexServer
                 return Task.FromResult(_commandStore.Where(cmd => cmd.IndexServer > lastSeenIndexServer).OrderBy(cmd => cmd.IndexServer).ToList());
         }
-        private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
+        private GameCommand? GetReplayCommandForClient(int clientNextIndexServer)
         {
+            // Client sends the next expected server index. If server is ahead, replay the earliest missing command.
+            var expected = clientNextIndexServer <= 0 ? 1 : clientNextIndexServer;
+            lock (_commandStore)
+            {
+                var next = _commandStore
+                    .Where(c => c.IndexServer >= expected)
+                    .OrderBy(c => c.IndexServer)
+                    .FirstOrDefault();
+                if (next == null)
+                    return null;
+
+                return new GameCommand
+                {
+                    SendToClientFunctionName = next.SendToClientFunctionName,
+                    seatName = next.seatName,
+                    diceValue = next.diceValue,
+                    piece1 = next.piece1,
+                    piece2 = next.piece2,
+                    Index = next.Index,
+                    IndexServer = next.IndexServer,
+                    Result = "Replay",
+                    ShowResultsSeats = next.ShowResultsSeats,
+                    ShowResultsGameType = next.ShowResultsGameType,
+                    ShowResultsGameCost = next.ShowResultsGameCost
+                };
+            }
+        }
+        private async Task ShowResults(string PlayerColor, string NOTUSEDGameType, string NOTUSEDGameCost)//These two are just veriation and not used 
+        {   
+            Console.WriteLine($"ShowResults triggered with PlayerColor: {PlayerColor}");
             using var ctx = _contextFactory.CreateDbContext();
             // Assume 'seats' is a List<Seat> and Seat has a property 'SeatColor'
             // Order the list so that seats whose SeatColor equals the provided seatColor come first.
@@ -216,7 +246,7 @@ namespace SignalR.Server
             String seatName = engine.EngineHelper.currentPlayer.Color;
             if (engine.EngineHelper.checkTurn(engine.EngineHelper.currentPlayer.Color, "RollDice"))
             {
-                result = await engine.SeatTurn(engine.EngineHelper.currentPlayer.Color, "", "", "");                
+                result = await engine.SeatTurn(engine.EngineHelper.currentPlayer.Color, "", "", "");
                 GameCommand command = new GameCommand
                 {
                     SendToClientFunctionName = "DiceRoll",
@@ -263,13 +293,16 @@ namespace SignalR.Server
                 if (user == null)
                 {
                     Console.WriteLine("Authentication failed: Invalid token.");
-                    return null; // or throw an UnauthorizedAccessException
+                    return new GameCommand { Result = "Error: Invalid token." };
                 }
                 // Check if user's seat matches the command's seat and current player's turn
                 if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
                 {
                     Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
-                    return null; // or throw an InvalidOperationException
+                    var replay = GetReplayCommandForClient(commandValue.IndexServer);
+                    if (replay != null)
+                        return replay;
+                    return new GameCommand { Result = "Error: OutOfTurnOrWrongSeat." };
                 }
                 if (engine.EngineHelper.checkTurn(commandValue.piece1, "MovePiece"))
                 {
@@ -292,7 +325,10 @@ namespace SignalR.Server
 
                     return command;
                 }
-                return null;
+                var fallbackReplay = GetReplayCommandForClient(commandValue.IndexServer);
+                if (fallbackReplay != null)
+                    return fallbackReplay;
+                return new GameCommand { Result = "Error: InvalidMoveState." };
             }
             finally
             {
@@ -308,13 +344,16 @@ namespace SignalR.Server
                 if (user == null)
                 {
                     Console.WriteLine("Authentication failed: Invalid token.");
-                    return null; // or throw an UnauthorizedAccessException
+                    return new GameCommand { Result = "Error: Invalid token." };
                 }
                 // Check if user's seat matches the command's seat and current player's turn
                 if (user.PlayerColor != commandValue.seatName || user.PlayerColor != engine.EngineHelper.currentPlayer.Color)
                 {
                     Console.WriteLine("Authorization failed: User trying to move out of turn or from wrong seat.");
-                    return null; // or throw an InvalidOperationException
+                    var replay = GetReplayCommandForClient(commandValue.IndexServer);
+                    if (replay != null)
+                        return replay;
+                    return new GameCommand { Result = "Error: OutOfTurnOrWrongSeat." };
                 }
                 if (engine.EngineHelper.checkTurn(commandValue.seatName, "RollDice"))
                 {
@@ -342,7 +381,10 @@ namespace SignalR.Server
                         return command;
                     }
                 }
-                return null;
+                var fallbackReplay = GetReplayCommandForClient(commandValue.IndexServer);
+                if (fallbackReplay != null)
+                    return fallbackReplay;
+                return new GameCommand { Result = "Error: InvalidRollState." };
             }
             finally
             {
