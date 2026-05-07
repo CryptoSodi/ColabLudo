@@ -43,7 +43,6 @@ namespace SharedCode.Network
             _apiClient = SharedApiClient;
             Connected = false;
         }
-
         private static HttpClient CreateApiClient()
         {
             var handler = new SocketsHttpHandler
@@ -64,7 +63,6 @@ namespace SharedCode.Network
                 DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
             };
         }
-
         private HttpRequestMessage CreateApiRequest(HttpMethod method, string path)
         {
             var request = new HttpRequestMessage(method, path);
@@ -459,7 +457,6 @@ namespace SharedCode.Network
         {
             return Preferences.Get("AuthToken", "");
         }
-
         public async Task<T?> GetDailyBonus<T>()
         {
             try
@@ -477,7 +474,6 @@ namespace SharedCode.Network
                 return default;
             }
         }
-
         public async Task<T?> ClaimTodayBonus<T>()
         {
             try
@@ -495,7 +491,6 @@ namespace SharedCode.Network
                 return default;
             }
         }
-
         public async Task<T?> GetProfile<T>()
         {
             try
@@ -513,7 +508,6 @@ namespace SharedCode.Network
                 return default;
             }
         }
-
         public async Task<T?> GetWallet<T>()
         {
             try
@@ -531,13 +525,11 @@ namespace SharedCode.Network
                 return default;
             }
         }
-
         public async Task RefreshPlayerInfoFromApi()
         {
             var playerInfo = await GetProfile<PlayerInfo>().ConfigureAwait(false);
             ApplyPlayerInfoUpdate(playerInfo);
         }
-
         public async Task RefreshSessionFromApi()
         {
             try
@@ -555,7 +547,6 @@ namespace SharedCode.Network
                 Console.WriteLine($"[ApiClient] RefreshSession Error: {ex.Message}");
             }
         }
-
         private void ApplyPlayerInfoUpdate(PlayerInfo? playerInfo)
         {
             if (playerInfo == null)
@@ -567,7 +558,6 @@ namespace SharedCode.Network
             else
                 UserInfo.Instance.player = playerInfo;
         }
-
         private void ApplyWalletBalance(decimal balance)
         {
             var wallet = UserInfo.Instance.player?.Wallet;
@@ -579,7 +569,6 @@ namespace SharedCode.Network
 
             _ = RefreshPlayerInfoFromApi();
         }
-
         private void ApplySessionSync(SessionSyncInfo? syncInfo)
         {
             if (syncInfo == null)
@@ -604,12 +593,10 @@ namespace SharedCode.Network
             player.Wallet.WalletAddress = syncInfo.Wallet.WalletAddress;
             player.Wallet.AvailableBalance = syncInfo.Wallet.AvailableBalance;
         }
-
         private void QueuePlayerInfoRefreshPolling(decimal? previousBalance)
         {
             _ = RefreshPlayerInfoUntilBalanceChanges(previousBalance);
         }
-
         private async Task RefreshPlayerInfoUntilBalanceChanges(decimal? previousBalance)
         {
             for (var attempt = 0; attempt < 10; attempt++)
@@ -625,7 +612,6 @@ namespace SharedCode.Network
                     return;
             }
         }
-
         public async Task<List<PlayerCard>> GetFriends(string type = "All")
         {
             try
@@ -643,7 +629,6 @@ namespace SharedCode.Network
                 return new List<PlayerCard>();
             }
         }
-
         public async Task<string> SendFriendRequest(int receiverId, string status)
         {
             try
@@ -662,7 +647,6 @@ namespace SharedCode.Network
                 return "Error";
             }
         }
-
         public async Task<PlayerCard> GetPlayerById(int playerId)
         {
             try
@@ -680,7 +664,6 @@ namespace SharedCode.Network
                 return null;
             }
         }
-
         public async Task<List<PlayerCard>> GetLeaderboard()
         {
             try
@@ -698,7 +681,6 @@ namespace SharedCode.Network
                 return new List<PlayerCard>();
             }
         }
-
         public async Task<List<PlayerCard>> GetTournamentLeaderboard(string tournamentType)
         {
             try
@@ -716,7 +698,6 @@ namespace SharedCode.Network
                 return new List<PlayerCard>();
             }
         }
-
         public async Task<string> MintNFT(int amount)
         {
             try
@@ -773,7 +754,6 @@ namespace SharedCode.Network
                 return new { Success = false, Error = ex.Message };
             }
         }
-
         public async Task<BlockchainResult> BroadcastTransaction(string txBase64)
         {
             try
@@ -798,7 +778,6 @@ namespace SharedCode.Network
                 return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
-
         public async Task<BlockchainResult> ExecutePreparedSwap(string requestId, string signedTxBase64)
         {
             try
@@ -823,7 +802,6 @@ namespace SharedCode.Network
                 return new BlockchainResult { Success = false, Error = ex.Message };
             }
         }
-
         public async Task<bool> ConfirmSolanaTransaction(string signature)
         {
             try
@@ -842,7 +820,6 @@ namespace SharedCode.Network
                 return false;
             }
         }
-
         public async Task<object> PrepareAssetSwap(string walletAddress, string inputAsset, string outputAsset, decimal amount, int slippageBps)
         {
             try
@@ -868,7 +845,6 @@ namespace SharedCode.Network
                 return new { Success = false, Error = ex.Message };
             }
         }
-
         public async Task<object> PrepareLudcDeposit(string walletAddress, decimal amount)
         {
             try
@@ -887,7 +863,6 @@ namespace SharedCode.Network
                 return null;
             }
         }
-
         public async Task<string> SubmitManualDeposit(int playerId, decimal amount, string method, string referenceNumber, string receiptUrl)
         {
             try
@@ -913,7 +888,6 @@ namespace SharedCode.Network
                 return "Error";
             }
         }
-
         public async Task<string> SubmitManualWithdrawal(decimal amount, string method, string destinationDetails)
         {
             try
@@ -937,7 +911,6 @@ namespace SharedCode.Network
                 return "Error";
             }
         }
-
         public async Task<List<WalletBonusHistoryItem>> GetWalletBonusHistory()
         {
             try
@@ -956,7 +929,6 @@ namespace SharedCode.Network
                 return new List<WalletBonusHistoryItem>();
             }
         }
-
         public async Task<List<WalletDepositHistoryItem>> GetWalletDepositHistory()
         {
             try
@@ -975,7 +947,6 @@ namespace SharedCode.Network
                 return new List<WalletDepositHistoryItem>();
             }
         }
-
         public async Task<List<WalletWithdrawalHistoryItem>> GetWalletWithdrawalHistory()
         {
             try
@@ -994,7 +965,6 @@ namespace SharedCode.Network
                 return new List<WalletWithdrawalHistoryItem>();
             }
         }
-
         public async Task<List<WalletGameHistoryItem>> GetWalletGameHistory()
         {
             try
@@ -1013,14 +983,12 @@ namespace SharedCode.Network
                 return new List<WalletGameHistoryItem>();
             }
         }
-
         private void StartChatPolling()
         {
             StopChatPolling();
             _chatPollingCts = new CancellationTokenSource();
             _chatPollingTask = Task.Run(() => ChatPollingLoopAsync(_chatPollingCts.Token));
         }
-
         private void StopChatPolling()
         {
             try
@@ -1037,7 +1005,6 @@ namespace SharedCode.Network
                 _chatPollingTask = null;
             }
         }
-
         private async Task ChatPollingLoopAsync(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
@@ -1071,7 +1038,6 @@ namespace SharedCode.Network
                 await Task.Delay(1500, token).ConfigureAwait(false);
             }
         }
-
         private async Task PullChatUpdatesAsync(string roomCode)
         {
             var roomCodeValue = string.IsNullOrWhiteSpace(roomCode) ? string.Empty : Uri.EscapeDataString(roomCode);
@@ -1097,7 +1063,6 @@ namespace SharedCode.Network
             UpdateLastSeenChatIndexes(updates);
             ReceiveChatMessage?.Invoke(this, updates);
         }
-
         private void UpdateLastSeenChatIndexes(List<ChatMessages> messages)
         {
             if (messages == null || messages.Count == 0)
@@ -1120,7 +1085,6 @@ namespace SharedCode.Network
                 }
             }
         }
-
         private sealed class GameplayJoinResponse
         {
             public string RoomCode { get; set; } = string.Empty;
@@ -1128,7 +1092,6 @@ namespace SharedCode.Network
             public decimal BetAmount { get; set; }
             public string State { get; set; } = string.Empty;
         }
-
         private sealed class GameplayReadyResponse
         {
             public string RoomCode { get; set; } = string.Empty;
@@ -1139,7 +1102,6 @@ namespace SharedCode.Network
             public string RollsString { get; set; } = string.Empty;
             public List<GameplaySeatInfo> SeatAssignments { get; set; } = new();
         }
-
         private sealed class GameplaySeatInfo
         {
             public string PlayerType { get; set; } = string.Empty;
