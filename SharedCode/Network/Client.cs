@@ -12,19 +12,14 @@ namespace SharedCode.Network
         private readonly HttpClient _apiClient;
         private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
         private string _startedRaisedForRoom = string.Empty;
-        private CancellationTokenSource? _chatPollingCts;
-        private Task? _chatPollingTask;
         private int _lastSeenRoomChatIndex;
         private int _lastSeenPrivateChatIndex;
         private string _lastPolledRoomCode = string.Empty;
         // Event Definitions using standard .NET event patterns
-        public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;
-        public event EventHandler<(string seats, string GameType, string GameCost)> ShowResults;
+        public event EventHandler<(string GameType, string seatsData, string rollsString)> GameStarted;        
         public event EventHandler<(string PlayerType, int PlayerId, string UserName, string PictureUrl)> PlayerSeated;
-        
         public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
-        public event EventHandler<NotificationDTO> ReceiveNotification;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -81,14 +76,23 @@ namespace SharedCode.Network
             }
             await RefreshSessionFromApi();
             Connected = true;
-            StartChatPolling();
         }
         /// Disconnect from the server.
         public async Task DisconnectAsync()
         {
-            StopChatPolling();
             Connected = false;
             await Task.CompletedTask;
+        }
+        public async Task PollChatOnceAsync()
+        {
+            var roomCode = GlobalConstants.RoomCode ?? string.Empty;
+            if (!string.Equals(_lastPolledRoomCode, roomCode, StringComparison.Ordinal))
+            {
+                _lastPolledRoomCode = roomCode;
+                _lastSeenRoomChatIndex = 0;
+            }
+
+            await PullChatUpdatesAsync(roomCode).ConfigureAwait(false);
         }
         public async Task CreateJoinLobbyAsync(GameDto gameDto)//string gameType, double gameCost, string roomCode
         {
@@ -981,61 +985,6 @@ namespace SharedCode.Network
             {
                 Console.WriteLine($"[ApiClient] GetWalletGameHistory Error: {ex.Message}");
                 return new List<WalletGameHistoryItem>();
-            }
-        }
-        private void StartChatPolling()
-        {
-            StopChatPolling();
-            _chatPollingCts = new CancellationTokenSource();
-            _chatPollingTask = Task.Run(() => ChatPollingLoopAsync(_chatPollingCts.Token));
-        }
-        private void StopChatPolling()
-        {
-            try
-            {
-                _chatPollingCts?.Cancel();
-            }
-            catch
-            {
-            }
-            finally
-            {
-                _chatPollingCts?.Dispose();
-                _chatPollingCts = null;
-                _chatPollingTask = null;
-            }
-        }
-        private async Task ChatPollingLoopAsync(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                try
-                {
-                    if (!Connected || string.IsNullOrWhiteSpace(getAuthToken()))
-                    {
-                        await Task.Delay(1500, token).ConfigureAwait(false);
-                        continue;
-                    }
-
-                    var roomCode = GlobalConstants.RoomCode ?? string.Empty;
-                    if (!string.Equals(_lastPolledRoomCode, roomCode, StringComparison.Ordinal))
-                    {
-                        _lastPolledRoomCode = roomCode;
-                        _lastSeenRoomChatIndex = 0;
-                    }
-
-                    await PullChatUpdatesAsync(roomCode).ConfigureAwait(false);
-                }
-                catch (OperationCanceledException)
-                {
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[ApiClient] ChatPollingLoop Error: {ex.Message}");
-                }
-
-                await Task.Delay(1500, token).ConfigureAwait(false);
             }
         }
         private async Task PullChatUpdatesAsync(string roomCode)

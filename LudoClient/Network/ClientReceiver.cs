@@ -1,5 +1,6 @@
 using SharedCode;
 using SharedCode.Constants;
+using LudoClient.Constants;
 
 namespace LudoClient.Network;
 
@@ -8,6 +9,8 @@ public sealed class ClientReceiver
     private readonly List<NotificationDTO> _pendingNotifications = new();
     private CancellationTokenSource? _chatPollingCts;
     private Task? _chatPollingTask;
+    private CancellationTokenSource? _commandPollingCts;
+    private Task? _commandPollingTask;
 
     public ClientReceiver()
     {
@@ -33,6 +36,30 @@ public sealed class ClientReceiver
             _chatPollingCts?.Dispose();
             _chatPollingCts = null;
             _chatPollingTask = null;
+        }
+    }
+
+    public void StartCommandPolling()
+    {
+        StopCommandPolling();
+        _commandPollingCts = new CancellationTokenSource();
+        _commandPollingTask = Task.Run(() => CommandPollingLoopAsync(_commandPollingCts.Token));
+    }
+
+    public void StopCommandPolling()
+    {
+        try
+        {
+            _commandPollingCts?.Cancel();
+        }
+        catch
+        {
+        }
+        finally
+        {
+            _commandPollingCts?.Dispose();
+            _commandPollingCts = null;
+            _commandPollingTask = null;
         }
     }
 
@@ -231,4 +258,147 @@ public sealed class ClientReceiver
             await Task.Delay(1500, token);
         }
     }
+
+    private async Task CommandPollingLoopAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                var game = ClientGlobalConstants.game;
+                if (game == null)
+                    break;
+                if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
+                {
+                    if (GlobalConstants.MatchMaker.Connected)
+                    {
+                        int lastSeen = game.engine.EngineHelper.indexServer;
+                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
+
+                        if (commands?.Count > 0)
+                        {
+                            foreach (var command in commands.OrderBy(c => c.IndexServer))
+                            {
+                                game = ClientGlobalConstants.game;
+                                if (game == null)
+                                    break;
+                                while (game != null && game.engine.processing)
+                                {
+                                    cancellationToken.ThrowIfCancellationRequested();
+                                    await Task.Delay(100, cancellationToken);
+                                }
+
+                                bool alreadyHandled = game._commandStore.Any(c => c.IndexServer == command.IndexServer);
+                                if (game != null && !alreadyHandled)
+                                {
+                                    await MainThread.InvokeOnMainThreadAsync(async () =>
+                                    {
+                                        while (game.engine.processing || game.isInputLocked) await Task.Delay(10);
+                                        try
+                                        {
+                                            switch (command.SendToClientFunctionName)
+                                            {
+                                                case "MovePiece":
+                                                MovePiece:
+                                                    if (command.piece1 != null && command.piece2 != null)
+                                                    {
+                                                        string result = await game.MovePiece(command.piece1, command.piece2, false);
+                                                        if (result == "-2")
+                                                        {
+                                                            await Task.Delay(100);
+                                                            goto MovePiece;
+                                                        }
+                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                        {
+                                                            game._commandStore.Add(command);
+                                                        }
+                                                    }
+                                                    break;
+                                                case "DiceRoll":
+                                                DiceRoll:
+                                                    if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
+                                                    {
+                                                        string result = await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                        if (result == "-2")
+                                                        {
+                                                            await Task.Delay(100);
+                                                            goto DiceRoll;
+                                                        }
+                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                        {
+                                                            game._commandStore.Add(command);
+                                                        }
+                                                    }
+                                                    break;
+                                                case "PlayerLeft":
+                                                    if (game != null && command.seatName != null)
+                                                    {
+                                                    PlayerLeft:
+                                                        string result = await game.PlayerLeft(command.seatName, false);
+                                                        if (result == "-2")
+                                                        {
+                                                            await Task.Delay(100);
+                                                            goto PlayerLeft;
+                                                        }
+                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                        {
+                                                            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                            game._commandStore.Add(command);
+                                                        }
+                                                    }
+                                                    break;
+                                                case "ShowResults":
+                                                    Console.WriteLine($"Received ShowResults command. Seats: {command.ShowResultsSeats}, GameType: {command.ShowResultsGameType}, GameCost: {command.ShowResultsGameCost}");
+                                                    await HandleShowResultsFromCommandAsync(command);
+                                                    game._commandStore.Add(command);
+                                                    break;
+                                            }
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Console.WriteLine($"ERROR IN SWITCH : 001 {ex.Message}");
+                                        }
+                                    });
+                                    await Task.Delay(200, cancellationToken);
+                                }
+                                Console.WriteLine($"Sync states Handled : {alreadyHandled} Index : {game.engine.EngineHelper.index} LoclServerIndex {game.engine.EngineHelper.indexServer} ServerIndex {command.IndexServer}");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                Console.WriteLine("Error pulling commands: EXIT 101");
+                break;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error pulling commands: {ex.Message}");
+            }
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+
+    private async Task HandleShowResultsFromCommandAsync(GameCommand command)
+    {
+        await MainThread.InvokeOnMainThreadAsync(async () =>
+        {
+            StopCommandPolling();
+
+            if (ClientGlobalConstants.game == null)
+                return;
+
+            await ClientGlobalConstants.game.ShowResults(
+                command.ShowResultsSeats ?? string.Empty,
+                command.ShowResultsGameType ?? string.Empty,
+                command.ShowResultsGameCost ?? string.Empty);
+
+            ClientGlobalConstants.game.engine.cleanGame();
+            ClientGlobalConstants.game = null;
+            GlobalConstants.RoomCode = "";
+            GlobalConstants.GameCost = 0;
+        });
+    }
+
 }
