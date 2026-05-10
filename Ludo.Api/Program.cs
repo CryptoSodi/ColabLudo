@@ -64,6 +64,7 @@ builder.Services.AddControllers()
         foreach (var part in externalParts)
             manager.ApplicationParts.Remove(part);
     });
+builder.Services.AddSignalR();
 builder.Services.AddDbContextFactory<LudoDbContext>(options =>
     options.UseSqlServer(dbstring).EnableSensitiveDataLogging(false));
 
@@ -124,6 +125,7 @@ var app = builder.Build();
 
 app.UseCors("AllowAnyOrigin");
 app.MapControllers();
+app.MapHub<Ludo.Api.Hubs.LudoHub>("/hubs/ludohub");
 
 app.Run();
 

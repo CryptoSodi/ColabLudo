@@ -1,4 +1,6 @@
 using SharedCode.Constants;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.SignalR;
 using System.ComponentModel;
 using System.Net;
 using System.Net.Http.Json;
@@ -8,6 +10,7 @@ namespace SharedCode.Network
     public class Client
     {
         private bool _connected;
+        private HubConnection? _hubConnection;
         private static readonly HttpClient SharedApiClient = CreateApiClient();
         private readonly HttpClient _apiClient;
         private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
@@ -37,6 +40,46 @@ namespace SharedCode.Network
         {
             _apiClient = SharedApiClient;
             Connected = false;
+        }
+        private string GetHubUrl()
+        {
+            var baseUri = new Uri(GlobalConstants.ApiUrl, UriKind.Absolute);
+            return new Uri(baseUri, "hubs/ludohub").ToString();
+        }
+        private HubConnection CreateHubConnection()
+        {
+            var authToken = getAuthToken();
+            var hubUrl = GetHubUrl();
+            Console.WriteLine($"[ClientHub] Creating connection. Url={hubUrl}");
+            var builder = new HubConnectionBuilder()
+                .WithUrl(hubUrl, options =>
+                {
+                    if (!string.IsNullOrWhiteSpace(authToken))
+                        options.Headers["X-Auth-Token"] = authToken;
+                })
+                .WithAutomaticReconnect();
+
+            var connection = builder.Build();
+            connection.Reconnecting += ex =>
+            {
+                Console.WriteLine($"[ClientHub] Reconnecting. Error={ex?.Message ?? "none"}");
+                Connected = false;
+                return Task.CompletedTask;
+            };
+            connection.Reconnected += connectionId =>
+            {
+                Console.WriteLine($"[ClientHub] Reconnected. ConnectionId={connectionId ?? "unknown"}");
+                Connected = true;
+                return Task.CompletedTask;
+            };
+            connection.Closed += ex =>
+            {
+                Console.WriteLine($"[ClientHub] Closed. Error={ex?.Message ?? "none"}");
+                Connected = false;
+                return Task.CompletedTask;
+            };
+
+            return connection;
         }
         private static HttpClient CreateApiClient()
         {
@@ -71,17 +114,43 @@ namespace SharedCode.Network
         {
             if (string.IsNullOrWhiteSpace(getAuthToken()))
             {
+                Console.WriteLine("[ClientHub] Connect skipped. Reason=MissingAuthToken");
                 Connected = false;
                 return;
             }
+
             await RefreshSessionFromApi();
-            Connected = true;
+
+            if (_hubConnection == null)
+                _hubConnection = CreateHubConnection();
+
+            if (_hubConnection.State == HubConnectionState.Disconnected)
+            {
+                Console.WriteLine("[ClientHub] Starting hub connection...");
+                await _hubConnection.StartAsync().ConfigureAwait(false);
+                Console.WriteLine($"[ClientHub] Start completed. State={_hubConnection.State}");
+            }
+
+            Connected = _hubConnection.State == HubConnectionState.Connected;
+            Console.WriteLine($"[ClientHub] Connected state set to {Connected}");
         }
         /// Disconnect from the server.
         public async Task DisconnectAsync()
         {
+            if (_hubConnection != null)
+            {
+                try
+                {
+                    Console.WriteLine("[ClientHub] Stopping hub connection...");
+                    await _hubConnection.StopAsync().ConfigureAwait(false);
+                    Console.WriteLine("[ClientHub] Hub stopped.");
+                }
+                catch
+                {
+                    Console.WriteLine("[ClientHub] Stop failed.");
+                }
+            }
             Connected = false;
-            await Task.CompletedTask;
         }
         public async Task PollChatOnceAsync()
         {
@@ -122,6 +191,47 @@ namespace SharedCode.Network
         {
             try
             {
+                if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
+                {
+                    try
+                    {
+                        var hubRequest = new GameplaySendRequestPayload
+                        {
+                            RoomCode = GlobalConstants.RoomCode,
+                            CommandType = command,
+                            Command = commandValue
+                        };
+                        var hubResult = await _hubConnection.InvokeAsync<GameCommand>("Send", hubRequest).ConfigureAwait(false);
+                        if (hubResult != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(hubResult.Result) &&
+                                hubResult.Result.StartsWith("Error:", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Console.WriteLine($"[ClientHub] Send returned error. CommandType={command}, Result={hubResult.Result}");
+                                return null;
+                            }
+
+                            return hubResult;
+                        }
+
+                        Console.WriteLine($"[ClientHub] Send returned null. CommandType={command}. Not falling back to HTTP to avoid double-send.");
+                        return null;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Avoid duplicate command sends:
+                        // if hub invocation reached server but response failed (HubException/timeout),
+                        // do NOT replay via HTTP fallback.
+                        if (ex is HubException || ex is TimeoutException || ex is OperationCanceledException)
+                        {
+                            Console.WriteLine($"[ClientHub] Send invocation failed without safe fallback. CommandType={command}, Error={ex.Message}");
+                            return null;
+                        }
+
+                        Console.WriteLine($"[ClientHub] Send transport failure, falling back to HTTP. CommandType={command}, Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/commands/send");
                 request.Content = JsonContent.Create(new
                 {
@@ -1040,6 +1150,12 @@ namespace SharedCode.Network
             public string GameType { get; set; } = string.Empty;
             public decimal BetAmount { get; set; }
             public string State { get; set; } = string.Empty;
+        }
+        private sealed class GameplaySendRequestPayload
+        {
+            public string RoomCode { get; set; } = string.Empty;
+            public string CommandType { get; set; } = string.Empty;
+            public GameCommand Command { get; set; } = new();
         }
         private sealed class GameplayReadyResponse
         {
