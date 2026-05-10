@@ -716,7 +716,7 @@ public partial class Game : ContentPage
     }
     public async Task PlayerPieceClicked(String piece1String, String piece2String, bool SendToServer = true)
     {
-        if (SendToServer && engine.processing)
+        if (SendToServer && engine.processing && isInputLocked)
             return;
         TokenSelector.IsVisible = false;
         if (!engine.EngineHelper.checkTurn(piece1String, "MovePiece"))
@@ -799,6 +799,33 @@ public partial class Game : ContentPage
             {
                 if (engine.EngineHelper.gameMode == "Client" && SendToServer)
                 {
+                    int sendIndex = ClientGlobalConstants.game.engine.EngineHelper.index + 1;
+                    int sendIndexServer = ClientGlobalConstants.game.engine.EngineHelper.indexServer + 1;
+
+                    bool canFastStart = false;
+                    if (Application.Current is App app)
+                        canFastStart = app.ClientReceiver.IsServerClockPingFresh();
+
+                    bool optimisticApplied = false;
+                    if (canFastStart)
+                    {
+                        Console.WriteLine("[MovePiece] FastPath=True Reason=FreshServerClockPing");
+                        string localFastResult = await engine.MovePieceAsync(piece1String, piece2String);
+                        if (localFastResult != "," && !localFastResult.Contains("-0"))
+                        {
+                            result = localFastResult;
+                            optimisticApplied = true;
+                        }
+                        else
+                        {
+                            Console.WriteLine("[MovePiece] FastPath local apply invalid. Falling back to authoritative response handling.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("[MovePiece] FastPath=False Reason=StaleOrMissingServerClockPing");
+                    }
+
                     GameCommand command = new GameCommand
                     {
                         SendToClientFunctionName = "MovePiece",
@@ -806,22 +833,38 @@ public partial class Game : ContentPage
                         diceValue = "",
                         piece1 = piece1String,
                         piece2 = piece2String,
-                        Index = ClientGlobalConstants.game.engine.EngineHelper.index + 1,
-                        IndexServer = ClientGlobalConstants.game.engine.EngineHelper.indexServer + 1,
+                        Index = sendIndex,
+                        IndexServer = sendIndexServer,
                     };
                     
                     GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
+                    Console.WriteLine($"[MovePiece] SendResult Null={resultCommand == null} ExpectedIndex={command.Index} ExpectedIndexServer={command.IndexServer}");
                     if (resultCommand != null && string.Equals(resultCommand.Result, "Replay", StringComparison.OrdinalIgnoreCase))
                     {
+                        Console.WriteLine($"[MovePiece] SendResult=Replay IndexServer={resultCommand.IndexServer} Piece1={resultCommand.piece1} Piece2={resultCommand.piece2}");
                         var replayApplied = await ApplyReplayCommandAsync(resultCommand);
+                        Console.WriteLine($"[MovePiece] ReplayApplied={replayApplied} IndexServer={resultCommand.IndexServer}");
                         if (!replayApplied)
                             result = "-2";
                     }
-                    else if (resultCommand != null &&
-                        !string.IsNullOrWhiteSpace(resultCommand.piece1) &&
-                        !string.IsNullOrWhiteSpace(resultCommand.piece2))
+                    else if (resultCommand != null && !string.IsNullOrWhiteSpace(resultCommand.piece1))
                     {
-                        string result2 = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+                        Console.WriteLine($"[MovePiece] SendResult=Command Index={resultCommand.Index} IndexServer={resultCommand.IndexServer} Piece1={resultCommand.piece1} Piece2={resultCommand.piece2} OptimisticApplied={optimisticApplied}");
+                        bool sameAsOptimistic = optimisticApplied && 
+                            string.Equals(resultCommand.piece1, piece1String, StringComparison.Ordinal);
+                        Console.WriteLine($"[MovePiece] SameAsOptimistic={sameAsOptimistic} LocalPieces={piece1String},{piece2String} ServerPieces={resultCommand.piece1},{resultCommand.piece2}");
+
+                        string result2 = result;
+                        if (!sameAsOptimistic)
+                        {
+                            Console.WriteLine($"[MovePiece] ApplyingAuthoritativeLocally IndexServer={resultCommand.IndexServer}");
+                            result2 = await engine.MovePieceAsync(resultCommand.piece1, resultCommand.piece2);
+                        }
+                        else
+                        {
+                            Console.WriteLine("[MovePiece] Authoritative command matches optimistic move. Skipping re-apply.");
+                        }
+
                         Console.WriteLine($"Local : {result}");
                         if (result2 == "," || result2.Contains("-0"))
                         {
@@ -831,9 +874,20 @@ public partial class Game : ContentPage
                         else
                         {
                             result = result2;
-                            _commandStore.Add(resultCommand);
+                            if (!_commandStore.Any(c => c.IndexServer == resultCommand.IndexServer))
+                            {
+                                _commandStore.Add(resultCommand);
+                                Console.WriteLine($"[MovePiece] CommandCommitted AddedToStore=True IndexServer={resultCommand.IndexServer}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"[MovePiece] CommandCommitted AddedToStore=False Reason=AlreadyExists IndexServer={resultCommand.IndexServer}");
+                            }
+
+                            // Advance indices exactly once on authoritative command commit.
                             ClientGlobalConstants.game.engine.EngineHelper.index++;
                             ClientGlobalConstants.game.engine.EngineHelper.indexServer++;
+                            Console.WriteLine($"[MovePiece] IndexAdvanced Index={ClientGlobalConstants.game.engine.EngineHelper.index} IndexServer={ClientGlobalConstants.game.engine.EngineHelper.indexServer}");
                         }
 
                         if (command.Index != resultCommand.Index)
@@ -844,7 +898,7 @@ public partial class Game : ContentPage
                     else
                     {
                         result = "-2";
-                        Console.WriteLine("Server rejected/staled move request. Waiting for pull sync.");
+                        Console.WriteLine($"[MovePiece] SendResult=RejectedOrStale ExpectedIndexServer={command.IndexServer}. Waiting for pull sync.");
                     }
                 }
                 else
