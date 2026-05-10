@@ -57,8 +57,6 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
 
     public async Task<GameCommand> Send(GameplaySendRequest request)
     {
-        var totalSw = Stopwatch.StartNew();
-        var authSw = Stopwatch.StartNew();
         if (request.Command == null || string.IsNullOrWhiteSpace(request.CommandType) || string.IsNullOrWhiteSpace(request.RoomCode))
             return new GameCommand { Result = "Error: command, commandType, and roomCode are required." };
 
@@ -69,7 +67,6 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
         var authContext = new DefaultHttpContext();
         authContext.Request.Headers["X-Auth-Token"] = token;
         var player = await playerContext.GetAuthenticatedPlayerAsync(authContext.Request);
-        authSw.Stop();
         if (player == null)
         {
             Console.WriteLine($"[LudoHub] Send auth failed. ConnectionId={Context.ConnectionId}, CommandType={request.CommandType}");
@@ -94,7 +91,6 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
 
         Console.WriteLine($"[LudoHub] Send start. ConnectionId={Context.ConnectionId}, CommandType={request.CommandType}, RoomCode={request.RoomCode}");
         GameCommand? result;
-        var execSw = Stopwatch.StartNew();
         if (string.Equals(request.CommandType, "MovePiece", StringComparison.Ordinal))
         {
             result = await gameRoom.MovePieceAsync(authToken, request.Command);
@@ -107,9 +103,6 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
         {
             return new GameCommand { Result = "Error: Unsupported command type." };
         }
-        execSw.Stop();
-        totalSw.Stop();
-        Console.WriteLine($"[LudoHub] Send success. ConnectionId={Context.ConnectionId}, CommandType={request.CommandType}, AuthMs={authSw.ElapsedMilliseconds}, ValidateMs={validateSw.ElapsedMilliseconds}, RoomLookupMs={roomLookupSw.ElapsedMilliseconds}, ExecMs={execSw.ElapsedMilliseconds}, MethodTotalMs={totalSw.ElapsedMilliseconds}");
         return result ?? new GameCommand { Result = "Error: Command execution failed." };
     }
 }
