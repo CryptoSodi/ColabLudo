@@ -24,6 +24,7 @@ namespace SharedCode.Network
         public event EventHandler<(string GameType, double GameCost, string RoomCode)> RoomJoined;
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
+        public event EventHandler<long> ServerClockPingReceived;
         public event PropertyChangedEventHandler PropertyChanged;
 
         public bool Connected
@@ -60,6 +61,10 @@ namespace SharedCode.Network
                 .WithAutomaticReconnect();
 
             var connection = builder.Build();
+            connection.On<long>("ReceiveServerClockPing", serverTimeMs =>
+            {
+                ServerClockPingReceived?.Invoke(this, serverTimeMs);
+            });
             connection.Reconnecting += ex =>
             {
                 Console.WriteLine($"[ClientHub] Reconnecting. Error={ex?.Message ?? "none"}");

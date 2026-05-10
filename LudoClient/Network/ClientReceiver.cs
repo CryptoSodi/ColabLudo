@@ -11,9 +11,40 @@ public sealed class ClientReceiver
     private Task? _chatPollingTask;
     private CancellationTokenSource? _commandPollingCts;
     private Task? _commandPollingTask;
+    public long LastServerTimeMs;
+    public long LastLocalReceiveUtcTicks;
 
     public ClientReceiver()
     {
+    }
+
+    public void HandleServerClockPing(long serverTimeMs)
+    {
+        Interlocked.Exchange(ref LastServerTimeMs, serverTimeMs);
+        Interlocked.Exchange(ref LastLocalReceiveUtcTicks, DateTime.UtcNow.Ticks);
+    
+    }
+
+    public bool IsServerClockPingFresh(int maxAgeMs = 700)
+    {
+        var receiveTicks = Interlocked.Read(ref LastLocalReceiveUtcTicks);
+        if (receiveTicks <= 0)
+        {
+            Console.WriteLine("[ClockPing] FreshCheck=False Reason=NoSample");
+            return false;
+        }
+
+        var receiveUtc = new DateTime(receiveTicks, DateTimeKind.Utc);
+        var ageMs = (DateTime.UtcNow - receiveUtc).TotalMilliseconds;
+        if (ageMs < 0)
+        {
+            Console.WriteLine($"[ClockPing] FreshCheck=False Reason=NegativeAge AgeMs={ageMs:F1}");
+            return false;
+        }
+
+        var isFresh = ageMs <= maxAgeMs;
+      //  Console.WriteLine($"[ClockPing] FreshCheck={isFresh} AgeMs={ageMs:F1} MaxAgeMs={maxAgeMs} LastServerTimeMs={Interlocked.Read(ref LastServerTimeMs)}");
+        return isFresh;
     }
     public void StartChatPolling()
     {
@@ -302,15 +333,23 @@ public sealed class ClientReceiver
                                                 MovePiece:
                                                     if (command.piece1 != null && command.piece2 != null)
                                                     {
+                                                        Console.WriteLine($"[PullMovePiece] Start IndexServer={command.IndexServer} Piece1={command.piece1} Piece2={command.piece2} LocalIndex={game.engine.EngineHelper.index} LocalIndexServer={game.engine.EngineHelper.indexServer}");
                                                         string result = await game.MovePiece(command.piece1, command.piece2, false);
+                                                        Console.WriteLine($"[PullMovePiece] Result={result} IndexServer={command.IndexServer}");
                                                         if (result == "-2")
                                                         {
+                                                            Console.WriteLine($"[PullMovePiece] Retry Reason=Busy IndexServer={command.IndexServer}");
                                                             await Task.Delay(100);
                                                             goto MovePiece;
                                                         }
                                                         else if (!result.Contains("-1") && !result.Contains("-0"))
                                                         {
                                                             game._commandStore.Add(command);
+                                                            Console.WriteLine($"[PullMovePiece] Stored=True IndexServer={command.IndexServer}");
+                                                        }
+                                                        else
+                                                        {
+                                                            Console.WriteLine($"[PullMovePiece] Stored=False Reason=InvalidResult IndexServer={command.IndexServer}");
                                                         }
                                                     }
                                                     break;

@@ -12,6 +12,7 @@ namespace LudoClient
         public static bool IsInForeground { get; private set; } = true;
 
         private readonly ClientReceiver _clientReceiver;
+        public ClientReceiver ClientReceiver => _clientReceiver;
         private (string GameType, string seatsData, string rollsString)? _pendingGameStart;
         //Integrated console to the MAUI app for better debugging
         [DllImport("kernel32.dll")]
@@ -58,10 +59,16 @@ namespace LudoClient
             // Unsubscribe first to prevent double-registration if App is re-initialized
             GlobalConstants.MatchMaker.GameStarted -= OnGameStarted;
             GlobalConstants.MatchMaker.PlayerInfoUpdate -= OnPlayerInfoUpdate;
+            GlobalConstants.MatchMaker.ServerClockPingReceived -= OnServerClockPingReceived;
 
             // Subscribe
             GlobalConstants.MatchMaker.GameStarted += OnGameStarted;
             GlobalConstants.MatchMaker.PlayerInfoUpdate += OnPlayerInfoUpdate;
+            GlobalConstants.MatchMaker.ServerClockPingReceived += OnServerClockPingReceived;
+        }
+        private void OnServerClockPingReceived(object? sender, long serverTimeMs)
+        {
+            _clientReceiver.HandleServerClockPing(serverTimeMs);
         }
        
         private void OnPlayerInfoUpdate(object? sender, PlayerInfo newPlayer)

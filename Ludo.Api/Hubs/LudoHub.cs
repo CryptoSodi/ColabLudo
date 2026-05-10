@@ -1,16 +1,18 @@
-using Microsoft.AspNetCore.SignalR;
-using System.Linq;
 using Ludo.Api.Controllers;
 using Ludo.Api.Services;
-using SignalR.Server;
+using Microsoft.AspNetCore.SignalR;
 using SharedCode;
+using SignalR.Server;
+using System.Collections.Concurrent;
 using System.Diagnostics;
-using Microsoft.AspNetCore.Http;
 
 namespace Ludo.Api.Hubs;
 
-public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseManager) : Hub
+public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseManager, IHubContext<LudoHub> hubContext) : Hub
 {
+    private const int ServerClockPingIntervalMs = 200;
+    private static readonly ConcurrentDictionary<string, CancellationTokenSource> _clockPingTokens = new();
+
     private string GetAuthToken()
     {
         return Context.GetHttpContext()?.Request.Headers["X-Auth-Token"].FirstOrDefault() ?? string.Empty;
@@ -20,6 +22,7 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
     {
         var token = GetAuthToken();
         Console.WriteLine($"[LudoHub] Connected. ConnectionId={Context.ConnectionId}, HasAuthToken={!string.IsNullOrWhiteSpace(token)}");
+        StartClockPingLoopForConnection(Context.ConnectionId);
         await base.OnConnectedAsync();
     }
 
@@ -51,6 +54,7 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        StopClockPingLoopForConnection(Context.ConnectionId);
         Console.WriteLine($"[LudoHub] Disconnected. ConnectionId={Context.ConnectionId}, Error={exception?.Message ?? "none"}");
         await base.OnDisconnectedAsync(exception);
     }
@@ -104,5 +108,52 @@ public class LudoHub(ApiPlayerContext playerContext, DatabaseManager databaseMan
             return new GameCommand { Result = "Error: Unsupported command type." };
         }
         return result ?? new GameCommand { Result = "Error: Command execution failed." };
+    }
+
+    private void StartClockPingLoopForConnection(string connectionId)
+    {
+        StopClockPingLoopForConnection(connectionId);
+
+        var cts = new CancellationTokenSource();
+        _clockPingTokens[connectionId] = cts;
+        var token = cts.Token;
+
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                while (!token.IsCancellationRequested)
+                {
+                    var serverTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    await hubContext.Clients.Client(connectionId).SendAsync("ReceiveServerClockPing", serverTimeMs, token);
+                    await Task.Delay(ServerClockPingIntervalMs, token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudoHub] Clock ping loop error. ConnectionId={connectionId}, Error={ex.Message}");
+            }
+        }, token);
+    }
+
+    private static void StopClockPingLoopForConnection(string connectionId)
+    {
+        if (_clockPingTokens.TryRemove(connectionId, out var cts))
+        {
+            try
+            {
+                cts.Cancel();
+            }
+            catch
+            {
+            }
+            finally
+            {
+                cts.Dispose();
+            }
+        }
     }
 }
