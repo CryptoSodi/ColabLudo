@@ -269,7 +269,7 @@ public sealed class ClientReceiver
             try
             {
                 var matchMaker = GlobalConstants.MatchMaker;
-                if (matchMaker == null || !matchMaker.Connected || string.IsNullOrWhiteSpace(matchMaker.getAuthToken()))
+                if (matchMaker == null || string.IsNullOrWhiteSpace(matchMaker.getAuthToken()))
                 {
                     await Task.Delay(1500, token);
                     continue;
@@ -301,107 +301,104 @@ public sealed class ClientReceiver
                     break;
                 if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
                 {
-                    if (GlobalConstants.MatchMaker.Connected)
+                    int lastSeen = game.engine.EngineHelper.indexServer;
+                    List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
+
+                    if (commands?.Count > 0)
                     {
-                        int lastSeen = game.engine.EngineHelper.indexServer;
-                        List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
-
-                        if (commands?.Count > 0)
+                        foreach (var command in commands.OrderBy(c => c.IndexServer))
                         {
-                            foreach (var command in commands.OrderBy(c => c.IndexServer))
+                            game = ClientGlobalConstants.game;
+                            if (game == null)
+                                break;
+                            while (game != null && game.engine.processing)
                             {
-                                game = ClientGlobalConstants.game;
-                                if (game == null)
-                                    break;
-                                while (game != null && game.engine.processing)
-                                {
-                                    cancellationToken.ThrowIfCancellationRequested();
-                                    await Task.Delay(100, cancellationToken);
-                                }
-
-                                bool alreadyHandled = game._commandStore.Any(c => c.IndexServer == command.IndexServer);
-                                if (game != null && !alreadyHandled)
-                                {
-                                    await MainThread.InvokeOnMainThreadAsync(async () =>
-                                    {
-                                        while (game.engine.processing || game.isInputLocked) await Task.Delay(10);
-                                        try
-                                        {
-                                            switch (command.SendToClientFunctionName)
-                                            {
-                                                case "MovePiece":
-                                                MovePiece:
-                                                    if (command.piece1 != null && command.piece2 != null)
-                                                    {
-                                                        Console.WriteLine($"[PullMovePiece] Start IndexServer={command.IndexServer} Piece1={command.piece1} Piece2={command.piece2} LocalIndex={game.engine.EngineHelper.index} LocalIndexServer={game.engine.EngineHelper.indexServer}");
-                                                        string result = await game.MovePiece(command.piece1, command.piece2, false);
-                                                        Console.WriteLine($"[PullMovePiece] Result={result} IndexServer={command.IndexServer}");
-                                                        if (result == "-2")
-                                                        {
-                                                            Console.WriteLine($"[PullMovePiece] Retry Reason=Busy IndexServer={command.IndexServer}");
-                                                            await Task.Delay(100);
-                                                            goto MovePiece;
-                                                        }
-                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
-                                                        {
-                                                            game._commandStore.Add(command);
-                                                            Console.WriteLine($"[PullMovePiece] Stored=True IndexServer={command.IndexServer}");
-                                                        }
-                                                        else
-                                                        {
-                                                            Console.WriteLine($"[PullMovePiece] Stored=False Reason=InvalidResult IndexServer={command.IndexServer}");
-                                                        }
-                                                    }
-                                                    break;
-                                                case "DiceRoll":
-                                                DiceRoll:
-                                                    if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
-                                                    {
-                                                        string result = await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
-                                                        if (result == "-2")
-                                                        {
-                                                            await Task.Delay(100);
-                                                            goto DiceRoll;
-                                                        }
-                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
-                                                        {
-                                                            game._commandStore.Add(command);
-                                                        }
-                                                    }
-                                                    break;
-                                                case "PlayerLeft":
-                                                    if (game != null && command.seatName != null)
-                                                    {
-                                                    PlayerLeft:
-                                                        string result = await game.PlayerLeft(command.seatName, false);
-                                                        if (result == "-2")
-                                                        {
-                                                            await Task.Delay(100);
-                                                            goto PlayerLeft;
-                                                        }
-                                                        else if (!result.Contains("-1") && !result.Contains("-0"))
-                                                        {
-                                                            ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
-                                                            game._commandStore.Add(command);
-                                                        }
-                                                    }
-                                                    break;
-                                                case "ShowResults":
-                                                    Console.WriteLine($"Received ShowResults command. Seats: {command.ShowResultsSeats}, GameType: {command.ShowResultsGameType}, GameCost: {command.ShowResultsGameCost}");
-                                                    await HandleShowResultsFromCommandAsync(command);
-                                                    game._commandStore.Add(command);
-                                                    break;
-                                            }
-                                        }
-                                        catch (Exception ex)
-                                        {
-                                            Console.WriteLine($"ERROR IN SWITCH : 001 {ex.Message}");
-                                        }
-                                    });
-                                    await Task.Delay(200, cancellationToken);
-                                }
-                                Console.WriteLine($"Sync states Handled : {alreadyHandled} Index : {game.engine.EngineHelper.index} LoclServerIndex {game.engine.EngineHelper.indexServer} ServerIndex {command.IndexServer}");
+                                cancellationToken.ThrowIfCancellationRequested();
+                                await Task.Delay(100, cancellationToken);
                             }
+
+                            bool alreadyHandled = game._commandStore.Any(c => c.IndexServer == command.IndexServer);
+                            if (game != null && !alreadyHandled)
+                            {
+                                await MainThread.InvokeOnMainThreadAsync(async () =>
+                                {
+                                    while (game.engine.processing || game.isInputLocked) await Task.Delay(10);
+                                    try
+                                    {
+                                        switch (command.SendToClientFunctionName)
+                                        {
+                                            case "MovePiece":
+                                            MovePiece:
+                                                if (command.piece1 != null && command.piece2 != null)
+                                                {
+                                                    Console.WriteLine($"[PullMovePiece] Start IndexServer={command.IndexServer} Piece1={command.piece1} Piece2={command.piece2} LocalIndex={game.engine.EngineHelper.index} LocalIndexServer={game.engine.EngineHelper.indexServer}");
+                                                    string result = await game.MovePiece(command.piece1, command.piece2, false);
+                                                    Console.WriteLine($"[PullMovePiece] Result={result} IndexServer={command.IndexServer}");
+                                                    if (result == "-2")
+                                                    {
+                                                        Console.WriteLine($"[PullMovePiece] Retry Reason=Busy IndexServer={command.IndexServer}");
+                                                        await Task.Delay(100);
+                                                        goto MovePiece;
+                                                    }
+                                                    else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                    {
+                                                        game._commandStore.Add(command);
+                                                        Console.WriteLine($"[PullMovePiece] Stored=True IndexServer={command.IndexServer}");
+                                                    }
+                                                    else
+                                                    {
+                                                        Console.WriteLine($"[PullMovePiece] Stored=False Reason=InvalidResult IndexServer={command.IndexServer}");
+                                                    }
+                                                }
+                                                break;
+                                            case "DiceRoll":
+                                            DiceRoll:
+                                                if (command.seatName != null && command.diceValue != null && command.piece1 != null && command.piece2 != null)
+                                                {
+                                                    string result = await game.PlayerDiceClicked(command.seatName, command.diceValue, command.piece1, command.piece2, false);
+                                                    if (result == "-2")
+                                                    {
+                                                        await Task.Delay(100);
+                                                        goto DiceRoll;
+                                                    }
+                                                    else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                    {
+                                                        game._commandStore.Add(command);
+                                                    }
+                                                }
+                                                break;
+                                            case "PlayerLeft":
+                                                if (game != null && command.seatName != null)
+                                                {
+                                                PlayerLeft:
+                                                    string result = await game.PlayerLeft(command.seatName, false);
+                                                    if (result == "-2")
+                                                    {
+                                                        await Task.Delay(100);
+                                                        goto PlayerLeft;
+                                                    }
+                                                    else if (!result.Contains("-1") && !result.Contains("-0"))
+                                                    {
+                                                        ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("left");
+                                                        game._commandStore.Add(command);
+                                                    }
+                                                }
+                                                break;
+                                            case "ShowResults":
+                                                Console.WriteLine($"Received ShowResults command. Seats: {command.ShowResultsSeats}, GameType: {command.ShowResultsGameType}, GameCost: {command.ShowResultsGameCost}");
+                                                await HandleShowResultsFromCommandAsync(command);
+                                                game._commandStore.Add(command);
+                                                break;
+                                        }
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Console.WriteLine($"ERROR IN SWITCH : 001 {ex.Message}");
+                                    }
+                                });
+                                await Task.Delay(200, cancellationToken);
+                            }
+                            Console.WriteLine($"Sync states Handled : {alreadyHandled} Index : {game.engine.EngineHelper.index} LoclServerIndex {game.engine.EngineHelper.indexServer} ServerIndex {command.IndexServer}");
                         }
                     }
                 }

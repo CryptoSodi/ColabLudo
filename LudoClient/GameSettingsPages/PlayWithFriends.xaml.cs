@@ -116,7 +116,7 @@ public partial class PlayWithFriends : ContentPage
     private void CreateJoinTapped(object sender, EventArgs e)
     {
         ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-        if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+        if (_NavigationCooldown)
             return;
         _NavigationCooldown = true;
         string gameType = "2";

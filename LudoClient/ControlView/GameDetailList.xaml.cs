@@ -45,7 +45,7 @@ namespace LudoClient.ControlView
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             Console.WriteLine("Join Tapped");
-            if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            if (_NavigationCooldown)
                 return;
             _NavigationCooldown = true;
 

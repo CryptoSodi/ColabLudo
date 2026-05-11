@@ -185,7 +185,6 @@ namespace LudoClient.Platforms.Android.Popups
             Constants.ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
             if (_tappedActionText.Text == "MESSAGE")
             {
-                if (!GlobalConstants.MatchMaker.Connected) return;
                 // Navigate to ChatPage (MAUI)
                 MainThread.BeginInvokeOnMainThread(async () =>
                 {

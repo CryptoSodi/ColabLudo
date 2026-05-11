@@ -232,7 +232,7 @@ namespace LudoClient.Platforms.Android
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
 
-            if (_navigationCooldown || !GlobalConstants.MatchMaker.Connected || _tournament == null)
+            if (_navigationCooldown || _tournament == null)
                 return;
 
             _navigationCooldown = true;

@@ -123,10 +123,7 @@ namespace LudoClient.ControlView
         {
             if (TappedActionText.Text == "MESSAGE")//Default status is empy you can add friend
             {
-                if (!GlobalConstants.MatchMaker.Connected)
-                    return;
                 ChatPage cp = new ChatPage(playerCard);
-
                 Navigation.PushAsync(cp).Wait();
             }
             else

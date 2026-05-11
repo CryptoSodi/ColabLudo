@@ -14,13 +14,6 @@ namespace LudoClient
 
             string build = VersionTracking.CurrentBuild;
             VersionText.Text = "Version : " + build;
-
-            GlobalConstants.MatchMaker.PropertyChanged += (s, e) =>
-            {
-                if (e.PropertyName == nameof(GlobalConstants.MatchMaker.Connected))
-                    MainThread.BeginInvokeOnMainThread(() =>
-                        UpdateButtons(GlobalConstants.MatchMaker.Connected));
-            };
         }
         private async void GuestSignup_Clicked(object sender, EventArgs e)
         {
@@ -121,15 +114,6 @@ namespace LudoClient
             {
                 await DisplayAlert("Error", $"An error occurred: {ex.Message}", "OK");
             }
-        }
-        private void UpdateButtons(bool isConnected)
-        {
-            GoogleLoginPanel.Source = "google_login.webp";
-        }
-        protected override void OnAppearing()
-        {
-            base.OnAppearing();
-            UpdateButtons(GlobalConstants.MatchMaker.Connected);
         }
     }
 }

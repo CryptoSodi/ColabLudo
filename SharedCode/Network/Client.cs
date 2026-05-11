@@ -25,7 +25,6 @@ namespace SharedCode.Network
         public event EventHandler<List<ChatMessages>> ReceiveChatMessage;
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event EventHandler<long> ServerClockPingReceived;
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public bool Connected
         {
@@ -34,7 +33,6 @@ namespace SharedCode.Network
             {
                 if (_connected == value) return;
                 _connected = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Connected)));
             }
         }
         public Client()
@@ -120,7 +118,6 @@ namespace SharedCode.Network
             if (string.IsNullOrWhiteSpace(getAuthToken()))
             {
                 Console.WriteLine("[ClientHub] Connect skipped. Reason=MissingAuthToken");
-                Connected = false;
                 return;
             }
 

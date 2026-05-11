@@ -140,7 +140,7 @@ namespace LudoClient.ControlView
         private async void Join_Clicked(object sender, EventArgs e)
         {
             ClientGlobalConstants.hepticEngine?.PlayHapticFeedback("click");
-            if (_NavigationCooldown || !GlobalConstants.MatchMaker.Connected)
+            if (_NavigationCooldown)
                 return;
             _NavigationCooldown = true;
 
