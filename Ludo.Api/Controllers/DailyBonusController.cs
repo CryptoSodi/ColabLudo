@@ -7,9 +7,7 @@ namespace Ludo.Api.Controllers;
 
 [ApiController]
 [Route("api/daily-bonus")]
-public class DailyBonusController(
-    ApiPlayerContext playerContext,
-    DailyBonusService dailyBonusService) : ControllerBase
+public class DailyBonusController(ApiPlayerContext playerContext, DailyBonusService dailyBonusService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<DailyBonusDto>> GetDailyBonus()

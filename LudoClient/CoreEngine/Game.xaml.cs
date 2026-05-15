@@ -837,7 +837,8 @@ public partial class Game : ContentPage
                         IndexServer = sendIndexServer,
                     };
                     
-                    GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "MovePiece");
+                    GameCommand resultCommand = await GlobalConstants.MatchMaker?.SendCommandAsync(command, "MovePiece");
+
                     Console.WriteLine($"[MovePiece] SendResult Null={resultCommand == null} ExpectedIndex={command.Index} ExpectedIndexServer={command.IndexServer}");
                     if (resultCommand != null && string.Equals(resultCommand.Result, "Replay", StringComparison.OrdinalIgnoreCase))
                     {
@@ -1100,7 +1101,7 @@ public partial class Game : ContentPage
                 GameCommand? resultCommand = null;
                 try
                 {
-                    resultCommand = await GlobalConstants.MatchMaker?.SendMessageAsync(command, "DiceRoll");
+                    resultCommand = await GlobalConstants.MatchMaker?.SendCommandAsync(command, "DiceRoll");
                 }
                 catch (Exception ex)
                 {

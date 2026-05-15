@@ -1,6 +1,6 @@
+using LudoClient.Constants;
 using SharedCode;
 using SharedCode.Constants;
-using LudoClient.Constants;
 
 namespace LudoClient.Network;
 
@@ -14,15 +14,10 @@ public sealed class ClientReceiver
     public long LastServerTimeMs;
     public long LastLocalReceiveUtcTicks;
 
-    public ClientReceiver()
-    {
-    }
-
     public void HandleServerClockPing(long serverTimeMs)
     {
         Interlocked.Exchange(ref LastServerTimeMs, serverTimeMs);
-        Interlocked.Exchange(ref LastLocalReceiveUtcTicks, DateTime.UtcNow.Ticks);
-    
+        Interlocked.Exchange(ref LastLocalReceiveUtcTicks, DateTime.UtcNow.Ticks);    
     }
 
     public bool IsServerClockPingFresh(int maxAgeMs = 700)
@@ -302,8 +297,12 @@ public sealed class ClientReceiver
                 if (GlobalConstants.MatchMaker != null && game != null && !string.IsNullOrEmpty(GlobalConstants.RoomCode))
                 {
                     int lastSeen = game.engine.EngineHelper.indexServer;
+
+                    var moveSendStartedUtc = DateTime.UtcNow;
                     List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
 
+                    var moveSendElapsedMs = (DateTime.UtcNow - moveSendStartedUtc).TotalMilliseconds;
+                    Console.WriteLine($"[Latency][MovePiece] SendCommandAsync RTTms={moveSendElapsedMs:F1}");
                     if (commands?.Count > 0)
                     {
                         foreach (var command in commands.OrderBy(c => c.IndexServer))
@@ -412,7 +411,7 @@ public sealed class ClientReceiver
             {
                 Console.WriteLine($"Error pulling commands: {ex.Message}");
             }
-            await Task.Delay(1000, cancellationToken);
+            await Task.Delay(100, cancellationToken);
         }
     }
 
