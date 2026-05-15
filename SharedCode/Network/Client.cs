@@ -1,7 +1,6 @@
-using SharedCode.Constants;
-using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR;
-using System.ComponentModel;
+using Microsoft.AspNetCore.SignalR.Client;
+using SharedCode.Constants;
 using System.Net;
 using System.Net.Http.Json;
 
@@ -9,10 +8,8 @@ namespace SharedCode.Network
 {
     public class Client
     {
-        private bool _connected;
-        private HubConnection? _hubConnection;
-        private static readonly HttpClient SharedApiClient = CreateApiClient();
-        private readonly HttpClient _apiClient;
+        private HubConnection? _hubConnection;        
+        private readonly HttpClient _apiClient = CreateApiClient();
         private readonly Dictionary<string, int> _lastKnownLobbySeats = new(StringComparer.Ordinal);
         private string _startedRaisedForRoom = string.Empty;
         private int _lastSeenRoomChatIndex;
@@ -26,29 +23,15 @@ namespace SharedCode.Network
         public event EventHandler<PlayerInfo> PlayerInfoUpdate;
         public event EventHandler<long> ServerClockPingReceived;
 
-        public bool Connected
+        private bool IsHubConnected()
         {
-            get => _connected;
-            set
-            {
-                if (_connected == value) return;
-                _connected = value;
-            }
+            return _hubConnection != null && _hubConnection.State == HubConnectionState.Connected;
         }
-        public Client()
-        {
-            _apiClient = SharedApiClient;
-            Connected = false;
-        }
-        private string GetHubUrl()
-        {
-            var baseUri = new Uri(GlobalConstants.ApiUrl, UriKind.Absolute);
-            return new Uri(baseUri, "hubs/ludohub").ToString();
-        }
+       
         private HubConnection CreateHubConnection()
         {
             var authToken = getAuthToken();
-            var hubUrl = GetHubUrl();
+            var hubUrl = new Uri(new Uri(GlobalConstants.ApiUrl, UriKind.Absolute), "hubs/ludohub").ToString();
             Console.WriteLine($"[ClientHub] Creating connection. Url={hubUrl}");
             var builder = new HubConnectionBuilder()
                 .WithUrl(hubUrl, options =>
@@ -66,19 +49,16 @@ namespace SharedCode.Network
             connection.Reconnecting += ex =>
             {
                 Console.WriteLine($"[ClientHub] Reconnecting. Error={ex?.Message ?? "none"}");
-                Connected = false;
                 return Task.CompletedTask;
             };
             connection.Reconnected += connectionId =>
             {
                 Console.WriteLine($"[ClientHub] Reconnected. ConnectionId={connectionId ?? "unknown"}");
-                Connected = true;
                 return Task.CompletedTask;
             };
             connection.Closed += ex =>
             {
                 Console.WriteLine($"[ClientHub] Closed. Error={ex?.Message ?? "none"}");
-                Connected = false;
                 return Task.CompletedTask;
             };
 
@@ -132,9 +112,6 @@ namespace SharedCode.Network
                 await _hubConnection.StartAsync().ConfigureAwait(false);
                 Console.WriteLine($"[ClientHub] Start completed. State={_hubConnection.State}");
             }
-
-            Connected = _hubConnection.State == HubConnectionState.Connected;
-            Console.WriteLine($"[ClientHub] Connected state set to {Connected}");
         }
         /// Disconnect from the server.
         public async Task DisconnectAsync()
@@ -152,7 +129,6 @@ namespace SharedCode.Network
                     Console.WriteLine("[ClientHub] Stop failed.");
                 }
             }
-            Connected = false;
         }
         public async Task PollChatOnceAsync()
         {
@@ -169,6 +145,26 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var joinedHub = await _hubConnection!.InvokeAsync<GameplayJoinResponse>("JoinLobby", gameDto).ConfigureAwait(false);
+                        if (joinedHub != null)
+                        {
+                            GlobalConstants.RoomCode = joinedHub.RoomCode ?? string.Empty;
+                            _lastKnownLobbySeats.Clear();
+                            _startedRaisedForRoom = string.Empty;
+                            RoomJoined?.Invoke(this, (gameDto.GameType, (double)gameDto.BetAmount, joinedHub.RoomCode));
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] CreateJoinLobbyAsync fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/join");
                 request.Content = JsonContent.Create(new { Game = gameDto });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -189,11 +185,11 @@ namespace SharedCode.Network
                 Console.WriteLine($"[ApiClient] CreateJoinLobbyAsync Error: {ex.Message}");
             }
         }
-        public async Task<GameCommand> SendMessageAsync(GameCommand commandValue, string command)
+        public async Task<GameCommand> SendCommandAsync(GameCommand commandValue, string command)
         {
             try
             {
-                if (_hubConnection != null && _hubConnection.State == HubConnectionState.Connected)
+                if (IsHubConnected())
                 {
                     try
                     {
@@ -275,6 +271,46 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var readyHub = await _hubConnection!.InvokeAsync<GameplayReadyResponse>("Ready", GlobalConstants.RoomCode).ConfigureAwait(false);
+                        if (readyHub != null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(readyHub.RoomCode))
+                                GlobalConstants.RoomCode = readyHub.RoomCode;
+
+                            if (readyHub.SeatAssignments != null)
+                            {
+                                foreach (var seat in readyHub.SeatAssignments)
+                                {
+                                    if (seat == null || string.IsNullOrWhiteSpace(seat.PlayerType) || seat.PlayerId <= 0)
+                                        continue;
+
+                                    if (_lastKnownLobbySeats.TryGetValue(seat.PlayerType, out var existingId) && existingId == seat.PlayerId)
+                                        continue;
+
+                                    _lastKnownLobbySeats[seat.PlayerType] = seat.PlayerId;
+                                    PlayerSeated?.Invoke(this, (seat.PlayerType, seat.PlayerId, seat.UserName ?? "Waiting", seat.PictureUrl ?? "user.webp"));
+                                }
+                            }
+
+                            if (readyHub.Started)
+                            {
+                                _startedRaisedForRoom = readyHub.RoomCode ?? GlobalConstants.RoomCode;
+                                GameStarted?.Invoke(this, (readyHub.GameType, readyHub.SeatsJson ?? string.Empty, readyHub.RollsString ?? string.Empty));
+                            }
+
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] ReadyAsync fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/ready");
                 request.Content = JsonContent.Create(new
                 {
@@ -329,6 +365,24 @@ namespace SharedCode.Network
                 GlobalConstants.RoomCode = "";
                 try
                 {
+                    if (IsHubConnected())
+                    {
+                        try
+                        {
+                            var leaveHub = await _hubConnection!.InvokeAsync<object>("LeaveLobby").ConfigureAwait(false);
+                            if (leaveHub != null)
+                            {
+                                _lastKnownLobbySeats.Clear();
+                                _startedRaisedForRoom = string.Empty;
+                                return;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"[ClientHub] LeaveCloseLobby fallback to HTTP. Error={ex.Message}");
+                        }
+                    }
+
                     using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/lobbies/leave");
                     using var response = await _apiClient.SendAsync(request);
                     
@@ -348,6 +402,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<GameCommand>>("PullCommands", RoomCode, lastSeenIndex).ConfigureAwait(false)
+                            ?? new List<GameCommand>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] PullCommands fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/commands/pull?roomCode={Uri.EscapeDataString(RoomCode)}&lastSeenIndex={lastSeenIndex}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -367,6 +434,46 @@ namespace SharedCode.Network
             {
                 if (string.IsNullOrWhiteSpace(roomCode))
                     return;
+
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var lobbyHub = await _hubConnection!.InvokeAsync<GameplayReadyResponse>("GetLobbyState", roomCode).ConfigureAwait(false);
+                        if (lobbyHub == null)
+                            return;
+
+                        if (!string.IsNullOrWhiteSpace(lobbyHub.RoomCode))
+                            GlobalConstants.RoomCode = lobbyHub.RoomCode;
+
+                        if (lobbyHub.SeatAssignments != null)
+                        {
+                            foreach (var seat in lobbyHub.SeatAssignments)
+                            {
+                                if (seat == null || string.IsNullOrWhiteSpace(seat.PlayerType) || seat.PlayerId <= 0)
+                                    continue;
+
+                                if (_lastKnownLobbySeats.TryGetValue(seat.PlayerType, out var existingId) && existingId == seat.PlayerId)
+                                    continue;
+
+                                _lastKnownLobbySeats[seat.PlayerType] = seat.PlayerId;
+                                PlayerSeated?.Invoke(this, (seat.PlayerType, seat.PlayerId, seat.UserName ?? "Waiting", seat.PictureUrl ?? "user.webp"));
+                            }
+                        }
+
+                        var startedRoomHub = lobbyHub.RoomCode ?? GlobalConstants.RoomCode;
+                        if (lobbyHub.Started && !string.Equals(_startedRaisedForRoom, startedRoomHub, StringComparison.Ordinal))
+                        {
+                            _startedRaisedForRoom = startedRoomHub;
+                            GameStarted?.Invoke(this, (lobbyHub.GameType, lobbyHub.SeatsJson ?? string.Empty, lobbyHub.RollsString ?? string.Empty));
+                        }
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetLobbyAsync fallback to HTTP. Error={ex.Message}");
+                    }
+                }
 
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/lobbies/state?roomCode={Uri.EscapeDataString(roomCode)}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -411,6 +518,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<ActiveGameListItem>>("GetActivePublicGames").ConfigureAwait(false)
+                            ?? new List<ActiveGameListItem>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetActivePublicGamesAsync fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/gameplay/games/active");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -428,6 +548,25 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubMessages = await _hubConnection!.InvokeAsync<List<ChatMessages>>("SendChat", new
+                        {
+                            RoomCode = roomCode,
+                            Message = CM
+                        }).ConfigureAwait(false) ?? new List<ChatMessages>();
+                        UpdateLastSeenChatIndexes(hubMessages);
+                        ReceiveChatMessage?.Invoke(this, hubMessages);
+                        return hubMessages;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] SendChatMessageAsync fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/gameplay/chat/send");
                 request.Content = JsonContent.Create(new
                 {
@@ -447,22 +586,6 @@ namespace SharedCode.Network
             {
                 Console.WriteLine($"[ApiClient] SendChatMessageAsync Error: {ex.Message}");
                 return new List<ChatMessages>();
-            }
-        }
-        public async Task<PlayerInfo> UserConnectedSetID()
-        {
-            try
-            {
-                using var request = CreateApiRequest(HttpMethod.Get, "api/auth/session");
-                using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
-                if (!response.IsSuccessStatusCode)
-                    return null;
-
-                return await response.Content.ReadFromJsonAsync<PlayerInfo>().ConfigureAwait(false);
-            }
-            catch
-            {
-                return null;
             }
         }
         public async Task<PlayerInfo?> GoogleAuthentication(string idToken)
@@ -495,6 +618,22 @@ namespace SharedCode.Network
         {
              try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubResult = await _hubConnection!.InvokeAsync<string>("InitiateWithdrawal", new { Destination = destination, Amount = amount }).ConfigureAwait(false);
+                        if (!string.IsNullOrWhiteSpace(hubResult) &&
+                            hubResult.StartsWith("Success:", StringComparison.OrdinalIgnoreCase))
+                            await RefreshPlayerInfoFromApi();
+                        return hubResult ?? "Request failed";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] InitiateWithdrawal fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/withdrawals/initiate");
                 request.Content = JsonContent.Create(new { Destination = destination, Amount = amount });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -517,6 +656,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<TournamentDTO>>("GetTournaments", type ?? "All").ConfigureAwait(false)
+                            ?? new List<TournamentDTO>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetAllTournaments fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/tournaments?type={Uri.EscapeDataString(type ?? "All")}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -535,6 +687,21 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubResult = await _hubConnection!.InvokeAsync<TournamentDTO>("JoinTournament", TournamentID).ConfigureAwait(false);
+                        if (hubResult?.StatusCode == "SUCCESS")
+                            await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+                        return hubResult;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] JoinTournament fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, $"api/tournaments/{TournamentID}/join");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -556,6 +723,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<TournamentResultDTO>("GetTournamentResults", TournamentID).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetResultsTournament fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/tournaments/{TournamentID}/results");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -577,6 +756,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<T>("GetDailyBonus").ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetDailyBonus fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/daily-bonus");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -594,6 +785,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<T>("ClaimTodayBonus").ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] ClaimTodayBonus fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/daily-bonus/claim");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -611,6 +814,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<T>("GetProfile").ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetProfile fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/profile");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -628,6 +843,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<T>("GetWallet").ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWallet fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/wallet");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -650,6 +877,20 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubSync = await _hubConnection!.InvokeAsync<SessionSyncInfo>("SyncSession").ConfigureAwait(false);
+                        ApplySessionSync(hubSync);
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] RefreshSession fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/session/sync");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -673,17 +914,6 @@ namespace SharedCode.Network
                 handler.Invoke(this, playerInfo);
             else
                 UserInfo.Instance.player = playerInfo;
-        }
-        private void ApplyWalletBalance(decimal balance)
-        {
-            var wallet = UserInfo.Instance.player?.Wallet;
-            if (wallet != null)
-            {
-                wallet.AvailableBalance = balance;
-                return;
-            }
-
-            _ = RefreshPlayerInfoFromApi();
         }
         private void ApplySessionSync(SessionSyncInfo? syncInfo)
         {
@@ -732,6 +962,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<PlayerCard>>("GetFriends", type).ConfigureAwait(false) ?? new List<PlayerCard>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetFriends fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/friends?type={Uri.EscapeDataString(type)}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -749,6 +991,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<string>("SendFriendRequest", new { ReceiverId = receiverId, Status = status }).ConfigureAwait(false) ?? "Error";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] SendFriendRequest fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/friends/request");
                 request.Content = JsonContent.Create(new { ReceiverId = receiverId, Status = status });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -767,6 +1021,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<PlayerCard>("GetPlayerById", playerId).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetPlayerById fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/players/{playerId}/card");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -784,6 +1050,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<PlayerCard>>("GetLeaderboard").ConfigureAwait(false) ?? new List<PlayerCard>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetLeaderboard fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/leaderboard");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -801,6 +1079,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<PlayerCard>>("GetTournamentLeaderboard", tournamentType).ConfigureAwait(false) ?? new List<PlayerCard>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetTournamentLeaderboard fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/leaderboard/tournament/{Uri.EscapeDataString(tournamentType)}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -818,6 +1108,21 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubResult = await _hubConnection!.InvokeAsync<string>("MintNFT", amount).ConfigureAwait(false);
+                        if (amount > 0 && !string.IsNullOrWhiteSpace(hubResult) && hubResult.Contains("Success", StringComparison.OrdinalIgnoreCase))
+                            await RefreshPlayerInfoFromApi().ConfigureAwait(false);
+                        return hubResult ?? "Failed";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] MintNFT fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/nfts/mint");
                 request.Content = JsonContent.Create(new { Amount = amount });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -840,6 +1145,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<object>("GetWalletBalance", walletAddress).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWalletBalance fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/payments/wallet-balance?walletAddress={Uri.EscapeDataString(walletAddress)}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -857,6 +1174,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<object>("GetSwapBalances", walletAddress).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetSwapBalances fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, $"api/payments/swap-balances?walletAddress={Uri.EscapeDataString(walletAddress)}");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -875,6 +1204,22 @@ namespace SharedCode.Network
             try
             {
                 var previousBalance = UserInfo.Instance.player?.Wallet?.AvailableBalance;
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubResult = await _hubConnection!.InvokeAsync<BlockchainResult>("BroadcastTransaction", new { TxBase64 = txBase64 }).ConfigureAwait(false)
+                            ?? new BlockchainResult { Success = false, Error = "Empty response" };
+                        if (hubResult.Success)
+                            QueuePlayerInfoRefreshPolling(previousBalance);
+                        return hubResult;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] BroadcastTransaction fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/transactions/broadcast");
                 request.Content = JsonContent.Create(new { TxBase64 = txBase64 });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -899,6 +1244,22 @@ namespace SharedCode.Network
             try
             {
                 var previousBalance = UserInfo.Instance.player?.Wallet?.AvailableBalance;
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        var hubResult = await _hubConnection!.InvokeAsync<BlockchainResult>("ExecutePreparedSwap", new { RequestId = requestId, SignedTxBase64 = signedTxBase64 }).ConfigureAwait(false)
+                            ?? new BlockchainResult { Success = false, Error = "Empty response" };
+                        if (hubResult.Success)
+                            QueuePlayerInfoRefreshPolling(previousBalance);
+                        return hubResult;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] ExecutePreparedSwap fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/swap/execute");
                 request.Content = JsonContent.Create(new { RequestId = requestId, SignedTxBase64 = signedTxBase64 });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -922,6 +1283,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<bool>("ConfirmSolanaTransaction", new { Signature = signature }).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] ConfirmSolanaTransaction fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/transactions/confirm");
                 request.Content = JsonContent.Create(new { Signature = signature });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -940,6 +1313,25 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<object>("PrepareAssetSwap", new
+                        {
+                            WalletAddress = walletAddress,
+                            InputAsset = inputAsset,
+                            OutputAsset = outputAsset,
+                            Amount = amount,
+                            SlippageBps = slippageBps
+                        }).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] PrepareAssetSwap fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/swap/prepare");
                 request.Content = JsonContent.Create(new
                 {
@@ -965,6 +1357,18 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<object>("PrepareLudcDeposit", new { WalletAddress = walletAddress, Amount = amount }).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] PrepareLudcDeposit fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/ludc-deposit/prepare");
                 request.Content = JsonContent.Create(new { WalletAddress = walletAddress, Amount = amount });
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
@@ -983,6 +1387,25 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<string>("SubmitManualDeposit", new
+                        {
+                            PlayerId = playerId,
+                            Amount = amount,
+                            Method = method,
+                            ReferenceNumber = referenceNumber,
+                            ReceiptUrl = receiptUrl
+                        }).ConfigureAwait(false) ?? "Request failed";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] SubmitManualDeposit fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/manual-deposits");
                 request.Content = JsonContent.Create(new
                 {
@@ -1008,6 +1431,23 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<string>("SubmitManualWithdrawal", new
+                        {
+                            Amount = amount,
+                            Method = method,
+                            DestinationDetails = destinationDetails
+                        }).ConfigureAwait(false) ?? "Request failed";
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] SubmitManualWithdrawal fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Post, "api/payments/manual-withdrawals");
                 request.Content = JsonContent.Create(new
                 {
@@ -1031,6 +1471,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<WalletBonusHistoryItem>>("GetWalletBonuses").ConfigureAwait(false)
+                            ?? new List<WalletBonusHistoryItem>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWalletBonusHistory fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/bonuses");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1049,6 +1502,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<WalletDepositHistoryItem>>("GetWalletDeposits").ConfigureAwait(false)
+                            ?? new List<WalletDepositHistoryItem>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWalletDepositHistory fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/deposits");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1067,6 +1533,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<WalletWithdrawalHistoryItem>>("GetWalletWithdrawals").ConfigureAwait(false)
+                            ?? new List<WalletWithdrawalHistoryItem>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWalletWithdrawalHistory fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/withdrawals");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1085,6 +1564,19 @@ namespace SharedCode.Network
         {
             try
             {
+                if (IsHubConnected())
+                {
+                    try
+                    {
+                        return await _hubConnection!.InvokeAsync<List<WalletGameHistoryItem>>("GetWalletGames").ConfigureAwait(false)
+                            ?? new List<WalletGameHistoryItem>();
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[ClientHub] GetWalletGameHistory fallback to HTTP. Error={ex.Message}");
+                    }
+                }
+
                 using var request = CreateApiRequest(HttpMethod.Get, "api/wallet-hub/games");
                 using var response = await _apiClient.SendAsync(request).ConfigureAwait(false);
                 if (!response.IsSuccessStatusCode)
@@ -1101,6 +1593,34 @@ namespace SharedCode.Network
         }
         private async Task PullChatUpdatesAsync(string roomCode)
         {
+            if (IsHubConnected())
+            {
+                try
+                {
+                    var lastSeenIndexHub = string.IsNullOrWhiteSpace(roomCode) ? _lastSeenPrivateChatIndex : _lastSeenRoomChatIndex;
+                    var updatesHub = await _hubConnection!.InvokeAsync<List<ChatMessages>>("PullChat", roomCode, lastSeenIndexHub).ConfigureAwait(false)
+                        ?? new List<ChatMessages>();
+                    if (updatesHub.Count == 0)
+                        return;
+
+                    UpdateLastSeenChatIndexes(updatesHub);
+                    ReceiveChatMessage?.Invoke(this, updatesHub);
+                    return;
+                }
+                catch (HubException ex) when (!string.IsNullOrWhiteSpace(roomCode) &&
+                                              ex.Message.Contains("not in the requested room", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine($"[ClientHub] ChatPolling recovered from stale room '{roomCode}'. Switching to private polling.");
+                    _lastPolledRoomCode = string.Empty;
+                    _lastSeenRoomChatIndex = 0;
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ClientHub] PullChatUpdatesAsync fallback to HTTP. Error={ex.Message}");
+                }
+            }
+
             var roomCodeValue = string.IsNullOrWhiteSpace(roomCode) ? string.Empty : Uri.EscapeDataString(roomCode);
             var lastSeenIndex = string.IsNullOrWhiteSpace(roomCode) ? _lastSeenPrivateChatIndex : _lastSeenRoomChatIndex;
             using var request = CreateApiRequest(HttpMethod.Get, $"api/gameplay/chat/pull?roomCode={roomCodeValue}&lastSeenIndex={lastSeenIndex}");
