@@ -301,7 +301,7 @@ public class GameplayController(
     [HttpPost("lobbies/leave")]
     public async Task<ActionResult<GameplayLeaveResponse>> LeaveLobby()
     {
-        var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
+          var player = await playerContext.GetAuthenticatedPlayerAsync(Request);
         if (player == null)
             return Unauthorized();
 

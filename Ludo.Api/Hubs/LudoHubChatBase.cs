@@ -113,7 +113,10 @@ public abstract class LudoHubChatBase(
                      g.MultiPlayer.P3 == playerId ||
                      g.MultiPlayer.P4 == playerId));
             if (!isMember)
-                throw new HubException("Player is not in the requested room.");
+            {
+                Console.WriteLine("new HubException(Player is not in the requested room.)");
+                return new List<ChatMessages>();
+            }
 
             query = ctx.ChatMessages.Where(x => x.RoomCode == roomCode && x.Index > lastSeenIndex);
         }

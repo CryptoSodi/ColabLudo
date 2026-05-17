@@ -411,7 +411,7 @@ public sealed class ClientReceiver
             {
                 Console.WriteLine($"Error pulling commands: {ex.Message}");
             }
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(500, cancellationToken);
         }
     }
 

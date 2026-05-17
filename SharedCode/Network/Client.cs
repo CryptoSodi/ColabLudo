@@ -27,7 +27,6 @@ namespace SharedCode.Network
         {
             return _hubConnection != null && _hubConnection.State == HubConnectionState.Connected;
         }
-       
         private HubConnection CreateHubConnection()
         {
             var authToken = getAuthToken();
