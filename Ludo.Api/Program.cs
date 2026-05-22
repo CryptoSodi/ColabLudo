@@ -126,7 +126,6 @@ var app = builder.Build();
 app.UseCors("AllowAnyOrigin");
 app.MapControllers();
 app.MapHub<Ludo.Api.Hubs.LudoHub>("/hubs/ludohub");
-app.MapHub<Ludo.Api.Hubs.DashboardHub>("/DashboardHub");
 
 app.Run();
 
