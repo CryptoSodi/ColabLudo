@@ -302,7 +302,6 @@ public sealed class ClientReceiver
                     List<GameCommand> commands = await GlobalConstants.MatchMaker.PullCommands(lastSeen, GlobalConstants.RoomCode);
 
                     var moveSendElapsedMs = (DateTime.UtcNow - moveSendStartedUtc).TotalMilliseconds;
-                    Console.WriteLine($"[Latency][MovePiece] SendCommandAsync RTTms={moveSendElapsedMs:F1}");
                     if (commands?.Count > 0)
                     {
                         foreach (var command in commands.OrderBy(c => c.IndexServer))
