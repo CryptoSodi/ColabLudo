@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LudoServer", "LudoServer\Lu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ludo.Api", "Ludo.Api\Ludo.Api.csproj", "{355A08F9-B723-4BA2-9EF9-7CDF1F1C6748}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRtc.Android", "WebRtc.Android\WebRtc.Android.csproj", "{8C860B1C-AF5A-4A2B-95C0-056043EB4130}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -105,6 +107,18 @@ Global
 		{355A08F9-B723-4BA2-9EF9-7CDF1F1C6748}.Release|x64.Build.0 = Release|Any CPU
 		{355A08F9-B723-4BA2-9EF9-7CDF1F1C6748}.Release|x86.ActiveCfg = Release|Any CPU
 		{355A08F9-B723-4BA2-9EF9-7CDF1F1C6748}.Release|x86.Build.0 = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|x64.Build.0 = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Debug|x86.Build.0 = Debug|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|x64.Build.0 = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|x86.ActiveCfg = Release|Any CPU
+		{8C860B1C-AF5A-4A2B-95C0-056043EB4130}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

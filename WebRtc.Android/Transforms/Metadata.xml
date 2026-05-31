@@ -18,4 +18,9 @@
   <remove-node path="/api/package[@name='org.webrtc']/class[@name='VideoEncoder.ResolutionBitrateLimits']/method[@name='getMinStartBitrateBps']" />
   <remove-node path="/api/package[@name='org.webrtc']/class[@name='VideoEncoder.ResolutionBitrateLimits']/method[@name='getMinBitrateBps']" />
   <remove-node path="/api/package[@name='org.webrtc']/class[@name='VideoEncoder.ResolutionBitrateLimits']/method[@name='getMaxBitrateBps']" />
+
+  <!-- Newer AARs dropped RenderListener; keep FrameListener only -->
+  <remove-node path="/api/package[@name='org.webrtc']/interface[@name='EglRenderer.RenderListener']" />
+  <remove-node path="/api/package[@name='org.webrtc']/class[@name='EglRenderer']/method[@name='addRenderListener']" />
+  <remove-node path="/api/package[@name='org.webrtc']/class[@name='EglRenderer']/method[@name='removeRenderListener']" />
 </metadata>

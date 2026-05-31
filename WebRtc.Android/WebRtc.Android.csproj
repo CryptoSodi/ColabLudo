@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <LibraryProjectZip Include="Jars\google-webrtc-1.0.32006.aar" />
+    <LibraryProjectZip Include="Jars\google-webrtc-1.0.45036-patched2.aar" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Jars\" />
   </ItemGroup>
 </Project>
