@@ -45,6 +45,9 @@ namespace LudoClient
             builder.Services.AddSingleton<IDeviceIdentifierService, DeviceIdentifierService>();
             builder.Services.AddSingleton<IGoogleAuthService, GoogleAuthService>();
             builder.Services.AddSingleton<IGamepadInputService, GamepadInputService>();
+            builder.Services.AddSingleton<IRtcClient, GoogleWebRtcClient>();
+#else
+            builder.Services.AddSingleton<IRtcClient, NullRtcClient>();
 #endif
 
 #if ANDROID
@@ -58,7 +61,6 @@ builder.Services.AddSingleton<ISoundService, MauiAudioService>();
             builder.ConfigureMauiHandlers(handlers =>
             {
 #if ANDROID
-                handlers.AddHandler(typeof(CameraWebView), typeof(LudoClient.Platforms.Android.CameraWebViewHandler));
                 handlers.AddHandler(typeof(NativeFriendCard), typeof(NativeFriendCardHandler));
                 handlers.AddHandler(typeof(NativeTournamentCard), typeof(NativeTournamentCardHandler));
                 handlers.AddHandler(typeof(NativeWalletHistoryCard), typeof(NativeWalletHistoryCardHandler));

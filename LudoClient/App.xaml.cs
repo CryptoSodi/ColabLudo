@@ -4,6 +4,7 @@ using SharedCode;
 using SharedCode.Constants;
 using SharedCode.Network;
 using System.Runtime.InteropServices;
+using Microsoft.Maui.Controls.Xaml;
 
 namespace LudoClient
 {
@@ -35,7 +36,15 @@ namespace LudoClient
             SetWindowPos(consoleWindow, HWND_TOP, 384, 0, 0, 0, SWP_NOSIZE); // Set position to (100, 100)
             Console.WriteLine("Console started alongside MAUI app at custom position.");
 #endif
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (XamlParseException ex)
+            {
+                Console.WriteLine($"[App] InitializeComponent failed, continuing with fallback resources: {ex.Message}");
+                Resources = new ResourceDictionary();
+            }
             //Preferences.Clear();
             var isUserLoggedIn = Preferences.Get("IsUserLoggedIn", false);
             // Register routes for pages
