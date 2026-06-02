@@ -244,6 +244,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProguardConfiguration Include="Platforms\Android\proguard-rules.pro" />
 		<AndroidResource Remove="Resources\Images\Components\PlayerBoxLong\**" />
 		<AndroidResource Remove="Resources\Images\WaitingRoom\**" />
 		<Compile Remove="Resources\Images\Components\PlayerBoxLong\**" />
@@ -1065,6 +1066,7 @@
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
 		<ProjectReference Include="..\WebRtc.Android\WebRtc.Android.csproj" />
+		<AndroidProguardConfiguration Include="Platforms\Android\proguard-rules.pro" />
 		<PackageReference Include="Xamarin.GooglePlayServices.Auth">
 			<Version>121.3.0.3</Version>
 		</PackageReference>
