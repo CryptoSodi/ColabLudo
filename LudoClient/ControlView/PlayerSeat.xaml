@@ -4,8 +4,10 @@
              x:Class="LudoClient.ControlView.PlayerSeat"
              xmlns:local="clr-namespace:LudoClient.ControlView">
 
-    <local:Capsule x:Name="playerBG" ImageSource = "gray_container.webp">
-        <Grid RowDefinitions=".14*,1*,.3*,.3*" ColumnDefinitions=".13*,1*,.06*,0.96*,.01*">
+    <local:Capsule x:Name="playerBG" ImageSource = "red_container.webp">
+        <Grid RowDefinitions=".14*,.6*,.1*,.27*,.13*" ColumnDefinitions=".19*,.6*,.8*,.6*,.18*">
+            <Grid x:Name="CameraHost" Grid.Column="1" Grid.Row="1" Grid.ColumnSpan="3" Grid.RowSpan="2" Margin="4,4,4,2" InputTransparent="True" ZIndex="1"/>
+
             <Image x:Name="PlayerImage" Source="player.webp" Margin="4.15" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Image Source="profile_user.webp" Margin="1" Grid.Column="1" Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Start"/>
             <Image x:Name="DiceLayer" Grid.Column="3" Grid.Row="1" Source="dice_.webp" VerticalOptions="Center" HorizontalOptions="Start">
@@ -14,21 +16,44 @@
                 </Image.GestureRecognizers>
             </Image>
 
-            <Grid Grid.Row="2" Grid.ColumnSpan="4">
-                <Label x:Name="PlayerNameText" FontSize="12" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="10,0,0,2" TextColor="white"></Label>
-            </Grid>
-
-            <Grid x:Name="ProgressBoxParentContainer" Margin="0,0,0,-5" BackgroundColor="#992B4195" Grid.Row="3" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >
-                <Image x:Name="CheckBox" Source="checkbox_red.webp" Margin="-2">
-                    <Image.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="AutoClicked" />
-                    </Image.GestureRecognizers>
-                </Image>
-                <Grid x:Name="ProgressBoxParent" Grid.Column="1">
-                    <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="#91111111" CornerRadius="3" BackgroundColor="Transparent"/>
-                    <Label x:Name="ProgressBoxText" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="5,0,0,0">Auto</Label>
+            <Grid Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="3" HorizontalOptions="Fill" VerticalOptions="Fill">
+                <Grid x:Name="ProgressBoxParentContainer" Grid.Row="4" Grid.ColumnSpan="4" ColumnDefinitions=".2*,1*" >
+                    <Image x:Name="CheckBox" Source="checkbox_red.webp" Margin="0,0,0,2">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="AutoClicked" />
+                        </Image.GestureRecognizers>
+                    </Image>
+                    <Grid x:Name="ProgressBoxParent" Grid.Column="1">
+                        <BoxView x:Name="ProgressBox" HorizontalOptions="Start" Color="DarkRed" CornerRadius="3" BackgroundColor="Black"/>
+                        <Label x:Name="ProgressBoxText" HorizontalTextAlignment="Start" HorizontalOptions="Start" Margin="1,0,0,0">Auto</Label>
+                        <StackLayout Orientation="Horizontal" HorizontalOptions="End">
+                            <Image x:Name="CheckBoxMic" Source="RRBM.webp" Margin="0,-2,0,-2">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="MicClicked" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                            <Image x:Name="CheckBoxSpeaker" Source="RRBS.webp" Margin="0,-2,0,-2">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="SpeakerClicked" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                            <Image x:Name="CheckBoxCamera" Source="RRBC.webp" Margin="0,-2,0,-2">
+                                <Image.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="CameraClicked" />
+                                </Image.GestureRecognizers>
+                            </Image>
+                        </StackLayout>
+                    </Grid>
                 </Grid>
             </Grid>
+            
+            <Grid Grid.Row="1" Grid.Column="2" RowDefinitions="1*,1*,1*">
+                <Label x:Name="PlayerNameText" FontSize="10" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Center" Margin="0,0,0,0" TextColor="White"/>
+                <Label Grid.Row="1" FontSize="10" Text="2" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Center" Margin="0,0,0,0" TextColor="White"/>
+                <Label Grid.Row="2" FontSize="10" Text="3" FontAttributes="Bold" HorizontalTextAlignment="Start" HorizontalOptions="Center" Margin="0,0,0,0" TextColor="White"/>
+            </Grid>
+
+            
         </Grid>
     </local:Capsule>
 </ContentView>

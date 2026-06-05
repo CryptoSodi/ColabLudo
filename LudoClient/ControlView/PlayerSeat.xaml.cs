@@ -15,13 +15,16 @@ namespace LudoClient.ControlView;
             { 6, ImageSource.FromFile("dice_6.webp") }
         };
 
-        public bool autoPlayFlag { get; set; }
+    public bool autoPlayFlag { get; set; }
     public bool isAutoPlayDisabled = false;//Set it to true to prevent Auto Play of other players on localclient
     public String seatColor { get; set; }
     public String PlayerName { get; set; }
     public String PictureUrl { get; set; }
     public EngineHelper engineHelper { get; internal set; }
     public bool IsRendered { get; private set; } = false;    
+    private bool _micEnabled = true;
+    private bool _speakerEnabled = true;
+    private bool _cameraEnabled = true;
 
     public BindableProperty PlayerImageProperty = BindableProperty.Create(nameof(PlayerBG), typeof(string), typeof(PlayerSeat), propertyChanged: (bindable, oldValue, newValue) =>
         {
@@ -52,6 +55,8 @@ namespace LudoClient.ControlView;
                 PlayerBG = "red_container.webp";
                 break;
         }
+        UpdateMediaButtonSources();
+        UpdateMicVisibility();
         return this;
     }
     public void initAuto(String PlayerName, String PictureUrl, string checkBoxFlag="Show", bool autoPlayFlag = true, bool isAutoPlayDisabled = false)
@@ -94,6 +99,7 @@ namespace LudoClient.ControlView;
 
         this.autoPlayFlag = autoPlayFlag;
         this.isAutoPlayDisabled = isAutoPlayDisabled;
+        UpdateMicVisibility();
     }
     public PlayerSeat()
     {
@@ -109,6 +115,68 @@ namespace LudoClient.ControlView;
             CheckBox.Source = "checkbox_"+seatColor+ "_select.webp";
         else
             CheckBox.Source = "checkbox_"+seatColor+ ".webp";
+    }
+    private void MicClicked(object sender, EventArgs e)
+    {
+        _micEnabled = !_micEnabled;
+        CheckBoxMic.Source = GetMediaButtonSource(_micEnabled, "M");
+    }
+    private void SpeakerClicked(object sender, EventArgs e)
+    {
+        _speakerEnabled = !_speakerEnabled;
+        CheckBoxSpeaker.Source = GetMediaButtonSource(_speakerEnabled, "S");
+    }
+    private void CameraClicked(object sender, EventArgs e)
+    {
+        _cameraEnabled = !_cameraEnabled;
+        CheckBoxCamera.Source = GetMediaButtonSource(_cameraEnabled, "C");
+    }
+    private void UpdateMediaButtonSources()
+    {
+        CheckBoxMic.Source = GetMediaButtonSource(_micEnabled, "M");
+        CheckBoxSpeaker.Source = GetMediaButtonSource(_speakerEnabled, "S");
+        CheckBoxCamera.Source = GetMediaButtonSource(_cameraEnabled, "C");
+    }
+    private void UpdateMicVisibility()
+    {
+        var ownColor = ClientGlobalConstants.game?.playerColor;
+        CheckBoxMic.IsVisible = !string.IsNullOrWhiteSpace(ownColor) &&
+            string.Equals(ownColor, seatColor, StringComparison.OrdinalIgnoreCase);
+    }
+    private string GetMediaButtonSource(bool isEnabled, string suffix)
+    {
+        var colorPrefix = string.IsNullOrWhiteSpace(seatColor)
+            ? "R"
+            : seatColor.Substring(0, 1).ToUpperInvariant();
+        var statePrefix = isEnabled ? colorPrefix : "D";
+        return $"{statePrefix}RB{suffix}.webp";
+    }
+    public void AttachCameraView(View? cameraView, bool isVisible)
+    {
+        if (cameraView == null)
+            return;
+
+        if (cameraView.Parent is Layout oldParent && oldParent != CameraHost)
+            oldParent.Children.Remove(cameraView);
+
+        if (isVisible)
+        {
+            if (!CameraHost.Children.Contains(cameraView))
+                CameraHost.Children.Add(cameraView);
+
+            cameraView.IsVisible = true;
+            cameraView.HorizontalOptions = LayoutOptions.Fill;
+            cameraView.VerticalOptions = LayoutOptions.Fill;
+            cameraView.Rotation = 0;
+            cameraView.Margin = 0;
+        }
+        else
+        {
+            if (CameraHost.Children.Contains(cameraView))
+                CameraHost.Children.Remove(cameraView);
+
+            cameraView.IsVisible = false;
+        }
     }
     private CancellationTokenSource _animationCancellationTokenSource;
     public void StartProgressAnimation()
