@@ -9,16 +9,18 @@
              xmlns:controls="clr-namespace:LudoClient.Controls"
              BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
     <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,.3*,.001*,Auto,.4*,Auto">
-
         <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
-            
-
-                <AbsoluteLayout x:Name="Alayout" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="15" Grid.RowSpan="15" Margin="5">
-                    
-                        <AbsoluteLayout.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="CloseTokenSelector"/>
-                        </AbsoluteLayout.GestureRecognizers>
-                        <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
+            <AbsoluteLayout x:Name="Alayout" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="15" Grid.RowSpan="15" Margin="5">
+                <AbsoluteLayout.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="CloseTokenSelector"/>
+                </AbsoluteLayout.GestureRecognizers>
+                
+                <controls:CameraWebView x:Name="CameraViewRed" ZIndex="1" BackgroundColor="Red" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/broadcaster.html"/>
+                <controls:CameraWebView x:Name="CameraViewGreen" ZIndex="1" BackgroundColor="Green" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
+                <controls:CameraWebView x:Name="CameraViewYellow" ZIndex="1" BackgroundColor="Yellow" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
+                <controls:CameraWebView x:Name="CameraViewBlue" ZIndex="1" BackgroundColor="Blue" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
+                            
+                    <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red4" piece="{x:Static constants:Skins.RedToken}"/>
@@ -97,8 +99,8 @@
                     <TapGestureRecognizer Tapped="HideChat_Tapped" />
                 </VerticalStackLayout.GestureRecognizers>
             </VerticalStackLayout>
-        </ScrollView>
-        
+        </ScrollView>        
+
         <local:Capsule ImageSource="footer.webp" HorizontalOptions="FillAndExpand" VerticalOptions="Start">
             <Grid ColumnSpacing="5" HorizontalOptions="Fill" VerticalOptions="Fill" ColumnDefinitions="Auto,Auto,1*">
                 <local:Capsule ImageSource="popover.webp" HorizontalOptions="Center" VerticalOptions="Center">
@@ -179,3 +181,4 @@
         </local:Capsule>
     </Grid>
 </ContentPage>
+

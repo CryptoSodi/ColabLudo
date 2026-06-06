@@ -64,6 +64,7 @@ builder.Services.AddSingleton<ISoundService, MauiAudioService>();
                 handlers.AddHandler(typeof(NativeFriendCard), typeof(NativeFriendCardHandler));
                 handlers.AddHandler(typeof(NativeTournamentCard), typeof(NativeTournamentCardHandler));
                 handlers.AddHandler(typeof(NativeWalletHistoryCard), typeof(NativeWalletHistoryCardHandler));
+                handlers.AddHandler(typeof(CameraWebView), typeof(CameraWebViewHandler));
 #endif
             });
 
