@@ -1,4 +1,5 @@
 using LudoClient.Constants;
+using LudoClient.Services;
 using SharedCode.CoreEngine;
 
 namespace LudoClient.ControlView;
@@ -57,6 +58,7 @@ namespace LudoClient.ControlView;
         }
         UpdateMediaButtonSources();
         UpdateMicVisibility();
+        UpdateSpeakerVisibility();
         return this;
     }
     public void initAuto(String PlayerName, String PictureUrl, string checkBoxFlag="Show", bool autoPlayFlag = true, bool isAutoPlayDisabled = false)
@@ -100,6 +102,7 @@ namespace LudoClient.ControlView;
         this.autoPlayFlag = autoPlayFlag;
         this.isAutoPlayDisabled = isAutoPlayDisabled;
         UpdateMicVisibility();
+        UpdateSpeakerVisibility();
     }
     public PlayerSeat()
     {
@@ -120,16 +123,24 @@ namespace LudoClient.ControlView;
     {
         _micEnabled = !_micEnabled;
         CheckBoxMic.Source = GetMediaButtonSource(_micEnabled, "M");
+        if (IsOwnSeat())
+            ResolveRtcClient().SetLocalAudioEnabled(_micEnabled);
     }
     private void SpeakerClicked(object sender, EventArgs e)
     {
         _speakerEnabled = !_speakerEnabled;
         CheckBoxSpeaker.Source = GetMediaButtonSource(_speakerEnabled, "S");
+        if (!IsOwnSeat())
+            ResolveRtcClient().SetRemoteAudioEnabled(seatColor, _speakerEnabled);
     }
     private void CameraClicked(object sender, EventArgs e)
     {
         _cameraEnabled = !_cameraEnabled;
         CheckBoxCamera.Source = GetMediaButtonSource(_cameraEnabled, "C");
+        if (IsOwnSeat())
+            ResolveRtcClient().SetLocalVideoEnabled(_cameraEnabled);
+        else
+            ResolveRtcClient().SetRemoteVideoVisible(seatColor, _cameraEnabled);
     }
     private void UpdateMediaButtonSources()
     {
@@ -142,6 +153,30 @@ namespace LudoClient.ControlView;
         var ownColor = ClientGlobalConstants.game?.playerColor;
         CheckBoxMic.IsVisible = !string.IsNullOrWhiteSpace(ownColor) &&
             string.Equals(ownColor, seatColor, StringComparison.OrdinalIgnoreCase);
+    }
+    private void UpdateSpeakerVisibility()
+    {
+        var ownColor = ClientGlobalConstants.game?.playerColor;
+        CheckBoxSpeaker.IsVisible = string.IsNullOrWhiteSpace(ownColor) ||
+            !string.Equals(ownColor, seatColor, StringComparison.OrdinalIgnoreCase);
+    }
+    private bool IsOwnSeat()
+    {
+        var ownColor = ClientGlobalConstants.game?.playerColor;
+        return !string.IsNullOrWhiteSpace(ownColor) &&
+               string.Equals(ownColor, seatColor, StringComparison.OrdinalIgnoreCase);
+    }
+    private static IRtcClient ResolveRtcClient()
+    {
+        try
+        {
+            var sp = Application.Current?.Handler?.MauiContext?.Services;
+            return sp?.GetService(typeof(IRtcClient)) as IRtcClient ?? new NullRtcClient();
+        }
+        catch
+        {
+            return new NullRtcClient();
+        }
     }
     private string GetMediaButtonSource(bool isEnabled, string suffix)
     {

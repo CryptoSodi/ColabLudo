@@ -12,7 +12,7 @@ internal sealed class GoogleWebRtcClient : IRtcClient
 
     public bool IsRunning => _isRunning;
 
-    public Task StartAsync(string roomId, string playerColor, string apiBaseUrl, CancellationToken cancellationToken = default)
+    public Task StartAsync(string roomId, string playerColor, string apiBaseUrl, IReadOnlyCollection<string>? occupiedOpponentColors = null, CancellationToken cancellationToken = default)
     {
         if (_isRunning)
             return Task.CompletedTask;
@@ -26,7 +26,7 @@ internal sealed class GoogleWebRtcClient : IRtcClient
         try
         {
             _trackController.Initialize();
-            _trackController.StartSession(roomId, playerColor, apiBaseUrl);
+            _trackController.StartSession(roomId, playerColor, apiBaseUrl, occupiedOpponentColors);
             _isRunning = true;
 
             _loopCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -59,6 +59,26 @@ internal sealed class GoogleWebRtcClient : IRtcClient
         _loopCts?.Dispose();
         _loopCts = null;
         _isRunning = false;
+    }
+
+    public void SetLocalAudioEnabled(bool isEnabled)
+    {
+        _trackController.SetLocalAudioEnabled(isEnabled);
+    }
+
+    public void SetLocalVideoEnabled(bool isEnabled)
+    {
+        _trackController.SetLocalVideoEnabled(isEnabled);
+    }
+
+    public void SetRemoteAudioEnabled(string playerColor, bool isEnabled)
+    {
+        _trackController.SetRemoteAudioEnabled(playerColor, isEnabled);
+    }
+
+    public void SetRemoteVideoVisible(string playerColor, bool isVisible)
+    {
+        _trackController.SetRemoteVideoVisible(playerColor, isVisible);
     }
 
     private async Task LoopAsync(CancellationToken ct)

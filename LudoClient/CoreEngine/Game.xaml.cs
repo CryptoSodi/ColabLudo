@@ -10,13 +10,6 @@ using System.Text.Json;
 namespace LudoClient.CoreEngine;
 public partial class Game : ContentPage
 {
-#if ANDROID
-    private static readonly bool UseNativeGoogleWebRtc = true;
-#else
-    private static readonly bool UseNativeGoogleWebRtc = false;
-#endif
-    private const string WebRtcApiBaseUrl = "https://api.ludocities.com/api/webrtc";
-    private const bool WebRtcDebug = false;
     //For Controling the function calls from other players and IE DiceRoll and Pice Click in multiplayer
     public bool isInputLocked { get; set; } = false;
     Piece tempPiece = null;
@@ -36,11 +29,7 @@ public partial class Game : ContentPage
     private readonly HashSet<int> _pendingDiceSend = new();
     private readonly object _pendingDiceSendLock = new();
     private readonly IGamepadInputService _input;
-    private IRtcClient _rtcClient = new NullRtcClient();
-    private bool _cameraViewRedReady;
-    private bool _cameraViewGreenReady;
-    private bool _cameraViewYellowReady;
-    private bool _cameraViewBlueReady;
+    private readonly GameRtcHelper _rtcHelper;
     private int _boardRotation;
     public PlayerSeat GetPlayerSeat(string seatColor)
     {
@@ -56,21 +45,7 @@ public partial class Game : ContentPage
     public Game()
     {
         InitializeComponent();
-
-        try
-        {
-            var sp = Application.Current?.Handler?.MauiContext?.Services;
-            if (sp != null)
-                _rtcClient = sp.GetService(typeof(IRtcClient)) as IRtcClient ?? new NullRtcClient();
-        }
-        catch
-        {
-            _rtcClient = new NullRtcClient();
-        }
-        CameraViewRed.Navigated += CameraViewRed_Navigated;
-        CameraViewGreen.Navigated += CameraViewGreen_Navigated;
-        CameraViewYellow.Navigated += CameraViewYellow_Navigated;
-        CameraViewBlue.Navigated += CameraViewBlue_Navigated;
+        _rtcHelper = new GameRtcHelper(Alayout, RtcOverlay);
     }
     public void Init(string gameMode, string gameType, string playerColor = "", string seatsData = "", string rollsString = "")
     {
@@ -110,17 +85,12 @@ public partial class Game : ContentPage
         catch (Exception)
         {
         }
-        _cameraViewRedReady = false;
-        _cameraViewGreenReady = false;
-        _cameraViewYellowReady = false;
-        _cameraViewBlueReady = false;
-        ConfigureRtcWebViewSources();
-        _ = StartRtcAsync();
+        _rtcHelper.OnAppearing(GlobalConstants.RoomCode, playerColor);
     }
     protected override void OnDisappearing()
     {
         base.OnDisappearing();
-        _ = _rtcClient.StopAsync();
+        _ = _rtcHelper.OnDisappearingAsync();
         if (_input != null)
         {
             _input.ButtonChanged -= OnButtonChanged;
@@ -333,7 +303,7 @@ public partial class Game : ContentPage
         int rotation = engine.EngineHelper.SetRotation(this.playerColor);
         _boardRotation = rotation;
         Glayout?.RotateTo(rotation);
-        UpdateCameraViewRotation();
+        SyncRtcOverlayState();
 
         foreach (var player in engine.EngineHelper.players)
             foreach (var piece in player.Pieces)
@@ -347,8 +317,7 @@ public partial class Game : ContentPage
         Alayout.SizeChanged += (sender, e) => { 
             _unitX = Alayout.Width / 15.0;
             _unitY = Alayout.Height / 15.0;
-            UpdateCameraWebViewLayouts();
-            UpdateCameraViewRotation();
+            SyncRtcOverlayState();
             Pupulate(rotation);
         };
 
@@ -370,19 +339,7 @@ public partial class Game : ContentPage
         double x = engine.EngineHelper.originalPath["p0"][1] * (Alayout.Width / 15) - (TokenSelector.Width / 2) + 10;
         double y = engine.EngineHelper.originalPath["p0"][0] * (Alayout.Height / 15) - TokenSelector.Height - 2;
      
-        UpdateCameraViewVisibility();
-        UpdateCameraWebViewLayouts();
-
-#if ANDROID
-        if (CameraViewRed.Parent is Layout redLayout)
-            redLayout.Children.Remove(CameraViewRed);
-        if (CameraViewGreen.Parent is Layout greenLayout)
-            greenLayout.Children.Remove(CameraViewGreen);
-        if (CameraViewYellow.Parent is Layout yellowLayout)
-            yellowLayout.Children.Remove(CameraViewYellow);
-        if (CameraViewBlue.Parent is Layout blueLayout)
-            blueLayout.Children.Remove(CameraViewBlue);
-#endif
+        SyncRtcOverlayState();
 
 
         TokenSelector?.RotateTo(-rotation);
@@ -1294,147 +1251,16 @@ public partial class Game : ContentPage
     {
         await Task.CompletedTask;
     }
-    private void CameraViewRed_Navigated(object? sender, WebNavigatedEventArgs e)
+    private void SyncRtcOverlayState()
     {
-        _cameraViewRedReady = e.Result == WebNavigationResult.Success;
-        Console.WriteLine($"[WebRTC] Red camera view navigated. Success={_cameraViewRedReady}, Url={e.Url}");
-    }
-    private void CameraViewGreen_Navigated(object? sender, WebNavigatedEventArgs e)
-    {
-        _cameraViewGreenReady = e.Result == WebNavigationResult.Success;
-        Console.WriteLine($"[WebRTC] Green camera view navigated. Success={_cameraViewGreenReady}, Url={e.Url}");
-    }
-    private void CameraViewYellow_Navigated(object? sender, WebNavigatedEventArgs e)
-    {
-        _cameraViewYellowReady = e.Result == WebNavigationResult.Success;
-        Console.WriteLine($"[WebRTC] Yellow camera view navigated. Success={_cameraViewYellowReady}, Url={e.Url}");
-    }
-    private void CameraViewBlue_Navigated(object? sender, WebNavigatedEventArgs e)
-    {
-        _cameraViewBlueReady = e.Result == WebNavigationResult.Success;
-        Console.WriteLine($"[WebRTC] Blue camera view navigated. Success={_cameraViewBlueReady}, Url={e.Url}");
-    }
-    private void ConfigureRtcWebViewSources()
-    {
-        try
-        {
-            if (UseNativeGoogleWebRtc)
-            {
-                CameraViewRed.IsVisible = false;
-                CameraViewGreen.IsVisible = false;
-                CameraViewYellow.IsVisible = false;
-                CameraViewBlue.IsVisible = false;
-                CameraViewRed.Source = null;
-                CameraViewGreen.Source = null;
-                CameraViewYellow.Source = null;
-                CameraViewBlue.Source = null;
-                Console.WriteLine("[WebRTC] Native RTC mode active. WebViews disabled on this platform.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(GlobalConstants.RoomCode))
-                return;
-            var selfId = (playerColor ?? string.Empty).Trim().ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(selfId))
-                return;
-
-            var room = Uri.EscapeDataString(GlobalConstants.RoomCode);
-            var self = Uri.EscapeDataString(selfId);
-            var apiBase = Uri.EscapeDataString(WebRtcApiBaseUrl);
-            var debug = WebRtcDebug ? "1" : "0";
-            var broadcasterUrl = $"https://www.ludocities.com/broadcaster.html#roomId={room}&playerColor={self}&apiBase={apiBase}&debug={debug}";
-            var receiverUrl = $"https://www.ludocities.com/receiver.html#roomId={room}&playerColor={self}&apiBase={apiBase}&debug={debug}";
-
-            Console.WriteLine($"[WebRTC] Configuring RTC for room={GlobalConstants.RoomCode}, self={selfId}");
-            CameraViewRed.Source = broadcasterUrl;
-            CameraViewGreen.Source = receiverUrl;
-            CameraViewYellow.Source = receiverUrl;
-            CameraViewBlue.Source = receiverUrl;
-            UpdateCameraViewVisibility();
-            UpdateCameraWebViewLayouts();
-            UpdateCameraViewRotation();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WebRTC] Failed to configure webview sources: {ex.Message}");
-        }
-    }
-    private void UpdateCameraViewVisibility()
-    {
-        if (UseNativeGoogleWebRtc)
-        {
-            CameraViewRed.IsVisible = false;
-            CameraViewGreen.IsVisible = false;
-            CameraViewYellow.IsVisible = false;
-            CameraViewBlue.IsVisible = false;
-            return;
-        }
-
-        CameraViewRed.IsVisible = RedPlayerSeat?.IsVisible ?? false;
-        CameraViewGreen.IsVisible = GreenPlayerSeat?.IsVisible ?? false;
-        CameraViewYellow.IsVisible = YellowPlayerSeat?.IsVisible ?? false;
-        CameraViewBlue.IsVisible = BluePlayerSeat?.IsVisible ?? false;
-    }
-    private void UpdateCameraWebViewLayouts()
-    {
-        try
-        {
-            if (Alayout.Width <= 0 || Alayout.Height <= 0)
-                return;
-
-            var width = (Alayout.Width / 15.0) * 6.0;
-            var height = (Alayout.Height / 15.0) * 6.0;
-            SetCameraViewBounds(CameraViewRed, 0, 0, width, height);
-            SetCameraViewBounds(CameraViewGreen, Alayout.Width - width, 0, width, height);
-            SetCameraViewBounds(CameraViewYellow, Alayout.Width - width, Alayout.Height - height, width, height);
-            SetCameraViewBounds(CameraViewBlue, 0, Alayout.Height - height, width, height);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WebRTC] Failed to update camera layouts: {ex.Message}");
-        }
-    }
-    private static void SetCameraViewBounds(View view, double x, double y, double width, double height)
-    {
-        view.WidthRequest = width;
-        view.HeightRequest = height;
-        AbsoluteLayout.SetLayoutBounds(view, new Rect(x, y, width, height));
-        AbsoluteLayout.SetLayoutFlags(view, Microsoft.Maui.Layouts.AbsoluteLayoutFlags.None);
-    }
-    private async void UpdateCameraViewRotation()
-    {
-        try
-        {
-            var uprightRotation = -_boardRotation;
-            await Task.WhenAll(
-                CameraViewRed.RotateTo(uprightRotation, 1, Easing.CubicIn),
-                CameraViewGreen.RotateTo(uprightRotation, 1, Easing.CubicIn),
-                CameraViewYellow.RotateTo(uprightRotation, 1, Easing.CubicIn),
-                CameraViewBlue.RotateTo(uprightRotation, 1, Easing.CubicIn));
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[WebRTC] Failed to update camera rotation: {ex.Message}");
-        }
-    }
-    private async Task StartRtcAsync()
-    {
-        try
-        {
-            if (!UseNativeGoogleWebRtc)
-                return;
-            if (string.IsNullOrWhiteSpace(GlobalConstants.RoomCode))
-                return;
-            var selfId = (playerColor ?? string.Empty).Trim().ToLowerInvariant();
-            if (string.IsNullOrWhiteSpace(selfId))
-                return;
-
-            await _rtcClient.StartAsync(GlobalConstants.RoomCode, selfId, WebRtcApiBaseUrl);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[NativeRTC] Start failed: {ex.Message}");
-        }
+        _rtcHelper.UpdateState(
+            Alayout.Width,
+            Alayout.Height,
+            _boardRotation,
+            RedPlayerSeat?.IsVisible ?? false,
+            GreenPlayerSeat?.IsVisible ?? false,
+            YellowPlayerSeat?.IsVisible ?? false,
+            BluePlayerSeat?.IsVisible ?? false);
     }
     private void CloseTokenSelector(object sender, EventArgs e)
     {

@@ -21,8 +21,16 @@ public class WebRtcController : ControllerBase
 
         var roomId = request.RoomId.Trim();
         var playerColor = NormalizeColor(request.PlayerColor);
+        var key = $"{roomId}:{playerColor}";
+        if (OffersByRoomAndPlayer.TryGetValue(key, out var existingOffer) &&
+            string.Equals(existingOffer.OffersJson, request.OffersJson, StringComparison.Ordinal))
+        {
+            Console.WriteLine($"[WebRTC][API] Offer deduped. Room={roomId}, PlayerColor={playerColor}, Length={request.OffersJson.Length}");
+            return existingOffer;
+        }
+
         var envelope = new WebRtcOfferEnvelope(roomId, playerColor, request.OffersJson, DateTime.UtcNow);
-        OffersByRoomAndPlayer[$"{roomId}:{playerColor}"] = envelope;
+        OffersByRoomAndPlayer[key] = envelope;
         Console.WriteLine($"[WebRTC][API] Offer upserted. Room={roomId}, PlayerColor={playerColor}, Length={request.OffersJson.Length}");
         return envelope;
     }
@@ -39,7 +47,6 @@ public class WebRtcController : ControllerBase
             .OrderByDescending(x => x.UpdatedUtc)
             .Take(8)
             .ToList();
-        Console.WriteLine($"[WebRTC][API] Offers fetched. Room={rid}, Count={offers.Count}");
         return offers;
     }
 
@@ -56,8 +63,16 @@ public class WebRtcController : ControllerBase
         var roomId = request.RoomId.Trim();
         var responder = NormalizeColor(request.PlayerColor);
         var target = NormalizeColor(request.TargetPlayerColor);
+        var key = $"{roomId}:{target}:{responder}";
+        if (AnswersByRoomTargetAndResponder.TryGetValue(key, out var existingAnswer) &&
+            string.Equals(existingAnswer.AnswerJson, request.AnswerJson, StringComparison.Ordinal))
+        {
+            Console.WriteLine($"[WebRTC][API] Answer deduped. Room={roomId}, Target={target}, Responder={responder}, Length={request.AnswerJson.Length}");
+            return existingAnswer;
+        }
+
         var envelope = new WebRtcAnswerEnvelope(roomId, target, responder, request.AnswerJson, DateTime.UtcNow);
-        AnswersByRoomTargetAndResponder[$"{roomId}:{target}:{responder}"] = envelope;
+        AnswersByRoomTargetAndResponder[key] = envelope;
         Console.WriteLine($"[WebRTC][API] Answer upserted. Room={roomId}, Target={target}, Responder={responder}, Length={request.AnswerJson.Length}");
         return envelope;
     }
@@ -77,7 +92,6 @@ public class WebRtcController : ControllerBase
             .OrderByDescending(x => x.UpdatedUtc)
             .Take(8)
             .ToList();
-        Console.WriteLine($"[WebRTC][API] Answers fetched. Room={rid}, Target={target}, Count={answers.Count}");
         return answers;
     }
 

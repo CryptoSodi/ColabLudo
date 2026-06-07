@@ -1,6 +1,6 @@
 using System.Text;
 using System.Text.Json;
-using Android.Views;
+using Android.Content.PM;
 using Android.Widget;
 using Java.Util.Concurrent;
 using Microsoft.Maui.ApplicationModel;
@@ -22,15 +22,19 @@ internal sealed class AndroidWebRtcTrackController
     private SurfaceTextureHelper? _surfaceTextureHelper;
     private VideoCapturerAndroidObserver? _capturerObserver;
 
-    private PeerConnection? _receivePeer;
-    private string _receiveOwner = string.Empty;
+    private readonly Dictionary<string, PeerConnection> _receivePeers = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, PeerConnection> _sendPeers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, AudioTrack> _remoteAudioTracks = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, VideoTrack> _remoteVideoTracks = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _appliedAnswers = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _processedOffers = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _occupiedOpponents = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> _remoteAudioEnabled = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, bool> _remoteVideoVisible = new(StringComparer.OrdinalIgnoreCase);
+    private string? _lastPostedOffersJson;
 
-    private SurfaceViewRenderer? _localRenderer;
-    private SurfaceViewRenderer? _remoteRenderer;
-    private LinearLayout? _overlayRoot;
+    private SurfaceViewRenderer? _localPreviewRenderer;
+    private readonly Dictionary<string, SurfaceViewRenderer> _seatRenderers = new(StringComparer.OrdinalIgnoreCase);
 
     private string _roomId = string.Empty;
     private string _selfId = string.Empty;
@@ -47,6 +51,74 @@ internal sealed class AndroidWebRtcTrackController
     {
         // Fast polling during handshake; back off once remote media is flowing.
         return _hasRemoteVideo ? 2500 : 350;
+    }
+
+    public void SetLocalAudioEnabled(bool isEnabled)
+    {
+        try
+        {
+            _localAudioTrack?.SetEnabled(isEnabled);
+            Console.WriteLine($"[NativeRTC] Local audio {(isEnabled ? "enabled" : "muted")}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Failed to change local audio state: {ex.Message}");
+        }
+    }
+
+    public void SetLocalVideoEnabled(bool isEnabled)
+    {
+        try
+        {
+            _localVideoTrack?.SetEnabled(isEnabled);
+            Console.WriteLine($"[NativeRTC] Local video {(isEnabled ? "enabled" : "disabled")}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Failed to change local video state: {ex.Message}");
+        }
+    }
+
+    public void SetRemoteAudioEnabled(string playerColor, bool isEnabled)
+    {
+        if (string.IsNullOrWhiteSpace(playerColor))
+            return;
+
+        var key = playerColor.Trim().ToLowerInvariant();
+        _remoteAudioEnabled[key] = isEnabled;
+
+        try
+        {
+            if (_remoteAudioTracks.TryGetValue(key, out var track))
+                track.SetEnabled(isEnabled);
+            Console.WriteLine($"[NativeRTC] Remote audio {(isEnabled ? "enabled" : "muted")} for {key}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Failed to change remote audio state for {key}: {ex.Message}");
+        }
+    }
+
+    public void SetRemoteVideoVisible(string playerColor, bool isVisible)
+    {
+        if (string.IsNullOrWhiteSpace(playerColor))
+            return;
+
+        var key = playerColor.Trim().ToLowerInvariant();
+        _remoteVideoVisible[key] = isVisible;
+
+        if (!_seatRenderers.TryGetValue(key, out var renderer))
+            return;
+
+        try
+        {
+            renderer.Post(() => renderer.Visibility = isVisible ? global::Android.Views.ViewStates.Visible : global::Android.Views.ViewStates.Invisible);
+            Console.WriteLine($"[NativeRTC] Remote video {(isVisible ? "shown" : "hidden")} for {key}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Failed to change remote video visibility for {key}: {ex.Message}");
+        }
     }
 
     public void Initialize()
@@ -74,14 +146,16 @@ internal sealed class AndroidWebRtcTrackController
             .SetVideoDecoderFactory(decoderFactory)
             .CreatePeerConnectionFactory();
 
-        BuildAndroidOverlay();
-        InitializeLocalTracks();
+        RtcHostRegistry.HostsChanged -= AttachRenderersToHosts;
+        RtcHostRegistry.HostsChanged += AttachRenderersToHosts;
+        EnsureSeatRenderers();
+        EnsureLocalTracksReady();
 
         IsInitialized = true;
         Console.WriteLine("[NativeRTC] Android WebRTC initialized.");
     }
 
-    public void StartSession(string roomId, string selfId, string apiBase)
+    public void StartSession(string roomId, string selfId, string apiBase, IReadOnlyCollection<string>? occupiedOpponentColors = null)
     {
         if (!IsInitialized)
             throw new InvalidOperationException("WebRTC track controller not initialized.");
@@ -91,6 +165,16 @@ internal sealed class AndroidWebRtcTrackController
         _apiBase = apiBase.TrimEnd('/');
         _isRunning = true;
         _hasRemoteVideo = false;
+        _lastPostedOffersJson = null;
+        _occupiedOpponents.Clear();
+        if (occupiedOpponentColors != null)
+        {
+            foreach (var color in occupiedOpponentColors.Where(x => !string.IsNullOrWhiteSpace(x)))
+                _occupiedOpponents.Add(color.Trim().ToLowerInvariant());
+        }
+        EnsureLocalTracksReady();
+        AttachLocalTrackToSeat();
+        AttachRenderersToHosts();
         Console.WriteLine($"[NativeRTC] Session started room={_roomId} self={_selfId} api={_apiBase}");
     }
 
@@ -113,28 +197,41 @@ internal sealed class AndroidWebRtcTrackController
             pc.Dispose();
         _sendPeers.Clear();
 
-        _receivePeer?.Dispose();
-        _receivePeer = null;
-        _receiveOwner = string.Empty;
+        foreach (var pc in _receivePeers.Values)
+            pc.Dispose();
+        _receivePeers.Clear();
+        _remoteAudioTracks.Clear();
+        _remoteVideoTracks.Clear();
         _hasRemoteVideo = false;
+        _lastPostedOffersJson = null;
+        _occupiedOpponents.Clear();
+        _remoteAudioEnabled.Clear();
+        _remoteVideoVisible.Clear();
 
-        try { _capturer?.StopCapture(); } catch { }
-        _capturer?.Dispose();
-        _capturer = null;
+        DisposeLocalMedia();
 
-        _surfaceTextureHelper?.Dispose();
-        _surfaceTextureHelper = null;
+        try { _localPreviewRenderer?.Release(); } catch { }
+        _localPreviewRenderer = null;
 
-        _localVideoTrack?.Dispose();
-        _localVideoTrack = null;
+        foreach (var renderer in _seatRenderers.Values)
+            renderer.Release();
+        _seatRenderers.Clear();
+        RtcHostRegistry.HostsChanged -= AttachRenderersToHosts;
+    }
 
-        _localRenderer?.Release();
-        _remoteRenderer?.Release();
+    private void EnsureLocalTracksReady()
+    {
+        if (_localAudioTrack != null && _localVideoTrack != null && _capturer != null)
+            return;
 
-        RemoveAndroidOverlay();
+        if (!HasCapturePermissions())
+        {
+            Console.WriteLine("[NativeRTC] Camera/mic permissions not granted yet; delaying local track init.");
+            return;
+        }
 
-        HasLocalAudioTrack = false;
-        HasLocalVideoTrack = false;
+        DisposeLocalMedia();
+        InitializeLocalTracks();
     }
 
     private void InitializeLocalTracks()
@@ -153,17 +250,87 @@ internal sealed class AndroidWebRtcTrackController
         _capturer.StartCapture(640, 480, 20);
 
         _localVideoTrack = _factory.CreateVideoTrack("video0", _videoSource);
-        if (_localRenderer != null)
-            _localVideoTrack.AddSink(_localRenderer);
+        EnsureLocalPreviewRenderer();
+        if (_localPreviewRenderer != null)
+        {
+            try { _localVideoTrack.AddSink(_localPreviewRenderer); } catch { }
+        }
+        AttachLocalTrackToSeat();
 
         HasLocalAudioTrack = true;
         HasLocalVideoTrack = true;
+        Console.WriteLine("[NativeRTC] Local audio/video tracks initialized.");
+    }
+
+    private void DisposeLocalMedia()
+    {
+        try { _capturer?.StopCapture(); } catch { }
+        _capturer?.Dispose();
+        _capturer = null;
+
+        _surfaceTextureHelper?.Dispose();
+        _surfaceTextureHelper = null;
+
+        _localVideoTrack?.Dispose();
+        _localVideoTrack = null;
+
+        _localAudioTrack?.Dispose();
+        _localAudioTrack = null;
+
+        _videoSource?.Dispose();
+        _videoSource = null;
+
+        _audioSource?.Dispose();
+        _audioSource = null;
+
+        HasLocalAudioTrack = false;
+        HasLocalVideoTrack = false;
+    }
+
+    private void EnsureLocalPreviewRenderer()
+    {
+        if (_localPreviewRenderer != null || _eglBase == null)
+            return;
+
+        var activity = Platform.CurrentActivity;
+        if (activity == null)
+            return;
+
+        activity.RunOnUiThread(() =>
+        {
+            if (_localPreviewRenderer != null || _eglBase == null)
+                return;
+
+            try
+            {
+                var renderer = new SurfaceViewRenderer(activity);
+                renderer.Init(_eglBase.EglBaseContext, null);
+                renderer.SetMirror(true);
+                renderer.SetZOrderMediaOverlay(false);
+                renderer.SetEnableHardwareScaler(true);
+                _localPreviewRenderer = renderer;
+                Console.WriteLine("[NativeRTC] Dedicated local preview renderer initialized.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[NativeRTC] Failed to init dedicated local preview renderer: {ex.Message}");
+            }
+        });
+    }
+
+    private static bool HasCapturePermissions()
+    {
+        var activity = Platform.CurrentActivity;
+        if (activity == null)
+            return false;
+
+        return activity.CheckSelfPermission(global::Android.Manifest.Permission.Camera) == Permission.Granted
+            && activity.CheckSelfPermission(global::Android.Manifest.Permission.RecordAudio) == Permission.Granted;
     }
 
     private async Task RunBroadcasterTickAsync(HttpClient http, CancellationToken cancellationToken)
     {
-        var targets = new[] { "red", "green", "yellow", "blue" }
-            .Where(x => !x.Equals(_selfId, StringComparison.OrdinalIgnoreCase))
+        var targets = GetBroadcastTargets()
             .ToList();
 
         if (targets.Count == 0)
@@ -189,9 +356,13 @@ internal sealed class AndroidWebRtcTrackController
             if (offers.Count > 0)
             {
                 var offersJson = JsonSerializer.Serialize(offers);
-                var content = JsonSerializer.Serialize(new { roomId = _roomId, playerColor = _selfId, offersJson });
-                var response = await http.PostAsync($"{_apiBase}/offers", new StringContent(content, Encoding.UTF8, "application/json"), cancellationToken);
-                Console.WriteLine($"[NativeRTC] POST offers => {(int)response.StatusCode}");
+                if (!string.Equals(_lastPostedOffersJson, offersJson, StringComparison.Ordinal))
+                {
+                    var content = JsonSerializer.Serialize(new { roomId = _roomId, playerColor = _selfId, offersJson });
+                    var response = await http.PostAsync($"{_apiBase}/offers", new StringContent(content, Encoding.UTF8, "application/json"), cancellationToken);
+                    Console.WriteLine($"[NativeRTC] POST offers => {(int)response.StatusCode}");
+                    _lastPostedOffersJson = offersJson;
+                }
             }
         }
 
@@ -221,6 +392,7 @@ internal sealed class AndroidWebRtcTrackController
 
             await SetRemoteDescriptionAsync(pc, answer, cancellationToken);
             _appliedAnswers.Add(key);
+            _lastPostedOffersJson = null;
             Console.WriteLine($"[NativeRTC] Answer applied for {responder}");
         }
     }
@@ -241,6 +413,8 @@ internal sealed class AndroidWebRtcTrackController
             var owner = (envelope.GetProperty("playerColor").GetString() ?? string.Empty).ToLowerInvariant();
             if (owner == _selfId || string.IsNullOrWhiteSpace(owner))
                 continue;
+
+            var updatedUtc = envelope.GetProperty("updatedUtc").ToString();
 
             var offersJson = envelope.GetProperty("offersJson").GetString() ?? "[]";
             using var listDoc = JsonDocument.Parse(offersJson);
@@ -264,21 +438,20 @@ internal sealed class AndroidWebRtcTrackController
 
             var offerElement = mine.GetProperty("offer");
             var sdp = offerElement.GetProperty("sdp").GetString() ?? string.Empty;
-            var dedup = $"{_roomId}:{owner}:{_selfId}:{sdp.GetHashCode()}";
+            var dedup = $"{_roomId}:{owner}:{_selfId}:{updatedUtc}";
             if (_processedOffers.Contains(dedup))
                 continue;
 
             var offer = new SessionDescription(SessionDescription.SdpType.Offer, sdp);
-            if (_receivePeer == null || !_receiveOwner.Equals(owner, StringComparison.OrdinalIgnoreCase))
+            if (!_receivePeers.TryGetValue(owner, out var receiverPeer))
             {
-                try { _receivePeer?.Dispose(); } catch { }
-                _receivePeer = CreateReceiverPeer();
-                _receiveOwner = owner;
-                Console.WriteLine($"[NativeRTC] Receiver peer reset for owner={owner}");
+                receiverPeer = CreateReceiverPeer(owner);
+                _receivePeers[owner] = receiverPeer;
+                Console.WriteLine($"[NativeRTC] Receiver peer created for owner={owner}");
             }
 
-            await SetRemoteDescriptionAsync(_receivePeer, offer, cancellationToken);
-            var answer = await CreateAnswerAsync(_receivePeer, cancellationToken);
+            await SetRemoteDescriptionAsync(receiverPeer, offer, cancellationToken);
+            var answer = await CreateAnswerAsync(receiverPeer, cancellationToken);
             if (answer == null)
                 continue;
             Console.WriteLine($"[NativeRTC] Answer ready for owner={owner}. sdpLen={answer.Description?.Length ?? 0}");
@@ -303,14 +476,14 @@ internal sealed class AndroidWebRtcTrackController
         return pc;
     }
 
-    private PeerConnection CreateReceiverPeer()
+    private PeerConnection CreateReceiverPeer(string owner)
     {
-        var pc = CreatePeerConnection();
-        Console.WriteLine("[NativeRTC] Receiver peer created.");
+        var pc = CreatePeerConnection(owner);
+        Console.WriteLine($"[NativeRTC] Receiver peer created owner={owner}.");
         return pc;
     }
 
-    private PeerConnection CreatePeerConnection()
+    private PeerConnection CreatePeerConnection(string? owner = null)
     {
         if (_factory == null)
             throw new InvalidOperationException("Factory is null.");
@@ -321,7 +494,7 @@ internal sealed class AndroidWebRtcTrackController
         };
         var rtcConfig = new PeerConnection.RTCConfiguration(iceServers);
 
-        var observer = new PcObserver(this);
+        var observer = new PcObserver(this, owner);
         var pc = _factory.CreatePeerConnection(rtcConfig, observer);
         if (pc == null)
             throw new InvalidOperationException("CreatePeerConnection failed.");
@@ -366,8 +539,8 @@ internal sealed class AndroidWebRtcTrackController
     private static async Task WaitForIceGatheringCompleteAsync(PeerConnection pc, CancellationToken ct)
     {
         // Non-trickle signaling: wait briefly so SDP includes gathered ICE candidates.
-        const int maxWaitMs = 1200;
-        const int stepMs = 100;
+        const int maxWaitMs = 450;
+        const int stepMs = 50;
         var waited = 0;
 
         while (waited < maxWaitMs && !ct.IsCancellationRequested)
@@ -446,7 +619,15 @@ internal sealed class AndroidWebRtcTrackController
         throw new InvalidOperationException("No camera capturer available.");
     }
 
-    private void BuildAndroidOverlay()
+    private IEnumerable<string> GetBroadcastTargets()
+    {
+        if (_occupiedOpponents.Count > 0)
+            return _occupiedOpponents;
+
+        return GetSeatKeys().Where(x => !x.Equals(_selfId, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void EnsureSeatRenderers()
     {
         var activity = Platform.CurrentActivity;
         if (activity == null || _eglBase == null)
@@ -456,71 +637,180 @@ internal sealed class AndroidWebRtcTrackController
         {
             try
             {
-                var root = activity.Window?.DecorView as ViewGroup;
-                if (root == null)
-                    return;
-
-                _overlayRoot = new LinearLayout(activity)
+                foreach (var seat in GetSeatKeys())
                 {
-                    Orientation = Orientation.Horizontal,
-                };
-                var rootParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, 320)
+                    var host = RtcHostRegistry.GetHost(seat);
+                    if (host == null)
+                        continue;
+
+                    if (_seatRenderers.TryGetValue(seat, out var existing) && !ReferenceEquals(existing, host))
+                    {
+                        try { existing.Release(); } catch { }
+                        _seatRenderers.Remove(seat);
+                    }
+
+                    if (!_seatRenderers.TryGetValue(seat, out var renderer))
+                    {
+                        host.Init(_eglBase.EglBaseContext, null);
+                        host.SetZOrderMediaOverlay(false);
+                        host.SetEnableHardwareScaler(true);
+                        _seatRenderers[seat] = host;
+                        renderer = host;
+                    }
+
+                    renderer.SetMirror(seat.Equals(_selfId, StringComparison.OrdinalIgnoreCase));
+                }
+
+                foreach (var seat in GetSeatKeys().Where(seat => RtcHostRegistry.GetHost(seat) == null).ToList())
                 {
-                    Gravity = GravityFlags.Top
-                };
-                _overlayRoot.LayoutParameters = rootParams;
+                    if (_seatRenderers.TryGetValue(seat, out var staleRenderer))
+                    {
+                        try { staleRenderer.Release(); } catch { }
+                        _seatRenderers.Remove(seat);
+                    }
+                }
 
-                _localRenderer = new SurfaceViewRenderer(activity);
-                _remoteRenderer = new SurfaceViewRenderer(activity);
-
-                _localRenderer.Init(_eglBase.EglBaseContext, null);
-                _remoteRenderer.Init(_eglBase.EglBaseContext, null);
-                _localRenderer.SetMirror(true);
-
-                var childParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MatchParent, 1f);
-                _overlayRoot.AddView(_localRenderer, childParams);
-                _overlayRoot.AddView(_remoteRenderer, childParams);
-
-                root.AddView(_overlayRoot);
+                AttachLocalTrackToSeat();
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine($"[NativeRTC] Failed to create overlay: {ex.Message}");
+                Console.WriteLine($"[NativeRTC] Failed to sync seat renderers: {ex.Message}");
             }
         });
     }
 
-    private void RemoveAndroidOverlay()
+    private void AttachRenderersToHosts()
     {
-        var activity = Platform.CurrentActivity;
-        if (activity == null)
+        EnsureSeatRenderers();
+    }
+
+    private void AttachLocalTrackToSeat()
+    {
+        if (_localVideoTrack == null || string.IsNullOrWhiteSpace(_selfId))
             return;
 
-        activity.RunOnUiThread(() =>
+        foreach (var entry in _seatRenderers)
         {
-            try
-            {
-                if (_overlayRoot?.Parent is ViewGroup parent)
-                    parent.RemoveView(_overlayRoot);
-                _overlayRoot = null;
-            }
-            catch { }
-        });
+            try { _localVideoTrack.RemoveSink(entry.Value); } catch { }
+            entry.Value.SetMirror(entry.Key.Equals(_selfId, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (_seatRenderers.TryGetValue(_selfId, out var renderer))
+            _localVideoTrack.AddSink(renderer);
     }
 
-    private sealed class PcObserver(AndroidWebRtcTrackController owner) : Java.Lang.Object, PeerConnection.IObserver
+    private void AttachRemoteTrack(string owner, VideoTrack? track)
+    {
+        if (track == null || !_seatRenderers.TryGetValue(owner, out var renderer))
+            return;
+
+        try
+        {
+            _remoteVideoTracks[owner] = track;
+            track.AddSink(renderer);
+            ApplyRemoteVideoVisibility(owner, renderer);
+            _hasRemoteVideo = true;
+            Console.WriteLine($"[NativeRTC] Remote video track attached owner={owner}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Remote attach failed owner={owner}: {ex.Message}");
+        }
+    }
+
+    private void HandleReceiverPeerStateChange(string owner, PeerConnection.IceConnectionState? newState)
+    {
+        if (string.IsNullOrWhiteSpace(owner) || newState == null)
+            return;
+
+        if (newState == PeerConnection.IceConnectionState.Failed ||
+            newState == PeerConnection.IceConnectionState.Disconnected ||
+            newState == PeerConnection.IceConnectionState.Closed)
+        {
+            Console.WriteLine($"[NativeRTC] Receiver peer reset requested owner={owner} ice={newState}.");
+            ResetReceiverPeer(owner, allowOfferRetry: true);
+        }
+    }
+
+    private void HandleReceiverPeerStateChange(string owner, PeerConnection.PeerConnectionState? newState)
+    {
+        if (string.IsNullOrWhiteSpace(owner) || newState == null)
+            return;
+
+        if (newState == PeerConnection.PeerConnectionState.Failed ||
+            newState == PeerConnection.PeerConnectionState.Disconnected ||
+            newState == PeerConnection.PeerConnectionState.Closed)
+        {
+            Console.WriteLine($"[NativeRTC] Receiver peer reset requested owner={owner} connection={newState}.");
+            ResetReceiverPeer(owner, allowOfferRetry: true);
+        }
+    }
+
+    private void ResetReceiverPeer(string owner, bool allowOfferRetry)
+    {
+        if (string.IsNullOrWhiteSpace(owner))
+            return;
+
+        if (_receivePeers.TryGetValue(owner, out var peer))
+        {
+            try { peer.Dispose(); } catch { }
+            _receivePeers.Remove(owner);
+        }
+
+        _remoteAudioTracks.Remove(owner);
+        _remoteVideoTracks.Remove(owner);
+        _hasRemoteVideo = _remoteVideoTracks.Count > 0;
+
+        if (allowOfferRetry)
+        {
+            var prefix = $"{_roomId}:{owner}:{_selfId}:";
+            _processedOffers.RemoveWhere(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private void AttachRemoteAudioTrack(string owner, AudioTrack? track)
+    {
+        if (track == null || string.IsNullOrWhiteSpace(owner))
+            return;
+
+        try
+        {
+            _remoteAudioTracks[owner] = track;
+            if (_remoteAudioEnabled.TryGetValue(owner, out var isEnabled))
+                track.SetEnabled(isEnabled);
+            Console.WriteLine($"[NativeRTC] Remote audio track attached owner={owner}.");
+        }
+        catch (System.Exception ex)
+        {
+            Console.WriteLine($"[NativeRTC] Remote audio attach failed owner={owner}: {ex.Message}");
+        }
+    }
+
+    private void ApplyRemoteVideoVisibility(string owner, SurfaceViewRenderer renderer)
+    {
+        var isVisible = !_remoteVideoVisible.TryGetValue(owner, out var requestedVisible) || requestedVisible;
+        renderer.Post(() => renderer.Visibility = isVisible ? global::Android.Views.ViewStates.Visible : global::Android.Views.ViewStates.Invisible);
+    }
+
+    private static string[] GetSeatKeys() => ["red", "green", "yellow", "blue"];
+
+    private sealed class PcObserver(AndroidWebRtcTrackController owner, string? remoteOwner) : Java.Lang.Object, PeerConnection.IObserver
     {
         public void OnAddStream(MediaStream? stream)
         {
-            if (stream == null || owner._remoteRenderer == null)
+            if (stream == null || string.IsNullOrWhiteSpace(remoteOwner))
                 return;
+
+            if (stream.AudioTracks != null && stream.AudioTracks.Count > 0)
+            {
+                var audioTrack = stream.AudioTracks[0] as AudioTrack;
+                owner.AttachRemoteAudioTrack(remoteOwner, audioTrack);
+            }
 
             if (stream.VideoTracks != null && stream.VideoTracks.Count > 0)
             {
                 var track = stream.VideoTracks[0] as VideoTrack;
-                track?.AddSink(owner._remoteRenderer);
-                owner._hasRemoteVideo = true;
-                Console.WriteLine("[NativeRTC] Remote video track attached.");
+                owner.AttachRemoteTrack(remoteOwner, track);
             }
         }
 
@@ -528,28 +818,41 @@ internal sealed class AndroidWebRtcTrackController
         public void OnDataChannel(DataChannel? dataChannel) { }
         public void OnIceCandidate(IceCandidate? candidate) { }
         public void OnIceCandidatesRemoved(IceCandidate[]? candidates) { }
-        public void OnIceConnectionChange(PeerConnection.IceConnectionState? newState) => Console.WriteLine($"[NativeRTC] ICE={newState}");
+        public void OnIceConnectionChange(PeerConnection.IceConnectionState? newState)
+        {
+            Console.WriteLine($"[NativeRTC] ICE={newState}");
+            if (!string.IsNullOrWhiteSpace(remoteOwner))
+                owner.HandleReceiverPeerStateChange(remoteOwner, newState);
+        }
         public void OnIceConnectionReceivingChange(bool p0) { }
         public void OnIceGatheringChange(PeerConnection.IceGatheringState? newState) { }
         public void OnRemoveStream(MediaStream? stream) { }
         public void OnRenegotiationNeeded() { }
         public void OnSignalingChange(PeerConnection.SignalingState? newState) => Console.WriteLine($"[NativeRTC] Signaling={newState}");
         public void OnStandardizedIceConnectionChange(PeerConnection.IceConnectionState? newState) { }
-        public void OnConnectionChange(PeerConnection.PeerConnectionState? newState) => Console.WriteLine($"[NativeRTC] Connection={newState}");
+        public void OnConnectionChange(PeerConnection.PeerConnectionState? newState)
+        {
+            Console.WriteLine($"[NativeRTC] Connection={newState}");
+            if (!string.IsNullOrWhiteSpace(remoteOwner))
+                owner.HandleReceiverPeerStateChange(remoteOwner, newState);
+        }
         public void OnTrack(RtpTransceiver? transceiver)
         {
-            if (transceiver?.Receiver == null || owner._remoteRenderer == null)
+            if (transceiver?.Receiver == null || string.IsNullOrWhiteSpace(remoteOwner))
                 return;
 
             try
             {
-                var track = transceiver.Receiver.Track() as VideoTrack;
-                if (track == null)
-                    return;
-
-                track.AddSink(owner._remoteRenderer);
-                owner._hasRemoteVideo = true;
-                Console.WriteLine("[NativeRTC] Remote video track attached via OnTrack.");
+                var track = transceiver.Receiver.Track();
+                switch (track)
+                {
+                    case VideoTrack videoTrack:
+                        owner.AttachRemoteTrack(remoteOwner, videoTrack);
+                        break;
+                    case AudioTrack audioTrack:
+                        owner.AttachRemoteAudioTrack(remoteOwner, audioTrack);
+                        break;
+                }
             }
             catch (System.Exception ex)
             {

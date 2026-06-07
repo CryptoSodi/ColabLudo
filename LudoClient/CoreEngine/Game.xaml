@@ -9,17 +9,13 @@
              xmlns:controls="clr-namespace:LudoClient.Controls"
              BackgroundImageSource="{x:Static constants:Skins.Background_Waitingroom}">
     <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,.3*,.001*,Auto,.4*,Auto">
-        <local:Capsule x:Name="Glayout" Grid.Row="3" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center" Margin="8">
-            <AbsoluteLayout x:Name="Alayout" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="15" Grid.RowSpan="15" Margin="5">
+        <Grid Grid.Row="3" Margin="8" HorizontalOptions="Center" VerticalOptions="Center">
+            <local:Capsule x:Name="Glayout" ImageSource="{x:Static constants:Skins.GameBoard}" HorizontalOptions="Center" VerticalOptions="Center">
+                <AbsoluteLayout x:Name="Alayout" HorizontalOptions="Fill" VerticalOptions="Fill" Grid.ColumnSpan="15" Grid.RowSpan="15" Margin="5">
                 <AbsoluteLayout.GestureRecognizers>
                     <TapGestureRecognizer Tapped="CloseTokenSelector"/>
                 </AbsoluteLayout.GestureRecognizers>
                 
-                <controls:CameraWebView x:Name="CameraViewRed" ZIndex="1" BackgroundColor="Red" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/broadcaster.html"/>
-                <controls:CameraWebView x:Name="CameraViewGreen" ZIndex="1" BackgroundColor="Green" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
-                <controls:CameraWebView x:Name="CameraViewYellow" ZIndex="1" BackgroundColor="Yellow" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
-                <controls:CameraWebView x:Name="CameraViewBlue" ZIndex="1" BackgroundColor="Blue" IsVisible="{OnPlatform Android=false, WinUI=true}" Source="https://www.ludocities.com/receiver.html"/>
-                            
                     <local:Token x:Name="red1" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red2" piece="{x:Static constants:Skins.RedToken}"/>
                     <local:Token x:Name="red3" piece="{x:Static constants:Skins.RedToken}"/>
@@ -59,8 +55,9 @@
                         </StackLayout>
                     </acrylic:AcrylicView>
                 </AbsoluteLayout>
-
-        </local:Capsule>
+            </local:Capsule>
+            <AbsoluteLayout x:Name="RtcOverlay" HorizontalOptions="Center" VerticalOptions="Center" InputTransparent="True" Margin="5" />
+        </Grid>
 
         <StackLayout x:Name="Row1" Grid.Row="1" Orientation="Horizontal" HeightRequest="100" HorizontalOptions="Fill" VerticalOptions="End">
             <local:PlayerSeat x:Name="s3" HorizontalOptions="FillAndExpand" VerticalOptions="End"/>
