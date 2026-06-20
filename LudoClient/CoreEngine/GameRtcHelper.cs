@@ -217,16 +217,22 @@ internal sealed class GameRtcHelper
             _overlayHost.WidthRequest = _boardWidth;
             _overlayHost.HeightRequest = _boardHeight;
 
-            var width = (_boardWidth / 15.0) * 6.0;
-            var height = (_boardHeight / 15.0) * 6.0;
-            SetCameraViewBounds(_cameraViewRed, 0, 0, width, height);
-            SetCameraViewBounds(_cameraViewGreen, _boardWidth - width, 0, width, height);
-            SetCameraViewBounds(_cameraViewYellow, _boardWidth - width, _boardHeight - height, width, height);
-            SetCameraViewBounds(_cameraViewBlue, 0, _boardHeight - height, width, height);
-            SetCameraViewBounds(_rtcHostRed, 0, 0, width, height);
-            SetCameraViewBounds(_rtcHostGreen, _boardWidth - width, 0, width, height);
-            SetCameraViewBounds(_rtcHostYellow, _boardWidth - width, _boardHeight - height, width, height);
-            SetCameraViewBounds(_rtcHostBlue, 0, _boardHeight - height, width, height);
+            var slotWidth = (_boardWidth / 15.0) * 6.0;
+            var slotHeight = (_boardHeight / 15.0) * 6.0;
+            const double insetRatio = 0.08;
+            var insetX = slotWidth * insetRatio;
+            var insetY = slotHeight * insetRatio;
+            var width = slotWidth - (insetX * 2);
+            var height = slotHeight - (insetY * 2);
+
+            SetCameraViewBounds(_cameraViewRed, insetX, insetY, width, height);
+            SetCameraViewBounds(_cameraViewGreen, _boardWidth - slotWidth + insetX, insetY, width, height);
+            SetCameraViewBounds(_cameraViewYellow, _boardWidth - slotWidth + insetX, _boardHeight - slotHeight + insetY, width, height);
+            SetCameraViewBounds(_cameraViewBlue, insetX, _boardHeight - slotHeight + insetY, width, height);
+            SetCameraViewBounds(_rtcHostRed, insetX, insetY, width, height);
+            SetCameraViewBounds(_rtcHostGreen, _boardWidth - slotWidth + insetX, insetY, width, height);
+            SetCameraViewBounds(_rtcHostYellow, _boardWidth - slotWidth + insetX, _boardHeight - slotHeight + insetY, width, height);
+            SetCameraViewBounds(_rtcHostBlue, insetX, _boardHeight - slotHeight + insetY, width, height);
         }
         catch (Exception ex)
         {

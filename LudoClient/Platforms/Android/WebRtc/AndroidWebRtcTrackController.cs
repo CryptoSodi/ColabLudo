@@ -31,6 +31,8 @@ internal sealed class AndroidWebRtcTrackController
     private readonly HashSet<string> _occupiedOpponents = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, bool> _remoteAudioEnabled = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, bool> _remoteVideoVisible = new(StringComparer.OrdinalIgnoreCase);
+    private readonly HashSet<string> _pendingReceiverResets = new(StringComparer.OrdinalIgnoreCase);
+    private readonly object _stateLock = new();
     private string? _lastPostedOffersJson;
 
     private SurfaceViewRenderer? _localPreviewRenderer;
@@ -183,6 +185,8 @@ internal sealed class AndroidWebRtcTrackController
         if (!_isRunning || string.IsNullOrWhiteSpace(_roomId) || string.IsNullOrWhiteSpace(_selfId))
             return;
 
+        ProcessPendingReceiverResets();
+
         using var http = new HttpClient();
 
         await RunBroadcasterTickAsync(http, cancellationToken);
@@ -193,20 +197,24 @@ internal sealed class AndroidWebRtcTrackController
     {
         _isRunning = false;
 
-        foreach (var pc in _sendPeers.Values)
-            pc.Dispose();
-        _sendPeers.Clear();
+        lock (_stateLock)
+        {
+            foreach (var pc in _sendPeers.Values)
+                pc.Dispose();
+            _sendPeers.Clear();
 
-        foreach (var pc in _receivePeers.Values)
-            pc.Dispose();
-        _receivePeers.Clear();
-        _remoteAudioTracks.Clear();
-        _remoteVideoTracks.Clear();
-        _hasRemoteVideo = false;
-        _lastPostedOffersJson = null;
-        _occupiedOpponents.Clear();
-        _remoteAudioEnabled.Clear();
-        _remoteVideoVisible.Clear();
+            foreach (var pc in _receivePeers.Values)
+                pc.Dispose();
+            _receivePeers.Clear();
+            _remoteAudioTracks.Clear();
+            _remoteVideoTracks.Clear();
+            _hasRemoteVideo = false;
+            _lastPostedOffersJson = null;
+            _occupiedOpponents.Clear();
+            _remoteAudioEnabled.Clear();
+            _remoteVideoVisible.Clear();
+            _pendingReceiverResets.Clear();
+        }
 
         DisposeLocalMedia();
 
@@ -336,14 +344,21 @@ internal sealed class AndroidWebRtcTrackController
         if (targets.Count == 0)
             return;
 
-        var pendingTargets = targets.Where(t => !_sendPeers.ContainsKey(t)).ToList();
+        List<string> pendingTargets;
+        lock (_stateLock)
+        {
+            pendingTargets = targets.Where(t => !_sendPeers.ContainsKey(t)).ToList();
+        }
         if (pendingTargets.Count > 0)
         {
             var offers = new List<object>();
             foreach (var target in pendingTargets)
             {
                 var pc = CreateSenderPeer(target);
-                _sendPeers[target] = pc;
+                lock (_stateLock)
+                {
+                    _sendPeers[target] = pc;
+                }
 
                 var offer = await CreateOfferAsync(pc, cancellationToken);
                 if (offer != null)
@@ -381,18 +396,25 @@ internal sealed class AndroidWebRtcTrackController
             var answerRaw = item.GetProperty("answerJson").GetString() ?? string.Empty;
             var updatedUtc = item.GetProperty("updatedUtc").ToString();
             var key = $"{_roomId}:{_selfId}:{responder}:{updatedUtc}";
-            if (_appliedAnswers.Contains(key))
-                continue;
-            if (!_sendPeers.TryGetValue(responder, out var pc))
-                continue;
+            PeerConnection? pc;
+            lock (_stateLock)
+            {
+                if (_appliedAnswers.Contains(key))
+                    continue;
+                if (!_sendPeers.TryGetValue(responder, out pc))
+                    continue;
+            }
 
             var answer = ParseSessionDescription(answerRaw);
             if (answer == null)
                 continue;
 
             await SetRemoteDescriptionAsync(pc, answer, cancellationToken);
-            _appliedAnswers.Add(key);
-            _lastPostedOffersJson = null;
+            lock (_stateLock)
+            {
+                _appliedAnswers.Add(key);
+                _lastPostedOffersJson = null;
+            }
             Console.WriteLine($"[NativeRTC] Answer applied for {responder}");
         }
     }
@@ -439,15 +461,22 @@ internal sealed class AndroidWebRtcTrackController
             var offerElement = mine.GetProperty("offer");
             var sdp = offerElement.GetProperty("sdp").GetString() ?? string.Empty;
             var dedup = $"{_roomId}:{owner}:{_selfId}:{updatedUtc}";
-            if (_processedOffers.Contains(dedup))
-                continue;
+            lock (_stateLock)
+            {
+                if (_processedOffers.Contains(dedup))
+                    continue;
+            }
 
             var offer = new SessionDescription(SessionDescription.SdpType.Offer, sdp);
-            if (!_receivePeers.TryGetValue(owner, out var receiverPeer))
+            PeerConnection? receiverPeer;
+            lock (_stateLock)
             {
-                receiverPeer = CreateReceiverPeer(owner);
-                _receivePeers[owner] = receiverPeer;
-                Console.WriteLine($"[NativeRTC] Receiver peer created for owner={owner}");
+                if (!_receivePeers.TryGetValue(owner, out receiverPeer))
+                {
+                    receiverPeer = CreateReceiverPeer(owner);
+                    _receivePeers[owner] = receiverPeer;
+                    Console.WriteLine($"[NativeRTC] Receiver peer created for owner={owner}");
+                }
             }
 
             await SetRemoteDescriptionAsync(receiverPeer, offer, cancellationToken);
@@ -461,7 +490,10 @@ internal sealed class AndroidWebRtcTrackController
             var response = await http.PostAsync($"{_apiBase}/answers", new StringContent(body, Encoding.UTF8, "application/json"), cancellationToken);
             Console.WriteLine($"[NativeRTC] POST answers => {(int)response.StatusCode} owner={owner}");
 
-            _processedOffers.Add(dedup);
+            lock (_stateLock)
+            {
+                _processedOffers.Add(dedup);
+            }
         }
     }
 
@@ -706,7 +738,10 @@ internal sealed class AndroidWebRtcTrackController
 
         try
         {
-            _remoteVideoTracks[owner] = track;
+            lock (_stateLock)
+            {
+                _remoteVideoTracks[owner] = track;
+            }
             track.AddSink(renderer);
             ApplyRemoteVideoVisibility(owner, renderer);
             _hasRemoteVideo = true;
@@ -727,8 +762,7 @@ internal sealed class AndroidWebRtcTrackController
             newState == PeerConnection.IceConnectionState.Disconnected ||
             newState == PeerConnection.IceConnectionState.Closed)
         {
-            Console.WriteLine($"[NativeRTC] Receiver peer reset requested owner={owner} ice={newState}.");
-            ResetReceiverPeer(owner, allowOfferRetry: true);
+            RequestReceiverPeerReset(owner, $"ice={newState}");
         }
     }
 
@@ -741,9 +775,33 @@ internal sealed class AndroidWebRtcTrackController
             newState == PeerConnection.PeerConnectionState.Disconnected ||
             newState == PeerConnection.PeerConnectionState.Closed)
         {
-            Console.WriteLine($"[NativeRTC] Receiver peer reset requested owner={owner} connection={newState}.");
-            ResetReceiverPeer(owner, allowOfferRetry: true);
+            RequestReceiverPeerReset(owner, $"connection={newState}");
         }
+    }
+
+    private void RequestReceiverPeerReset(string owner, string reason)
+    {
+        lock (_stateLock)
+        {
+            _pendingReceiverResets.Add(owner);
+        }
+        Console.WriteLine($"[NativeRTC] Receiver peer reset queued owner={owner} {reason}.");
+    }
+
+    private void ProcessPendingReceiverResets()
+    {
+        List<string>? owners = null;
+        lock (_stateLock)
+        {
+            if (_pendingReceiverResets.Count == 0)
+                return;
+
+            owners = _pendingReceiverResets.ToList();
+            _pendingReceiverResets.Clear();
+        }
+
+        foreach (var owner in owners)
+            ResetReceiverPeer(owner, allowOfferRetry: true);
     }
 
     private void ResetReceiverPeer(string owner, bool allowOfferRetry)
@@ -751,21 +809,24 @@ internal sealed class AndroidWebRtcTrackController
         if (string.IsNullOrWhiteSpace(owner))
             return;
 
-        if (_receivePeers.TryGetValue(owner, out var peer))
+        PeerConnection? peer = null;
+        lock (_stateLock)
         {
-            try { peer.Dispose(); } catch { }
-            _receivePeers.Remove(owner);
+            if (_receivePeers.TryGetValue(owner, out peer))
+                _receivePeers.Remove(owner);
+
+            _remoteAudioTracks.Remove(owner);
+            _remoteVideoTracks.Remove(owner);
+            _hasRemoteVideo = _remoteVideoTracks.Count > 0;
+
+            if (allowOfferRetry)
+            {
+                var prefix = $"{_roomId}:{owner}:{_selfId}:";
+                _processedOffers.RemoveWhere(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+            }
         }
 
-        _remoteAudioTracks.Remove(owner);
-        _remoteVideoTracks.Remove(owner);
-        _hasRemoteVideo = _remoteVideoTracks.Count > 0;
-
-        if (allowOfferRetry)
-        {
-            var prefix = $"{_roomId}:{owner}:{_selfId}:";
-            _processedOffers.RemoveWhere(x => x.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
-        }
+        try { peer?.Dispose(); } catch { }
     }
 
     private void AttachRemoteAudioTrack(string owner, AudioTrack? track)
@@ -775,9 +836,14 @@ internal sealed class AndroidWebRtcTrackController
 
         try
         {
-            _remoteAudioTracks[owner] = track;
-            if (_remoteAudioEnabled.TryGetValue(owner, out var isEnabled))
-                track.SetEnabled(isEnabled);
+            bool isEnabled = true;
+            lock (_stateLock)
+            {
+                _remoteAudioTracks[owner] = track;
+                if (_remoteAudioEnabled.TryGetValue(owner, out var requested))
+                    isEnabled = requested;
+            }
+            track.SetEnabled(isEnabled);
             Console.WriteLine($"[NativeRTC] Remote audio track attached owner={owner}.");
         }
         catch (System.Exception ex)
@@ -817,6 +883,17 @@ internal sealed class AndroidWebRtcTrackController
         public void OnAddTrack(RtpReceiver? receiver, MediaStream[]? mediaStreams) { }
         public void OnDataChannel(DataChannel? dataChannel) { }
         public void OnIceCandidate(IceCandidate? candidate) { }
+        public void OnIceCandidateError(IceCandidateErrorEvent? e)
+        {
+            try
+            {
+                Console.WriteLine($"[NativeRTC] ICE candidate error url={e?.Address} port={e?.Port} code={e?.ErrorCode} text={e?.ErrorText}");
+            }
+            catch (System.Exception ex)
+            {
+                Console.WriteLine($"[NativeRTC] ICE candidate error logging failed: {ex.Message}");
+            }
+        }
         public void OnIceCandidatesRemoved(IceCandidate[]? candidates) { }
         public void OnIceConnectionChange(PeerConnection.IceConnectionState? newState)
         {

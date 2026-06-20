@@ -22,14 +22,70 @@ namespace LudoClient.Platforms.Android
             platformView.Settings.AllowContentAccess = true;
 
             platformView.SetWebChromeClient(new CameraWebChromeClient());
+            platformView.SetWebViewClient(new CameraWebViewClient());
+        }
+
+        protected override void DisconnectHandler(global::Android.Webkit.WebView platformView)
+        {
+            try
+            {
+                platformView.StopLoading();
+                platformView.SetWebChromeClient(null);
+                platformView.SetWebViewClient(null);
+            }
+            catch
+            {
+            }
+
+            base.DisconnectHandler(platformView);
         }
 
         public class CameraWebChromeClient : WebChromeClient
         {
             public override void OnPermissionRequest(PermissionRequest request)
             {
-                request.Grant(request.GetResources());
+                try
+                {
+                    request?.Grant(request.GetResources());
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WebRTC] Permission request grant failed: {ex.Message}");
+                }
                 //base.OnPermissionRequest(request);
+            }
+        }
+
+        public class CameraWebViewClient : WebViewClient
+        {
+            public override void OnReceivedError(global::Android.Webkit.WebView? view, IWebResourceRequest? request, WebResourceError? error)
+            {
+                try
+                {
+                    Console.WriteLine($"[WebRTC] WebView error url={request?.Url} code={error?.ErrorCode} desc={error?.Description}");
+                }
+                catch
+                {
+                }
+
+                base.OnReceivedError(view, request, error);
+            }
+
+            public override bool OnRenderProcessGone(global::Android.Webkit.WebView? view, RenderProcessGoneDetail? detail)
+            {
+                try
+                {
+                    Console.WriteLine($"[WebRTC] WebView render process gone. DidCrash={detail?.DidCrash()}");
+                    view?.StopLoading();
+                    view?.LoadUrl("about:blank");
+                    view?.Destroy();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[WebRTC] Failed handling render process exit: {ex.Message}");
+                }
+
+                return true;
             }
         }
     }
