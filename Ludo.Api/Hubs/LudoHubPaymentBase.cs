@@ -283,7 +283,7 @@ public abstract class LudoHubPaymentBase(
             if (wallet == null || wallet.AvailableBalance < request.Amount) return "Insufficient internal balance.";
 
             var result = await _ludcPaymentProvider.WithdrawAsync(player, destination, request.Amount, Guid.NewGuid());
-            if (result != "ERROR" && !result.Contains("INSUFFICIENT", StringComparison.OrdinalIgnoreCase))
+            if (!LudcPaymentProvider.WithdrawErrorCodes.Contains(result))
                 return $"Success: {result}";
             return result;
         }

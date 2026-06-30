@@ -38,6 +38,8 @@ var dbstring = builder.Configuration.GetConnectionString("DefaultConnection")
 var purpose = builder.Configuration.GetConnectionString("purpose")
     ?? throw new InvalidOperationException("purpose is not configured.");
 var clientRpcUrl = builder.Configuration["Solana:ClientRpcUrl"] ?? string.Empty;
+var jupiterBaseUrl = builder.Configuration["Jupiter:BaseUrl"] ?? "https://api.jup.ag";
+var jupiterApiKey = builder.Configuration["Jupiter:ApiKey"] ?? string.Empty;
 
 Console.WriteLine($"[Ludo.Api] BasePath: {apiBasePath}");
 Console.WriteLine($"[Ludo.Api] Server settings path: {repoServerSettingsPath}");
@@ -89,7 +91,9 @@ builder.Services.AddSingleton<LudcPaymentProvider>(sp =>
         debug,
         purpose,
         ludcMintAddress,
-        clientRpcUrl);
+        clientRpcUrl,
+        jupiterBaseUrl,
+        jupiterApiKey);
 });
 
 builder.Services.AddSingleton<IPaymentProvider>(sp => sp.GetRequiredService<SolPaymentProvider>());

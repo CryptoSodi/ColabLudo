@@ -72,6 +72,7 @@ namespace LudoServer.Models
         GameWin = 3,
         GameLoss = 4,
         Sweep = 5,
-        DailyBonus = 6
+        DailyBonus = 6,
+        Fee = 7
     }
 }

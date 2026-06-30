@@ -460,7 +460,7 @@ public class PaymentController(
             }
 
             var result = await ludcPaymentProvider.WithdrawAsync(player, destination, request.Amount, Guid.NewGuid());
-            if (result != "ERROR" && !result.Contains("INSUFFICIENT", StringComparison.OrdinalIgnoreCase))
+            if (!LudcPaymentProvider.WithdrawErrorCodes.Contains(result))
             {
                 Console.WriteLine($"[PaymentApi] InitiateWithdrawal completed. PlayerId={player.PlayerId}, Destination={Short(destination)}, Amount={request.Amount}, Result={Short(result)}");
                 return $"Success: {result}";

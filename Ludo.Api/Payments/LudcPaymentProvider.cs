@@ -14,7 +14,7 @@ using System.Net.Http.Json;
 
 namespace SignalR.Server.Payments
 {
-    public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS, string rpcUrl) : IPaymentProvider
+    public class LudcPaymentProvider(IDbContextFactory<LudoDbContext> _contextFactory, IDataProtectionProvider dataProtectionProvider, SolPaymentProvider solPaymentProvider, int _masterUserId, bool debug, string purpose, string LUDC_MINT_ADDRESS, string rpcUrl, string jupiterBaseUrl, string jupiterApiKey) : IPaymentProvider
     {
         public CurrencyType Currency => CurrencyType.LUDC;
         public string MintAddress => LUDC_MINT.Key;
@@ -27,6 +27,31 @@ namespace SignalR.Server.Payments
         private readonly PublicKey LUDC_MINT = new PublicKey(LUDC_MINT_ADDRESS);
 
         private readonly PublicKey TOKEN_2022_PROGRAM = new PublicKey("TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb");
+
+        /* =========================================================
+        * ATA CREATION FEE (paid by the withdrawing player, in LUDC)
+        * ---------------------------------------------------------
+        * When a withdrawal forces the treasury to create the recipient's
+        * LUDC token account, the treasury pays ~0.00207408 SOL of rent.
+        * We charge that cost back to the player, priced live in LUDC, so
+        * the treasury is never the one funding a receiver's account.
+        * ========================================================= */
+        private const long ATA_ACCOUNT_SIZE = 170;                  // Token-2022 ATA: 165 base + account-type byte + ImmutableOwner TLV
+        private const ulong ATA_RENT_FALLBACK_LAMPORTS = 2_074_080; // rent-exempt minimum for 170 bytes (used if RPC is unreachable)
+        private const decimal FEE_MARGIN = 1.2m;                    // buffer for spread/slippage when LUDC fees are later converted to SOL
+        private const int FEE_CACHE_SECONDS = 60;                   // how long a live LUDC price is reused before re-quoting
+        private const string WRAPPED_SOL_MINT = "So11111111111111111111111111111111111111112";
+        private decimal _cachedFeeLudc = 0m;
+        private DateTime _feeQuoteTime = DateTime.MinValue;
+
+        // Non-signature results WithdrawAsync can return. Callers treat anything
+        // NOT in this set as a successful on-chain signature / internal ref.
+        public static readonly HashSet<string> WithdrawErrorCodes = new()
+        {
+            "ERROR", "WALLET_NOT_FOUND", "SELF_TRANSFER_NOT_ALLOWED",
+            "INSUFFICIENT_BALANCE", "INSUFFICIENT_BALANCE_FOR_FEE",
+            "FEE_UNAVAILABLE", "AMOUNT_TOO_SMALL_FOR_FEE"
+        };
 
         /* =========================================================
         * WALLET INITIALIZATION (SINGLE SOURCE OF TRUTH)
@@ -103,15 +128,153 @@ namespace SignalR.Server.Payments
             }
 
             var masterKey = await ctx.PlayerWalletKey.FirstAsync(x => x.PlayerId == _masterUserId);
-            var sig = await SendLudcAsync(masterKey, destination, amount);
-            if(sig != "ERROR")
+
+            // Does the treasury have to create (rent-fund) the destination's LUDC
+            // account? If so, charge the player the SOL rent cost, priced live in
+            // LUDC. Existing accounts cost no rent, so they pay no fee.
+            var receiverPub = new PublicKey(destination);
+            PublicKey.TryFindProgramAddress(
+                new[] { receiverPub.KeyBytes, TOKEN_2022_PROGRAM.KeyBytes, LUDC_MINT.KeyBytes },
+                AssociatedTokenAccountProgram.ProgramIdKey, out var receiverAta, out _);
+            var receiverAtaInfo = await _rpc.GetAccountInfoAsync(receiverAta);
+            bool receiverAtaExists = receiverAtaInfo.WasSuccessful && receiverAtaInfo.Result?.Value != null;
+
+            decimal feeLudc = 0m;
+            if (!receiverAtaExists)
             {
+                var quotedFee = await GetAtaCreationFeeLudcAsync(masterKey.PublicKey);
+                if (quotedFee == null)
+                    return "FEE_UNAVAILABLE";          // could not price the rent live -> fail closed, never fund a receiver for free
+                feeLudc = quotedFee.Value;
+
+                if (amount <= feeLudc)
+                    return "AMOUNT_TOO_SMALL_FOR_FEE";  // withdrawal worth less than the account-creation fee
+            }
+
+            if (wallet.AvailableBalance < amount + feeLudc)
+                return "INSUFFICIENT_BALANCE_FOR_FEE";
+
+            var sig = await SendLudcAsync(masterKey, destination, amount);
+            if (sig != "ERROR")
+            {
+                // Ledger: the withdrawal itself
                 wallet.AvailableBalance -= amount;
+                ctx.WalletTransaction.Add(new WalletTransaction
+                {
+                    PlayerId = wallet.PlayerId,
+                    OperationId = operationId,
+                    Amount = -amount,
+                    BalanceAfter = wallet.AvailableBalance,
+                    Type = TransactionType.Withdrawal,
+                    Status = WalletTransactionStatus.Completed,
+                    Description = $"Withdraw to {destination}",
+                    IsOnChain = true,
+                    txId = sig,
+                    AddressType = "LUDC"
+                });
+
+                // Ledger: ATA account creation fee (player pays -> treasury keeps)
+                if (feeLudc > 0m)
+                {
+                    wallet.AvailableBalance -= feeLudc;
+                    ctx.WalletTransaction.Add(new WalletTransaction
+                    {
+                        PlayerId = wallet.PlayerId,
+                        OperationId = Guid.NewGuid(),
+                        Amount = -feeLudc,
+                        BalanceAfter = wallet.AvailableBalance,
+                        Type = TransactionType.Fee,
+                        Status = WalletTransactionStatus.Completed,
+                        Description = "ATA account creation fee",
+                        IsOnChain = false,
+                        txId = sig,
+                        AddressType = "LUDC"
+                    });
+
+                    // The fee LUDC never leaves the on-chain pool, so credit the
+                    // treasury's internal claim to keep DB balances reconciled and
+                    // give a running total of fees available to convert back to SOL.
+                    var masterWallet = await ctx.PlayerWallet.FirstOrDefaultAsync(w => w.PlayerId == _masterUserId && w.AddressType == "LUDC");
+                    if (masterWallet != null)
+                    {
+                        masterWallet.AvailableBalance += feeLudc;
+                        ctx.WalletTransaction.Add(new WalletTransaction
+                        {
+                            PlayerId = _masterUserId,
+                            OperationId = Guid.NewGuid(),
+                            Amount = feeLudc,
+                            BalanceAfter = masterWallet.AvailableBalance,
+                            Type = TransactionType.Fee,
+                            Status = WalletTransactionStatus.Completed,
+                            Description = $"ATA account creation fee from player {wallet.PlayerId}",
+                            IsOnChain = false,
+                            txId = sig,
+                            AddressType = "LUDC"
+                        });
+                        ctx.Update(masterWallet);
+                    }
+                }
+
                 ctx.Update(wallet);
                 await ctx.SaveChangesAsync();
                 await tx.CommitAsync();
+
+                Console.WriteLine($"[LudcProvider] Withdraw complete: Player {wallet.PlayerId} -> {destination} Amount: {amount} LUDC, Fee: {feeLudc} LUDC (ATA {(receiverAtaExists ? "existed" : "created")})");
             }
             return sig;
+        }
+        // ================= ATA CREATION FEE (LIVE PRICE) =================
+        // Returns the LUDC fee equal to the SOL rent of creating a recipient's
+        // LUDC token account, priced via a live Jupiter quote (no swap executed).
+        // Returns null if the price cannot be obtained and no recent value is cached.
+        private async Task<decimal?> GetAtaCreationFeeLudcAsync(string takerPubkey)
+        {
+            if ((DateTime.UtcNow - _feeQuoteTime).TotalSeconds < FEE_CACHE_SECONDS && _cachedFeeLudc > 0m)
+                return _cachedFeeLudc;
+
+            // 1) Actual on-chain rent for a LUDC (Token-2022) ATA
+            ulong rentLamports = ATA_RENT_FALLBACK_LAMPORTS;
+            try
+            {
+                var rentRes = await _rpc.GetMinimumBalanceForRentExemptionAsync(ATA_ACCOUNT_SIZE);
+                if (rentRes.WasSuccessful && rentRes.Result > 0)
+                    rentLamports = rentRes.Result;
+            }
+            catch { /* keep fallback */ }
+
+            // 2) Live value of that rent in LUDC (Jupiter quote only, nothing executed)
+            try
+            {
+                string url = $"{jupiterBaseUrl.TrimEnd('/')}/swap/v2/order" +
+                             $"?inputMint={WRAPPED_SOL_MINT}&outputMint={LUDC_MINT.Key}" +
+                             $"&amount={rentLamports}&slippageBps=100&taker={takerPubkey}";
+                using var req = new HttpRequestMessage(HttpMethod.Get, url);
+                if (!string.IsNullOrWhiteSpace(jupiterApiKey))
+                    req.Headers.Add("x-api-key", jupiterApiKey);
+                using var res = await _http.SendAsync(req);
+                var body = await res.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(body);
+                if (doc.RootElement.TryGetProperty("outAmount", out var outAmt))
+                {
+                    string raw = outAmt.ValueKind == JsonValueKind.String ? outAmt.GetString() ?? "" : outAmt.GetRawText();
+                    if (ulong.TryParse(raw, out var ludcRaw) && ludcRaw > 0)
+                    {
+                        decimal ludc = ludcRaw / 1_000_000_000m; // LUDC has 9 decimals
+                        _cachedFeeLudc = decimal.Round(ludc * FEE_MARGIN, 8, MidpointRounding.AwayFromZero);
+                        _feeQuoteTime = DateTime.UtcNow;
+                        Console.WriteLine($"[LudcProvider] ATA fee priced: rent={rentLamports} lamports -> {_cachedFeeLudc} LUDC");
+                        return _cachedFeeLudc;
+                    }
+                }
+                Console.WriteLine($"[LudcProvider] Fee quote missing outAmount. Body: {body}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[LudcProvider] Fee quote failed: {ex.Message}");
+            }
+
+            // Live data unavailable: reuse a recent value if we have one, else signal failure.
+            return _cachedFeeLudc > 0m ? _cachedFeeLudc : (decimal?)null;
         }
         // ================= SWEEP =================
         public async Task<string> SweepAsync(int playerId, decimal amount)
