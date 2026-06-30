@@ -116,6 +116,7 @@ builder.Services.AddScoped<TournamentService>();
 builder.Services.AddSingleton<UtilService>();
 builder.Services.AddSingleton<PlayerPresenceTracker>();
 builder.Services.AddHostedService<PlayerInactivityCleanupService>();
+builder.Services.AddHostedService<BotLobbyService>();
 builder.Services.AddHttpClient<JupiterSwapService>();
 builder.Services.AddSingleton<DatabaseManager>(sp =>
 {
